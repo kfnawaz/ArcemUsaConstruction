@@ -30,11 +30,9 @@ const BlogCard = ({ slug, title, excerpt, imageUrl, date, category }: BlogCardPr
         <p className="text-gray-600 mb-6 leading-relaxed">
           {excerpt}
         </p>
-        <Link href={`/blog/${slug}`}>
-          <a className="text-[#C09E5E] hover:text-[#A98D54] font-montserrat text-sm font-medium inline-flex items-center">
-            READ MORE
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </a>
+        <Link href={`/blog/${slug}`} className="text-[#C09E5E] hover:text-[#A98D54] font-montserrat text-sm font-medium inline-flex items-center">
+          READ MORE
+          <ArrowRight className="w-4 h-4 ml-2" />
         </Link>
       </div>
     </div>
