@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import BackToTop from "@/components/common/BackToTop";
-import { AuthProvider } from "@/contexts/AuthContext";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 // Pages
@@ -123,10 +123,20 @@ function App() {
       <AuthProvider>
         <Router />
         <Toaster />
-        {process.env.NODE_ENV === 'development' && <A11yFloatingButton />}
+        <AdminAccessibilityButton />
       </AuthProvider>
     </QueryClientProvider>
   );
+}
+
+// A separate component to handle conditional rendering of the A11y button
+function AdminAccessibilityButton() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
+  
+  if (!isAdmin) return null;
+  
+  return <A11yFloatingButton />;
 }
 
 export default App;
