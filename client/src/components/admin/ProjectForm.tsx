@@ -16,10 +16,11 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, ImageIcon, Plus, Trash2, UploadIcon, XIcon } from 'lucide-react';
+import { ArrowLeft, ImageIcon, Loader2, Plus, Trash2, UploadCloud, UploadIcon, XIcon } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from '@/components/ui/label';
+import FileUpload from '@/components/common/FileUpload';
 
 interface ProjectFormProps {
   projectId?: number;
@@ -35,7 +36,8 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
     isSubmitting,
     addGalleryImage,
     updateGalleryImage,
-    deleteGalleryImage
+    deleteGalleryImage,
+    uploadFile
   } = useProject(projectId);
   
   const [selectedTab, setSelectedTab] = useState("details");
@@ -198,17 +200,40 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                   name="image"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Main Image URL</FormLabel>
+                      <FormLabel>Main Project Image</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="Enter image URL" 
-                          {...field} 
-                        />
+                        <div className="space-y-3">
+                          <Input 
+                            placeholder="Enter image URL" 
+                            {...field} 
+                          />
+                          <div className="mt-2">
+                            <p className="text-sm mb-2 text-muted-foreground">Or upload an image directly:</p>
+                            <FileUpload 
+                              onUploadComplete={(fileUrl) => {
+                                field.onChange(fileUrl);
+                              }}
+                            />
+                          </div>
+                        </div>
                       </FormControl>
                       <FormDescription>
-                        Provide a URL to the main thumbnail image for this project
+                        Provide a URL or upload the main thumbnail image for this project
                       </FormDescription>
                       <FormMessage />
+                      {field.value && (
+                        <div className="mt-2 border rounded p-2">
+                          <p className="text-xs mb-1 font-medium">Preview:</p>
+                          <img 
+                            src={field.value} 
+                            alt="Project thumbnail preview" 
+                            className="max-h-[150px] object-cover rounded"
+                            onError={(e) => {
+                              e.currentTarget.src = "https://placehold.co/600x400?text=Image+Not+Found";
+                            }}
+                          />
+                        </div>
+                      )}
                     </FormItem>
                   )}
                 />
@@ -273,15 +298,42 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                   <CardContent className="pt-6">
                     <h3 className="text-lg font-semibold mb-4">Add New Gallery Image</h3>
                     <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="imageUrl">Image URL</Label>
-                        <Input
-                          id="imageUrl"
-                          placeholder="Enter image URL"
-                          value={newImageUrl}
-                          onChange={(e) => setNewImageUrl(e.target.value)}
-                          className="mt-1"
-                        />
+                      <div className="space-y-3">
+                        <div>
+                          <Label htmlFor="imageUrl">Image URL</Label>
+                          <Input
+                            id="imageUrl"
+                            placeholder="Enter image URL"
+                            value={newImageUrl}
+                            onChange={(e) => setNewImageUrl(e.target.value)}
+                            className="mt-1"
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label>Or upload an image</Label>
+                          <div className="mt-1">
+                            <FileUpload 
+                              onUploadComplete={(fileUrl) => {
+                                setNewImageUrl(fileUrl);
+                              }}
+                            />
+                          </div>
+                        </div>
+                        
+                        {newImageUrl && (
+                          <div className="mt-2 border rounded p-2">
+                            <p className="text-xs mb-1 font-medium">Preview:</p>
+                            <img 
+                              src={newImageUrl} 
+                              alt="Gallery image preview" 
+                              className="max-h-[150px] object-cover rounded"
+                              onError={(e) => {
+                                e.currentTarget.src = "https://placehold.co/600x400?text=Image+Not+Found";
+                              }}
+                            />
+                          </div>
+                        )}
                       </div>
                       
                       <div>
