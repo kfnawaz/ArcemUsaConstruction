@@ -84,16 +84,16 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
         image: project.image,
         featured: project.featured === null ? false : project.featured,
         // Project details
-        overview: project.overview || '',
-        challenges: project.challenges || '',
-        solutions: project.solutions || '',
-        results: project.results || '',
+        overview: project.overview ?? '',
+        challenges: project.challenges ?? '',
+        solutions: project.solutions ?? '',
+        results: project.results ?? '',
         // Project specifications
-        client: project.client || '',
-        location: project.location || '',
-        size: project.size || '',
-        completionDate: project.completionDate || '',
-        servicesProvided: project.servicesProvided || '',
+        client: project.client ?? '',
+        location: project.location ?? '',
+        size: project.size ?? '',
+        completionDate: project.completionDate ?? '',
+        servicesProvided: project.servicesProvided ?? '',
       });
     }
   }, [form, project]);
@@ -332,7 +332,8 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                           <Textarea 
                             placeholder="Provide an overview of the project" 
                             rows={4}
-                            {...field} 
+                            {...field}
+                            value={field.value ?? ''} 
                           />
                         </FormControl>
                         <FormMessage />
@@ -350,7 +351,8 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                           <Textarea 
                             placeholder="Describe challenges faced during the project" 
                             rows={4}
-                            {...field} 
+                            {...field}
+                            value={field.value ?? ''} 
                           />
                         </FormControl>
                         <FormMessage />
@@ -368,7 +370,8 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                           <Textarea 
                             placeholder="Explain solutions implemented for challenges" 
                             rows={4}
-                            {...field} 
+                            {...field}
+                            value={field.value ?? ''} 
                           />
                         </FormControl>
                         <FormMessage />
@@ -386,7 +389,8 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                           <Textarea 
                             placeholder="Describe the project results and outcomes" 
                             rows={4}
-                            {...field} 
+                            {...field}
+                            value={field.value ?? ''} 
                           />
                         </FormControl>
                         <FormMessage />
@@ -410,7 +414,8 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                         <FormControl>
                           <Input 
                             placeholder="Client name" 
-                            {...field} 
+                            {...field}
+                            value={field.value ?? ''} 
                           />
                         </FormControl>
                         <FormMessage />
@@ -427,7 +432,8 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                         <FormControl>
                           <Input 
                             placeholder="Project location" 
-                            {...field} 
+                            {...field}
+                            value={field.value ?? ''} 
                           />
                         </FormControl>
                         <FormMessage />
@@ -444,7 +450,8 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                         <FormControl>
                           <Input 
                             placeholder="E.g., 10,000 sq ft" 
-                            {...field} 
+                            {...field}
+                            value={field.value ?? ''} 
                           />
                         </FormControl>
                         <FormMessage />
