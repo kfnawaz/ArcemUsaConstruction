@@ -462,13 +462,15 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                   <FormField
                     control={form.control}
                     name="completionDate"
-                    render={({ field }) => (
+                    render={({ field: { value, onChange, ...fieldProps } }) => (
                       <FormItem>
                         <FormLabel>Completion Date</FormLabel>
                         <FormControl>
                           <Input 
                             placeholder="E.g., June 2023" 
-                            {...field} 
+                            {...fieldProps}
+                            value={value ?? ''} 
+                            onChange={onChange}
                           />
                         </FormControl>
                         <FormMessage />
@@ -479,14 +481,16 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                   <FormField
                     control={form.control}
                     name="servicesProvided"
-                    render={({ field }) => (
+                    render={({ field: { value, onChange, ...fieldProps } }) => (
                       <FormItem className="md:col-span-2">
                         <FormLabel>Services Provided</FormLabel>
                         <FormControl>
                           <Textarea 
                             placeholder="List services provided for this project" 
                             rows={3}
-                            {...field} 
+                            {...fieldProps}
+                            value={value ?? ''} 
+                            onChange={onChange}
                           />
                         </FormControl>
                         <FormMessage />
