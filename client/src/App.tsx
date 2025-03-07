@@ -22,6 +22,8 @@ import Login from "@/pages/auth/Login";
 import Dashboard from "@/pages/admin/Dashboard";
 import ProjectManagement from "@/pages/admin/ProjectManagement";
 import BlogManagement from "@/pages/admin/BlogManagement";
+import MessagesManagement from "@/pages/admin/MessagesManagement";
+import Settings from "@/pages/admin/Settings";
 import NotFound from "@/pages/not-found";
 
 function AdminRoute({ component: Component }: { component: React.ComponentType }) {
@@ -86,6 +88,16 @@ function Router() {
           <Route path="/admin/blog">
             <ProtectedRoute>
               <BlogManagement />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/admin/messages">
+            <ProtectedRoute>
+              <MessagesManagement />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/admin/settings">
+            <ProtectedRoute>
+              <Settings />
             </ProtectedRoute>
           </Route>
           
