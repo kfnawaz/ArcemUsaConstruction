@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
-import { Project, InsertProject } from '@shared/schema';
+import { Project, InsertProject, ProjectGallery, InsertProjectGallery, ExtendedInsertProject } from '@shared/schema';
 import { useToast } from '@/hooks/use-toast';
 
 export const useProject = (projectId?: number) => {
@@ -12,6 +12,12 @@ export const useProject = (projectId?: number) => {
   // Fetch single project if ID is provided
   const { data: project, isLoading, error } = useQuery<Project>({
     queryKey: [`/api/projects/${projectId}`],
+    enabled: !!projectId,
+  });
+  
+  // Fetch project gallery images if ID is provided
+  const { data: galleryImages = [] } = useQuery<ProjectGallery[]>({
+    queryKey: [`/api/projects/${projectId}/gallery`],
     enabled: !!projectId,
   });
   
@@ -75,6 +81,81 @@ export const useProject = (projectId?: number) => {
     }
   });
 
+  // Add gallery image mutation
+  const addGalleryImageMutation = useMutation({
+    mutationFn: async ({ projectId, data }: { projectId: number; data: Omit<InsertProjectGallery, 'projectId'> }) => {
+      return apiRequest('POST', `/api/projects/${projectId}/gallery`, data);
+    },
+    onSuccess: () => {
+      if (projectId) {
+        queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}/gallery`] });
+      }
+      toast({
+        title: "Image added",
+        description: "The gallery image has been successfully added.",
+        variant: "default"
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to add gallery image. Please try again.",
+        variant: "destructive"
+      });
+      console.error("Error adding gallery image:", error);
+    }
+  });
+
+  // Update gallery image mutation
+  const updateGalleryImageMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: Partial<InsertProjectGallery> }) => {
+      return apiRequest('PUT', `/api/projects/gallery/${id}`, data);
+    },
+    onSuccess: () => {
+      if (projectId) {
+        queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}/gallery`] });
+      }
+      toast({
+        title: "Image updated",
+        description: "The gallery image has been successfully updated.",
+        variant: "default"
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to update gallery image. Please try again.",
+        variant: "destructive"
+      });
+      console.error("Error updating gallery image:", error);
+    }
+  });
+
+  // Delete gallery image mutation
+  const deleteGalleryImageMutation = useMutation({
+    mutationFn: async (id: number) => {
+      return apiRequest('DELETE', `/api/projects/gallery/${id}`);
+    },
+    onSuccess: () => {
+      if (projectId) {
+        queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}/gallery`] });
+      }
+      toast({
+        title: "Image deleted",
+        description: "The gallery image has been successfully deleted.",
+        variant: "default"
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to delete gallery image. Please try again.",
+        variant: "destructive"
+      });
+      console.error("Error deleting gallery image:", error);
+    }
+  });
+
   const saveProject = async (data: InsertProject) => {
     setIsSubmitting(true);
     if (projectId) {
@@ -84,11 +165,36 @@ export const useProject = (projectId?: number) => {
     }
   };
 
+  const addGalleryImage = async (data: Omit<InsertProjectGallery, 'projectId'>) => {
+    if (!projectId) {
+      toast({
+        title: "Error",
+        description: "Cannot add gallery image: No project ID provided.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    await addGalleryImageMutation.mutateAsync({ projectId, data });
+  };
+
+  const updateGalleryImage = async (id: number, data: Partial<InsertProjectGallery>) => {
+    await updateGalleryImageMutation.mutateAsync({ id, data });
+  };
+
+  const deleteGalleryImage = async (id: number) => {
+    await deleteGalleryImageMutation.mutateAsync(id);
+  };
+
   return {
     project,
+    galleryImages,
     isLoading,
     error,
     saveProject,
-    isSubmitting
+    isSubmitting,
+    addGalleryImage,
+    updateGalleryImage,
+    deleteGalleryImage
   };
 };

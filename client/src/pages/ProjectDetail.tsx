@@ -1,14 +1,24 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRoute, Link } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
-import { Project } from '@shared/schema';
-import { ArrowLeft, Calendar, Tag } from 'lucide-react';
+import { Project, ProjectGallery } from '@shared/schema';
+import { ArrowLeft, Calendar, ChevronLeft, ChevronRight, ImageIcon, Tag, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { initializeRevealEffects, scrollToTop, formatDate } from '@/lib/utils';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 const ProjectDetail = () => {
   const [, params] = useRoute('/projects/:id');
   const projectId = params?.id ? parseInt(params.id) : 0;
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     scrollToTop();
@@ -20,6 +30,36 @@ const ProjectDetail = () => {
     queryKey: [`/api/projects/${projectId}`],
     enabled: !!projectId,
   });
+  
+  // Fetch project gallery images
+  const { data: galleryImages = [] } = useQuery<ProjectGallery[]>({
+    queryKey: [`/api/projects/${projectId}/gallery`],
+    enabled: !!projectId,
+  });
+  
+  // Sort gallery images by display order
+  const sortedGalleryImages = [...galleryImages].sort((a, b) => {
+    const orderA = a.displayOrder !== null ? a.displayOrder : 0;
+    const orderB = b.displayOrder !== null ? b.displayOrder : 0;
+    return orderA - orderB;
+  });
+
+  const openGallery = (index: number) => {
+    setCurrentImageIndex(index);
+    setGalleryOpen(true);
+  };
+
+  const nextImage = () => {
+    setCurrentImageIndex((prevIndex) => 
+      prevIndex === sortedGalleryImages.length - 1 ? 0 : prevIndex + 1
+    );
+  };
+
+  const prevImage = () => {
+    setCurrentImageIndex((prevIndex) => 
+      prevIndex === 0 ? sortedGalleryImages.length - 1 : prevIndex - 1
+    );
+  };
 
   useEffect(() => {
     if (project) {
