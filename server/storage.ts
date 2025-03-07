@@ -1,6 +1,7 @@
 import {
   users, type User, type InsertUser,
   projects, type Project, type InsertProject,
+  projectGallery, type ProjectGallery, type InsertProjectGallery,
   blogCategories, type BlogCategory, type InsertBlogCategory,
   blogTags, type BlogTag, type InsertBlogTag,
   blogPosts, type BlogPost, type InsertBlogPost,
@@ -103,6 +104,7 @@ export class MemStorage implements IStorage {
   constructor() {
     this.users = new Map();
     this.projects = new Map();
+    this.projectGallery = new Map();
     this.blogCategories = new Map();
     this.blogTags = new Map();
     this.blogPosts = new Map();
@@ -114,6 +116,7 @@ export class MemStorage implements IStorage {
     
     this.userCurrentId = 1;
     this.projectCurrentId = 1;
+    this.projectGalleryCurrentId = 1;
     this.blogCategoryCurrentId = 1;
     this.blogTagCurrentId = 1;
     this.blogPostCurrentId = 1;
@@ -386,7 +389,53 @@ export class MemStorage implements IStorage {
   }
   
   async deleteProject(id: number): Promise<boolean> {
+    // Also delete all gallery images for this project
+    this.deleteAllProjectGalleryImages(id);
     return this.projects.delete(id);
+  }
+  
+  // Project Gallery
+  async getProjectGallery(projectId: number): Promise<ProjectGallery[]> {
+    return Array.from(this.projectGallery.values())
+      .filter(image => image.projectId === projectId)
+      .sort((a, b) => a.displayOrder - b.displayOrder);
+  }
+
+  async addProjectGalleryImage(galleryImage: InsertProjectGallery): Promise<ProjectGallery> {
+    const id = this.projectGalleryCurrentId++;
+    const newImage: ProjectGallery = {
+      ...galleryImage,
+      id,
+      displayOrder: galleryImage.displayOrder || 0,
+      caption: galleryImage.caption || null
+    };
+    this.projectGallery.set(id, newImage);
+    return newImage;
+  }
+
+  async updateProjectGalleryImage(id: number, galleryImageUpdate: Partial<InsertProjectGallery>): Promise<ProjectGallery | undefined> {
+    const image = this.projectGallery.get(id);
+    if (!image) return undefined;
+    
+    const updatedImage: ProjectGallery = {
+      ...image,
+      ...galleryImageUpdate
+    };
+    
+    this.projectGallery.set(id, updatedImage);
+    return updatedImage;
+  }
+
+  async deleteProjectGalleryImage(id: number): Promise<boolean> {
+    return this.projectGallery.delete(id);
+  }
+
+  async deleteAllProjectGalleryImages(projectId: number): Promise<boolean> {
+    const galleryImages = this.getProjectGallery(projectId);
+    (await galleryImages).forEach(image => {
+      this.projectGallery.delete(image.id);
+    });
+    return true;
   }
   
   // Blog Posts

@@ -126,6 +126,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Project Gallery Routes
+  app.get(`${apiRouter}/projects/:projectId/gallery`, async (req: Request, res: Response) => {
+    try {
+      const projectId = parseInt(req.params.projectId);
+      if (isNaN(projectId)) {
+        return res.status(400).json({ message: "Invalid project ID" });
+      }
+      
+      const images = await storage.getProjectGallery(projectId);
+      res.json(images);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch project gallery" });
+    }
+  });
+  
+  app.post(`${apiRouter}/projects/:projectId/gallery`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const projectId = parseInt(req.params.projectId);
+      if (isNaN(projectId)) {
+        return res.status(400).json({ message: "Invalid project ID" });
+      }
+      
+      const project = await storage.getProject(projectId);
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
+      
+      const galleryData = insertProjectGallerySchema.parse({
+        ...req.body,
+        projectId
+      });
+      
+      const image = await storage.addProjectGalleryImage(galleryData);
+      res.status(201).json(image);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid gallery image data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to add gallery image" });
+    }
+  });
+  
+  app.put(`${apiRouter}/projects/gallery/:id`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid gallery image ID" });
+      }
+      
+      const imageUpdate = req.body;
+      const updatedImage = await storage.updateProjectGalleryImage(id, imageUpdate);
+      
+      if (!updatedImage) {
+        return res.status(404).json({ message: "Gallery image not found" });
+      }
+      
+      res.json(updatedImage);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update gallery image" });
+    }
+  });
+  
+  app.delete(`${apiRouter}/projects/gallery/:id`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid gallery image ID" });
+      }
+      
+      const result = await storage.deleteProjectGalleryImage(id);
+      if (!result) {
+        return res.status(404).json({ message: "Gallery image not found" });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete gallery image" });
+    }
+  });
+  
   // Blog Posts Routes
   app.get(`${apiRouter}/blog`, async (req: Request, res: Response) => {
     try {
