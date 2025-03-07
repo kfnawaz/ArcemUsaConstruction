@@ -2,7 +2,11 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useBlog } from '@/hooks/useBlog';
-import { InsertBlogPost, insertBlogPostSchema } from '@shared/schema';
+import { useBlogCategories } from '@/hooks/useBlogCategories';
+import { 
+  ExtendedInsertBlogPost, 
+  extendedInsertBlogPostSchema 
+} from '@shared/schema';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -16,8 +20,16 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { generateSlug } from '@/lib/utils';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 
 interface BlogFormProps {
   postId?: number;
@@ -25,10 +37,16 @@ interface BlogFormProps {
 }
 
 const BlogForm = ({ postId, onClose }: BlogFormProps) => {
-  const { post, isLoading, saveBlogPost, isSubmitting } = useBlog(postId);
+  const { post, isLoading, saveBlogPost, isSubmitting, getPostCategoryIds, getPostTagIds } = useBlog(postId);
+  const { 
+    categories, 
+    categoriesLoading, 
+    tags, 
+    tagsLoading
+  } = useBlogCategories();
   
-  const form = useForm<InsertBlogPost>({
-    resolver: zodResolver(insertBlogPostSchema),
+  const form = useForm<ExtendedInsertBlogPost>({
+    resolver: zodResolver(extendedInsertBlogPostSchema),
     defaultValues: {
       title: '',
       slug: '',
@@ -38,24 +56,41 @@ const BlogForm = ({ postId, onClose }: BlogFormProps) => {
       category: '',
       author: '',
       published: true,
+      categoryIds: [],
+      tagIds: []
     },
   });
 
-  // Set form values when blog post data is loaded
+  // Load categories and tags for the post when editing
   useEffect(() => {
+    const loadCategoriesAndTags = async () => {
+      if (post && postId) {
+        try {
+          const categoryIds = await getPostCategoryIds(postId);
+          const tagIds = await getPostTagIds(postId);
+          
+          form.reset({
+            title: post.title,
+            slug: post.slug,
+            content: post.content,
+            excerpt: post.excerpt,
+            image: post.image,
+            category: post.category,
+            author: post.author,
+            published: post.published,
+            categoryIds,
+            tagIds
+          });
+        } catch (error) {
+          console.error("Error loading post relationships:", error);
+        }
+      }
+    };
+    
     if (post) {
-      form.reset({
-        title: post.title,
-        slug: post.slug,
-        content: post.content,
-        excerpt: post.excerpt,
-        image: post.image,
-        category: post.category,
-        author: post.author,
-        published: post.published,
-      });
+      loadCategoriesAndTags();
     }
-  }, [form, post]);
+  }, [form, post, postId, getPostCategoryIds, getPostTagIds]);
 
   // Generate slug from title when title changes
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -67,7 +102,7 @@ const BlogForm = ({ postId, onClose }: BlogFormProps) => {
     }
   };
 
-  const onSubmit = async (data: InsertBlogPost) => {
+  const onSubmit = async (data: ExtendedInsertBlogPost) => {
     await saveBlogPost(data);
     if (!isSubmitting) {
       onClose();
@@ -158,14 +193,111 @@ const BlogForm = ({ postId, onClose }: BlogFormProps) => {
               name="category"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Category</FormLabel>
+                  <FormLabel>Legacy Category (Text)</FormLabel>
                   <FormControl>
                     <Input 
                       placeholder="E.g., Construction, Architecture, Renovation" 
                       {...field} 
                     />
                   </FormControl>
+                  <FormDescription>
+                    This field is for backwards compatibility. Use the Categories selector below for new posts.
+                  </FormDescription>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="categoryIds"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Categories</FormLabel>
+                  <div className="space-y-3">
+                    {categoriesLoading ? (
+                      <div className="flex items-center space-x-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span className="text-sm text-muted-foreground">Loading categories...</span>
+                      </div>
+                    ) : !categories || categories.length === 0 ? (
+                      <div className="text-sm text-muted-foreground">No categories available</div>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-3">
+                        {categories.map((category) => (
+                          <div key={category.id} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`category-${category.id}`}
+                              checked={field.value?.includes(category.id)}
+                              onCheckedChange={(checked) => {
+                                const currentValues = field.value || [];
+                                const newValues = checked
+                                  ? [...currentValues, category.id]
+                                  : currentValues.filter((id) => id !== category.id);
+                                field.onChange(newValues);
+                              }}
+                            />
+                            <label
+                              htmlFor={`category-${category.id}`}
+                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                            >
+                              {category.name}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <FormDescription>
+                      Select one or more categories for this blog post
+                    </FormDescription>
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="tagIds"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tags</FormLabel>
+                  <div className="space-y-3">
+                    {tagsLoading ? (
+                      <div className="flex items-center space-x-2">
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <span className="text-sm text-muted-foreground">Loading tags...</span>
+                      </div>
+                    ) : !tags || tags.length === 0 ? (
+                      <div className="text-sm text-muted-foreground">No tags available</div>
+                    ) : (
+                      <div className="flex flex-wrap gap-2 p-2 border rounded-md">
+                        {tags.map((tag) => {
+                          const isSelected = field.value?.includes(tag.id);
+                          return (
+                            <Badge
+                              key={tag.id}
+                              variant={isSelected ? "default" : "outline"}
+                              className={`cursor-pointer ${isSelected ? 'bg-primary' : ''}`}
+                              onClick={() => {
+                                const currentValues = field.value || [];
+                                const newValues = isSelected
+                                  ? currentValues.filter((id) => id !== tag.id)
+                                  : [...currentValues, tag.id];
+                                field.onChange(newValues);
+                              }}
+                            >
+                              {tag.name}
+                            </Badge>
+                          );
+                        })}
+                      </div>
+                    )}
+                    <FormDescription>
+                      Click tags to add or remove them from this blog post
+                    </FormDescription>
+                    <FormMessage />
+                  </div>
                 </FormItem>
               )}
             />

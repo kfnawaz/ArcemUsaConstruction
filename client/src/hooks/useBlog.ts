@@ -22,9 +22,29 @@ export const useBlog = (postId?: number) => {
     enabled: !!postId,
   });
 
-  // Get category and tag IDs for the form
-  const getPostCategoryIds = () => post?.categories?.map(cat => cat.id) || [];
-  const getPostTagIds = () => post?.tags?.map(tag => tag.id) || [];
+  // Fetch categories for a post
+  const getPostCategoryIds = async (postId: number): Promise<number[]> => {
+    try {
+      const res = await apiRequest('GET', `/api/blog/${postId}/categories`);
+      const categories = await res.json();
+      return categories.map((cat: any) => cat.id);
+    } catch (error) {
+      console.error("Error fetching post categories:", error);
+      return [];
+    }
+  };
+
+  // Fetch tags for a post
+  const getPostTagIds = async (postId: number): Promise<number[]> => {
+    try {
+      const res = await apiRequest('GET', `/api/blog/${postId}/tags`);
+      const tags = await res.json();
+      return tags.map((tag: any) => tag.id);
+    } catch (error) {
+      console.error("Error fetching post tags:", error);
+      return [];
+    }
+  };
 
   // Create blog post mutation
   const createMutation = useMutation({
