@@ -59,6 +59,17 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
       description: '',
       image: '',
       featured: false,
+      // Project details
+      overview: '',
+      challenges: '',
+      solutions: '',
+      results: '',
+      // Project specifications
+      client: '',
+      location: '',
+      size: '',
+      completionDate: '',
+      servicesProvided: '',
     },
   });
 
@@ -72,6 +83,17 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
         description: project.description,
         image: project.image,
         featured: project.featured === null ? false : project.featured,
+        // Project details
+        overview: project.overview || '',
+        challenges: project.challenges || '',
+        solutions: project.solutions || '',
+        results: project.results || '',
+        // Project specifications
+        client: project.client || '',
+        location: project.location || '',
+        size: project.size || '',
+        completionDate: project.completionDate || '',
+        servicesProvided: project.servicesProvided || '',
       });
     }
   }, [form, project]);
@@ -292,6 +314,178 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                       />
                     </div>
                   </div>
+                </div>
+              </div>
+
+              {/* Project Details Fields */}
+              <div className="mt-8">
+                <Separator className="my-6" />
+                <h3 className="text-lg font-semibold mb-4">Project Details</h3>
+                <div className="grid grid-cols-1 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="overview"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Project Overview</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Provide an overview of the project" 
+                            rows={4}
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="challenges"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Challenges</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Describe challenges faced during the project" 
+                            rows={4}
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="solutions"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Solutions</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Explain solutions implemented for challenges" 
+                            rows={4}
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="results"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Results</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="Describe the project results and outcomes" 
+                            rows={4}
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              {/* Project Specifications Fields */}
+              <div className="mt-8">
+                <Separator className="my-6" />
+                <h3 className="text-lg font-semibold mb-4">Project Specifications</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="client"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Client</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Client name" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="location"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Location</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="Project location" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="size"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Project Size</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="E.g., 10,000 sq ft" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="completionDate"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Completion Date</FormLabel>
+                        <FormControl>
+                          <Input 
+                            placeholder="E.g., June 2023" 
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="servicesProvided"
+                    render={({ field }) => (
+                      <FormItem className="md:col-span-2">
+                        <FormLabel>Services Provided</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            placeholder="List services provided for this project" 
+                            rows={3}
+                            {...field} 
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
               </div>
 

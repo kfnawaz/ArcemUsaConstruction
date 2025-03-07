@@ -344,7 +344,13 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.userCurrentId++;
-    const user: User = { ...insertUser, id };
+    const user: User = { 
+      id,
+      username: insertUser.username,
+      password: insertUser.password,
+      role: insertUser.role || null,
+      email: insertUser.email || null
+    };
     this.users.set(id, user);
     return user;
   }
@@ -407,12 +413,31 @@ export class MemStorage implements IStorage {
   async createProject(project: InsertProject): Promise<Project> {
     const id = this.projectCurrentId++;
     const now = new Date();
+    
+    // Explicitly construct the object to handle optional fields properly
     const newProject: Project = { 
-      ...project, 
-      id, 
+      id,
+      title: project.title,
+      category: project.category,
+      description: project.description,
+      image: project.image,
+      featured: project.featured ?? null,
       createdAt: now,
-      featured: project.featured ?? null 
+      
+      // Handle optional fields with proper nulls
+      overview: project.overview || null,
+      challenges: project.challenges || null,
+      solutions: project.solutions || null,
+      results: project.results || null,
+      
+      // Project specifications
+      client: project.client || null,
+      location: project.location || null,
+      size: project.size || null,
+      completionDate: project.completionDate || null,
+      servicesProvided: project.servicesProvided || null
     };
+    
     this.projects.set(id, newProject);
     return newProject;
   }
@@ -440,7 +465,11 @@ export class MemStorage implements IStorage {
   async getProjectGallery(projectId: number): Promise<ProjectGallery[]> {
     return Array.from(this.projectGallery.values())
       .filter(image => image.projectId === projectId)
-      .sort((a, b) => a.displayOrder - b.displayOrder);
+      .sort((a, b) => {
+        const orderA = a.displayOrder !== null ? a.displayOrder : 0;
+        const orderB = b.displayOrder !== null ? b.displayOrder : 0;
+        return orderA - orderB;
+      });
   }
 
   async addProjectGalleryImage(galleryImage: InsertProjectGallery): Promise<ProjectGallery> {
@@ -541,11 +570,10 @@ export class MemStorage implements IStorage {
   
   async createBlogCategory(category: InsertBlogCategory): Promise<BlogCategory> {
     const id = this.blogCategoryCurrentId++;
-    const now = new Date();
     const newCategory: BlogCategory = { 
       ...category, 
       id, 
-      createdAt: now 
+      description: category.description || null
     };
     this.blogCategories.set(id, newCategory);
     return newCategory;
@@ -562,11 +590,9 @@ export class MemStorage implements IStorage {
   
   async createBlogTag(tag: InsertBlogTag): Promise<BlogTag> {
     const id = this.blogTagCurrentId++;
-    const now = new Date();
     const newTag: BlogTag = { 
       ...tag, 
-      id, 
-      createdAt: now 
+      id
     };
     this.blogTags.set(id, newTag);
     return newTag;
