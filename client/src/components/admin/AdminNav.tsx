@@ -1,4 +1,4 @@
-import { Link } from 'wouter';
+import { Link, useLocation } from 'wouter';
 import { 
   Home, 
   Building, 
@@ -12,6 +12,8 @@ type AdminNavProps = {
 };
 
 const AdminNav = ({ activePage }: AdminNavProps) => {
+  const [location, navigate] = useLocation();
+  
   const navItems = [
     { 
       href: '/admin', 
@@ -55,29 +57,29 @@ const AdminNav = ({ activePage }: AdminNavProps) => {
           <ul className="space-y-1">
             {navItems.map((item) => (
               <li key={item.href}>
-                <Link href={item.href}>
-                  <a 
-                    className={`flex items-center px-4 py-3 rounded-md transition-colors ${
-                      item.active 
-                        ? 'bg-[#C09E5E] text-white font-medium' 
-                        : 'hover:bg-gray-100 text-gray-700'
-                    }`}
-                  >
-                    {item.icon}
-                    {item.label}
-                  </a>
-                </Link>
+                <div 
+                  className={`flex items-center px-4 py-3 rounded-md transition-colors cursor-pointer ${
+                    item.active 
+                      ? 'bg-[#C09E5E] text-white font-medium' 
+                      : 'hover:bg-gray-100 text-gray-700'
+                  }`}
+                  onClick={() => navigate(item.href)}
+                >
+                  {item.icon}
+                  {item.label}
+                </div>
               </li>
             ))}
           </ul>
         </nav>
       </div>
       <div className="mt-4 bg-white rounded-lg shadow-md p-4">
-        <Link href="/">
-          <a className="text-sm text-gray-600 hover:text-[#C09E5E] transition-colors">
-            ← Return to Website
-          </a>
-        </Link>
+        <div 
+          onClick={() => navigate('/')}
+          className="text-sm text-gray-600 hover:text-[#C09E5E] transition-colors cursor-pointer"
+        >
+          ← Return to Website
+        </div>
       </div>
     </div>
   );
