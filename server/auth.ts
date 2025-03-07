@@ -6,7 +6,8 @@ import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
 import { User as SelectUser } from "@shared/schema";
-import memoryStoreFactory from "memorystore";
+import connectPgSimple from "connect-pg-simple";
+import { pool } from "./db";
 
 declare global {
   namespace Express {
@@ -30,15 +31,16 @@ async function comparePasswords(supplied: string, stored: string) {
 }
 
 export function setupAuth(app: Express) {
-  // Create a session store
-  const MemoryStore = memoryStoreFactory(session);
+  // Create a PostgreSQL session store
+  const PgSession = connectPgSimple(session);
   
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET || 'arcemusa-construction-secret',
     resave: false,
     saveUninitialized: false,
-    store: new MemoryStore({
-      checkPeriod: 86400000 // 24 hours
+    store: new PgSession({ 
+      pool,
+      createTableIfMissing: true
     })
   };
 
