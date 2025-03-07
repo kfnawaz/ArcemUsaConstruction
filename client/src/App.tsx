@@ -41,11 +41,37 @@ function AdminRoute({ component: Component }: { component: React.ComponentType }
 function Router() {
   // For navbar color change on scroll
   const [isScrolled, setIsScrolled] = useState(false);
-  const location = window.location.pathname;
+  const [currentPath, setCurrentPath] = useState(window.location.pathname);
   
   // Check if we're on an admin page
-  const isAdminPage = location.startsWith('/admin');
+  const isAdminPage = currentPath.startsWith('/admin');
+  
+  // Debug
+  console.log('Current path:', currentPath, 'Is admin page:', isAdminPage);
 
+  // Listen for location changes
+  useEffect(() => {
+    const handleLocationChange = () => {
+      setCurrentPath(window.location.pathname);
+    };
+
+    // Set up event listener for path changes
+    window.addEventListener('popstate', handleLocationChange);
+    
+    // Check for changes when clicking on links
+    const originalPushState = history.pushState;
+    history.pushState = function(...args) {
+      originalPushState.apply(this, args);
+      handleLocationChange();
+    };
+
+    return () => {
+      window.removeEventListener('popstate', handleLocationChange);
+      history.pushState = originalPushState;
+    };
+  }, []);
+
+  // Handle scroll events for navbar styling
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 100) {
