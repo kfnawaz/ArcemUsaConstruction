@@ -25,6 +25,20 @@ export const projects = pgTable("projects", {
   description: text("description").notNull(),
   image: text("image").notNull(), // Main image (keeping for backward compatibility)
   featured: boolean("featured").default(false),
+  
+  // Project details from detail page
+  overview: text("overview"),
+  challenges: text("challenges"),
+  solutions: text("solutions"),
+  results: text("results"),
+  
+  // Project specifications
+  client: text("client"),
+  location: text("location"),
+  size: text("size"),
+  completionDate: text("completion_date"),
+  servicesProvided: text("services_provided"),
+  
   createdAt: timestamp("created_at").defaultNow(),
 });
 
