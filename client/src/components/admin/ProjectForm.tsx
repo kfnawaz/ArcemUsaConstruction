@@ -62,7 +62,6 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
       // Project details
       overview: '',
       challenges: '',
-      solutions: '',
       results: '',
       // Project specifications
       client: '',
@@ -85,8 +84,7 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
         featured: project.featured === null ? false : project.featured,
         // Project details
         overview: project.overview ?? '',
-        challenges: project.challenges ?? '',
-        solutions: project.solutions ?? '',
+        challenges: (project.challenges ?? '') + (project.solutions ? '\n\n' + project.solutions : ''),
         results: project.results ?? '',
         // Project specifications
         client: project.client ?? '',
@@ -346,30 +344,11 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                     name="challenges"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Challenges</FormLabel>
+                        <FormLabel>Challenges and Solutions</FormLabel>
                         <FormControl>
                           <Textarea 
-                            placeholder="Describe challenges faced during the project" 
-                            rows={4}
-                            {...field}
-                            value={field.value ?? ''} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="solutions"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Solutions</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="Explain solutions implemented for challenges" 
-                            rows={4}
+                            placeholder="Describe challenges faced during the project and solutions implemented" 
+                            rows={6}
                             {...field}
                             value={field.value ?? ''} 
                           />

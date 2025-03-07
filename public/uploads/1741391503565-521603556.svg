@@ -1,0 +1,11 @@
+<svg width="500" height="600" viewBox="0 0 500 600" fill="none" xmlns="http://www.w3.org/2000/svg">
+<rect width="500" height="600" fill="black"/>
+<g id="Logo">
+<circle id="Ellipse 1" cx="250" cy="250" r="230" fill="#FFD23F"/>
+<g id="Group 2">
+<path id="Vector" d="M128.61 112.963L249.96 234.313L128.61 355.663L264.96 269.313L387.11 391.463L328.49 259.313L387.11 127.163L251.89 214.073L128.61 112.963Z" fill="#FFB86E"/>
+<path id="Vector_2" d="M129.74 124.09L251.09 245.44L129.74 366.79L266.09 280.44L388.24 402.59L329.62 270.44L388.24 138.29L253.02 225.201L129.74 124.09Z" fill="#4593E0"/>
+</g>
+</g>
+<text x="50%" y="550" text-anchor="middle" font-size="40" fill="white">MyWorkApp.io</text>
+</svg>
