@@ -18,10 +18,8 @@ const ProjectCard = ({ id, title, category, imageUrl }: ProjectCardProps) => {
       <div className="project-overlay absolute inset-0 flex flex-col justify-center items-center p-6 text-white">
         <h4 className="text-xl font-montserrat font-bold mb-2">{title}</h4>
         <p className="text-center mb-4">{category}</p>
-        <Link href={`/projects/${id}`}>
-          <a className="border border-white text-white py-2 px-6 font-montserrat text-sm tracking-wider inline-block hover:bg-white hover:text-black transition-colors">
-            VIEW PROJECT
-          </a>
+        <Link href={`/projects/${id}`} className="border border-white text-white py-2 px-6 font-montserrat text-sm tracking-wider inline-block hover:bg-white hover:text-black transition-colors">
+          VIEW PROJECT
         </Link>
       </div>
     </div>
