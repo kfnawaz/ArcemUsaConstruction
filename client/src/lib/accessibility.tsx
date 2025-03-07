@@ -254,12 +254,6 @@ export const injectAccessibilityChecker = (showAlways = false) => {
     document.body.appendChild(container);
   }
   
-  // Use createRoot in React 18+
-  if (typeof ReactDOM.createRoot === 'function') {
-    const root = ReactDOM.createRoot(container);
-    root.render(<AccessibilityChecker showAlways={showAlways} />);
-  } else {
-    // Fallback for older React versions
-    ReactDOM.render(<AccessibilityChecker showAlways={showAlways} />, container);
-  }
+  // Use direct render for React
+  ReactDOM.render(<AccessibilityChecker showAlways={showAlways} />, container);
 };

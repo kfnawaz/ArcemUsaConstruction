@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -41,6 +41,10 @@ function AdminRoute({ component: Component }: { component: React.ComponentType }
 function Router() {
   // For navbar color change on scroll
   const [isScrolled, setIsScrolled] = useState(false);
+  const location = window.location.pathname;
+  
+  // Check if we're on an admin page
+  const isAdminPage = location.startsWith('/admin');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -57,7 +61,9 @@ function Router() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Navbar isScrolled={isScrolled} />
+      {/* Only show Navbar on non-admin pages */}
+      {!isAdminPage && <Navbar isScrolled={isScrolled} />}
+      
       <main className="flex-grow">
         <Switch>
           <Route path="/" component={Home} />
@@ -111,8 +117,10 @@ function Router() {
           <Route component={NotFound} />
         </Switch>
       </main>
+      
       <BackToTop />
-      <Footer />
+      {/* Only show Footer on non-admin pages */}
+      {!isAdminPage && <Footer />}
     </div>
   );
 }
