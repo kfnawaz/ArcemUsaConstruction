@@ -1,9 +1,13 @@
-import { eq } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 import { db } from "./db";
 import { 
-  users, projects, blogPosts, testimonials, services, messages,
+  users, projects, blogCategories, blogTags, blogPosts, 
+  blogPostCategories, blogPostTags,
+  testimonials, services, messages,
   type User, type InsertUser, 
-  type Project, type InsertProject, 
+  type Project, type InsertProject,
+  type BlogCategory, type InsertBlogCategory,
+  type BlogTag, type InsertBlogTag, 
   type BlogPost, type InsertBlogPost, 
   type Testimonial, type InsertTestimonial, 
   type Service, type InsertService, 
@@ -97,6 +101,113 @@ export class DBStorage implements IStorage {
   async deleteBlogPost(id: number): Promise<boolean> {
     const result = await db.delete(blogPosts).where(eq(blogPosts.id, id)).returning();
     return result.length > 0;
+  }
+  
+  // Blog Categories
+  async getBlogCategories(): Promise<BlogCategory[]> {
+    return db.select().from(blogCategories);
+  }
+  
+  async getBlogCategory(id: number): Promise<BlogCategory | undefined> {
+    const results = await db.select().from(blogCategories).where(eq(blogCategories.id, id));
+    return results[0];
+  }
+  
+  async createBlogCategory(category: InsertBlogCategory): Promise<BlogCategory> {
+    const result = await db.insert(blogCategories).values(category).returning();
+    return result[0];
+  }
+  
+  // Blog Tags
+  async getBlogTags(): Promise<BlogTag[]> {
+    return db.select().from(blogTags);
+  }
+  
+  async getBlogTag(id: number): Promise<BlogTag | undefined> {
+    const results = await db.select().from(blogTags).where(eq(blogTags.id, id));
+    return results[0];
+  }
+  
+  async createBlogTag(tag: InsertBlogTag): Promise<BlogTag> {
+    const result = await db.insert(blogTags).values(tag).returning();
+    return result[0];
+  }
+  
+  // Blog Post Categories
+  async getBlogPostCategories(postId: number): Promise<BlogCategory[]> {
+    const results = await db
+      .select({
+        id: blogCategories.id,
+        name: blogCategories.name,
+        slug: blogCategories.slug,
+        description: blogCategories.description
+      })
+      .from(blogCategories)
+      .innerJoin(blogPostCategories, 
+        eq(blogCategories.id, blogPostCategories.categoryId))
+      .where(eq(blogPostCategories.postId, postId));
+      
+    return results;
+  }
+  
+  async linkBlogPostCategories(postId: number, categoryIds: number[]): Promise<void> {
+    if (categoryIds.length === 0) return;
+    
+    const values = categoryIds.map(categoryId => ({
+      postId,
+      categoryId
+    }));
+    
+    await db.insert(blogPostCategories).values(values);
+  }
+  
+  async updateBlogPostCategories(postId: number, categoryIds: number[]): Promise<void> {
+    // Delete existing relationships
+    await db.delete(blogPostCategories)
+      .where(eq(blogPostCategories.postId, postId));
+      
+    // Add new relationships if any
+    if (categoryIds.length > 0) {
+      await this.linkBlogPostCategories(postId, categoryIds);
+    }
+  }
+  
+  // Blog Post Tags
+  async getBlogPostTags(postId: number): Promise<BlogTag[]> {
+    const results = await db
+      .select({
+        id: blogTags.id,
+        name: blogTags.name,
+        slug: blogTags.slug
+      })
+      .from(blogTags)
+      .innerJoin(blogPostTags, 
+        eq(blogTags.id, blogPostTags.tagId))
+      .where(eq(blogPostTags.postId, postId));
+      
+    return results;
+  }
+  
+  async linkBlogPostTags(postId: number, tagIds: number[]): Promise<void> {
+    if (tagIds.length === 0) return;
+    
+    const values = tagIds.map(tagId => ({
+      postId,
+      tagId
+    }));
+    
+    await db.insert(blogPostTags).values(values);
+  }
+  
+  async updateBlogPostTags(postId: number, tagIds: number[]): Promise<void> {
+    // Delete existing relationships
+    await db.delete(blogPostTags)
+      .where(eq(blogPostTags.postId, postId));
+      
+    // Add new relationships if any
+    if (tagIds.length > 0) {
+      await this.linkBlogPostTags(postId, tagIds);
+    }
   }
 
   // Testimonials

@@ -1,6 +1,8 @@
 import {
   users, type User, type InsertUser,
   projects, type Project, type InsertProject,
+  blogCategories, type BlogCategory, type InsertBlogCategory,
+  blogTags, type BlogTag, type InsertBlogTag,
   blogPosts, type BlogPost, type InsertBlogPost,
   testimonials, type Testimonial, type InsertTestimonial,
   services, type Service, type InsertService,
@@ -116,6 +118,48 @@ export class MemStorage implements IStorage {
 
   // Initialize with sample data
   private initializeData() {
+    // Add default blog categories
+    const defaultCategories = [
+      {
+        name: "Construction",
+        slug: "construction",
+        description: "Articles about construction techniques, innovations, and best practices"
+      },
+      {
+        name: "Architecture",
+        slug: "architecture",
+        description: "Articles about architectural design, trends, and innovations"
+      },
+      {
+        name: "Technology",
+        slug: "technology",
+        description: "Articles about technology in construction and building management"
+      },
+      {
+        name: "Sustainability",
+        slug: "sustainability",
+        description: "Articles about sustainable building practices and green construction"
+      }
+    ];
+    
+    defaultCategories.forEach(category => {
+      this.createBlogCategory(category as InsertBlogCategory);
+    });
+    
+    // Add default blog tags
+    const defaultTags = [
+      { name: "Green Building", slug: "green-building" },
+      { name: "Commercial", slug: "commercial" },
+      { name: "Residential", slug: "residential" },
+      { name: "Innovation", slug: "innovation" },
+      { name: "Design", slug: "design" },
+      { name: "Safety", slug: "safety" }
+    ];
+    
+    defaultTags.forEach(tag => {
+      this.createBlogTag(tag as InsertBlogTag);
+    });
+    
     // Add default services
     const defaultServices = [
       {
