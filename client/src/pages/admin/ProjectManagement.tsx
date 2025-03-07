@@ -26,9 +26,12 @@ const ProjectManagement = () => {
   const { toast } = useToast();
 
   // Get URL params
-  const searchParams = new URLSearchParams(location.split('?')[1]);
+  const searchParams = new URLSearchParams(location.split('?')[1] || '');
   const action = searchParams.get('action');
   const editId = searchParams.get('edit');
+  
+  console.log("Current location:", location);
+  console.log("URL params:", { action, editId });
 
   // States
   const [searchQuery, setSearchQuery] = useState('');
@@ -111,6 +114,7 @@ const ProjectManagement = () => {
 
   // Open edit project form
   const handleEdit = (id: number) => {
+    console.log("Edit clicked for project ID:", id);
     setLocation(`/admin/projects?edit=${id}`);
   };
 

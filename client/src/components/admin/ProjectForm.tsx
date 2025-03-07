@@ -40,12 +40,13 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
   // Set form values when project data is loaded
   useEffect(() => {
     if (project) {
+      console.log("Setting form values for project:", project);
       form.reset({
         title: project.title,
         category: project.category,
         description: project.description,
         image: project.image,
-        featured: project.featured,
+        featured: project.featured === null ? false : project.featured,
       });
     }
   }, [form, project]);

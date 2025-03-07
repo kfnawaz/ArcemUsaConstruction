@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 import { Project, InsertProject } from '@shared/schema';
@@ -14,6 +14,13 @@ export const useProject = (projectId?: number) => {
     queryKey: [`/api/projects/${projectId}`],
     enabled: !!projectId,
   });
+  
+  // Log project data when it changes
+  useEffect(() => {
+    if (project) {
+      console.log("Project data loaded:", project);
+    }
+  }, [project]);
 
   // Create project mutation
   const createMutation = useMutation({
