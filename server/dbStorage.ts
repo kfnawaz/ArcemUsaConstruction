@@ -44,7 +44,13 @@ export class DBStorage implements IStorage {
   }
 
   async getFeaturedProjects(): Promise<Project[]> {
-    return db.select().from(projects).where(eq(projects.featured, true));
+    try {
+      const featuredProjects = await db.select().from(projects).where(eq(projects.featured, true));
+      return featuredProjects;
+    } catch (error) {
+      console.error("Error fetching featured projects:", error);
+      return [];
+    }
   }
 
   async createProject(project: InsertProject): Promise<Project> {
