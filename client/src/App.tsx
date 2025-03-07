@@ -26,7 +26,7 @@ import MessagesManagement from "@/pages/admin/MessagesManagement";
 import Settings from "@/pages/admin/Settings";
 import AccessibilityChecker from "@/pages/admin/AccessibilityChecker";
 import NotFound from "@/pages/not-found";
-import { AccessibilityChecker as A11yFloatingButton } from "@/lib/accessibility";
+import A11yFloatingButton from "@/components/common/A11yFloatingButton";
 
 function AdminRoute({ component: Component }: { component: React.ComponentType }) {
   return (

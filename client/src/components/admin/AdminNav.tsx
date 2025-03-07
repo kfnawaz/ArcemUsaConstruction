@@ -45,6 +45,12 @@ const AdminNav = ({ activePage }: AdminNavProps) => {
       label: 'Settings', 
       icon: <Settings className="w-5 h-5 mr-3" />,
       active: activePage === 'settings'
+    },
+    { 
+      href: '/admin/accessibility', 
+      label: 'Accessibility', 
+      icon: <Eye className="w-5 h-5 mr-3" />,
+      active: activePage === 'accessibility'
     }
   ];
 
