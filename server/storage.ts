@@ -24,6 +24,16 @@ export interface IStorage {
   updateProject(id: number, project: Partial<InsertProject>): Promise<Project | undefined>;
   deleteProject(id: number): Promise<boolean>;
   
+  // Blog Categories
+  getBlogCategories(): Promise<BlogCategory[]>;
+  getBlogCategory(id: number): Promise<BlogCategory | undefined>;
+  createBlogCategory(category: InsertBlogCategory): Promise<BlogCategory>;
+  
+  // Blog Tags
+  getBlogTags(): Promise<BlogTag[]>;
+  getBlogTag(id: number): Promise<BlogTag | undefined>;
+  createBlogTag(tag: InsertBlogTag): Promise<BlogTag>;
+  
   // Blog Posts
   getBlogPosts(): Promise<BlogPost[]>;
   getPublishedBlogPosts(): Promise<BlogPost[]>;
@@ -32,6 +42,16 @@ export interface IStorage {
   createBlogPost(post: InsertBlogPost): Promise<BlogPost>;
   updateBlogPost(id: number, post: Partial<InsertBlogPost>): Promise<BlogPost | undefined>;
   deleteBlogPost(id: number): Promise<boolean>;
+  
+  // Blog Post Categories
+  getBlogPostCategories(postId: number): Promise<BlogCategory[]>;
+  linkBlogPostCategories(postId: number, categoryIds: number[]): Promise<void>;
+  updateBlogPostCategories(postId: number, categoryIds: number[]): Promise<void>;
+  
+  // Blog Post Tags
+  getBlogPostTags(postId: number): Promise<BlogTag[]>;
+  linkBlogPostTags(postId: number, tagIds: number[]): Promise<void>;
+  updateBlogPostTags(postId: number, tagIds: number[]): Promise<void>;
   
   // Testimonials
   getTestimonials(): Promise<Testimonial[]>;
@@ -51,13 +71,19 @@ export interface IStorage {
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private projects: Map<number, Project>;
+  private blogCategories: Map<number, BlogCategory>;
+  private blogTags: Map<number, BlogTag>;
   private blogPosts: Map<number, BlogPost>;
+  private blogPostCategories: Map<number, Set<number>>;  // postId -> Set of categoryIds
+  private blogPostTags: Map<number, Set<number>>;        // postId -> Set of tagIds
   private testimonials: Map<number, Testimonial>;
   private services: Map<number, Service>;
   private messages: Map<number, Message>;
   
   userCurrentId: number;
   projectCurrentId: number;
+  blogCategoryCurrentId: number;
+  blogTagCurrentId: number;
   blogPostCurrentId: number;
   testimonialCurrentId: number;
   serviceCurrentId: number;
@@ -66,13 +92,19 @@ export class MemStorage implements IStorage {
   constructor() {
     this.users = new Map();
     this.projects = new Map();
+    this.blogCategories = new Map();
+    this.blogTags = new Map();
     this.blogPosts = new Map();
+    this.blogPostCategories = new Map();
+    this.blogPostTags = new Map();
     this.testimonials = new Map();
     this.services = new Map();
     this.messages = new Map();
     
     this.userCurrentId = 1;
     this.projectCurrentId = 1;
+    this.blogCategoryCurrentId = 1;
+    this.blogTagCurrentId = 1;
     this.blogPostCurrentId = 1;
     this.testimonialCurrentId = 1;
     this.serviceCurrentId = 1;
@@ -348,7 +380,92 @@ export class MemStorage implements IStorage {
   }
   
   async deleteBlogPost(id: number): Promise<boolean> {
+    // Also clean up any categories and tags references
+    this.blogPostCategories.delete(id);
+    this.blogPostTags.delete(id);
     return this.blogPosts.delete(id);
+  }
+  
+  // Blog Categories
+  async getBlogCategories(): Promise<BlogCategory[]> {
+    return Array.from(this.blogCategories.values());
+  }
+  
+  async getBlogCategory(id: number): Promise<BlogCategory | undefined> {
+    return this.blogCategories.get(id);
+  }
+  
+  async createBlogCategory(category: InsertBlogCategory): Promise<BlogCategory> {
+    const id = this.blogCategoryCurrentId++;
+    const now = new Date();
+    const newCategory: BlogCategory = { 
+      ...category, 
+      id, 
+      createdAt: now 
+    };
+    this.blogCategories.set(id, newCategory);
+    return newCategory;
+  }
+  
+  // Blog Tags
+  async getBlogTags(): Promise<BlogTag[]> {
+    return Array.from(this.blogTags.values());
+  }
+  
+  async getBlogTag(id: number): Promise<BlogTag | undefined> {
+    return this.blogTags.get(id);
+  }
+  
+  async createBlogTag(tag: InsertBlogTag): Promise<BlogTag> {
+    const id = this.blogTagCurrentId++;
+    const now = new Date();
+    const newTag: BlogTag = { 
+      ...tag, 
+      id, 
+      createdAt: now 
+    };
+    this.blogTags.set(id, newTag);
+    return newTag;
+  }
+  
+  // Blog Post Categories
+  async getBlogPostCategories(postId: number): Promise<BlogCategory[]> {
+    const categoryIds = this.blogPostCategories.get(postId);
+    if (!categoryIds || categoryIds.size === 0) return [];
+    
+    return Array.from(categoryIds).map(categoryId => 
+      this.blogCategories.get(categoryId)
+    ).filter(Boolean) as BlogCategory[];
+  }
+  
+  async linkBlogPostCategories(postId: number, categoryIds: number[]): Promise<void> {
+    const categorySet = new Set(categoryIds);
+    this.blogPostCategories.set(postId, categorySet);
+  }
+  
+  async updateBlogPostCategories(postId: number, categoryIds: number[]): Promise<void> {
+    // Simply replace the existing categories
+    await this.linkBlogPostCategories(postId, categoryIds);
+  }
+  
+  // Blog Post Tags
+  async getBlogPostTags(postId: number): Promise<BlogTag[]> {
+    const tagIds = this.blogPostTags.get(postId);
+    if (!tagIds || tagIds.size === 0) return [];
+    
+    return Array.from(tagIds).map(tagId => 
+      this.blogTags.get(tagId)
+    ).filter(Boolean) as BlogTag[];
+  }
+  
+  async linkBlogPostTags(postId: number, tagIds: number[]): Promise<void> {
+    const tagSet = new Set(tagIds);
+    this.blogPostTags.set(postId, tagSet);
+  }
+  
+  async updateBlogPostTags(postId: number, tagIds: number[]): Promise<void> {
+    // Simply replace the existing tags
+    await this.linkBlogPostTags(postId, tagIds);
   }
   
   // Testimonials

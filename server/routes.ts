@@ -142,6 +142,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Blog Categories Routes
+  app.get(`${apiRouter}/blog/categories`, async (req: Request, res: Response) => {
+    try {
+      const categories = await storage.getBlogCategories();
+      res.json(categories);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch blog categories" });
+    }
+  });
+  
+  app.post(`${apiRouter}/blog/categories`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const categoryData = insertBlogCategorySchema.parse(req.body);
+      const category = await storage.createBlogCategory(categoryData);
+      res.status(201).json(category);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid category data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create category" });
+    }
+  });
+  
+  // Blog Tags Routes
+  app.get(`${apiRouter}/blog/tags`, async (req: Request, res: Response) => {
+    try {
+      const tags = await storage.getBlogTags();
+      res.json(tags);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch blog tags" });
+    }
+  });
+  
+  app.post(`${apiRouter}/blog/tags`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const tagData = insertBlogTagSchema.parse(req.body);
+      const tag = await storage.createBlogTag(tagData);
+      res.status(201).json(tag);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid tag data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create tag" });
+    }
+  });
+  
   app.get(`${apiRouter}/blog/:id`, async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
@@ -154,7 +200,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Blog post not found" });
       }
       
-      res.json(post);
+      // Get post categories and tags
+      const categories = await storage.getBlogPostCategories(id);
+      const tags = await storage.getBlogPostTags(id);
+      
+      // Merge post with its categories and tags
+      const postWithRelations = {
+        ...post,
+        categories,
+        tags
+      };
+      
+      res.json(postWithRelations);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch blog post" });
     }
@@ -169,7 +226,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Blog post not found" });
       }
       
-      res.json(post);
+      // Get post categories and tags
+      const categories = await storage.getBlogPostCategories(post.id);
+      const tags = await storage.getBlogPostTags(post.id);
+      
+      // Merge post with its categories and tags
+      const postWithRelations = {
+        ...post,
+        categories,
+        tags
+      };
+      
+      res.json(postWithRelations);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch blog post" });
     }
@@ -178,13 +246,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin-only endpoints for blog management
   app.post(`${apiRouter}/blog`, isAdmin, async (req: Request, res: Response) => {
     try {
-      const postData = insertBlogPostSchema.parse(req.body);
-      const post = await storage.createBlogPost(postData);
+      // Use the extended schema that includes categoryIds and tagIds
+      const postData = extendedInsertBlogPostSchema.parse(req.body);
+      
+      // Extract category and tag IDs
+      const { categoryIds, tagIds, ...blogPostData } = postData;
+      
+      // Create the blog post
+      const post = await storage.createBlogPost(blogPostData);
+      
+      // Link categories if provided
+      if (categoryIds && categoryIds.length > 0) {
+        await storage.linkBlogPostCategories(post.id, categoryIds);
+      }
+      
+      // Link tags if provided
+      if (tagIds && tagIds.length > 0) {
+        await storage.linkBlogPostTags(post.id, tagIds);
+      }
+      
       res.status(201).json(post);
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid blog post data", errors: error.errors });
       }
+      console.error("Error creating blog post:", error);
       res.status(500).json({ message: "Failed to create blog post" });
     }
   });
@@ -196,11 +282,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid blog post ID" });
       }
       
-      const postData = insertBlogPostSchema.partial().parse(req.body);
-      const post = await storage.updateBlogPost(id, postData);
+      // Use the extended schema for update
+      const postData = extendedInsertBlogPostSchema.partial().parse(req.body);
+      
+      // Extract category and tag IDs
+      const { categoryIds, tagIds, ...blogPostData } = postData;
+      
+      // Update the blog post
+      const post = await storage.updateBlogPost(id, blogPostData);
       
       if (!post) {
         return res.status(404).json({ message: "Blog post not found" });
+      }
+      
+      // Update categories if provided
+      if (categoryIds) {
+        await storage.updateBlogPostCategories(id, categoryIds);
+      }
+      
+      // Update tags if provided
+      if (tagIds) {
+        await storage.updateBlogPostTags(id, tagIds);
       }
       
       res.json(post);
@@ -208,6 +310,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid blog post data", errors: error.errors });
       }
+      console.error("Error updating blog post:", error);
       res.status(500).json({ message: "Failed to update blog post" });
     }
   });
