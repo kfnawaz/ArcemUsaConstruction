@@ -1,4 +1,4 @@
-import type { Express, Request, Response, NextFunction } from "express";
+import express, { type Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { 
@@ -12,6 +12,8 @@ import {
 } from "@shared/schema";
 import { z } from "zod";
 import { setupAuth } from "./auth";
+import { upload, getFileUrl } from "./utils/fileUpload";
+import path from "path";
 
 // Authentication middleware
 const isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
@@ -519,6 +521,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to mark message as read" });
     }
   });
+
+  // File Upload Route
+  app.post(`${apiRouter}/upload`, isAdmin, upload.single('file'), (req: Request, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded" });
+      }
+      
+      const fileUrl = getFileUrl(req.file.filename);
+      res.status(201).json({ 
+        url: fileUrl,
+        filename: req.file.filename,
+        originalname: req.file.originalname,
+        mimetype: req.file.mimetype,
+        size: req.file.size
+      });
+    } catch (error) {
+      console.error("File upload error:", error);
+      res.status(500).json({ message: "Failed to upload file" });
+    }
+  });
+
+  // Serve static files from public directory
+  app.use('/uploads', (req, res, next) => {
+    // Set cache headers
+    res.setHeader('Cache-Control', 'public, max-age=86400'); // 24 hours
+    next();
+  }, express.static(path.join(process.cwd(), 'public/uploads')));
 
   const httpServer = createServer(app);
   return httpServer;

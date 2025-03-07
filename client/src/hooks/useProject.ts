@@ -186,6 +186,35 @@ export const useProject = (projectId?: number) => {
     await deleteGalleryImageMutation.mutateAsync(id);
   };
 
+  // Upload file and return URL
+  const uploadFile = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+      
+      const data = await response.json();
+      return data.url;
+    } catch (error) {
+      console.error('File upload error:', error);
+      toast({
+        title: "Upload failed",
+        description: "There was an error uploading your file. Please try again.",
+        variant: "destructive"
+      });
+      throw error;
+    }
+  };
+
   return {
     project,
     galleryImages,
@@ -195,6 +224,7 @@ export const useProject = (projectId?: number) => {
     isSubmitting,
     addGalleryImage,
     updateGalleryImage,
-    deleteGalleryImage
+    deleteGalleryImage,
+    uploadFile
   };
 };
