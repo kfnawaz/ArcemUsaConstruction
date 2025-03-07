@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
 import { cn } from '@/lib/utils';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, User } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 type NavbarProps = {
   isScrolled: boolean;
@@ -10,6 +11,7 @@ type NavbarProps = {
 const Navbar = ({ isScrolled }: NavbarProps) => {
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { isAuthenticated, user } = useAuth();
   
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -59,7 +61,7 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
           </Link>
           
           {/* Desktop Navigation */}
-          <div className="hidden md:flex space-x-8">
+          <div className="hidden md:flex items-center space-x-8">
             {navItems.map((item) => (
               <Link 
                 key={item.href}
@@ -72,6 +74,15 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
                 {item.label}
               </Link>
             ))}
+            
+            {/* Login/Admin Button */}
+            <Link 
+              href={isAuthenticated ? "/admin" : "/auth/login"} 
+              className="bg-[#C09E5E] hover:bg-[#A98D54] text-white px-4 py-2 rounded-sm flex items-center space-x-1 font-montserrat text-sm transition-colors"
+            >
+              <User className="w-4 h-4 mr-1" />
+              {isAuthenticated ? "ADMIN" : "LOGIN"}
+            </Link>
           </div>
           
           {/* Mobile menu button */}
@@ -111,6 +122,16 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
                 {item.label}
               </Link>
             ))}
+            
+            {/* Mobile Login/Admin Button */}
+            <Link 
+              href={isAuthenticated ? "/admin" : "/auth/login"}
+              className="bg-[#C09E5E] hover:bg-[#A98D54] text-white px-4 py-2 rounded-sm flex items-center justify-center space-x-1 font-montserrat text-sm transition-colors"
+              onClick={closeMobileMenu}
+            >
+              <User className="w-4 h-4 mr-1" />
+              {isAuthenticated ? "ADMIN" : "LOGIN"}
+            </Link>
           </div>
         </div>
       </div>

@@ -64,7 +64,13 @@ function Router() {
           <Route path="/blog" component={Blog} />
           <Route path="/blog/:slug" component={BlogPost} />
           <Route path="/contact" component={Contact} />
-          <Route path="/auth/login" component={Login} />
+          <Route path="/auth">
+            <Login />
+          </Route>
+          
+          <Route path="/auth/login">
+            <Login />
+          </Route>
           
           {/* Protected Admin Routes */}
           <Route path="/admin">
