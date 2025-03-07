@@ -23,8 +23,8 @@ import Dashboard from "@/pages/admin/Dashboard";
 import ProjectManagement from "@/pages/admin/ProjectManagement";
 import BlogManagement from "@/pages/admin/BlogManagement";
 import MessagesManagement from "@/pages/admin/MessagesManagement";
-import Settings from "@/pages/admin/Settings";
-import AccessibilityChecker from "@/pages/admin/AccessibilityChecker";
+import SettingsPage from "@/pages/admin/Settings";
+import AccessibilityCheckerPage from "@/pages/admin/AccessibilityChecker";
 import NotFound from "@/pages/not-found";
 import A11yFloatingButton from "@/components/common/A11yFloatingButton";
 
@@ -131,12 +131,12 @@ function Router() {
           </Route>
           <Route path="/admin/settings">
             <ProtectedRoute>
-              <Settings />
+              <SettingsPage />
             </ProtectedRoute>
           </Route>
           <Route path="/admin/accessibility">
             <ProtectedRoute>
-              <AccessibilityChecker />
+              <AccessibilityCheckerPage />
             </ProtectedRoute>
           </Route>
           

@@ -3,7 +3,7 @@ import AdminNav from '@/components/admin/AdminNav';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, Check, LinkIcon, Layers, ImageIcon, Anchor } from 'lucide-react';
+import { AlertTriangle, Check, LinkIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { checkAccessibility } from '@/lib/accessibility';
 import { useAuth } from '@/contexts/AuthContext';
@@ -188,206 +188,208 @@ const AccessibilityCheckerPage = () => {
   }
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="flex flex-col md:flex-row gap-8">
-        <AdminNav activePage="accessibility" />
-        
-        <div className="flex-1">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold mb-2">Accessibility Checker</h1>
-            <p className="text-gray-600 mb-4">
-              Check your website for accessibility issues and ensure compliance with WCAG guidelines.
-            </p>
-            
-            <div className="flex flex-wrap gap-4 mb-8">
-              <Button 
-                onClick={runCheck} 
-                disabled={isChecking}
-                className="bg-[#C09E5E] hover:bg-[#9a7e48]"
-              >
-                {isChecking ? 
-                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Running check...</> : 
-                  <><AlertTriangle className="mr-2 h-4 w-4" /> Run Accessibility Check</>
-                }
-              </Button>
+    <div className="min-h-screen pt-32 pb-20 bg-gray-50">
+      <div className="container mx-auto px-4 md:px-8">
+        <div className="flex flex-col md:flex-row gap-8">
+          <AdminNav activePage="accessibility" />
+          
+          <div className="flex-1">
+            <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+              <h1 className="text-2xl font-montserrat font-bold mb-2">Accessibility Checker</h1>
+              <p className="text-gray-600 mb-4">
+                Check your website for accessibility issues and ensure compliance with WCAG guidelines.
+              </p>
               
-              {lastChecked && (
-                <p className="text-sm text-gray-500 flex items-center mt-2">
-                  Last checked: {lastChecked.toLocaleString()}
-                </p>
-              )}
-            </div>
-            
-            {/* Summary Cards */}
-            {violations.length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-lg">Total Issues</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold">{violations.length}</div>
-                  </CardContent>
-                </Card>
+              <div className="flex flex-wrap gap-4 mb-8">
+                <Button 
+                  onClick={runCheck} 
+                  disabled={isChecking}
+                  className="bg-[#C09E5E] hover:bg-[#9a7e48]"
+                >
+                  {isChecking ? 
+                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Running check...</> : 
+                    <><AlertTriangle className="mr-2 h-4 w-4" /> Run Accessibility Check</>
+                  }
+                </Button>
                 
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-lg text-red-600">Critical</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold">{getSeverityCount(violations, 'critical')}</div>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-lg text-orange-600">Serious</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold">{getSeverityCount(violations, 'serious')}</div>
-                  </CardContent>
-                </Card>
-                
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-lg text-yellow-600">Moderate/Minor</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-3xl font-bold">
-                      {getSeverityCount(violations, 'moderate') + getSeverityCount(violations, 'minor')}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
-            
-            {/* Tab Interface */}
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
-              <TabsList className="mb-4 border">
-                <TabsTrigger value="all" className="data-[state=active]:bg-[#C09E5E] data-[state=active]:text-white">
-                  All Issues ({violations.length})
-                </TabsTrigger>
-                <TabsTrigger value="contrast" className="data-[state=active]:bg-[#C09E5E] data-[state=active]:text-white">
-                  Contrast ({groups.contrast.length})
-                </TabsTrigger>
-                <TabsTrigger value="aria" className="data-[state=active]:bg-[#C09E5E] data-[state=active]:text-white">
-                  ARIA ({groups.aria.length})
-                </TabsTrigger>
-                <TabsTrigger value="structure" className="data-[state=active]:bg-[#C09E5E] data-[state=active]:text-white">
-                  Structure ({groups.structure.length})
-                </TabsTrigger>
-                <TabsTrigger value="forms" className="data-[state=active]:bg-[#C09E5E] data-[state=active]:text-white">
-                  Forms ({groups.forms.length})
-                </TabsTrigger>
-                <TabsTrigger value="images" className="data-[state=active]:bg-[#C09E5E] data-[state=active]:text-white">
-                  Images ({groups.images.length})
-                </TabsTrigger>
-                <TabsTrigger value="links" className="data-[state=active]:bg-[#C09E5E] data-[state=active]:text-white">
-                  Links ({groups.links.length})
-                </TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="all" className="border rounded-lg p-4">
-                {isChecking ? (
-                  <div className="flex justify-center items-center py-12">
-                    <Loader2 className="h-8 w-8 animate-spin mr-2" />
-                    <span>Checking for accessibility issues...</span>
-                  </div>
-                ) : violations.length > 0 ? (
-                  renderViolationsList(violations)
-                ) : (
-                  <div className="flex flex-col items-center justify-center py-12">
-                    <Check className="h-12 w-12 text-green-500 mb-4" />
-                    <p className="text-lg font-medium">No accessibility issues found!</p>
-                    <p className="text-gray-600 mt-2">
-                      Your website passed all accessibility checks. Great job!
-                    </p>
-                  </div>
+                {lastChecked && (
+                  <p className="text-sm text-gray-500 flex items-center mt-2">
+                    Last checked: {lastChecked.toLocaleString()}
+                  </p>
                 )}
-              </TabsContent>
+              </div>
               
-              <TabsContent value="contrast" className="border rounded-lg p-4">
-                {renderViolationsList(groups.contrast)}
-              </TabsContent>
+              {/* Summary Cards */}
+              {violations.length > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg">Total Issues</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold">{violations.length}</div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg text-red-600">Critical</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold">{getSeverityCount(violations, 'critical')}</div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg text-orange-600">Serious</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold">{getSeverityCount(violations, 'serious')}</div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg text-yellow-600">Moderate/Minor</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold">
+                        {getSeverityCount(violations, 'moderate') + getSeverityCount(violations, 'minor')}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
               
-              <TabsContent value="aria" className="border rounded-lg p-4">
-                {renderViolationsList(groups.aria)}
-              </TabsContent>
+              {/* Tab Interface */}
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
+                <TabsList className="mb-4 border">
+                  <TabsTrigger value="all" className="data-[state=active]:bg-[#C09E5E] data-[state=active]:text-white">
+                    All Issues ({violations.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="contrast" className="data-[state=active]:bg-[#C09E5E] data-[state=active]:text-white">
+                    Contrast ({groups.contrast.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="aria" className="data-[state=active]:bg-[#C09E5E] data-[state=active]:text-white">
+                    ARIA ({groups.aria.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="structure" className="data-[state=active]:bg-[#C09E5E] data-[state=active]:text-white">
+                    Structure ({groups.structure.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="forms" className="data-[state=active]:bg-[#C09E5E] data-[state=active]:text-white">
+                    Forms ({groups.forms.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="images" className="data-[state=active]:bg-[#C09E5E] data-[state=active]:text-white">
+                    Images ({groups.images.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="links" className="data-[state=active]:bg-[#C09E5E] data-[state=active]:text-white">
+                    Links ({groups.links.length})
+                  </TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="all" className="border rounded-lg p-4">
+                  {isChecking ? (
+                    <div className="flex justify-center items-center py-12">
+                      <Loader2 className="h-8 w-8 animate-spin mr-2" />
+                      <span>Checking for accessibility issues...</span>
+                    </div>
+                  ) : violations.length > 0 ? (
+                    renderViolationsList(violations)
+                  ) : (
+                    <div className="flex flex-col items-center justify-center py-12">
+                      <Check className="h-12 w-12 text-green-500 mb-4" />
+                      <p className="text-lg font-medium">No accessibility issues found!</p>
+                      <p className="text-gray-600 mt-2">
+                        Your website passed all accessibility checks. Great job!
+                      </p>
+                    </div>
+                  )}
+                </TabsContent>
+                
+                <TabsContent value="contrast" className="border rounded-lg p-4">
+                  {renderViolationsList(groups.contrast)}
+                </TabsContent>
+                
+                <TabsContent value="aria" className="border rounded-lg p-4">
+                  {renderViolationsList(groups.aria)}
+                </TabsContent>
+                
+                <TabsContent value="structure" className="border rounded-lg p-4">
+                  {renderViolationsList(groups.structure)}
+                </TabsContent>
+                
+                <TabsContent value="forms" className="border rounded-lg p-4">
+                  {renderViolationsList(groups.forms)}
+                </TabsContent>
+                
+                <TabsContent value="images" className="border rounded-lg p-4">
+                  {renderViolationsList(groups.images)}
+                </TabsContent>
+                
+                <TabsContent value="links" className="border rounded-lg p-4">
+                  {renderViolationsList(groups.links)}
+                </TabsContent>
+              </Tabs>
               
-              <TabsContent value="structure" className="border rounded-lg p-4">
-                {renderViolationsList(groups.structure)}
-              </TabsContent>
-              
-              <TabsContent value="forms" className="border rounded-lg p-4">
-                {renderViolationsList(groups.forms)}
-              </TabsContent>
-              
-              <TabsContent value="images" className="border rounded-lg p-4">
-                {renderViolationsList(groups.images)}
-              </TabsContent>
-              
-              <TabsContent value="links" className="border rounded-lg p-4">
-                {renderViolationsList(groups.links)}
-              </TabsContent>
-            </Tabs>
-            
-            {/* Accessibility Guidelines */}
-            <Card className="mt-8">
-              <CardHeader>
-                <CardTitle>Accessibility Resources</CardTitle>
-                <CardDescription>
-                  Learn more about web accessibility and how to fix common issues.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2">
-                  <li>
-                    <a 
-                      href="https://www.w3.org/WAI/WCAG21/quickref/" 
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline flex items-center"
-                    >
-                      <LinkIcon className="h-4 w-4 mr-2" />
-                      WCAG 2.1 Quick Reference
-                    </a>
-                  </li>
-                  <li>
-                    <a 
-                      href="https://webaim.org/articles/contrast/" 
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline flex items-center"
-                    >
-                      <LinkIcon className="h-4 w-4 mr-2" />
-                      WebAIM: Color Contrast Checker
-                    </a>
-                  </li>
-                  <li>
-                    <a 
-                      href="https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA" 
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline flex items-center"
-                    >
-                      <LinkIcon className="h-4 w-4 mr-2" />
-                      MDN: ARIA - Accessible Rich Internet Applications
-                    </a>
-                  </li>
-                  <li>
-                    <a 
-                      href="https://developer.mozilla.org/en-US/docs/Learn/Accessibility/HTML" 
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline flex items-center"
-                    >
-                      <LinkIcon className="h-4 w-4 mr-2" />
-                      MDN: HTML and Accessibility
-                    </a>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
+              {/* Accessibility Guidelines */}
+              <Card className="mt-8">
+                <CardHeader>
+                  <CardTitle>Accessibility Resources</CardTitle>
+                  <CardDescription>
+                    Learn more about web accessibility and how to fix common issues.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2">
+                    <li>
+                      <a 
+                        href="https://www.w3.org/WAI/WCAG21/quickref/" 
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline flex items-center"
+                      >
+                        <LinkIcon className="h-4 w-4 mr-2" />
+                        WCAG 2.1 Quick Reference
+                      </a>
+                    </li>
+                    <li>
+                      <a 
+                        href="https://webaim.org/articles/contrast/" 
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline flex items-center"
+                      >
+                        <LinkIcon className="h-4 w-4 mr-2" />
+                        WebAIM: Color Contrast Checker
+                      </a>
+                    </li>
+                    <li>
+                      <a 
+                        href="https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA" 
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline flex items-center"
+                      >
+                        <LinkIcon className="h-4 w-4 mr-2" />
+                        MDN: ARIA - Accessible Rich Internet Applications
+                      </a>
+                    </li>
+                    <li>
+                      <a 
+                        href="https://developer.mozilla.org/en-US/docs/Learn/Accessibility/HTML" 
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline flex items-center"
+                      >
+                        <LinkIcon className="h-4 w-4 mr-2" />
+                        MDN: HTML and Accessibility
+                      </a>
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </div>
