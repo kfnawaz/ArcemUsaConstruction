@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useQuery, useMutation, QueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { Message } from '@shared/schema';
 import AdminNav from '@/components/admin/AdminNav';
-import { Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { formatDate } from '@/lib/utils';
@@ -48,10 +48,14 @@ const MessagesManagement = () => {
 
   if (isLoading) {
     return (
-      <div className="admin-container flex flex-col md:flex-row gap-8 p-6">
-        <AdminNav activePage="messages" />
-        <div className="flex-1 flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-[#C09E5E]" />
+      <div className="min-h-screen pt-32 pb-20 bg-gray-50">
+        <div className="container mx-auto px-4 md:px-8">
+          <div className="flex flex-col md:flex-row gap-8">
+            <AdminNav activePage="messages" />
+            <div className="flex-1 flex items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-[#C09E5E]" />
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -59,11 +63,15 @@ const MessagesManagement = () => {
 
   if (error) {
     return (
-      <div className="admin-container flex flex-col md:flex-row gap-8 p-6">
-        <AdminNav activePage="messages" />
-        <div className="flex-1">
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-            <p>Error loading messages. Please try again later.</p>
+      <div className="min-h-screen pt-32 pb-20 bg-gray-50">
+        <div className="container mx-auto px-4 md:px-8">
+          <div className="flex flex-col md:flex-row gap-8">
+            <AdminNav activePage="messages" />
+            <div className="flex-1">
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                <p>Error loading messages. Please try again later.</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -71,91 +79,100 @@ const MessagesManagement = () => {
   }
 
   return (
-    <div className="admin-container flex flex-col md:flex-row gap-8 p-6">
-      <AdminNav activePage="messages" />
-      
-      <div className="flex-1">
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h1 className="text-2xl font-bold mb-6">Message Management</h1>
+    <div className="min-h-screen pt-32 pb-20 bg-gray-50">
+      <div className="container mx-auto px-4 md:px-8">
+        <div className="flex flex-col md:flex-row gap-8">
+          <AdminNav activePage="messages" />
           
-          {messages && messages.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-gray-500">No messages received yet.</p>
+          <div className="flex-1">
+            <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+              <h1 className="text-2xl font-montserrat font-bold mb-2">Message Management</h1>
+              <p className="text-gray-600 mb-4">
+                View and manage incoming messages from website visitors.
+              </p>
+            
+              {messages && messages.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">No messages received yet.</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead>
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {messages?.map((message) => (
+                        <tr key={message.id} className={message.read ? '' : 'bg-[#FAF6EE]'}>
+                          <td className="px-4 py-4 whitespace-nowrap font-medium">{message.name}</td>
+                          <td className="px-4 py-4 whitespace-nowrap">{message.email}</td>
+                          <td className="px-4 py-4 whitespace-nowrap">{formatDate(message.createdAt?.toString() || new Date())}</td>
+                          <td className="px-4 py-4 whitespace-nowrap">
+                            <Badge variant={message.read ? "outline" : "default"}>
+                              {message.read ? 'Read' : 'Unread'}
+                            </Badge>
+                          </td>
+                          <td className="px-4 py-4 whitespace-nowrap">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleMarkAsRead(message.id)}
+                              disabled={message.read || markAsReadMutation.isPending}
+                              className="mr-2"
+                            >
+                              Mark as Read
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead>
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {messages?.map((message) => (
-                    <tr key={message.id} className={message.read ? '' : 'bg-[#FAF6EE]'}>
-                      <td className="px-4 py-4 whitespace-nowrap font-medium">{message.name}</td>
-                      <td className="px-4 py-4 whitespace-nowrap">{message.email}</td>
-                      <td className="px-4 py-4 whitespace-nowrap">{formatDate(message.createdAt?.toString() || new Date())}</td>
-                      <td className="px-4 py-4 whitespace-nowrap">
+            
+            {messages && messages.length > 0 && (
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h2 className="text-xl font-bold mb-4">Message Details</h2>
+                <div className="space-y-4">
+                  {messages.map((message) => (
+                    <div key={message.id} className="border rounded-lg p-4">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h3 className="font-bold">{message.name}</h3>
+                          <p className="text-sm text-gray-500">{message.email}</p>
+                          <p className="text-sm text-gray-500">{formatDate(message.createdAt?.toString() || new Date())}</p>
+                        </div>
                         <Badge variant={message.read ? "outline" : "default"}>
                           {message.read ? 'Read' : 'Unread'}
                         </Badge>
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleMarkAsRead(message.id)}
-                          disabled={message.read || markAsReadMutation.isPending}
-                          className="mr-2"
-                        >
-                          Mark as Read
-                        </Button>
-                      </td>
-                    </tr>
+                      </div>
+                      <div className="mt-3">
+                        <p className="text-gray-700">{message.message}</p>
+                      </div>
+                      {!message.read && (
+                        <div className="mt-3">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleMarkAsRead(message.id)}
+                            disabled={markAsReadMutation.isPending}
+                          >
+                            Mark as Read
+                          </Button>
+                        </div>
+                      )}
+                    </div>
                   ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          <div className="mt-6">
-            <h2 className="text-xl font-bold mb-4">Message Details</h2>
-            <div className="space-y-4">
-              {messages?.map((message) => (
-                <div key={message.id} className="border rounded-lg p-4">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="font-bold">{message.name}</h3>
-                      <p className="text-sm text-gray-500">{message.email}</p>
-                      <p className="text-sm text-gray-500">{formatDate(message.createdAt?.toString() || new Date())}</p>
-                    </div>
-                    <Badge variant={message.read ? "outline" : "default"}>
-                      {message.read ? 'Read' : 'Unread'}
-                    </Badge>
-                  </div>
-                  <div className="mt-3">
-                    <p className="text-gray-700">{message.message}</p>
-                  </div>
-                  {!message.read && (
-                    <div className="mt-3">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleMarkAsRead(message.id)}
-                        disabled={markAsReadMutation.isPending}
-                      >
-                        Mark as Read
-                      </Button>
-                    </div>
-                  )}
                 </div>
-              ))}
-            </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
