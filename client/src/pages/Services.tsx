@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { initializeRevealEffects, scrollToTop } from '@/lib/utils';
 import { Service } from '@shared/schema';
 import { Building, Home, Wrench, Clipboard, Factory, Settings } from 'lucide-react';
+import { Link } from 'wouter';
 
 const Services = () => {
   useEffect(() => {
@@ -174,12 +175,12 @@ const Services = () => {
             <p className="text-lg mb-8">
               Contact us today to schedule a consultation with our team of experts.
             </p>
-            <a 
+            <Link
               href="/contact" 
               className="bg-[#C09E5E] hover:bg-[#A98D54] text-white py-3 px-8 font-montserrat font-medium text-sm tracking-wider inline-block transition-colors"
             >
               CONTACT US
-            </a>
+            </Link>
           </div>
         </div>
       </section>

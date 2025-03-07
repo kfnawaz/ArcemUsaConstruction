@@ -36,7 +36,7 @@ const ServiceCard = ({ icon, title, description }: ServiceCardProps) => {
       <p className="text-gray-600 mb-6 leading-relaxed">
         {description}
       </p>
-      <a href="#" className="text-[#C09E5E] hover:text-[#A98D54] font-montserrat text-sm font-medium inline-flex items-center">
+      <a className="text-[#C09E5E] hover:text-[#A98D54] font-montserrat text-sm font-medium inline-flex items-center cursor-pointer">
         LEARN MORE
         <ArrowRight className="w-4 h-4 ml-2" />
       </a>
