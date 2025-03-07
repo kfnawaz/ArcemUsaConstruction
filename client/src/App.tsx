@@ -87,8 +87,8 @@ function Router() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Only show Navbar on non-admin pages */}
-      {!isAdminPage && <Navbar isScrolled={isScrolled} />}
+      {/* Show Navbar on all pages */}
+      <Navbar isScrolled={isScrolled} />
       
       <main className="flex-grow">
         <Switch>
@@ -145,8 +145,8 @@ function Router() {
       </main>
       
       <BackToTop />
-      {/* Only show Footer on non-admin pages */}
-      {!isAdminPage && <Footer />}
+      {/* Show Footer on all pages */}
+      <Footer />
     </div>
   );
 }
