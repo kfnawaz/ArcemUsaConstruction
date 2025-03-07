@@ -191,32 +191,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.get(`${apiRouter}/blog/:id`, async (req: Request, res: Response) => {
+  // Get categories for a specific blog post - must come before the generic /:id route
+  app.get(`${apiRouter}/blog/:postId/categories`, async (req: Request, res: Response) => {
     try {
-      const id = parseInt(req.params.id);
-      if (isNaN(id)) {
+      const postId = parseInt(req.params.postId);
+      if (isNaN(postId)) {
         return res.status(400).json({ message: "Invalid blog post ID" });
       }
       
-      const post = await storage.getBlogPost(id);
-      if (!post) {
-        return res.status(404).json({ message: "Blog post not found" });
+      const categories = await storage.getBlogPostCategories(postId);
+      res.json(categories);
+    } catch (error) {
+      console.error("Error fetching blog post categories:", error);
+      res.status(500).json({ message: "Failed to fetch blog post categories" });
+    }
+  });
+  
+  // Get tags for a specific blog post - must come before the generic /:id route
+  app.get(`${apiRouter}/blog/:postId/tags`, async (req: Request, res: Response) => {
+    try {
+      const postId = parseInt(req.params.postId);
+      if (isNaN(postId)) {
+        return res.status(400).json({ message: "Invalid blog post ID" });
       }
       
-      // Get post categories and tags
-      const categories = await storage.getBlogPostCategories(id);
-      const tags = await storage.getBlogPostTags(id);
-      
-      // Merge post with its categories and tags
-      const postWithRelations = {
-        ...post,
-        categories,
-        tags
-      };
-      
-      res.json(postWithRelations);
+      const tags = await storage.getBlogPostTags(postId);
+      res.json(tags);
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch blog post" });
+      console.error("Error fetching blog post tags:", error);
+      res.status(500).json({ message: "Failed to fetch blog post tags" });
     }
   });
   
@@ -232,6 +235,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get post categories and tags
       const categories = await storage.getBlogPostCategories(post.id);
       const tags = await storage.getBlogPostTags(post.id);
+      
+      // Merge post with its categories and tags
+      const postWithRelations = {
+        ...post,
+        categories,
+        tags
+      };
+      
+      res.json(postWithRelations);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch blog post" });
+    }
+  });
+  
+  // Generic blog post by ID route - keep this after all other /blog/:something routes
+  app.get(`${apiRouter}/blog/:id`, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid blog post ID" });
+      }
+      
+      const post = await storage.getBlogPost(id);
+      if (!post) {
+        return res.status(404).json({ message: "Blog post not found" });
+      }
+      
+      // Get post categories and tags
+      const categories = await storage.getBlogPostCategories(id);
+      const tags = await storage.getBlogPostTags(id);
       
       // Merge post with its categories and tags
       const postWithRelations = {
