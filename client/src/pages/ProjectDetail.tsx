@@ -121,7 +121,7 @@ const ProjectDetail = () => {
           <div className="flex flex-wrap gap-4 mb-8 reveal">
             <div className="flex items-center text-gray-500">
               <Calendar className="w-4 h-4 mr-2" />
-              <span>{formatDate(project.createdAt)}</span>
+              <span>{project.createdAt ? formatDate(project.createdAt) : "N/A"}</span>
             </div>
             <div className="flex items-center text-gray-500">
               <Tag className="w-4 h-4 mr-2" />
@@ -137,6 +137,40 @@ const ProjectDetail = () => {
               alt={project.title} 
               className="w-full h-auto object-cover mb-8 shadow-lg"
             />
+            
+            {/* Project Gallery */}
+            {sortedGalleryImages.length > 0 && (
+              <div className="mb-12">
+                <h2 className="text-2xl font-montserrat font-bold mb-6">Project Gallery</h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {sortedGalleryImages.map((image, index) => (
+                    <div 
+                      key={image.id} 
+                      className="aspect-square relative overflow-hidden cursor-pointer group"
+                      onClick={() => openGallery(index)}
+                    >
+                      <img 
+                        src={image.imageUrl} 
+                        alt={image.caption || `Gallery image ${index + 1}`}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        onError={(e) => {
+                          e.currentTarget.src = "https://placehold.co/600x600?text=Image+Not+Found";
+                        }}
+                      />
+                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-opacity duration-300 flex items-center justify-center">
+                        <ImageIcon className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      </div>
+                      {image.caption && (
+                        <div className="absolute bottom-0 inset-x-0 bg-black bg-opacity-60 text-white p-2 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          {image.caption}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
             <div className="prose max-w-none">
               <p className="text-gray-600 leading-relaxed mb-6">
                 {project.description}
@@ -178,7 +212,7 @@ const ProjectDetail = () => {
                 </div>
                 <div>
                   <h4 className="font-montserrat font-semibold text-gray-700">Completion</h4>
-                  <p className="text-gray-600">{formatDate(project.createdAt)}</p>
+                  <p className="text-gray-600">{project.createdAt ? formatDate(project.createdAt) : "N/A"}</p>
                 </div>
                 <div>
                   <h4 className="font-montserrat font-semibold text-gray-700">Services Provided</h4>
@@ -198,6 +232,73 @@ const ProjectDetail = () => {
             </div>
           </div>
         </div>
+
+        {/* Gallery Image Modal */}
+        <Dialog open={galleryOpen} onOpenChange={setGalleryOpen}>
+          <DialogContent className="sm:max-w-4xl p-0 bg-black overflow-hidden">
+            <div className="relative h-[80vh] flex items-center justify-center">
+              {sortedGalleryImages.length > 0 && (
+                <>
+                  <img 
+                    src={sortedGalleryImages[currentImageIndex]?.imageUrl} 
+                    alt={sortedGalleryImages[currentImageIndex]?.caption || "Gallery image"}
+                    className="max-h-full max-w-full object-contain"
+                    onError={(e) => {
+                      e.currentTarget.src = "https://placehold.co/800x600?text=Image+Not+Found";
+                    }}
+                  />
+                  
+                  {/* Caption */}
+                  {sortedGalleryImages[currentImageIndex]?.caption && (
+                    <div className="absolute bottom-0 inset-x-0 bg-black bg-opacity-75 text-white p-4">
+                      {sortedGalleryImages[currentImageIndex]?.caption}
+                    </div>
+                  )}
+                  
+                  {/* Navigation */}
+                  <Button 
+                    variant="outline"
+                    size="icon"
+                    className="absolute left-4 top-1/2 transform -translate-y-1/2 rounded-full bg-black/30 text-white border-white/20 hover:bg-black/50"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      prevImage();
+                    }}
+                  >
+                    <ChevronLeft className="h-8 w-8" />
+                  </Button>
+                  
+                  <Button 
+                    variant="outline"
+                    size="icon"
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 rounded-full bg-black/30 text-white border-white/20 hover:bg-black/50"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      nextImage();
+                    }}
+                  >
+                    <ChevronRight className="h-8 w-8" />
+                  </Button>
+                  
+                  {/* Close button */}
+                  <Button 
+                    variant="outline"
+                    size="icon"
+                    className="absolute right-4 top-4 rounded-full bg-black/30 text-white border-white/20 hover:bg-black/50"
+                    onClick={() => setGalleryOpen(false)}
+                  >
+                    <X className="h-6 w-6" />
+                  </Button>
+                  
+                  {/* Counter */}
+                  <div className="absolute top-4 left-4 bg-black/70 text-white px-3 py-1 rounded-full text-sm">
+                    {currentImageIndex + 1} / {sortedGalleryImages.length}
+                  </div>
+                </>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Related Projects Section */}
         <div className="mt-16 reveal">

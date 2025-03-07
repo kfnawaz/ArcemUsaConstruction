@@ -1,11 +1,12 @@
 import { eq, and, inArray } from "drizzle-orm";
 import { db } from "./db";
 import { 
-  users, projects, blogCategories, blogTags, blogPosts, 
+  users, projects, projectGallery, blogCategories, blogTags, blogPosts, 
   blogPostCategories, blogPostTags,
   testimonials, services, messages,
   type User, type InsertUser, 
   type Project, type InsertProject,
+  type ProjectGallery, type InsertProjectGallery,
   type BlogCategory, type InsertBlogCategory,
   type BlogTag, type InsertBlogTag, 
   type BlogPost, type InsertBlogPost, 
@@ -60,7 +61,43 @@ export class DBStorage implements IStorage {
   }
 
   async deleteProject(id: number): Promise<boolean> {
+    // First delete all gallery images for this project
+    await this.deleteAllProjectGalleryImages(id);
+    // Then delete the project
     const result = await db.delete(projects).where(eq(projects.id, id)).returning();
+    return result.length > 0;
+  }
+  
+  // Project Gallery
+  async getProjectGallery(projectId: number): Promise<ProjectGallery[]> {
+    return db.select()
+      .from(projectGallery)
+      .where(eq(projectGallery.projectId, projectId))
+      .orderBy(projectGallery.displayOrder);
+  }
+  
+  async addProjectGalleryImage(galleryImage: InsertProjectGallery): Promise<ProjectGallery> {
+    const result = await db.insert(projectGallery).values(galleryImage).returning();
+    return result[0];
+  }
+  
+  async updateProjectGalleryImage(id: number, galleryImageUpdate: Partial<InsertProjectGallery>): Promise<ProjectGallery | undefined> {
+    const result = await db.update(projectGallery)
+      .set(galleryImageUpdate)
+      .where(eq(projectGallery.id, id))
+      .returning();
+    return result[0];
+  }
+  
+  async deleteProjectGalleryImage(id: number): Promise<boolean> {
+    const result = await db.delete(projectGallery).where(eq(projectGallery.id, id)).returning();
+    return result.length > 0;
+  }
+  
+  async deleteAllProjectGalleryImages(projectId: number): Promise<boolean> {
+    const result = await db.delete(projectGallery)
+      .where(eq(projectGallery.projectId, projectId))
+      .returning();
     return result.length > 0;
   }
 

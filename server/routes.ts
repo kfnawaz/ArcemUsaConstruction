@@ -3,6 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { 
   insertProjectSchema,
+  insertProjectGallerySchema,
   insertBlogCategorySchema,
   insertBlogTagSchema,
   insertBlogPostSchema,
