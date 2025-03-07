@@ -103,6 +103,36 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
     }
   };
   
+  const handleMultipleImagesUpload = async (urls: string | string[]) => {
+    if (!Array.isArray(urls)) {
+      // Single image was uploaded
+      setNewImageUrl(urls as string);
+      return;
+    }
+    
+    setIsAddingImage(true);
+    
+    try {
+      // Add each image to the gallery with sequential display order
+      for (let i = 0; i < urls.length; i++) {
+        await addGalleryImage({
+          imageUrl: urls[i],
+          caption: `Gallery image ${i + 1}`,
+          displayOrder: newImageOrder + i
+        });
+      }
+      
+      // Clear form after successful addition
+      setNewImageUrl("");
+      setNewImageCaption("");
+      setNewImageOrder(prev => prev + urls.length);
+    } catch (error) {
+      console.error("Error adding multiple gallery images:", error);
+    } finally {
+      setIsAddingImage(false);
+    }
+  };
+  
   const handleDeleteGalleryImage = async (id: number) => {
     if (window.confirm("Are you sure you want to delete this image?")) {
       await deleteGalleryImage(id);
@@ -211,7 +241,12 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                             <p className="text-sm mb-2 text-muted-foreground">Or upload an image directly:</p>
                             <FileUpload 
                               onUploadComplete={(fileUrl) => {
-                                field.onChange(fileUrl);
+                                if (Array.isArray(fileUrl)) {
+                                  // If multiple files were uploaded, just use the first one
+                                  field.onChange(fileUrl[0]);
+                                } else {
+                                  field.onChange(fileUrl);
+                                }
                               }}
                             />
                           </div>
@@ -311,12 +346,11 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                         </div>
                         
                         <div>
-                          <Label>Or upload an image</Label>
+                          <Label>Or upload image(s)</Label>
                           <div className="mt-1">
                             <FileUpload 
-                              onUploadComplete={(fileUrl) => {
-                                setNewImageUrl(fileUrl);
-                              }}
+                              onUploadComplete={handleMultipleImagesUpload}
+                              multiple={true}
                             />
                           </div>
                         </div>
