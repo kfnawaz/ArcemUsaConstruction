@@ -24,11 +24,33 @@ const BlogManagement = () => {
   const [location, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-
-  // Get URL params
-  const searchParams = new URLSearchParams(location.split('?')[1]);
-  const action = searchParams.get('action');
-  const editId = searchParams.get('edit');
+  const [isEditing, setIsEditing] = useState(false);
+  const [currentEditId, setCurrentEditId] = useState<number | undefined>(undefined);
+  const [isAdding, setIsAdding] = useState(false);
+  
+  // Get URL params and set state based on URL
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.split('?')[1] || '');
+    const action = searchParams.get('action');
+    const editId = searchParams.get('edit');
+    
+    console.log("Current blog location:", location);
+    console.log("Blog URL params:", { action, editId });
+    
+    if (action === 'new') {
+      setIsAdding(true);
+      setIsEditing(false);
+      setCurrentEditId(undefined);
+    } else if (editId) {
+      setIsEditing(true);
+      setIsAdding(false);
+      setCurrentEditId(Number(editId));
+    } else {
+      setIsEditing(false);
+      setIsAdding(false);
+      setCurrentEditId(undefined);
+    }
+  }, [location]);
 
   // States
   const [searchQuery, setSearchQuery] = useState('');
@@ -107,11 +129,18 @@ const BlogManagement = () => {
 
   // Navigate to add new blog post form
   const handleAddNew = () => {
+    setIsAdding(true);
+    setIsEditing(false);
+    setCurrentEditId(undefined);
     setLocation('/admin/blog?action=new');
   };
 
   // Open edit blog post form
   const handleEdit = (id: number) => {
+    console.log("Edit clicked for blog post ID:", id);
+    setIsEditing(true);
+    setIsAdding(false);
+    setCurrentEditId(id);
     setLocation(`/admin/blog?edit=${id}`);
   };
 
@@ -138,6 +167,9 @@ const BlogManagement = () => {
 
   // Close form and return to list
   const handleCloseForm = () => {
+    setIsEditing(false);
+    setIsAdding(false);
+    setCurrentEditId(undefined);
     setLocation('/admin/blog');
   };
 
@@ -151,9 +183,9 @@ const BlogManagement = () => {
           {/* Main Content */}
           <div className="flex-1">
             {/* Add/Edit Blog Post Form */}
-            {action === 'new' || editId ? (
+            {isAdding || isEditing ? (
               <BlogForm 
-                postId={editId ? parseInt(editId) : undefined} 
+                postId={currentEditId} 
                 onClose={handleCloseForm} 
               />
             ) : (
@@ -249,7 +281,7 @@ const BlogManagement = () => {
                                 <div className="text-sm text-gray-500">{post.category}</div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm text-gray-500">{formatDate(post.createdAt)}</div>
+                                <div className="text-sm text-gray-500">{post.createdAt ? formatDate(post.createdAt) : 'No date'}</div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap">
                                 <Button
