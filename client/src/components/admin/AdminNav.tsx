@@ -4,11 +4,12 @@ import {
   Building, 
   FileText, 
   MessageSquare, 
-  Settings 
+  Settings,
+  Eye
 } from 'lucide-react';
 
 type AdminNavProps = {
-  activePage: 'dashboard' | 'projects' | 'blog' | 'messages' | 'settings';
+  activePage: 'dashboard' | 'projects' | 'blog' | 'messages' | 'settings' | 'accessibility';
 };
 
 const AdminNav = ({ activePage }: AdminNavProps) => {

@@ -24,7 +24,9 @@ import ProjectManagement from "@/pages/admin/ProjectManagement";
 import BlogManagement from "@/pages/admin/BlogManagement";
 import MessagesManagement from "@/pages/admin/MessagesManagement";
 import Settings from "@/pages/admin/Settings";
+import AccessibilityChecker from "@/pages/admin/AccessibilityChecker";
 import NotFound from "@/pages/not-found";
+import { AccessibilityChecker as A11yFloatingButton } from "@/lib/accessibility";
 
 function AdminRoute({ component: Component }: { component: React.ComponentType }) {
   return (
@@ -100,6 +102,11 @@ function Router() {
               <Settings />
             </ProtectedRoute>
           </Route>
+          <Route path="/admin/accessibility">
+            <ProtectedRoute>
+              <AccessibilityChecker />
+            </ProtectedRoute>
+          </Route>
           
           <Route component={NotFound} />
         </Switch>
@@ -116,6 +123,7 @@ function App() {
       <AuthProvider>
         <Router />
         <Toaster />
+        {process.env.NODE_ENV === 'development' && <A11yFloatingButton />}
       </AuthProvider>
     </QueryClientProvider>
   );
