@@ -351,15 +351,57 @@ export class MemStorage implements IStorage {
   
   // Projects
   async getProjects(): Promise<Project[]> {
-    return Array.from(this.projects.values());
+    return Array.from(this.projects.values())
+      .map(project => ({
+        ...project,
+        // Ensure new fields have default values to prevent errors
+        overview: project.overview || null,
+        challenges: project.challenges || null,
+        solutions: project.solutions || null,
+        results: project.results || null,
+        client: project.client || null,
+        location: project.location || null,
+        size: project.size || null,
+        completionDate: project.completionDate || null,
+        servicesProvided: project.servicesProvided || null
+      }));
   }
   
   async getProject(id: number): Promise<Project | undefined> {
-    return this.projects.get(id);
+    const project = this.projects.get(id);
+    if (!project) return undefined;
+    
+    // Ensure new fields have default values
+    return {
+      ...project,
+      overview: project.overview || null,
+      challenges: project.challenges || null,
+      solutions: project.solutions || null,
+      results: project.results || null,
+      client: project.client || null,
+      location: project.location || null,
+      size: project.size || null,
+      completionDate: project.completionDate || null,
+      servicesProvided: project.servicesProvided || null
+    };
   }
   
   async getFeaturedProjects(): Promise<Project[]> {
-    return Array.from(this.projects.values()).filter(project => project.featured);
+    return Array.from(this.projects.values())
+      .filter(project => project.featured === true)
+      .map(project => ({
+        ...project,
+        // Ensure new fields have default values to prevent errors
+        overview: project.overview || null,
+        challenges: project.challenges || null,
+        solutions: project.solutions || null,
+        results: project.results || null,
+        client: project.client || null,
+        location: project.location || null,
+        size: project.size || null,
+        completionDate: project.completionDate || null,
+        servicesProvided: project.servicesProvided || null
+      }));
   }
   
   async createProject(project: InsertProject): Promise<Project> {
