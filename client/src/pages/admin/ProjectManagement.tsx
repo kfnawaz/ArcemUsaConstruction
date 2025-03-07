@@ -24,14 +24,33 @@ const ProjectManagement = () => {
   const [location, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-
-  // Get URL params
-  const searchParams = new URLSearchParams(location.split('?')[1] || '');
-  const action = searchParams.get('action');
-  const editId = searchParams.get('edit');
+  const [isEditing, setIsEditing] = useState(false);
+  const [currentEditId, setCurrentEditId] = useState<number | undefined>(undefined);
+  const [isAdding, setIsAdding] = useState(false);
   
-  console.log("Current location:", location);
-  console.log("URL params:", { action, editId });
+  // Get URL params from location for initial state
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.split('?')[1] || '');
+    const action = searchParams.get('action');
+    const editId = searchParams.get('edit');
+    
+    console.log("Current location:", location);
+    console.log("URL params:", { action, editId });
+    
+    if (action === 'new') {
+      setIsAdding(true);
+      setIsEditing(false);
+      setCurrentEditId(undefined);
+    } else if (editId) {
+      setIsEditing(true);
+      setIsAdding(false);
+      setCurrentEditId(Number(editId));
+    } else {
+      setIsEditing(false);
+      setIsAdding(false);
+      setCurrentEditId(undefined);
+    }
+  }, [location]);
 
   // States
   const [searchQuery, setSearchQuery] = useState('');
@@ -109,12 +128,18 @@ const ProjectManagement = () => {
 
   // Navigate to add new project form
   const handleAddNew = () => {
+    setIsAdding(true);
+    setIsEditing(false);
+    setCurrentEditId(undefined);
     setLocation('/admin/projects?action=new');
   };
 
   // Open edit project form
   const handleEdit = (id: number) => {
     console.log("Edit clicked for project ID:", id);
+    setIsEditing(true);
+    setIsAdding(false);
+    setCurrentEditId(id);
     setLocation(`/admin/projects?edit=${id}`);
   };
 
@@ -141,6 +166,9 @@ const ProjectManagement = () => {
 
   // Close form and return to list
   const handleCloseForm = () => {
+    setIsEditing(false);
+    setIsAdding(false);
+    setCurrentEditId(undefined);
     setLocation('/admin/projects');
   };
 
@@ -154,9 +182,9 @@ const ProjectManagement = () => {
           {/* Main Content */}
           <div className="flex-1">
             {/* Add/Edit Project Form */}
-            {action === 'new' || editId ? (
+            {isAdding || isEditing ? (
               <ProjectForm 
-                projectId={editId ? parseInt(editId) : undefined} 
+                projectId={currentEditId} 
                 onClose={handleCloseForm} 
               />
             ) : (
