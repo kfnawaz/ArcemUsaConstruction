@@ -1,4 +1,4 @@
-import type { Express, Request, Response } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { 
@@ -8,6 +8,22 @@ import {
 } from "@shared/schema";
 import { z } from "zod";
 import { setupAuth } from "./auth";
+
+// Authentication middleware
+const isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
+  if (req.isAuthenticated()) {
+    return next();
+  }
+  res.status(401).json({ message: 'Unauthorized' });
+};
+
+// Admin role middleware
+const isAdmin = (req: Request, res: Response, next: NextFunction) => {
+  if (req.isAuthenticated() && req.user.role === 'admin') {
+    return next();
+  }
+  res.status(403).json({ message: 'Forbidden: Admin access required' });
+};
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Setup authentication routes
@@ -52,7 +68,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.post(`${apiRouter}/projects`, async (req: Request, res: Response) => {
+  // Admin-only endpoints for project management
+  app.post(`${apiRouter}/projects`, isAdmin, async (req: Request, res: Response) => {
     try {
       const projectData = insertProjectSchema.parse(req.body);
       const project = await storage.createProject(projectData);
@@ -65,7 +82,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.put(`${apiRouter}/projects/:id`, async (req: Request, res: Response) => {
+  app.put(`${apiRouter}/projects/:id`, isAdmin, async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -88,7 +105,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.delete(`${apiRouter}/projects/:id`, async (req: Request, res: Response) => {
+  app.delete(`${apiRouter}/projects/:id`, isAdmin, async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -116,7 +133,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.get(`${apiRouter}/blog/all`, async (req: Request, res: Response) => {
+  app.get(`${apiRouter}/blog/all`, isAuthenticated, async (req: Request, res: Response) => {
     try {
       const blogPosts = await storage.getBlogPosts();
       res.json(blogPosts);
@@ -158,7 +175,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.post(`${apiRouter}/blog`, async (req: Request, res: Response) => {
+  // Admin-only endpoints for blog management
+  app.post(`${apiRouter}/blog`, isAdmin, async (req: Request, res: Response) => {
     try {
       const postData = insertBlogPostSchema.parse(req.body);
       const post = await storage.createBlogPost(postData);
@@ -171,7 +189,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.put(`${apiRouter}/blog/:id`, async (req: Request, res: Response) => {
+  app.put(`${apiRouter}/blog/:id`, isAdmin, async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -194,7 +212,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.delete(`${apiRouter}/blog/:id`, async (req: Request, res: Response) => {
+  app.delete(`${apiRouter}/blog/:id`, isAdmin, async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
@@ -246,7 +264,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.get(`${apiRouter}/messages`, async (req: Request, res: Response) => {
+  app.get(`${apiRouter}/messages`, isAdmin, async (req: Request, res: Response) => {
     try {
       const messages = await storage.getMessages();
       res.json(messages);
@@ -255,7 +273,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  app.put(`${apiRouter}/messages/:id/read`, async (req: Request, res: Response) => {
+  app.put(`${apiRouter}/messages/:id/read`, isAdmin, async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
