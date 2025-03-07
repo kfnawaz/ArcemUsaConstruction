@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        const response = await fetch('/api/user');
+        const response = await apiRequest('GET', '/api/user');
         
         if (response.ok) {
           const userData = await response.json();
@@ -56,12 +56,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const login = async (username: string, password: string): Promise<boolean> => {
     setLoading(true);
     try {
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
-        credentials: 'include'
-      });
+      const response = await apiRequest('POST', '/api/login', { username, password });
       
       if (response.ok) {
         const userData = await response.json();
@@ -81,10 +76,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const logout = async (): Promise<void> => {
     setLoading(true);
     try {
-      const response = await fetch('/api/logout', { 
-        method: 'POST',
-        credentials: 'include'
-      });
+      const response = await apiRequest('POST', '/api/logout');
       
       if (response.ok) {
         setIsAuthenticated(false);
