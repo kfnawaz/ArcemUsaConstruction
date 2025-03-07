@@ -1,0 +1,311 @@
+import { useEffect, useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useLocation } from 'wouter';
+import { scrollToTop } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
+import { Search, Plus, Edit, Trash2, Star, StarOff } from 'lucide-react';
+import AdminNav from '@/components/admin/AdminNav';
+import ProjectForm from '@/components/admin/ProjectForm';
+import { 
+  Dialog,
+  DialogContent, 
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose
+} from '@/components/ui/dialog';
+import { Project } from '@shared/schema';
+import { apiRequest } from '@/lib/queryClient';
+
+const ProjectManagement = () => {
+  const [location, setLocation] = useLocation();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  // Get URL params
+  const searchParams = new URLSearchParams(location.split('?')[1]);
+  const action = searchParams.get('action');
+  const editId = searchParams.get('edit');
+
+  // States
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
+
+  useEffect(() => {
+    scrollToTop();
+    document.title = 'Project Management - ARCEMUSA';
+  }, []);
+
+  // Fetch projects
+  const { data: projects, isLoading } = useQuery<Project[]>({
+    queryKey: ['/api/projects'],
+  });
+
+  // Delete project mutation
+  const deleteMutation = useMutation({
+    mutationFn: async (id: number) => {
+      return apiRequest('DELETE', `/api/projects/${id}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      toast({
+        title: "Project deleted",
+        description: "The project has been successfully deleted.",
+        variant: "default"
+      });
+      setShowDeleteDialog(false);
+      setProjectToDelete(null);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to delete project. Please try again.",
+        variant: "destructive"
+      });
+      console.error("Error deleting project:", error);
+    }
+  });
+
+  // Toggle featured status mutation
+  const toggleFeaturedMutation = useMutation({
+    mutationFn: async ({ id, featured }: { id: number; featured: boolean }) => {
+      return apiRequest('PUT', `/api/projects/${id}`, { featured });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      toast({
+        title: "Project updated",
+        description: "Featured status has been updated.",
+        variant: "default"
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to update project. Please try again.",
+        variant: "destructive"
+      });
+      console.error("Error updating project:", error);
+    }
+  });
+
+  // Handle search input change
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
+  // Filter projects based on search query
+  const filteredProjects = projects?.filter(project => 
+    project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    project.category.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Navigate to add new project form
+  const handleAddNew = () => {
+    setLocation('/admin/projects?action=new');
+  };
+
+  // Open edit project form
+  const handleEdit = (id: number) => {
+    setLocation(`/admin/projects?edit=${id}`);
+  };
+
+  // Show delete confirmation
+  const handleDeleteClick = (project: Project) => {
+    setProjectToDelete(project);
+    setShowDeleteDialog(true);
+  };
+
+  // Confirm delete project
+  const confirmDelete = () => {
+    if (projectToDelete) {
+      deleteMutation.mutate(projectToDelete.id);
+    }
+  };
+
+  // Toggle featured status
+  const toggleFeatured = (project: Project) => {
+    toggleFeaturedMutation.mutate({
+      id: project.id,
+      featured: !project.featured
+    });
+  };
+
+  // Close form and return to list
+  const handleCloseForm = () => {
+    setLocation('/admin/projects');
+  };
+
+  return (
+    <div className="min-h-screen pt-32 pb-20 bg-gray-50">
+      <div className="container mx-auto px-4 md:px-8">
+        <div className="flex flex-col md:flex-row gap-8">
+          {/* Admin Navigation */}
+          <AdminNav activePage="projects" />
+          
+          {/* Main Content */}
+          <div className="flex-1">
+            {/* Add/Edit Project Form */}
+            {action === 'new' || editId ? (
+              <ProjectForm 
+                projectId={editId ? parseInt(editId) : undefined} 
+                onClose={handleCloseForm} 
+              />
+            ) : (
+              <>
+                {/* Project List */}
+                <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                    <h1 className="text-2xl font-montserrat font-bold">Project Management</h1>
+                    <Button variant="gold" onClick={handleAddNew}>
+                      <Plus className="mr-2 h-4 w-4" /> Add New Project
+                    </Button>
+                  </div>
+                  
+                  {/* Search bar */}
+                  <div className="mb-6 relative">
+                    <Input
+                      type="text"
+                      placeholder="Search projects..."
+                      value={searchQuery}
+                      onChange={handleSearchChange}
+                      className="pl-10 pr-4 py-2 border border-gray-300"
+                    />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  </div>
+                  
+                  {/* Projects table */}
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-montserrat font-medium text-gray-500 uppercase tracking-wider">
+                            Image
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-montserrat font-medium text-gray-500 uppercase tracking-wider">
+                            Title
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-montserrat font-medium text-gray-500 uppercase tracking-wider">
+                            Category
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-montserrat font-medium text-gray-500 uppercase tracking-wider">
+                            Featured
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-right text-xs font-montserrat font-medium text-gray-500 uppercase tracking-wider">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {isLoading ? (
+                          <tr>
+                            <td colSpan={5} className="px-6 py-4 text-center">
+                              <div className="animate-pulse flex items-center justify-center">
+                                <div className="h-4 w-36 bg-gray-200 rounded"></div>
+                              </div>
+                            </td>
+                          </tr>
+                        ) : filteredProjects?.length === 0 ? (
+                          <tr>
+                            <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                              No projects found
+                            </td>
+                          </tr>
+                        ) : (
+                          filteredProjects?.map(project => (
+                            <tr key={project.id}>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="w-16 h-12 bg-gray-100 overflow-hidden">
+                                  <img 
+                                    src={project.image} 
+                                    alt={project.title} 
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm font-medium text-gray-900">
+                                  {project.title}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm text-gray-500">{project.category}</div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => toggleFeatured(project)}
+                                  disabled={toggleFeaturedMutation.isPending}
+                                  title={project.featured ? "Remove from featured" : "Add to featured"}
+                                >
+                                  {project.featured ? (
+                                    <Star className="h-5 w-5 text-amber-500" fill="currentColor" />
+                                  ) : (
+                                    <StarOff className="h-5 w-5 text-gray-400" />
+                                  )}
+                                </Button>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleEdit(project.id)}
+                                  className="text-blue-600 hover:text-blue-900 mr-2"
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleDeleteClick(project)}
+                                  className="text-red-600 hover:text-red-900"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete the project "{projectToDelete?.title}"? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button 
+              variant="destructive" 
+              onClick={confirmDelete}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+export default ProjectManagement;
