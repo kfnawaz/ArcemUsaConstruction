@@ -26,6 +26,13 @@ export interface IStorage {
   updateProject(id: number, project: Partial<InsertProject>): Promise<Project | undefined>;
   deleteProject(id: number): Promise<boolean>;
   
+  // Project Gallery
+  getProjectGallery(projectId: number): Promise<ProjectGallery[]>;
+  addProjectGalleryImage(galleryImage: InsertProjectGallery): Promise<ProjectGallery>;
+  updateProjectGalleryImage(id: number, galleryImage: Partial<InsertProjectGallery>): Promise<ProjectGallery | undefined>;
+  deleteProjectGalleryImage(id: number): Promise<boolean>;
+  deleteAllProjectGalleryImages(projectId: number): Promise<boolean>;
+  
   // Blog Categories
   getBlogCategories(): Promise<BlogCategory[]>;
   getBlogCategory(id: number): Promise<BlogCategory | undefined>;
@@ -73,6 +80,7 @@ export interface IStorage {
 export class MemStorage implements IStorage {
   private users: Map<number, User>;
   private projects: Map<number, Project>;
+  private projectGallery: Map<number, ProjectGallery>;
   private blogCategories: Map<number, BlogCategory>;
   private blogTags: Map<number, BlogTag>;
   private blogPosts: Map<number, BlogPost>;
@@ -84,6 +92,7 @@ export class MemStorage implements IStorage {
   
   userCurrentId: number;
   projectCurrentId: number;
+  projectGalleryCurrentId: number;
   blogCategoryCurrentId: number;
   blogTagCurrentId: number;
   blogPostCurrentId: number;

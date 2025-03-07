@@ -23,15 +23,50 @@ export const projects = pgTable("projects", {
   title: text("title").notNull(),
   category: text("category").notNull(),
   description: text("description").notNull(),
-  image: text("image").notNull(),
+  image: text("image").notNull(), // Main image (keeping for backward compatibility)
   featured: boolean("featured").default(false),
   createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const projectGallery = pgTable("project_gallery", {
+  id: serial("id").primaryKey(),
+  projectId: integer("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  imageUrl: text("image_url").notNull(),
+  caption: text("caption"),
+  displayOrder: integer("display_order").default(0),
 });
 
 export const insertProjectSchema = createInsertSchema(projects).omit({
   id: true,
   createdAt: true,
 });
+
+export const insertProjectGallerySchema = createInsertSchema(projectGallery).omit({
+  id: true,
+});
+
+// Extended project schema that includes gallery images
+export const extendedInsertProjectSchema = insertProjectSchema.extend({
+  galleryImages: z.array(
+    z.object({
+      imageUrl: z.string(),
+      caption: z.string().optional(),
+      displayOrder: z.number().optional(),
+    })
+  ).optional(),
+});
+
+// Define project relations
+export const projectsRelations = relations(projects, ({ many }) => ({
+  galleryImages: many(projectGallery),
+}));
+
+export const projectGalleryRelations = relations(projectGallery, ({ one }) => ({
+  project: one(projects, {
+    fields: [projectGallery.projectId],
+    references: [projects.id],
+  }),
+}));
 
 // New table for blog categories
 export const blogCategories = pgTable("blog_categories", {
@@ -181,6 +216,9 @@ export type User = typeof users.$inferSelect;
 
 export type Project = typeof projects.$inferSelect;
 export type InsertProject = z.infer<typeof insertProjectSchema>;
+export type ExtendedInsertProject = z.infer<typeof extendedInsertProjectSchema>;
+export type ProjectGallery = typeof projectGallery.$inferSelect;
+export type InsertProjectGallery = z.infer<typeof insertProjectGallerySchema>;
 
 export type BlogCategory = typeof blogCategories.$inferSelect;
 export type InsertBlogCategory = z.infer<typeof insertBlogCategorySchema>;
