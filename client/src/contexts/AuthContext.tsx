@@ -1,9 +1,15 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { apiRequest } from '@/lib/queryClient';
 
+interface User {
+  id: number;
+  username: string;
+  role: string;
+}
+
 interface AuthContextType {
   isAuthenticated: boolean;
-  user: { username: string } | null;
+  user: User | null;
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
   loading: boolean;
@@ -17,20 +23,28 @@ interface AuthProviderProps {
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [user, setUser] = useState<{ username: string } | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Check session on initial load
   useEffect(() => {
     const checkAuthStatus = async () => {
       try {
-        const response = await apiRequest<{ authenticated: boolean; user?: { username: string } }>('/api/auth/status');
-        if (response.authenticated && response.user) {
+        const response = await fetch('/api/user');
+        
+        if (response.ok) {
+          const userData = await response.json();
           setIsAuthenticated(true);
-          setUser(response.user);
+          setUser(userData);
+        } else {
+          // Not authenticated or error
+          setIsAuthenticated(false);
+          setUser(null);
         }
       } catch (error) {
         console.error('Auth status check failed:', error);
+        setIsAuthenticated(false);
+        setUser(null);
       } finally {
         setLoading(false);
       }
@@ -42,15 +56,17 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const login = async (username: string, password: string): Promise<boolean> => {
     setLoading(true);
     try {
-      const response = await apiRequest<{ success: boolean; user?: { username: string } }>('/api/auth/login', {
+      const response = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
+        credentials: 'include'
       });
       
-      if (response.success && response.user) {
+      if (response.ok) {
+        const userData = await response.json();
         setIsAuthenticated(true);
-        setUser(response.user);
+        setUser(userData);
         return true;
       }
       return false;
@@ -65,9 +81,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const logout = async (): Promise<void> => {
     setLoading(true);
     try {
-      await apiRequest('/api/auth/logout', { method: 'POST' });
-      setIsAuthenticated(false);
-      setUser(null);
+      const response = await fetch('/api/logout', { 
+        method: 'POST',
+        credentials: 'include'
+      });
+      
+      if (response.ok) {
+        setIsAuthenticated(false);
+        setUser(null);
+      }
     } catch (error) {
       console.error('Logout failed:', error);
     } finally {

@@ -7,8 +7,11 @@ import {
   insertMessageSchema
 } from "@shared/schema";
 import { z } from "zod";
+import { setupAuth } from "./auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Setup authentication routes
+  setupAuth(app);
   // API routes prefix
   const apiRouter = "/api";
   

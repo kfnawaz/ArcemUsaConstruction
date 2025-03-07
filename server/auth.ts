@@ -6,6 +6,7 @@ import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
 import { User as SelectUser } from "@shared/schema";
+import memoryStoreFactory from "memorystore";
 
 declare global {
   namespace Express {
@@ -30,7 +31,7 @@ async function comparePasswords(supplied: string, stored: string) {
 
 export function setupAuth(app: Express) {
   // Create a session store
-  const MemoryStore = require('memorystore')(session);
+  const MemoryStore = memoryStoreFactory(session);
   
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET || 'arcemusa-construction-secret',
@@ -95,7 +96,7 @@ export function setupAuth(app: Express) {
   });
 
   app.post("/api/login", (req, res, next) => {
-    passport.authenticate("local", (err, user, info) => {
+    passport.authenticate("local", (err: Error | null, user: SelectUser | false, info: any) => {
       if (err) return next(err);
       if (!user) return res.status(401).json({ message: "Invalid credentials" });
       

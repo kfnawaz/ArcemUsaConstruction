@@ -6,6 +6,8 @@ import { useState, useEffect } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import BackToTop from "@/components/common/BackToTop";
+import { AuthProvider } from "@/contexts/AuthContext";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 // Pages
 import Home from "@/pages/Home";
@@ -16,10 +18,21 @@ import ProjectDetail from "@/pages/ProjectDetail";
 import Blog from "@/pages/Blog";
 import BlogPost from "@/pages/BlogPost";
 import Contact from "@/pages/Contact";
+import Login from "@/pages/auth/Login";
 import Dashboard from "@/pages/admin/Dashboard";
 import ProjectManagement from "@/pages/admin/ProjectManagement";
 import BlogManagement from "@/pages/admin/BlogManagement";
 import NotFound from "@/pages/not-found";
+
+function AdminRoute({ component: Component }: { component: React.ComponentType }) {
+  return (
+    <Route>
+      <ProtectedRoute>
+        <Component />
+      </ProtectedRoute>
+    </Route>
+  );
+}
 
 function Router() {
   // For navbar color change on scroll
@@ -51,9 +64,25 @@ function Router() {
           <Route path="/blog" component={Blog} />
           <Route path="/blog/:slug" component={BlogPost} />
           <Route path="/contact" component={Contact} />
-          <Route path="/admin" component={Dashboard} />
-          <Route path="/admin/projects" component={ProjectManagement} />
-          <Route path="/admin/blog" component={BlogManagement} />
+          <Route path="/auth/login" component={Login} />
+          
+          {/* Protected Admin Routes */}
+          <Route path="/admin">
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/admin/projects">
+            <ProtectedRoute>
+              <ProjectManagement />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/admin/blog">
+            <ProtectedRoute>
+              <BlogManagement />
+            </ProtectedRoute>
+          </Route>
+          
           <Route component={NotFound} />
         </Switch>
       </main>
@@ -66,8 +95,10 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Router />
-      <Toaster />
+      <AuthProvider>
+        <Router />
+        <Toaster />
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
