@@ -135,9 +135,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid project ID" });
       }
       
-      const images = await storage.getProjectGallery(projectId);
-      res.json(images);
+      console.log("[DEBUG] Fetching gallery for project ID:", projectId);
+      
+      try {
+        const images = await storage.getProjectGallery(projectId);
+        console.log("[DEBUG] Gallery images:", images);
+        res.json(images);
+      } catch (error) {
+        console.error("[ERROR] Error in getProjectGallery:", error);
+        throw error;
+      }
     } catch (error) {
+      console.error("[ERROR] Gallery fetch error:", error);
       res.status(500).json({ message: "Failed to fetch project gallery" });
     }
   });
