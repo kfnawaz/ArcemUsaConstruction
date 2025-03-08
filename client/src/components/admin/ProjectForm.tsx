@@ -151,7 +151,12 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
   };
   
   const handleSetAsPreview = (imageUrl: string) => {
-    form.setValue('image', imageUrl);
+    // Only set the value in the form without triggering a save
+    form.setValue('image', imageUrl, { 
+      shouldDirty: true,      // Mark the form as dirty since we changed a value
+      shouldTouch: true,      // Mark the field as touched
+      shouldValidate: false   // Don't trigger validation
+    });
   };
 
   return (
