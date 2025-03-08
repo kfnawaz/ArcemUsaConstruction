@@ -706,6 +706,19 @@ export class MemStorage implements IStorage {
     return approvedTestimonial;
   }
   
+  async revokeTestimonialApproval(id: number): Promise<Testimonial | undefined> {
+    const testimonial = this.testimonials.get(id);
+    if (!testimonial) return undefined;
+    
+    const unapprovedTestimonial: Testimonial = {
+      ...testimonial,
+      approved: false
+    };
+    
+    this.testimonials.set(id, unapprovedTestimonial);
+    return unapprovedTestimonial;
+  }
+  
   async deleteTestimonial(id: number): Promise<boolean> {
     return this.testimonials.delete(id);
   }

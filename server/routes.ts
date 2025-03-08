@@ -577,28 +577,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       
-      // First get the testimonial to verify it exists
-      const testimonial = await storage.getTestimonial(id);
-      if (!testimonial) {
+      const unapprovedTestimonial = await storage.revokeTestimonialApproval(id);
+      
+      if (!unapprovedTestimonial) {
         return res.status(404).json({ message: "Testimonial not found" });
       }
       
-      // Use direct db update with approved:false
-      // We'll use updateTestimonial for other properties, but for approved
-      // we're mimicking how the approve endpoint works
-      const db = await import('./db').then(m => m.db);
-      const { testimonials, eq } = await import('@shared/schema');
-      
-      const results = await db.update(testimonials)
-        .set({ approved: false })
-        .where(eq(testimonials.id, id))
-        .returning();
-      
-      if (!results.length) {
-        return res.status(404).json({ message: "Failed to revoke approval" });
-      }
-      
-      res.json(results[0]);
+      res.json(unapprovedTestimonial);
     } catch (error) {
       console.error("Error revoking approval:", error);
       res.status(500).json({ message: "Failed to revoke testimonial approval" });
