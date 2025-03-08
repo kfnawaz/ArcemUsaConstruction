@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { 
   Table, 
@@ -11,41 +11,44 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Loader2, Trash2, Search, Mail } from "lucide-react";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogClose
+} from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, Trash2, Search, Mail, Download, Filter } from "lucide-react";
 import AdminNav from "@/components/admin/AdminNav";
 import { apiRequest } from "@/lib/queryClient";
 import { NewsletterSubscriber } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
-import { formatDate } from "@/lib/utils";
+import { formatDate, scrollToTop } from "@/lib/utils";
 
 const NewsletterManagement = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [subscriberToDelete, setSubscriberToDelete] = useState<NewsletterSubscriber | null>(null);
+  const [activeFilter, setActiveFilter] = useState<"all" | "active" | "inactive">("all");
+
+  useEffect(() => {
+    scrollToTop();
+    document.title = 'Newsletter Management - ARCEMUSA';
+  }, []);
 
   // Fetch subscribers
-  const { data: subscribers = [], isLoading } = useQuery({
+  const { data: subscribers = [], isLoading } = useQuery<NewsletterSubscriber[]>({
     queryKey: ["/api/admin/newsletter/subscribers"],
-    queryFn: async () => {
-      const res = await apiRequest("GET", "/api/admin/newsletter/subscribers");
-      return res.json();
-    }
   });
 
   // Delete subscriber mutation
-  const deleteSubscriberMutation = useMutation({
+  const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      await apiRequest("DELETE", `/api/admin/newsletter/subscribers/${id}`);
+      return apiRequest("DELETE", `/api/admin/newsletter/subscribers/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/newsletter/subscribers"] });
@@ -54,159 +57,241 @@ const NewsletterManagement = () => {
         description: "The subscriber has been removed from the list.",
         variant: "default",
       });
+      setShowDeleteDialog(false);
       setSubscriberToDelete(null);
     },
-    onError: (error: Error) => {
+    onError: (error) => {
       toast({
-        title: "Delete failed",
-        description: error.message || "Failed to delete the subscriber. Please try again.",
-        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete subscriber. Please try again.",
+        variant: "destructive"
       });
+      console.error("Error deleting subscriber:", error);
     }
   });
 
-  // Filter subscribers based on search term
-  const filteredSubscribers = subscribers.filter((subscriber: NewsletterSubscriber) => {
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      subscriber.email.toLowerCase().includes(searchLower) ||
-      (subscriber.firstName && subscriber.firstName.toLowerCase().includes(searchLower)) ||
-      (subscriber.lastName && subscriber.lastName.toLowerCase().includes(searchLower))
-    );
+  // Filter subscribers based on search query and active/inactive filter
+  const filteredSubscribers = subscribers.filter(subscriber => {
+    const searchMatches = 
+      subscriber.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (subscriber.firstName && subscriber.firstName.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (subscriber.lastName && subscriber.lastName.toLowerCase().includes(searchQuery.toLowerCase()));
+    
+    if (activeFilter === "active") {
+      return searchMatches && subscriber.subscribed;
+    } else if (activeFilter === "inactive") {
+      return searchMatches && !subscriber.subscribed;
+    }
+    
+    return searchMatches;
   });
 
-  // Handle delete confirmation
-  const confirmDelete = (subscriber: NewsletterSubscriber) => {
-    setSubscriberToDelete(subscriber);
+  // Handle search input change
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
   };
 
-  // Handle delete
-  const handleDelete = () => {
+  // Show delete confirmation
+  const handleDeleteClick = (subscriber: NewsletterSubscriber) => {
+    setSubscriberToDelete(subscriber);
+    setShowDeleteDialog(true);
+  };
+
+  // Confirm delete
+  const confirmDelete = () => {
     if (subscriberToDelete) {
-      deleteSubscriberMutation.mutate(subscriberToDelete.id);
+      deleteMutation.mutate(subscriberToDelete.id);
     }
+  };
+
+  // Export subscribers as CSV
+  const exportSubscribers = () => {
+    const subscribersToExport = activeFilter === "all" 
+      ? subscribers 
+      : filteredSubscribers;
+    
+    const csvHeader = 'Email,First Name,Last Name,Subscribed,Date Joined\n';
+    const csvContent = subscribersToExport.map(sub => {
+      const date = sub.createdAt ? new Date(sub.createdAt).toLocaleDateString() : 'N/A';
+      return `"${sub.email}","${sub.firstName || ''}","${sub.lastName || ''}","${sub.subscribed ? 'Yes' : 'No'}","${date}"`;
+    }).join('\n');
+    
+    const csvData = csvHeader + csvContent;
+    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `newsletter-subscribers-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast({
+      title: "Export successful",
+      description: `${subscribersToExport.length} subscribers exported to CSV.`,
+      variant: "default"
+    });
   };
 
   return (
-    <div className="admin-newsletter-management">
-      <AdminNav activePage="dashboard" />
-      
-      <div className="container mx-auto py-8 px-4">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold flex items-center">
-            <Mail className="mr-2 h-6 w-6" />
-            Newsletter Subscribers
-          </h1>
+    <div className="min-h-screen pt-32 pb-20 bg-gray-50">
+      <div className="container mx-auto px-4 md:px-8">
+        <div className="flex flex-col md:flex-row gap-8">
+          {/* Admin Navigation */}
+          <AdminNav activePage="newsletter" />
           
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search subscribers..."
-              className="pl-10 w-[200px] md:w-[300px]"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-        </div>
-        
-        {isLoading ? (
-          <div className="flex justify-center items-center h-64">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
-        ) : (
-          <>
-            <div className="rounded-md border bg-white dark:bg-gray-800 overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[250px]">Email</TableHead>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Subscribed</TableHead>
-                    <TableHead>Date Joined</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredSubscribers.length === 0 ? (
+          {/* Main Content */}
+          <div className="flex-1">
+            <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                <h1 className="text-2xl font-montserrat font-bold flex items-center">
+                  <Mail className="mr-2 h-6 w-6" />
+                  Newsletter Subscribers
+                </h1>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex items-center gap-2"
+                    onClick={exportSubscribers}
+                  >
+                    <Download className="h-4 w-4" />
+                    Export CSV
+                  </Button>
+                  <div className="flex items-center gap-1">
+                    <Button 
+                      variant={activeFilter === "all" ? "default" : "outline"} 
+                      size="sm"
+                      onClick={() => setActiveFilter("all")}
+                    >
+                      All
+                    </Button>
+                    <Button 
+                      variant={activeFilter === "active" ? "default" : "outline"} 
+                      size="sm"
+                      onClick={() => setActiveFilter("active")}
+                    >
+                      Active
+                    </Button>
+                    <Button 
+                      variant={activeFilter === "inactive" ? "default" : "outline"} 
+                      size="sm"
+                      onClick={() => setActiveFilter("inactive")}
+                    >
+                      Inactive
+                    </Button>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Search bar */}
+              <div className="mb-6 relative">
+                <Input
+                  type="text"
+                  placeholder="Search subscribers..."
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  className="pl-10 pr-4 py-2 border border-gray-300"
+                />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              </div>
+              
+              {/* Subscribers table */}
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
                     <TableRow>
-                      <TableCell colSpan={5} className="h-24 text-center">
-                        No subscribers found.
-                      </TableCell>
+                      <TableHead className="w-[250px]">Email</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Date Joined</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
-                  ) : (
-                    filteredSubscribers.map((subscriber: NewsletterSubscriber) => (
-                      <TableRow key={subscriber.id}>
-                        <TableCell className="font-medium">{subscriber.email}</TableCell>
-                        <TableCell>
-                          {subscriber.firstName || subscriber.lastName ? 
-                            `${subscriber.firstName || ''} ${subscriber.lastName || ''}`.trim() : 
-                            '—'}
-                        </TableCell>
-                        <TableCell>
-                          <span className={`px-2 py-1 rounded-full text-xs ${
-                            subscriber.subscribed 
-                              ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
-                              : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                          }`}>
-                            {subscriber.subscribed ? 'Active' : 'Unsubscribed'}
-                          </span>
-                        </TableCell>
-                        <TableCell>{formatDate(subscriber.createdAt)}</TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => confirmDelete(subscriber)}
-                            disabled={deleteSubscriberMutation.isPending}
-                          >
-                            <Trash2 className="h-4 w-4 text-red-500" />
-                            <span className="sr-only">Delete</span>
-                          </Button>
+                  </TableHeader>
+                  <TableBody>
+                    {isLoading ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="h-24 text-center">
+                          <div className="animate-pulse flex items-center justify-center">
+                            <div className="h-4 w-36 bg-gray-200 rounded"></div>
+                          </div>
                         </TableCell>
                       </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-            
-            <div className="mt-4 text-sm text-muted-foreground">
-              Total Subscribers: {filteredSubscribers.length}
-            </div>
-          </>
-        )}
-      </div>
-      
-      {/* Confirmation Dialog for Delete */}
-      <AlertDialog open={!!subscriberToDelete} onOpenChange={() => setSubscriberToDelete(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this subscriber? This action cannot be undone.
-              <div className="mt-2 p-2 bg-muted rounded-sm">
-                <strong className="block">Email:</strong> {subscriberToDelete?.email}
+                    ) : filteredSubscribers.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="h-24 text-center text-gray-500">
+                          No subscribers found
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredSubscribers.map(subscriber => (
+                        <TableRow key={subscriber.id}>
+                          <TableCell className="font-medium">{subscriber.email}</TableCell>
+                          <TableCell>
+                            {subscriber.firstName || subscriber.lastName ? 
+                              `${subscriber.firstName || ''} ${subscriber.lastName || ''}`.trim() : 
+                              '—'}
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={`${
+                              subscriber.subscribed 
+                                ? 'bg-green-100 text-green-800 hover:bg-green-100' 
+                                : 'bg-red-100 text-red-800 hover:bg-red-100'
+                            }`}>
+                              {subscriber.subscribed ? 'Active' : 'Inactive'}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>{subscriber.createdAt ? formatDate(subscriber.createdAt) : 'N/A'}</TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteClick(subscriber)}
+                              className="text-red-600 hover:text-red-900"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
               </div>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleDelete}
-              className="bg-red-500 hover:bg-red-600"
+              
+              <div className="mt-4 text-sm text-muted-foreground">
+                Showing {filteredSubscribers.length} of {subscribers.length} subscribers
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete the subscriber with email "{subscriberToDelete?.email}"? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button 
+              variant="destructive" 
+              onClick={confirmDelete}
+              disabled={deleteMutation.isPending}
             >
-              {deleteSubscriberMutation.isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Deleting...
-                </>
-              ) : (
-                "Delete"
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+              {deleteMutation.isPending ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
