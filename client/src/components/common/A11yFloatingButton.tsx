@@ -1,19 +1,19 @@
-import { useCallback } from 'react';
-import { Link, useLocation } from 'wouter';
-import { Button } from '@/components/ui/button';
-import { FileText } from 'lucide-react';
+import { useCallback } from "react";
+import { Link, useLocation } from "wouter";
+import { Button } from "@/components/ui/button";
+import { FileText } from "lucide-react";
 
 const RequestQuoteButton = () => {
   const [location] = useLocation();
-  const isAdminPage = location.startsWith('/admin');
-  
+  const isAdminPage = location.startsWith("/admin");
+
   // Don't show the button on admin pages or on the request quote page
-  if (isAdminPage || location === '/request-quote') {
+  if (isAdminPage || location === "/request-quote") {
     return null;
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    <div className="fixed bottom-4 left-4 z-50">
       <Link href="/request-quote">
         <Button
           size="lg"
