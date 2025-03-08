@@ -33,12 +33,12 @@ const HeroSection = () => {
           muted 
           loop 
           playsInline
-          poster="https://images.unsplash.com/photo-1503387762-592deb58ef4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1471&q=80"
+          poster="https://images.unsplash.com/photo-1541888946425-d81bb19240f5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80"
           aria-label="Construction site timelapse video showing building progress" 
           title="ARCEMUSA construction showcase video"
         >
           <source 
-            src="https://player.vimeo.com/external/371848386.sd.mp4?s=e7e6cc074e721072036fac11f8874402ee6d861b&profile_id=164&oauth2_token_id=57447761" 
+            src="https://player.vimeo.com/progressive_redirect/playback/699037999/rendition/1080p/file.mp4?loc=external&signature=0ec2fce3f32cdeb285c7c78a7f9bd89ca63f58906e037f8a8473ddc33e7617aa" 
             type="video/mp4" 
           />
           Your browser does not support the video tag.
