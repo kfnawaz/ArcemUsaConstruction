@@ -88,9 +88,7 @@ export const useTestimonials = () => {
   // Mutation to revoke approval of a testimonial - admin only
   const revokeApprovalMutation = useMutation({
     mutationFn: async (id: number) => {
-      const response = await apiRequest("PUT", `/api/admin/testimonials/${id}`, { 
-        approved: false 
-      });
+      const response = await apiRequest("PUT", `/api/admin/testimonials/${id}/revoke`);
       return response.json();
     },
     onSuccess: () => {
