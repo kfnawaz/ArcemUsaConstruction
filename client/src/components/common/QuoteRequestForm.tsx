@@ -221,13 +221,13 @@ const QuoteRequestForm = ({ className = "", onSuccess }: QuoteRequestFormProps) 
               name="budget"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Budget Range</FormLabel>
+                  <FormLabel className="text-gray-700 font-medium">Budget Range</FormLabel>
                   <Select 
                     onValueChange={field.onChange} 
                     defaultValue={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="border-gray-300 focus:border-[#C09E5E] focus:ring-[#C09E5E] text-gray-800">
                         <SelectValue placeholder="Select budget range" />
                       </SelectTrigger>
                     </FormControl>
@@ -251,13 +251,13 @@ const QuoteRequestForm = ({ className = "", onSuccess }: QuoteRequestFormProps) 
               name="timeframe"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Timeframe</FormLabel>
+                  <FormLabel className="text-gray-700 font-medium">Timeframe</FormLabel>
                   <Select 
                     onValueChange={field.onChange} 
                     defaultValue={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="border-gray-300 focus:border-[#C09E5E] focus:ring-[#C09E5E] text-gray-800">
                         <SelectValue placeholder="Select timeframe" />
                       </SelectTrigger>
                     </FormControl>
@@ -280,15 +280,15 @@ const QuoteRequestForm = ({ className = "", onSuccess }: QuoteRequestFormProps) 
             name="description"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Project Description *</FormLabel>
+                <FormLabel className="text-gray-700 font-medium">Project Description *</FormLabel>
                 <FormControl>
                   <Textarea 
                     placeholder="Please provide details about your project, requirements, and any specific needs."
-                    className="min-h-[120px]"
+                    className="min-h-[120px] border-gray-300 focus:border-[#C09E5E] focus:ring-[#C09E5E] text-gray-800"
                     {...field} 
                   />
                 </FormControl>
-                <FormDescription>
+                <FormDescription className="text-gray-600 text-sm italic">
                   Include as much detail as possible to help us provide an accurate quote.
                 </FormDescription>
                 <FormMessage />
