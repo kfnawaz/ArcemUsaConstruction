@@ -84,7 +84,7 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
         featured: project.featured === null ? false : project.featured,
         // Project details
         overview: project.overview ?? '',
-        challenges: (project.challenges ?? '') + (project.solutions ? '\n\n' + project.solutions : ''),
+        challenges: project.challenges ?? '',
         results: project.results ?? '',
         // Project specifications
         client: project.client ?? '',
