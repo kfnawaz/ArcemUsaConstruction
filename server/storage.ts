@@ -83,6 +83,7 @@ export interface IStorage {
   getMessage(id: number): Promise<Message | undefined>;
   createMessage(message: InsertMessage): Promise<Message>;
   markMessageAsRead(id: number): Promise<Message | undefined>;
+  deleteMessage(id: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -770,6 +771,10 @@ export class MemStorage implements IStorage {
     
     this.messages.set(id, updatedMessage);
     return updatedMessage;
+  }
+  
+  async deleteMessage(id: number): Promise<boolean> {
+    return this.messages.delete(id);
   }
 }
 

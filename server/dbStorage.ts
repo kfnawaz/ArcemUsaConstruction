@@ -347,4 +347,11 @@ export class DBStorage implements IStorage {
       .returning();
     return result[0];
   }
+
+  async deleteMessage(id: number): Promise<boolean> {
+    const result = await db.delete(messages)
+      .where(eq(messages.id, id))
+      .returning();
+    return result.length > 0;
+  }
 }
