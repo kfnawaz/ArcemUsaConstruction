@@ -5,9 +5,11 @@ import PageBanner from '@/components/common/PageBanner';
 import { scrollToTop } from '@/lib/utils';
 import { useTestimonials } from '@/hooks/useTestimonials';
 import { Loader2 } from 'lucide-react';
+import { Testimonial } from '@shared/schema';
 
 const Testimonials = () => {
-  const { testimonials, isLoadingTestimonials } = useTestimonials();
+  const { testimonials: testimonialsData, isLoadingTestimonials } = useTestimonials();
+  const testimonials: Testimonial[] = Array.isArray(testimonialsData) ? testimonialsData : [];
 
   useEffect(() => {
     scrollToTop();
@@ -45,8 +47,8 @@ const Testimonials = () => {
                     <TestimonialCard
                       key={testimonial.id}
                       name={testimonial.name}
-                      position={testimonial.position}
-                      company={testimonial.company}
+                      position={testimonial.position || 'Client'}
+                      company={testimonial.company || 'Happy Customer'}
                       content={testimonial.content}
                       rating={testimonial.rating}
                       image={testimonial.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(testimonial.name)}&background=random`}

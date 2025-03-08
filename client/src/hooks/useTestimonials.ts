@@ -11,7 +11,7 @@ export const useTestimonials = () => {
     data: testimonials = [],
     isLoading: isLoadingTestimonials,
     error: testimonialError,
-  } = useQuery({
+  } = useQuery<Testimonial[]>({
     queryKey: ["/api/testimonials"],
     retry: 1,
   });
