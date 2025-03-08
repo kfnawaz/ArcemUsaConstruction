@@ -21,10 +21,11 @@ export const useTestimonials = () => {
     data: allTestimonials = [],
     isLoading: isLoadingAllTestimonials,
     error: allTestimonialsError,
-  } = useQuery({
+    refetch: refetchAllTestimonials,
+  } = useQuery<Testimonial[]>({
     queryKey: ["/api/admin/testimonials"],
     retry: 1,
-    enabled: false, // Only load when needed
+    // We don't set enabled: false to ensure data is loaded in admin pages
   });
 
   // Get pending testimonials - admin only
@@ -33,10 +34,10 @@ export const useTestimonials = () => {
     isLoading: isLoadingPendingTestimonials,
     error: pendingTestimonialsError,
     refetch: refetchPendingTestimonials,
-  } = useQuery({
+  } = useQuery<Testimonial[]>({
     queryKey: ["/api/admin/testimonials/pending"],
     retry: 1,
-    enabled: false, // Only load when needed
+    // We don't set enabled: false to ensure data is loaded in admin pages
   });
 
   // Mutation to submit a new testimonial
@@ -147,5 +148,6 @@ export const useTestimonials = () => {
     
     // Refetch
     refetchPendingTestimonials,
+    refetchAllTestimonials,
   };
 };

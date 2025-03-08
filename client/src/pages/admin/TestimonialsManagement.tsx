@@ -31,7 +31,26 @@ const TestimonialsManagement = () => {
     deleteTestimonial,
     isApproving,
     isDeleting,
+    refetchPendingTestimonials,
+    refetchAllTestimonials
   } = useTestimonials();
+  
+  // Use effect to load testimonials data on component mount
+  React.useEffect(() => {
+    // Force fetch all testimonial data
+    const fetchData = async () => {
+      try {
+        await Promise.all([
+          refetchAllTestimonials(),
+          refetchPendingTestimonials()
+        ]);
+      } catch (error) {
+        console.error("Failed to fetch testimonials data:", error);
+      }
+    };
+    
+    fetchData();
+  }, [refetchAllTestimonials, refetchPendingTestimonials]);
 
   const [testimonialToDelete, setTestimonialToDelete] = useState<Testimonial | null>(null);
 
