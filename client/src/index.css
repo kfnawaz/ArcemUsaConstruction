@@ -124,6 +124,11 @@
     background-color: rgba(0, 0, 0, 0.9);
     transition: all 0.3s ease-in-out;
   }
+  
+  .navbar-admin {
+    background-color: #000000;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  }
 
   .slide-in {
     animation: slideIn 0.5s forwards;

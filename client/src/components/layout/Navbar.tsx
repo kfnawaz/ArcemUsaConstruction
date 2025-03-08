@@ -13,6 +13,9 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { isAuthenticated, user } = useAuth();
   
+  // Check if we're on an admin page
+  const isAdminPage = location.startsWith('/admin');
+  
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
@@ -51,7 +54,7 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
       id="navbar" 
       className={cn(
         'fixed w-full z-50 py-4 transition-all duration-300',
-        isScrolled ? 'navbar-fixed' : ''
+        isAdminPage ? 'navbar-admin' : (isScrolled ? 'navbar-fixed' : '')
       )}
     >
       <div className="container mx-auto px-4 md:px-8">
