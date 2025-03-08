@@ -44,11 +44,11 @@ const NewsletterSubscription = ({ extendedForm = false, className = "" }: Newsle
 
   // Submit handler
   const onSubmit = (data: FormValues) => {
-    subscribe(data);
-    // Reset form on successful submission
-    if (!subscriptionMutation.isPending) {
-      form.reset();
-    }
+    subscriptionMutation.mutate(data, {
+      onSuccess: () => {
+        form.reset();
+      }
+    });
   };
 
   return (

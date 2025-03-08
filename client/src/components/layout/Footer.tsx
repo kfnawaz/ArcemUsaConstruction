@@ -1,6 +1,7 @@
 import { Link } from 'wouter';
 import { Facebook, Github, Instagram, Linkedin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import NewsletterSubscription from '@/components/common/NewsletterSubscription';
 
 const Footer = () => {
   return (
