@@ -3,6 +3,7 @@ import { useRoute, Link } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { Project, ProjectGallery } from '@shared/schema';
 import { ArrowLeft, Calendar, ChevronLeft, ChevronRight, ImageIcon, Loader2, Tag, X } from 'lucide-react';
+import ProjectSeo from '@/components/seo/ProjectSeo';
 import { Button } from '@/components/ui/button';
 import { initializeRevealEffects, scrollToTop, formatDate } from '@/lib/utils';
 import {

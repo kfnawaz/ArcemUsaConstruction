@@ -64,6 +64,18 @@ const BlogPost = () => {
 
   return (
     <div className="min-h-screen pt-32 pb-20 bg-white">
+      {post && (
+        <BlogPostSeo
+          title={post.title}
+          description={post.excerpt || post.content.substring(0, 160)}
+          imageUrl={post.image || ''}
+          author={post.author}
+          publishedDate={post.createdAt ? new Date(post.createdAt).toISOString() : new Date().toISOString()}
+          modifiedDate={post.updatedAt ? new Date(post.updatedAt).toISOString() : undefined}
+          url={window.location.href}
+          slug={slug || ''}
+        />
+      )}
       <div className="container mx-auto px-4 md:px-8">
         <div className="max-w-4xl mx-auto">
           <Link href="/blog">
