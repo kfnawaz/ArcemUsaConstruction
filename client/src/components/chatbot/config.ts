@@ -1,16 +1,10 @@
-import { createChatBotConfig } from 'react-chatbot-kit';
-import BotAvatar from './BotAvatar';
-import ServicesList from './widgets/ServicesList';
-import ProjectsList from './widgets/ProjectsList';
-import ContactOptions from './widgets/ContactOptions';
+import { createChatBotMessage } from 'react-chatbot-kit';
 
-const config = createChatBotConfig({
+// Define the configuration object with TypeScript annotations
+const config = {
   botName: 'ARCEMUSA Support',
   initialMessages: [
-    {
-      message: 'Hello! Welcome to ARCEMUSA Construction. How can I help you today?',
-      type: 'bot',
-    },
+    createChatBotMessage('Hello! Welcome to ARCEMUSA Construction. How can I help you today?'),
   ],
   customStyles: {
     botMessageBox: {
@@ -20,29 +14,11 @@ const config = createChatBotConfig({
       backgroundColor: '#C09E5E',
     },
   },
-  customComponents: {
-    botAvatar: (props) => <BotAvatar {...props} />,
-  },
-  widgets: [
-    {
-      widgetName: 'servicesList',
-      widgetFunc: (props) => <ServicesList {...props} />,
-      mapStateToProps: ['services'],
-    },
-    {
-      widgetName: 'projectsList',
-      widgetFunc: (props) => <ProjectsList {...props} />,
-      mapStateToProps: ['projects'],
-    },
-    {
-      widgetName: 'contactOptions',
-      widgetFunc: (props) => <ContactOptions {...props} />,
-    },
-  ],
+  widgets: [],
   state: {
     services: [],
     projects: [],
   },
-});
+};
 
 export default config;
