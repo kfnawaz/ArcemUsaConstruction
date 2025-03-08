@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
 import { cn } from '@/lib/utils';
 import { Menu, X, User } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/use-auth';
 
 type NavbarProps = {
   isScrolled: boolean;
@@ -11,7 +11,8 @@ type NavbarProps = {
 const Navbar = ({ isScrolled }: NavbarProps) => {
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { isAuthenticated, user } = useAuth();
+  const { user } = useAuth();
+  const isAuthenticated = !!user;
   
   // Check if we're on an admin page
   const isAdminPage = location.startsWith('/admin');

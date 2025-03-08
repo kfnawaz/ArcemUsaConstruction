@@ -6,9 +6,6 @@ import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
 import { User as SelectUser } from "@shared/schema";
-import pg from "pg";
-import connectPgSimple from "connect-pg-simple";
-import { DATABASE_URL } from "./db";
 
 declare global {
   namespace Express {
@@ -32,25 +29,15 @@ async function comparePasswords(supplied: string, stored: string) {
 }
 
 export function setupAuth(app: Express) {
-  // Create a standard PostgreSQL pool for session store
-  const pgPool = new pg.Pool({
-    connectionString: DATABASE_URL
-  });
-  
-  // Create a PostgreSQL session store
-  const PgSession = connectPgSimple(session);
-  
   const sessionSettings: session.SessionOptions = {
-    secret: process.env.SESSION_SECRET || 'arcemusa-construction-secret',
+    secret: process.env.SESSION_SECRET || "arcemusaVerySecureSecret2025",
     resave: false,
     saveUninitialized: false,
-    store: new PgSession({ 
-      pool: pgPool,
-      createTableIfMissing: true
-    }),
     cookie: {
-      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
-    }
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+    },
   };
 
   app.set("trust proxy", 1);
@@ -93,28 +80,28 @@ export function setupAuth(app: Express) {
       const user = await storage.createUser({
         ...req.body,
         password: await hashPassword(req.body.password),
-        role: req.body.role || "user", // Default role
+        role: "user" // Default role for new users
       });
 
       req.login(user, (err) => {
         if (err) return next(err);
-        const { password, ...userWithoutPassword } = user;
-        res.status(201).json(userWithoutPassword);
+        res.status(201).json(user);
       });
-    } catch (err) {
-      next(err);
+    } catch (error) {
+      console.error("Registration error:", error);
+      res.status(500).json({ message: "An error occurred during registration" });
     }
   });
 
   app.post("/api/login", (req, res, next) => {
-    passport.authenticate("local", (err: Error | null, user: SelectUser | false, info: any) => {
+    passport.authenticate("local", (err, user, info) => {
       if (err) return next(err);
-      if (!user) return res.status(401).json({ message: "Invalid credentials" });
-      
-      req.login(user, (err) => {
-        if (err) return next(err);
-        const { password, ...userWithoutPassword } = user;
-        res.status(200).json(userWithoutPassword);
+      if (!user) {
+        return res.status(401).json({ message: "Invalid username or password" });
+      }
+      req.login(user, (loginErr) => {
+        if (loginErr) return next(loginErr);
+        return res.status(200).json(user);
       });
     })(req, res, next);
   });
@@ -128,7 +115,6 @@ export function setupAuth(app: Express) {
 
   app.get("/api/user", (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
-    const { password, ...userWithoutPassword } = req.user as SelectUser;
-    res.json(userWithoutPassword);
+    res.json(req.user);
   });
 }
