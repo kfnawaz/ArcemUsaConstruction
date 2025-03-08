@@ -133,6 +133,30 @@
     background-color: #000000;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
   }
+  
+  /* Hero media transitions */
+  .hero-image-container,
+  .hero-video-container video {
+    transition: opacity 1s ease-in-out;
+  }
+  
+  .media-fade-in {
+    animation: fadeIn 1s forwards;
+  }
+  
+  .media-fade-out {
+    animation: fadeOut 1s forwards;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
 
   .slide-in {
     animation: slideIn 0.5s forwards;
