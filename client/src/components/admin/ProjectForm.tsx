@@ -152,7 +152,14 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
     }
   };
   
-  const handleSetAsPreview = (imageUrl: string) => {
+  // This function only updates the form state without submitting
+  const handleSetAsPreview = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, imageUrl: string) => {
+    // Prevent the event from bubbling up to any parent elements
+    e.preventDefault();
+    e.stopPropagation();
+    
+    console.log("Setting preview image to:", imageUrl);
+    
     // Only set the value in the form without triggering a save
     form.setValue('image', imageUrl, { 
       shouldDirty: true,      // Mark the form as dirty since we changed a value
@@ -160,9 +167,12 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
       shouldValidate: false   // Don't trigger validation
     });
     
-    // Display visual feedback through form UI - we already have the highlight effect
-    // Toast notification has TypeScript errors, so we're bypassing it
-    // The user will still see visual feedback via the highlighted image
+    // Explicitly log the form state to verify it's not submitting
+    console.log("Form state after setting preview:", {
+      isDirty: form.formState.isDirty,
+      isSubmitting: form.formState.isSubmitting,
+      isSubmitted: form.formState.isSubmitted
+    });
   };
 
   return (
@@ -525,7 +535,7 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                                 variant={form.getValues('image') === image.imageUrl ? "default" : "outline"}
                                 size="icon"
                                 className="h-8 w-8 rounded-full bg-white/90 hover:bg-white"
-                                onClick={() => handleSetAsPreview(image.imageUrl)}
+                                onClick={(e) => handleSetAsPreview(e, image.imageUrl)}
                                 title={form.getValues('image') === image.imageUrl ? "Selected as preview (click Update Project to save)" : "Set as preview image"}
                               >
                                 <Star className={`h-4 w-4 ${form.getValues('image') === image.imageUrl ? 'text-yellow-500 fill-yellow-500' : 'text-gray-700'}`} />
