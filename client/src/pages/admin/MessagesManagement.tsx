@@ -41,9 +41,40 @@ const MessagesManagement = () => {
       });
     }
   });
+  
+  const deleteMessageMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await apiRequest('DELETE', `/api/messages/${id}`);
+      if (!response.ok) {
+        throw new Error('Failed to delete message');
+      }
+      return await response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/messages'] });
+      toast({
+        title: 'Success',
+        description: 'Message deleted successfully',
+        variant: 'default'
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete message',
+        variant: 'destructive'
+      });
+    }
+  });
 
   const handleMarkAsRead = (id: number) => {
     markAsReadMutation.mutate(id);
+  };
+  
+  const handleDeleteMessage = (id: number) => {
+    if (window.confirm('Are you sure you want to delete this message? This action cannot be undone.')) {
+      deleteMessageMutation.mutate(id);
+    }
   };
 
   if (isLoading) {
@@ -128,6 +159,14 @@ const MessagesManagement = () => {
                             >
                               Mark as Read
                             </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => handleDeleteMessage(message.id)}
+                              disabled={deleteMessageMutation.isPending}
+                            >
+                              Delete
+                            </Button>
                           </td>
                         </tr>
                       ))}
@@ -156,8 +195,8 @@ const MessagesManagement = () => {
                       <div className="mt-3">
                         <p className="text-gray-700">{message.message}</p>
                       </div>
-                      {!message.read && (
-                        <div className="mt-3">
+                      <div className="mt-3 flex space-x-2">
+                        {!message.read && (
                           <Button
                             variant="outline"
                             size="sm"
@@ -166,8 +205,16 @@ const MessagesManagement = () => {
                           >
                             Mark as Read
                           </Button>
-                        </div>
-                      )}
+                        )}
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDeleteMessage(message.id)}
+                          disabled={deleteMessageMutation.isPending}
+                        >
+                          Delete
+                        </Button>
+                      </div>
                     </div>
                   ))}
                 </div>

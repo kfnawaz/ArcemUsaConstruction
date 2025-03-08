@@ -645,6 +645,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to mark message as read" });
     }
   });
+  
+  app.delete(`${apiRouter}/messages/:id`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid message ID" });
+      }
+      
+      const deleted = await storage.deleteMessage(id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Message not found" });
+      }
+      
+      res.status(200).json({ success: true });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete message" });
+    }
+  });
 
   // File Upload Route
   app.post(`${apiRouter}/upload`, isAdmin, upload.single('file'), (req: Request, res: Response) => {
