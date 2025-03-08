@@ -3,7 +3,7 @@ import { db } from "./db";
 import { 
   users, projects, projectGallery, blogCategories, blogTags, blogPosts, 
   blogPostCategories, blogPostTags,
-  testimonials, services, messages,
+  testimonials, services, messages, newsletterSubscribers, quoteRequests,
   type User, type InsertUser, 
   type Project, type InsertProject,
   type ProjectGallery, type InsertProjectGallery,
@@ -12,7 +12,9 @@ import {
   type BlogPost, type InsertBlogPost, 
   type Testimonial, type InsertTestimonial, 
   type Service, type InsertService, 
-  type Message, type InsertMessage
+  type Message, type InsertMessage,
+  type NewsletterSubscriber, type InsertNewsletterSubscriber,
+  type QuoteRequest, type InsertQuoteRequest
 } from "../shared/schema";
 import { IStorage } from "./storage";
 
@@ -351,6 +353,87 @@ export class DBStorage implements IStorage {
   async deleteMessage(id: number): Promise<boolean> {
     const result = await db.delete(messages)
       .where(eq(messages.id, id))
+      .returning();
+    return result.length > 0;
+  }
+
+  // Newsletter Subscribers
+  async getNewsletterSubscribers(): Promise<NewsletterSubscriber[]> {
+    return await db.select().from(newsletterSubscribers);
+  }
+
+  async getNewsletterSubscriber(id: number): Promise<NewsletterSubscriber | undefined> {
+    const [subscriber] = await db.select().from(newsletterSubscribers).where(eq(newsletterSubscribers.id, id));
+    return subscriber || undefined;
+  }
+
+  async getNewsletterSubscriberByEmail(email: string): Promise<NewsletterSubscriber | undefined> {
+    const [subscriber] = await db.select().from(newsletterSubscribers).where(eq(newsletterSubscribers.email, email));
+    return subscriber || undefined;
+  }
+
+  async createNewsletterSubscriber(subscriber: InsertNewsletterSubscriber): Promise<NewsletterSubscriber> {
+    const [result] = await db.insert(newsletterSubscribers).values(subscriber).returning();
+    return result;
+  }
+
+  async updateNewsletterSubscriber(id: number, updates: Partial<InsertNewsletterSubscriber>): Promise<NewsletterSubscriber | undefined> {
+    const [result] = await db.update(newsletterSubscribers)
+      .set(updates)
+      .where(eq(newsletterSubscribers.id, id))
+      .returning();
+    return result;
+  }
+
+  async deleteNewsletterSubscriber(id: number): Promise<boolean> {
+    const result = await db.delete(newsletterSubscribers)
+      .where(eq(newsletterSubscribers.id, id))
+      .returning();
+    return result.length > 0;
+  }
+
+  // Quote Requests
+  async getQuoteRequests(): Promise<QuoteRequest[]> {
+    return await db.select().from(quoteRequests);
+  }
+
+  async getQuoteRequest(id: number): Promise<QuoteRequest | undefined> {
+    const [request] = await db.select().from(quoteRequests).where(eq(quoteRequests.id, id));
+    return request || undefined;
+  }
+
+  async createQuoteRequest(request: InsertQuoteRequest): Promise<QuoteRequest> {
+    const [result] = await db.insert(quoteRequests).values(request).returning();
+    return result;
+  }
+
+  async updateQuoteRequest(id: number, updates: Partial<QuoteRequest>): Promise<QuoteRequest | undefined> {
+    const [result] = await db.update(quoteRequests)
+      .set(updates)
+      .where(eq(quoteRequests.id, id))
+      .returning();
+    return result;
+  }
+
+  async markQuoteRequestAsReviewed(id: number): Promise<QuoteRequest | undefined> {
+    const [result] = await db.update(quoteRequests)
+      .set({ reviewed: true })
+      .where(eq(quoteRequests.id, id))
+      .returning();
+    return result;
+  }
+
+  async updateQuoteRequestStatus(id: number, status: string): Promise<QuoteRequest | undefined> {
+    const [result] = await db.update(quoteRequests)
+      .set({ status })
+      .where(eq(quoteRequests.id, id))
+      .returning();
+    return result;
+  }
+
+  async deleteQuoteRequest(id: number): Promise<boolean> {
+    const result = await db.delete(quoteRequests)
+      .where(eq(quoteRequests.id, id))
       .returning();
     return result.length > 0;
   }
