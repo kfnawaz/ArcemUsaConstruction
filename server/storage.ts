@@ -7,7 +7,9 @@ import {
   blogPosts, type BlogPost, type InsertBlogPost,
   testimonials, type Testimonial, type InsertTestimonial,
   services, type Service, type InsertService,
-  messages, type Message, type InsertMessage
+  messages, type Message, type InsertMessage,
+  newsletterSubscribers, type NewsletterSubscriber, type InsertNewsletterSubscriber,
+  quoteRequests, type QuoteRequest, type InsertQuoteRequest
 } from "@shared/schema";
 
 // modify the interface with any CRUD methods
@@ -115,6 +117,8 @@ export class MemStorage implements IStorage {
   private testimonials: Map<number, Testimonial>;
   private services: Map<number, Service>;
   private messages: Map<number, Message>;
+  private newsletterSubscribers: Map<number, NewsletterSubscriber>;
+  private quoteRequests: Map<number, QuoteRequest>;
   
   userCurrentId: number;
   projectCurrentId: number;
@@ -125,6 +129,8 @@ export class MemStorage implements IStorage {
   testimonialCurrentId: number;
   serviceCurrentId: number;
   messageCurrentId: number;
+  newsletterSubscriberCurrentId: number;
+  quoteRequestCurrentId: number;
 
   constructor() {
     this.users = new Map();
@@ -138,6 +144,8 @@ export class MemStorage implements IStorage {
     this.testimonials = new Map();
     this.services = new Map();
     this.messages = new Map();
+    this.newsletterSubscribers = new Map();
+    this.quoteRequests = new Map();
     
     this.userCurrentId = 1;
     this.projectCurrentId = 1;
@@ -148,6 +156,8 @@ export class MemStorage implements IStorage {
     this.testimonialCurrentId = 1;
     this.serviceCurrentId = 1;
     this.messageCurrentId = 1;
+    this.newsletterSubscriberCurrentId = 1;
+    this.quoteRequestCurrentId = 1;
     
     // Add initial data
     this.initializeData();
