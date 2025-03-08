@@ -23,14 +23,22 @@ const TestimonialCard = ({ name, position, company, content, rating, image }: Te
     // Add full stars
     for (let i = 0; i < fullStars; i++) {
       stars.push(
-        <Star key={`star-${i}`} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+        <Star 
+          key={`star-${i}`} 
+          className="h-4 w-4 fill-yellow-400 text-yellow-400" 
+          aria-hidden="true"
+        />
       );
     }
 
     // Add half star if necessary
     if (hasHalfStar) {
       stars.push(
-        <StarHalf key="half-star" className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+        <StarHalf 
+          key="half-star" 
+          className="h-4 w-4 fill-yellow-400 text-yellow-400" 
+          aria-hidden="true"
+        />
       );
     }
 
@@ -38,7 +46,11 @@ const TestimonialCard = ({ name, position, company, content, rating, image }: Te
     const emptyStars = 5 - stars.length;
     for (let i = 0; i < emptyStars; i++) {
       stars.push(
-        <Star key={`empty-${i}`} className="h-4 w-4 text-yellow-400" />
+        <Star 
+          key={`empty-${i}`} 
+          className="h-4 w-4 text-yellow-400" 
+          aria-hidden="true"
+        />
       );
     }
 
@@ -63,7 +75,8 @@ const TestimonialCard = ({ name, position, company, content, rating, image }: Te
           </div>
         </div>
         
-        <div className="flex mb-4">
+        <div className="flex mb-4" aria-label={`Rating: ${rating} out of 5 stars`}>
+          <span className="sr-only">{rating} out of 5 stars</span>
           {renderStars()}
         </div>
         
