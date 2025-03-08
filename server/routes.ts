@@ -477,10 +477,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Testimonials Public Routes
   app.get(`${apiRouter}/testimonials`, async (req: Request, res: Response) => {
     try {
+      console.log("[DEBUG] Fetching approved testimonials");
       // Only return approved testimonials for public view
       const testimonials = await storage.getApprovedTestimonials();
+      console.log("[DEBUG] Approved testimonials:", testimonials);
       res.json(testimonials);
     } catch (error) {
+      console.error("[ERROR] Failed to fetch testimonials:", error);
       res.status(500).json({ message: "Failed to fetch testimonials" });
     }
   });
