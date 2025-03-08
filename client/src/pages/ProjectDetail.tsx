@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRoute, Link } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { Project, ProjectGallery } from '@shared/schema';
-import { ArrowLeft, Calendar, ChevronLeft, ChevronRight, ImageIcon, Tag, X } from 'lucide-react';
+import { ArrowLeft, Calendar, ChevronLeft, ChevronRight, ImageIcon, Loader2, Tag, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { initializeRevealEffects, scrollToTop, formatDate } from '@/lib/utils';
 import {
@@ -13,6 +13,82 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+
+// Component for fetching and displaying related projects
+const RelatedProjects = ({ currentProjectId, category }: { currentProjectId: number, category: string }) => {
+  // Fetch all projects to filter for related ones
+  const { data: allProjects, isLoading, error } = useQuery<Project[]>({
+    queryKey: ['/api/projects'],
+  });
+
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 min-h-[200px] place-items-center">
+        <div className="col-span-3 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !allProjects || allProjects.length === 0) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        No related projects found.
+      </div>
+    );
+  }
+
+  // Filter projects that:
+  // 1. Are in the same category
+  // 2. Are not the current project
+  // 3. Limit to 3 projects
+  const relatedProjects = allProjects
+    .filter(project => 
+      project.id !== currentProjectId && 
+      project.category.toLowerCase() === category.toLowerCase()
+    )
+    .slice(0, 3);
+
+  // If no projects in the same category, just show other projects
+  const projectsToShow = relatedProjects.length > 0 
+    ? relatedProjects 
+    : allProjects
+        .filter(project => project.id !== currentProjectId)
+        .slice(0, 3);
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {projectsToShow.map((project) => (
+        <Link key={project.id} href={`/projects/${project.id}`} className="group block overflow-hidden shadow-lg">
+          <div className="relative h-64 overflow-hidden">
+            <img 
+              src={project.image} 
+              alt={project.title} 
+              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+              onError={(e) => {
+                e.currentTarget.src = "https://placehold.co/600x400?text=Image+Not+Found";
+              }}
+            />
+            <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+              <span className="text-white font-montserrat font-medium">View Project</span>
+            </div>
+          </div>
+          <div className="p-4">
+            <h3 className="font-montserrat font-bold">{project.title}</h3>
+            <p className="text-gray-600 text-sm">{project.category}</p>
+          </div>
+        </Link>
+      ))}
+
+      {projectsToShow.length === 0 && (
+        <div className="col-span-3 text-center py-8 text-gray-500">
+          No other projects available.
+        </div>
+      )}
+    </div>
+  );
+};
 
 const ProjectDetail = () => {
   const [, params] = useRoute('/projects/:id');
@@ -342,27 +418,9 @@ const ProjectDetail = () => {
         {/* Related Projects Section */}
         <div className="mt-16 reveal">
           <h2 className="text-2xl font-montserrat font-bold mb-8">Related Projects</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* This would use actual related projects from the API in a real implementation */}
-            {[1, 2, 3].map((_, index) => (
-              <Link key={index} href={`/projects/${(projectId % 6) + index + 1}`} className="group block overflow-hidden shadow-lg">
-                <div className="relative h-64 overflow-hidden">
-                  <img 
-                    src={`https://images.unsplash.com/photo-151968714593${index}-d81bb19240f5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80`} 
-                    alt="Related Project" 
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                    <span className="text-white font-montserrat font-medium">View Project</span>
-                  </div>
-                </div>
-                <div className="p-4">
-                  <h3 className="font-montserrat font-bold">Similar {project.category} Project</h3>
-                  <p className="text-gray-600 text-sm">Another exceptional project in our portfolio</p>
-                </div>
-              </Link>
-            ))}
-          </div>
+          
+          {/* Use a query to fetch related projects */}
+          <RelatedProjects currentProjectId={projectId} category={project.category} />
         </div>
       </div>
     </div>
