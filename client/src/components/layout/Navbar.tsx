@@ -70,8 +70,8 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "text-white hover:text-[#C09E5E] transition-colors font-montserrat text-sm",
-                  location === item.href && "text-[#C09E5E]"
+                  "text-white hover:text-[#e0c080] transition-colors font-montserrat text-sm font-medium",
+                  location === item.href && "text-[#e0c080]"
                 )}
               >
                 {item.label}
@@ -118,8 +118,8 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "text-white hover:text-[#C09E5E] transition-colors font-montserrat text-sm",
-                  location === item.href && "text-[#C09E5E]"
+                  "text-white hover:text-[#e0c080] transition-colors font-montserrat text-sm font-medium",
+                  location === item.href && "text-[#e0c080]"
                 )}
                 onClick={closeMobileMenu}
               >
