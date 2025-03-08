@@ -1,28 +1,27 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useTestimonials } from "@/hooks/useTestimonials";
 import AdminNav from "@/components/admin/AdminNav";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Loader2, CheckCircle, Trash2, Star } from "lucide-react";
+import { Loader2, CheckCircle, Trash2, Star, Search } from "lucide-react";
 import { Testimonial } from "@shared/schema";
-import { queryClient } from "@/lib/queryClient";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { scrollToTop } from '@/lib/utils';
 import { formatDate } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose
+} from "@/components/ui/dialog";
 
 const TestimonialsManagement = () => {
+  const { toast } = useToast();
   const {
     allTestimonials,
     pendingTestimonials,
@@ -37,7 +36,10 @@ const TestimonialsManagement = () => {
   } = useTestimonials();
   
   // Use effect to load testimonials data on component mount
-  React.useEffect(() => {
+  useEffect(() => {
+    scrollToTop();
+    document.title = 'Testimonials Management - ARCEMUSA';
+    
     // Force fetch all testimonial data
     const fetchData = async () => {
       try {
@@ -53,176 +55,246 @@ const TestimonialsManagement = () => {
     fetchData();
   }, [refetchAllTestimonials, refetchPendingTestimonials]);
 
+  // State variables
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [testimonialToDelete, setTestimonialToDelete] = useState<Testimonial | null>(null);
+  const [activeTab, setActiveTab] = useState<'pending' | 'all'>('pending');
 
-  const handleDeleteConfirm = () => {
+  // Filter testimonials based on search query
+  const filteredAllTestimonials = allTestimonials?.filter(testimonial => 
+    testimonial.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    testimonial.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    testimonial.company?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredPendingTestimonials = pendingTestimonials?.filter(testimonial => 
+    testimonial.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    testimonial.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    testimonial.company?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Handlers
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+  
+  const handleDeleteClick = (testimonial: Testimonial) => {
+    setTestimonialToDelete(testimonial);
+    setShowDeleteDialog(true);
+  };
+
+  const confirmDelete = () => {
     if (testimonialToDelete) {
       deleteTestimonial(testimonialToDelete.id);
-      setTestimonialToDelete(null);
+      setShowDeleteDialog(false);
     }
   };
 
-  const renderTestimonialCard = (testimonial: Testimonial) => (
-    <Card key={testimonial.id} className="mb-4">
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-start">
-          <div className="flex items-center">
-            <Avatar className="h-10 w-10 mr-3">
-              <AvatarImage src={testimonial.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(testimonial.name)}&background=random`} alt={testimonial.name} />
-              <AvatarFallback>
-                {testimonial.name.split(" ").map(n => n[0]).join("")}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <CardTitle className="text-lg">{testimonial.name}</CardTitle>
-              <CardDescription>
-                {testimonial.position}, {testimonial.company}
-              </CardDescription>
-            </div>
-          </div>
-          <div className="flex items-center space-x-1">
-            {[...Array(testimonial.rating)].map((_, i) => (
-              <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-            ))}
-          </div>
-        </div>
-        <div className="flex mt-2 space-x-2">
-          {testimonial.approved ? (
-            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-              Approved
-            </Badge>
-          ) : (
-            <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">
-              Pending
-            </Badge>
-          )}
-          {testimonial.email && (
-            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-              {testimonial.email}
-            </Badge>
-          )}
-          <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">
-            {testimonial.createdAt ? formatDate(testimonial.createdAt) : 'N/A'}
-          </Badge>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <p className="text-sm italic">"{testimonial.content}"</p>
-      </CardContent>
-      <CardFooter className="flex justify-end space-x-2 pt-0">
-        {!testimonial.approved && (
-          <Button
-            size="sm"
-            onClick={() => approveTestimonial(testimonial.id)}
-            disabled={isApproving}
-            className="bg-green-600 hover:bg-green-700"
-          >
-            {isApproving ? (
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            ) : (
-              <CheckCircle className="h-4 w-4 mr-2" />
-            )}
-            Approve
-          </Button>
-        )}
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button
-              size="sm"
-              variant="destructive"
-              onClick={() => setTestimonialToDelete(testimonial)}
-              disabled={isDeleting}
-            >
-              {isDeleting ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <Trash2 className="h-4 w-4 mr-2" />
-              )}
-              Delete
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the testimonial from {testimonial.name}.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground">
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </CardFooter>
-    </Card>
-  );
+  const handleApprove = (id: number) => {
+    approveTestimonial(id);
+    toast({
+      title: "Processing approval",
+      description: "The testimonial is being approved...",
+    });
+  };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <AdminNav activePage="testimonials" />
-      
-      <div className="mt-8">
-        <h1 className="text-3xl font-bold mb-6">Testimonials Management</h1>
-        
-        <Tabs defaultValue="pending">
-          <TabsList className="mb-4">
-            <TabsTrigger value="pending">
-              Pending Approval
-              {pendingTestimonials?.length > 0 && (
-                <Badge className="ml-2 bg-primary" variant="secondary">
-                  {pendingTestimonials.length}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger value="all">All Testimonials</TabsTrigger>
-          </TabsList>
+    <div className="min-h-screen pt-32 pb-20 bg-gray-50">
+      <div className="container mx-auto px-4 md:px-8">
+        <div className="flex flex-col md:flex-row gap-8">
+          {/* Admin Navigation */}
+          <AdminNav activePage="testimonials" />
           
-          <TabsContent value="pending" className="space-y-4">
-            {isLoadingPendingTestimonials ? (
-              <div className="flex justify-center items-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          {/* Main Content */}
+          <div className="flex-1">
+            <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                <h1 className="text-2xl font-montserrat font-bold">Testimonials Management</h1>
+                
+                <div className="flex space-x-2">
+                  <Button 
+                    variant={activeTab === 'all' ? 'default' : 'outline'} 
+                    onClick={() => setActiveTab('all')}
+                    className="relative"
+                  >
+                    All Testimonials 
+                  </Button>
+                  <Button 
+                    variant={activeTab === 'pending' ? 'default' : 'outline'} 
+                    onClick={() => setActiveTab('pending')}
+                    className="relative"
+                  >
+                    Pending Approval
+                    {pendingTestimonials?.length > 0 && (
+                      <Badge className="ml-2 bg-primary text-white" variant="default">
+                        {pendingTestimonials.length}
+                      </Badge>
+                    )}
+                  </Button>
+                </div>
               </div>
-            ) : pendingTestimonials?.length === 0 ? (
-              <Card>
-                <CardContent className="flex flex-col items-center justify-center h-64 text-center">
-                  <CheckCircle className="h-12 w-12 text-muted-foreground mb-4" />
-                  <h3 className="text-xl font-medium mb-2">No Pending Testimonials</h3>
-                  <p className="text-muted-foreground">
-                    All testimonials have been reviewed. Check back later for new submissions.
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              pendingTestimonials?.map(renderTestimonialCard)
-            )}
-          </TabsContent>
-          
-          <TabsContent value="all" className="space-y-4">
-            {isLoadingAllTestimonials ? (
-              <div className="flex justify-center items-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              
+              {/* Search bar */}
+              <div className="mb-6 relative">
+                <Input
+                  type="text"
+                  placeholder="Search testimonials..."
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  className="pl-10 pr-4 py-2 border border-gray-300"
+                />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               </div>
-            ) : allTestimonials?.length === 0 ? (
-              <Card>
-                <CardContent className="flex flex-col items-center justify-center h-64 text-center">
-                  <div className="rounded-full bg-primary/10 p-3 mb-4">
-                    <Star className="h-6 w-6 text-primary" />
-                  </div>
-                  <h3 className="text-xl font-medium mb-2">No Testimonials Yet</h3>
-                  <p className="text-muted-foreground">
-                    No testimonials have been submitted yet. Encourage your clients to share their experience.
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              allTestimonials?.map(renderTestimonialCard)
-            )}
-          </TabsContent>
-        </Tabs>
+              
+              {/* Testimonials table */}
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-montserrat font-medium text-gray-500 uppercase tracking-wider">
+                        Client
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-montserrat font-medium text-gray-500 uppercase tracking-wider">
+                        Rating
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-montserrat font-medium text-gray-500 uppercase tracking-wider">
+                        Testimonial
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-montserrat font-medium text-gray-500 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-right text-xs font-montserrat font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {(activeTab === 'all' && isLoadingAllTestimonials) || 
+                     (activeTab === 'pending' && isLoadingPendingTestimonials) ? (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-4 text-center">
+                          <div className="animate-pulse flex items-center justify-center">
+                            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                          </div>
+                        </td>
+                      </tr>
+                    ) : activeTab === 'all' && filteredAllTestimonials?.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                          No testimonials found
+                        </td>
+                      </tr>
+                    ) : activeTab === 'pending' && filteredPendingTestimonials?.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                          No pending testimonials
+                        </td>
+                      </tr>
+                    ) : (
+                      (activeTab === 'all' ? filteredAllTestimonials : filteredPendingTestimonials)?.map(testimonial => (
+                        <tr key={testimonial.id}>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <Avatar className="h-10 w-10 mr-3">
+                                <AvatarImage 
+                                  src={testimonial.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(testimonial.name)}&background=random`} 
+                                  alt={testimonial.name} 
+                                />
+                                <AvatarFallback>
+                                  {testimonial.name.split(" ").map(n => n[0]).join("")}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <div className="text-sm font-medium text-gray-900">{testimonial.name}</div>
+                                <div className="text-sm text-gray-500">
+                                  {testimonial.position}{testimonial.company ? `, ${testimonial.company}` : ''}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center space-x-1">
+                              {[...Array(testimonial.rating)].map((_, i) => (
+                                <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                              ))}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <p className="text-sm text-gray-500 line-clamp-2 max-w-xs">
+                              "{testimonial.content}"
+                            </p>
+                            <div className="text-xs text-gray-400 mt-1">
+                              {testimonial.createdAt ? formatDate(testimonial.createdAt) : 'N/A'}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            {testimonial.approved ? (
+                              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                                Approved
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">
+                                Pending
+                              </Badge>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            {!testimonial.approved && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleApprove(testimonial.id)}
+                                disabled={isApproving}
+                                className="text-green-600 hover:text-green-900 mr-2"
+                              >
+                                <CheckCircle className="h-4 w-4" />
+                              </Button>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteClick(testimonial)}
+                              disabled={isDeleting}
+                              className="text-red-600 hover:text-red-900"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete the testimonial from "{testimonialToDelete?.name}"? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button 
+              variant="destructive" 
+              onClick={confirmDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
