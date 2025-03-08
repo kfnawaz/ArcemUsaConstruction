@@ -31,7 +31,7 @@ import QuoteRequestsManagement from "@/pages/admin/QuoteRequestsManagement";
 import SettingsPage from "@/pages/admin/Settings";
 import AccessibilityCheckerPage from "@/pages/admin/AccessibilityChecker";
 import NotFound from "@/pages/not-found";
-import A11yFloatingButton from "@/components/common/A11yFloatingButton";
+import RequestQuoteButton from "@/components/common/A11yFloatingButton";
 
 function AdminRoute({ component: Component }: { component: React.ComponentType }) {
   return (
@@ -186,14 +186,9 @@ function App() {
   );
 }
 
-// A separate component to handle conditional rendering of the A11y button
+// A separate component to handle request quote button
 function AdminAccessibilityButton() {
-  const { user } = useAuth();
-  const isAdmin = user?.role === 'admin';
-  
-  if (!isAdmin) return null;
-  
-  return <A11yFloatingButton />;
+  return <RequestQuoteButton />;
 }
 
 export default App;
