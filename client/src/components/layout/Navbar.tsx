@@ -42,6 +42,7 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
     { label: 'ABOUT', href: '/about' },
     { label: 'SERVICES', href: '/services' },
     { label: 'PROJECTS', href: '/projects' },
+    { label: 'TESTIMONIALS', href: '/testimonials' },
     { label: 'BLOG', href: '/blog' },
     { label: 'CONTACT', href: '/contact' },
   ];

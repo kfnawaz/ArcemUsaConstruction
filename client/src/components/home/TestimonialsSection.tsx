@@ -5,6 +5,7 @@ import TestimonialCard from "@/components/common/TestimonialCard";
 import { useTestimonials } from "@/hooks/useTestimonials";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Testimonial } from "@shared/schema";
 
 const TestimonialsSection = () => {
   const { testimonials, isLoadingTestimonials, testimonialsError } = useTestimonials();
