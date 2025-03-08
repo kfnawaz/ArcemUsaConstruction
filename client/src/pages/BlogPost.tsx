@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { BlogPost as BlogPostType } from '@shared/schema';
 import { initializeRevealEffects, scrollToTop, formatDate } from '@/lib/utils';
 import { ArrowLeft, Calendar, Tag, User } from 'lucide-react';
+import BlogPostSeo from '@/components/seo/BlogPostSeo';
 import { Button } from '@/components/ui/button';
 
 const BlogPost = () => {
@@ -21,13 +22,7 @@ const BlogPost = () => {
     enabled: !!slug,
   });
 
-  useEffect(() => {
-    if (post) {
-      document.title = `${post.title} - ARCEMUSA Blog`;
-    } else {
-      document.title = 'Blog - ARCEMUSA';
-    }
-  }, [post]);
+  // SEO metadata is now handled by BlogPostSeo component
 
   if (isLoading) {
     return (
@@ -84,7 +79,7 @@ const BlogPost = () => {
               <div className="flex flex-wrap gap-4 mb-8 text-gray-500">
                 <div className="flex items-center">
                   <Calendar className="w-4 h-4 mr-2" />
-                  <span>{formatDate(post.createdAt)}</span>
+                  <span>{formatDate(post.createdAt || new Date())}</span>
                 </div>
                 <div className="flex items-center">
                   <User className="w-4 h-4 mr-2" />

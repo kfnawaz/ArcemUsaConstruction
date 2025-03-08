@@ -6,16 +6,20 @@ import ProjectsSection from '@/components/home/ProjectsSection';
 import TestimonialsSection from '@/components/home/TestimonialsSection';
 import BlogSection from '@/components/home/BlogSection';
 import ContactSection from '@/components/home/ContactSection';
+import HomeSeo from '@/components/seo/HomeSeo';
 import { scrollToTop } from '@/lib/utils';
 
 const Home = () => {
   useEffect(() => {
     scrollToTop();
-    document.title = 'ARCEMUSA - Premier Construction Company';
   }, []);
 
   return (
     <>
+      <HomeSeo 
+        title="ARCEMUSA Construction Company | Excellence in Construction" 
+        description="ARCEMUSA Construction offers premium building services with expertise in commercial, residential construction, and renovations. Build your dream with excellence."
+      />
       <HeroSection />
       <AboutSection />
       <ServicesSection />

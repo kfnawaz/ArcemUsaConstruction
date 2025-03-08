@@ -7,6 +7,7 @@ import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import BackToTop from "@/components/common/BackToTop";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { SeoProvider } from "@/contexts/SeoContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ChatbotWidget from "@/components/custom/ChatbotWidget";
 
@@ -178,9 +179,11 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Router />
-        <Toaster />
-        <AdminAccessibilityButton />
+        <SeoProvider>
+          <Router />
+          <Toaster />
+          <AdminAccessibilityButton />
+        </SeoProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
