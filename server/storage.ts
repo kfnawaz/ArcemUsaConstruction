@@ -65,7 +65,13 @@ export interface IStorage {
   
   // Testimonials
   getTestimonials(): Promise<Testimonial[]>;
+  getApprovedTestimonials(): Promise<Testimonial[]>;
+  getPendingTestimonials(): Promise<Testimonial[]>;
+  getTestimonial(id: number): Promise<Testimonial | undefined>;
   createTestimonial(testimonial: InsertTestimonial): Promise<Testimonial>;
+  updateTestimonial(id: number, testimonial: Partial<InsertTestimonial>): Promise<Testimonial | undefined>;
+  approveTestimonial(id: number): Promise<Testimonial | undefined>;
+  deleteTestimonial(id: number): Promise<boolean>;
   
   // Services
   getServices(): Promise<Service[]>;
@@ -639,16 +645,68 @@ export class MemStorage implements IStorage {
     return Array.from(this.testimonials.values());
   }
   
+  // Get only approved testimonials (for public display)
+  async getApprovedTestimonials(): Promise<Testimonial[]> {
+    return Array.from(this.testimonials.values())
+      .filter(testimonial => testimonial.approved);
+  }
+  
+  // Get pending testimonials (for admin review)
+  async getPendingTestimonials(): Promise<Testimonial[]> {
+    return Array.from(this.testimonials.values())
+      .filter(testimonial => !testimonial.approved);
+  }
+  
+  async getTestimonial(id: number): Promise<Testimonial | undefined> {
+    return this.testimonials.get(id);
+  }
+  
   async createTestimonial(testimonial: InsertTestimonial): Promise<Testimonial> {
     const id = this.testimonialCurrentId++;
     const newTestimonial: Testimonial = { 
       ...testimonial, 
       id,
       image: testimonial.image ?? null,
-      company: testimonial.company ?? null
+      company: testimonial.company ?? null,
+      email: testimonial.email ?? null,
+      approved: false,
+      createdAt: new Date()
     };
     this.testimonials.set(id, newTestimonial);
     return newTestimonial;
+  }
+  
+  async updateTestimonial(id: number, updates: Partial<InsertTestimonial>): Promise<Testimonial | undefined> {
+    const testimonial = this.testimonials.get(id);
+    if (!testimonial) return undefined;
+    
+    const updatedTestimonial: Testimonial = {
+      ...testimonial,
+      ...updates,
+      image: updates.image ?? testimonial.image,
+      company: updates.company ?? testimonial.company,
+      email: updates.email ?? testimonial.email
+    };
+    
+    this.testimonials.set(id, updatedTestimonial);
+    return updatedTestimonial;
+  }
+  
+  async approveTestimonial(id: number): Promise<Testimonial | undefined> {
+    const testimonial = this.testimonials.get(id);
+    if (!testimonial) return undefined;
+    
+    const approvedTestimonial: Testimonial = {
+      ...testimonial,
+      approved: true
+    };
+    
+    this.testimonials.set(id, approvedTestimonial);
+    return approvedTestimonial;
+  }
+  
+  async deleteTestimonial(id: number): Promise<boolean> {
+    return this.testimonials.delete(id);
   }
   
   // Services

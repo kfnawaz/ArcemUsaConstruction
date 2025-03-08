@@ -190,11 +190,24 @@ export const testimonials = pgTable("testimonials", {
   content: text("content").notNull(),
   rating: integer("rating").notNull(),
   image: text("image"),
+  approved: boolean("approved").default(false),
+  email: text("email"),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const insertTestimonialSchema = createInsertSchema(testimonials).omit({
   id: true,
+  approved: true,
+  createdAt: true,
 });
+
+// Schema for public testimonial submission (doesn't require all fields)
+export const publicTestimonialSchema = insertTestimonialSchema
+  .omit({ image: true })
+  .extend({
+    image: z.string().optional(),
+    email: z.string().email("Please provide a valid email address").optional(),
+  });
 
 export const services = pgTable("services", {
   id: serial("id").primaryKey(),
@@ -245,6 +258,7 @@ export type ExtendedInsertBlogPost = z.infer<typeof extendedInsertBlogPostSchema
 
 export type Testimonial = typeof testimonials.$inferSelect;
 export type InsertTestimonial = z.infer<typeof insertTestimonialSchema>;
+export type PublicTestimonial = z.infer<typeof publicTestimonialSchema>;
 
 export type Service = typeof services.$inferSelect;
 export type InsertService = z.infer<typeof insertServiceSchema>;

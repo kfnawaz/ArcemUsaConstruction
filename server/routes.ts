@@ -8,7 +8,9 @@ import {
   insertBlogTagSchema,
   insertBlogPostSchema,
   extendedInsertBlogPostSchema,
-  insertMessageSchema
+  insertMessageSchema,
+  insertTestimonialSchema,
+  publicTestimonialSchema
 } from "@shared/schema";
 import { z } from "zod";
 import { setupAuth } from "./auth";
@@ -472,12 +474,114 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Testimonials Routes
+  // Testimonials Public Routes
   app.get(`${apiRouter}/testimonials`, async (req: Request, res: Response) => {
+    try {
+      // Only return approved testimonials for public view
+      const testimonials = await storage.getApprovedTestimonials();
+      res.json(testimonials);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch testimonials" });
+    }
+  });
+
+  // Submit a new testimonial (public)
+  app.post(`${apiRouter}/testimonials/submit`, async (req: Request, res: Response) => {
+    try {
+      const testimonialData = publicTestimonialSchema.parse(req.body);
+      const testimonial = await storage.createTestimonial(testimonialData);
+      res.status(201).json({ 
+        message: "Thank you for your testimonial! It will be reviewed by our team before being published." 
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid testimonial data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to submit testimonial" });
+    }
+  });
+
+  // Testimonial Admin Routes
+  app.get(`${apiRouter}/admin/testimonials`, isAdmin, async (req: Request, res: Response) => {
     try {
       const testimonials = await storage.getTestimonials();
       res.json(testimonials);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch testimonials" });
+    }
+  });
+
+  app.get(`${apiRouter}/admin/testimonials/pending`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const testimonials = await storage.getPendingTestimonials();
+      res.json(testimonials);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch pending testimonials" });
+    }
+  });
+
+  app.get(`${apiRouter}/admin/testimonials/:id`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const testimonial = await storage.getTestimonial(id);
+      
+      if (!testimonial) {
+        return res.status(404).json({ message: "Testimonial not found" });
+      }
+      
+      res.json(testimonial);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch testimonial" });
+    }
+  });
+
+  app.put(`${apiRouter}/admin/testimonials/:id`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const testimonialData = insertTestimonialSchema.partial().parse(req.body);
+      
+      const updatedTestimonial = await storage.updateTestimonial(id, testimonialData);
+      
+      if (!updatedTestimonial) {
+        return res.status(404).json({ message: "Testimonial not found" });
+      }
+      
+      res.json(updatedTestimonial);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid testimonial data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update testimonial" });
+    }
+  });
+
+  app.put(`${apiRouter}/admin/testimonials/:id/approve`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const approvedTestimonial = await storage.approveTestimonial(id);
+      
+      if (!approvedTestimonial) {
+        return res.status(404).json({ message: "Testimonial not found" });
+      }
+      
+      res.json(approvedTestimonial);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to approve testimonial" });
+    }
+  });
+
+  app.delete(`${apiRouter}/admin/testimonials/:id`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const success = await storage.deleteTestimonial(id);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Testimonial not found" });
+      }
+      
+      res.json({ message: "Testimonial deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete testimonial" });
     }
   });
   
