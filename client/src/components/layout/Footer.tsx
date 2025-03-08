@@ -68,9 +68,9 @@ const Footer = () => {
         </div>
         
         <div className="border-t border-gray-800 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center text-gray-400 text-sm">
-            <p>&copy; {new Date().getFullYear()} ARCEMUSA Construction Company. All rights reserved.</p>
-            <div className="flex space-x-6 mt-4 md:mt-0">
+          <div className="flex flex-col md:flex-col justify-center items-center text-gray-400 text-sm">
+            <p className="text-center mb-4">&copy; {new Date().getFullYear()} ARCEMUSA Construction Company. All rights reserved.</p>
+            <div className="flex space-x-6 mt-2 md:mt-2">
               <a href="#" className="hover:text-[#C09E5E] transition-colors">Privacy Policy</a>
               <a href="#" className="hover:text-[#C09E5E] transition-colors">Terms of Service</a>
               <a href="#" className="hover:text-[#C09E5E] transition-colors">Sitemap</a>
