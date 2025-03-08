@@ -74,7 +74,7 @@ const QuoteRequestForm = ({ className = "", onSuccess }: QuoteRequestFormProps) 
   };
 
   return (
-    <div className={`quote-request-form ${className}`}>
+    <div className={`quote-request-form ${className} bg-white p-6 rounded-lg shadow-md border border-gray-100`}>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -84,9 +84,13 @@ const QuoteRequestForm = ({ className = "", onSuccess }: QuoteRequestFormProps) 
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Full Name *</FormLabel>
+                  <FormLabel className="text-gray-700 font-medium">Full Name *</FormLabel>
                   <FormControl>
-                    <Input placeholder="John Doe" {...field} />
+                    <Input 
+                      placeholder="John Doe" 
+                      className="border-gray-300 focus:border-[#C09E5E] focus:ring-[#C09E5E] text-gray-800"
+                      {...field} 
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -99,9 +103,14 @@ const QuoteRequestForm = ({ className = "", onSuccess }: QuoteRequestFormProps) 
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email Address *</FormLabel>
+                  <FormLabel className="text-gray-700 font-medium">Email Address *</FormLabel>
                   <FormControl>
-                    <Input type="email" placeholder="email@example.com" {...field} />
+                    <Input 
+                      type="email" 
+                      placeholder="email@example.com"
+                      className="border-gray-300 focus:border-[#C09E5E] focus:ring-[#C09E5E] text-gray-800"
+                      {...field} 
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -114,9 +123,13 @@ const QuoteRequestForm = ({ className = "", onSuccess }: QuoteRequestFormProps) 
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phone Number</FormLabel>
+                  <FormLabel className="text-gray-700 font-medium">Phone Number</FormLabel>
                   <FormControl>
-                    <Input placeholder="(123) 456-7890" {...field} />
+                    <Input 
+                      placeholder="(123) 456-7890"
+                      className="border-gray-300 focus:border-[#C09E5E] focus:ring-[#C09E5E] text-gray-800"
+                      {...field} 
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -129,9 +142,13 @@ const QuoteRequestForm = ({ className = "", onSuccess }: QuoteRequestFormProps) 
               name="company"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Company</FormLabel>
+                  <FormLabel className="text-gray-700 font-medium">Company</FormLabel>
                   <FormControl>
-                    <Input placeholder="Company Name" {...field} />
+                    <Input 
+                      placeholder="Company Name"
+                      className="border-gray-300 focus:border-[#C09E5E] focus:ring-[#C09E5E] text-gray-800"
+                      {...field} 
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -146,13 +163,13 @@ const QuoteRequestForm = ({ className = "", onSuccess }: QuoteRequestFormProps) 
               name="projectType"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Project Type *</FormLabel>
+                  <FormLabel className="text-gray-700 font-medium">Project Type *</FormLabel>
                   <Select 
                     onValueChange={field.onChange} 
                     defaultValue={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="border-gray-300 focus:border-[#C09E5E] focus:ring-[#C09E5E] text-gray-800">
                         <SelectValue placeholder="Select project type" />
                       </SelectTrigger>
                     </FormControl>
@@ -176,13 +193,13 @@ const QuoteRequestForm = ({ className = "", onSuccess }: QuoteRequestFormProps) 
               name="projectSize"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Project Size</FormLabel>
+                  <FormLabel className="text-gray-700 font-medium">Project Size</FormLabel>
                   <Select 
                     onValueChange={field.onChange} 
                     defaultValue={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="border-gray-300 focus:border-[#C09E5E] focus:ring-[#C09E5E] text-gray-800">
                         <SelectValue placeholder="Select project size" />
                       </SelectTrigger>
                     </FormControl>
@@ -281,7 +298,7 @@ const QuoteRequestForm = ({ className = "", onSuccess }: QuoteRequestFormProps) 
           
           <Button 
             type="submit" 
-            className="w-full md:w-auto"
+            className="w-full md:w-auto bg-[#C09E5E] hover:bg-[#A78B4E] text-white font-semibold"
             disabled={quoteRequestMutation.isPending}
           >
             {quoteRequestMutation.isPending ? (
@@ -290,7 +307,7 @@ const QuoteRequestForm = ({ className = "", onSuccess }: QuoteRequestFormProps) 
                 Submitting...
               </>
             ) : (
-              "Request a Quote"
+              "REQUEST A QUOTE"
             )}
           </Button>
         </form>
