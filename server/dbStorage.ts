@@ -299,6 +299,14 @@ export class DBStorage implements IStorage {
       .returning();
     return results[0];
   }
+  
+  async revokeTestimonialApproval(id: number): Promise<Testimonial | undefined> {
+    const results = await db.update(testimonials)
+      .set({ approved: false })
+      .where(eq(testimonials.id, id))
+      .returning();
+    return results[0];
+  }
 
   async deleteTestimonial(id: number): Promise<boolean> {
     const result = await db.delete(testimonials)

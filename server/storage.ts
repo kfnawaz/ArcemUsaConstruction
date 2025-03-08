@@ -71,6 +71,7 @@ export interface IStorage {
   createTestimonial(testimonial: InsertTestimonial): Promise<Testimonial>;
   updateTestimonial(id: number, testimonial: Partial<InsertTestimonial>): Promise<Testimonial | undefined>;
   approveTestimonial(id: number): Promise<Testimonial | undefined>;
+  revokeTestimonialApproval(id: number): Promise<Testimonial | undefined>;
   deleteTestimonial(id: number): Promise<boolean>;
   
   // Services
