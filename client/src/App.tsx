@@ -19,12 +19,15 @@ import ProjectDetail from "@/pages/ProjectDetail";
 import Blog from "@/pages/Blog";
 import BlogPost from "@/pages/BlogPost";
 import Contact from "@/pages/Contact";
+import RequestQuote from "@/pages/RequestQuote";
 import Login from "@/pages/auth/Login";
 import Dashboard from "@/pages/admin/Dashboard";
 import ProjectManagement from "@/pages/admin/ProjectManagement";
 import BlogManagement from "@/pages/admin/BlogManagement";
 import MessagesManagement from "@/pages/admin/MessagesManagement";
 import TestimonialsManagement from "@/pages/admin/TestimonialsManagement";
+import NewsletterManagement from "@/pages/admin/NewsletterManagement";
+import QuoteRequestsManagement from "@/pages/admin/QuoteRequestsManagement";
 import SettingsPage from "@/pages/admin/Settings";
 import AccessibilityCheckerPage from "@/pages/admin/AccessibilityChecker";
 import NotFound from "@/pages/not-found";
@@ -102,6 +105,7 @@ function Router() {
           <Route path="/blog" component={Blog} />
           <Route path="/blog/:slug" component={BlogPost} />
           <Route path="/contact" component={Contact} />
+          <Route path="/request-quote" component={RequestQuote} />
           <Route path="/auth">
             <Login />
           </Route>
@@ -134,6 +138,16 @@ function Router() {
           <Route path="/admin/testimonials">
             <ProtectedRoute>
               <TestimonialsManagement />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/admin/newsletter">
+            <ProtectedRoute>
+              <NewsletterManagement />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/admin/quotes">
+            <ProtectedRoute>
+              <QuoteRequestsManagement />
             </ProtectedRoute>
           </Route>
           <Route path="/admin/settings">

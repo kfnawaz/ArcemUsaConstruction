@@ -69,9 +69,27 @@ class MessageParser {
       lowerCaseMessage.includes("cost") ||
       lowerCaseMessage.includes("price") ||
       lowerCaseMessage.includes("pricing") ||
-      lowerCaseMessage.includes("how much")
+      lowerCaseMessage.includes("how much") ||
+      lowerCaseMessage.includes("proposal") ||
+      lowerCaseMessage.includes("bid") ||
+      lowerCaseMessage.includes("get a quote") ||
+      lowerCaseMessage.includes("request") ||
+      lowerCaseMessage.includes("build") ||
+      lowerCaseMessage.includes("need")
     ) {
       return this.actionProvider.handleQuoteRequest();
+    }
+    
+    // Check for newsletter related queries
+    if (
+      lowerCaseMessage.includes("newsletter") ||
+      lowerCaseMessage.includes("subscribe") ||
+      lowerCaseMessage.includes("subscription") ||
+      lowerCaseMessage.includes("updates") ||
+      lowerCaseMessage.includes("news") ||
+      lowerCaseMessage.includes("email list")
+    ) {
+      return this.actionProvider.handleNewsletterSubscription();
     }
 
     // Default fallback for unrecognized queries

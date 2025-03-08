@@ -78,6 +78,14 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
               </Link>
             ))}
             
+            {/* Request Quote Button */}
+            <Link 
+              href="/request-quote" 
+              className="bg-white text-black hover:bg-gray-100 px-4 py-2 rounded-sm font-montserrat text-sm transition-colors"
+            >
+              REQUEST QUOTE
+            </Link>
+            
             {/* Login/Admin Button */}
             <Link 
               href={isAuthenticated ? "/admin" : "/auth/login"} 
@@ -125,6 +133,15 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
                 {item.label}
               </Link>
             ))}
+            
+            {/* Mobile Request Quote Button */}
+            <Link 
+              href="/request-quote"
+              className="bg-white text-black hover:bg-gray-100 px-4 py-2 rounded-sm flex items-center justify-center font-montserrat text-sm transition-colors"
+              onClick={closeMobileMenu}
+            >
+              REQUEST QUOTE
+            </Link>
             
             {/* Mobile Login/Admin Button */}
             <Link 

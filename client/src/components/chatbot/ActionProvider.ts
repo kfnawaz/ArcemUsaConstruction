@@ -65,7 +65,21 @@ class ActionProvider {
   // Quote request handler
   handleQuoteRequest = () => {
     const message = this.createChatBotMessage(
-      "We'd be happy to provide a quote for your project. Please fill out our contact form with details about your project, and our team will get back to you within 24-48 hours."
+      "We'd be happy to provide a quote for your project. You can fill out our quote request form to get a personalized estimate.",
+      {
+        widget: "quoteOptions",
+      }
+    );
+    this.updateChatbotState(message);
+  };
+  
+  // Newsletter subscription handler
+  handleNewsletterSubscription = () => {
+    const message = this.createChatBotMessage(
+      "Stay updated with our latest projects and construction insights by subscribing to our newsletter. You can subscribe at the bottom of our homepage.",
+      {
+        widget: "newsletterOptions",
+      }
     );
     this.updateChatbotState(message);
   };
