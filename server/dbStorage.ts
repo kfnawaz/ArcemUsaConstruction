@@ -258,9 +258,53 @@ export class DBStorage implements IStorage {
     return db.select().from(testimonials);
   }
 
+  async getApprovedTestimonials(): Promise<Testimonial[]> {
+    return db.select()
+      .from(testimonials)
+      .where(eq(testimonials.approved, true));
+  }
+
+  async getPendingTestimonials(): Promise<Testimonial[]> {
+    return db.select()
+      .from(testimonials)
+      .where(eq(testimonials.approved, false));
+  }
+
+  async getTestimonial(id: number): Promise<Testimonial | undefined> {
+    const results = await db.select()
+      .from(testimonials)
+      .where(eq(testimonials.id, id));
+    return results[0];
+  }
+
   async createTestimonial(testimonial: InsertTestimonial): Promise<Testimonial> {
-    const result = await db.insert(testimonials).values(testimonial).returning();
+    const result = await db.insert(testimonials)
+      .values(testimonial)
+      .returning();
     return result[0];
+  }
+
+  async updateTestimonial(id: number, testimonialData: Partial<InsertTestimonial>): Promise<Testimonial | undefined> {
+    const results = await db.update(testimonials)
+      .set(testimonialData)
+      .where(eq(testimonials.id, id))
+      .returning();
+    return results[0];
+  }
+
+  async approveTestimonial(id: number): Promise<Testimonial | undefined> {
+    const results = await db.update(testimonials)
+      .set({ approved: true })
+      .where(eq(testimonials.id, id))
+      .returning();
+    return results[0];
+  }
+
+  async deleteTestimonial(id: number): Promise<boolean> {
+    const result = await db.delete(testimonials)
+      .where(eq(testimonials.id, id))
+      .returning();
+    return result.length > 0;
   }
 
   // Services
