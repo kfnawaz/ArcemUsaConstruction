@@ -176,21 +176,33 @@ const ProjectDetail = () => {
                 {project.description}
               </p>
               
-              {/* Additional project details - these would come from the API in a real implementation */}
-              <h2 className="text-2xl font-montserrat font-bold mt-8 mb-4">Project Overview</h2>
-              <p className="text-gray-600 leading-relaxed mb-6">
-                Our team was tasked with delivering a state-of-the-art {project.category.toLowerCase()} that met the highest standards of quality, functionality, and aesthetic appeal. The project required careful planning, innovative solutions, and meticulous execution to overcome various challenges and meet the client's specific requirements.
-              </p>
+              {/* Dynamic project details from the database */}
+              {project.overview && (
+                <>
+                  <h2 className="text-2xl font-montserrat font-bold mt-8 mb-4">Project Overview</h2>
+                  <p className="text-gray-600 leading-relaxed mb-6">
+                    {project.overview}
+                  </p>
+                </>
+              )}
 
-              <h2 className="text-2xl font-montserrat font-bold mt-8 mb-4">Challenges & Solutions</h2>
-              <p className="text-gray-600 leading-relaxed mb-6">
-                One of the main challenges was integrating modern design elements while maintaining the structural integrity of the building. Our team of experts collaborated closely with architects and engineers to develop innovative solutions that balanced aesthetic considerations with practical requirements.
-              </p>
+              {project.challenges && (
+                <>
+                  <h2 className="text-2xl font-montserrat font-bold mt-8 mb-4">Challenges & Solutions</h2>
+                  <p className="text-gray-600 leading-relaxed mb-6">
+                    {project.challenges}
+                  </p>
+                </>
+              )}
 
-              <h2 className="text-2xl font-montserrat font-bold mt-8 mb-4">Results</h2>
-              <p className="text-gray-600 leading-relaxed">
-                The completed project exceeded the client's expectations, delivering a functional, aesthetically pleasing space that met all specifications. The project was completed on time and within budget, showcasing our commitment to excellence and client satisfaction.
-              </p>
+              {project.results && (
+                <>
+                  <h2 className="text-2xl font-montserrat font-bold mt-8 mb-4">Results</h2>
+                  <p className="text-gray-600 leading-relaxed">
+                    {project.results}
+                  </p>
+                </>
+              )}
             </div>
           </div>
 
@@ -198,26 +210,53 @@ const ProjectDetail = () => {
             <div className="bg-gray-100 p-8 mb-8">
               <h3 className="text-xl font-montserrat font-bold mb-6">Project Details</h3>
               <div className="space-y-4">
-                <div>
-                  <h4 className="font-montserrat font-semibold text-gray-700">Client</h4>
-                  <p className="text-gray-600">XYZ Corporation</p>
-                </div>
-                <div>
-                  <h4 className="font-montserrat font-semibold text-gray-700">Location</h4>
-                  <p className="text-gray-600">New York, NY</p>
-                </div>
-                <div>
-                  <h4 className="font-montserrat font-semibold text-gray-700">Project Size</h4>
-                  <p className="text-gray-600">25,000 sq ft</p>
-                </div>
-                <div>
-                  <h4 className="font-montserrat font-semibold text-gray-700">Completion</h4>
-                  <p className="text-gray-600">{project.createdAt ? formatDate(project.createdAt) : "N/A"}</p>
-                </div>
-                <div>
-                  <h4 className="font-montserrat font-semibold text-gray-700">Services Provided</h4>
-                  <p className="text-gray-600">Design, Construction, Project Management</p>
-                </div>
+                {project.client && (
+                  <div>
+                    <h4 className="font-montserrat font-semibold text-gray-700">Client</h4>
+                    <p className="text-gray-600">{project.client}</p>
+                  </div>
+                )}
+                
+                {project.location && (
+                  <div>
+                    <h4 className="font-montserrat font-semibold text-gray-700">Location</h4>
+                    <p className="text-gray-600">{project.location}</p>
+                  </div>
+                )}
+                
+                {project.size && (
+                  <div>
+                    <h4 className="font-montserrat font-semibold text-gray-700">Project Size</h4>
+                    <p className="text-gray-600">{project.size}</p>
+                  </div>
+                )}
+                
+                {project.completionDate ? (
+                  <div>
+                    <h4 className="font-montserrat font-semibold text-gray-700">Completion</h4>
+                    <p className="text-gray-600">{project.completionDate}</p>
+                  </div>
+                ) : project.createdAt && (
+                  <div>
+                    <h4 className="font-montserrat font-semibold text-gray-700">Completion</h4>
+                    <p className="text-gray-600">{formatDate(project.createdAt)}</p>
+                  </div>
+                )}
+                
+                {project.servicesProvided && (
+                  <div>
+                    <h4 className="font-montserrat font-semibold text-gray-700">Services Provided</h4>
+                    <p className="text-gray-600">{project.servicesProvided}</p>
+                  </div>
+                )}
+                
+                {/* Show default message if no project details are available */}
+                {!project.client && !project.location && !project.size && 
+                 !project.completionDate && !project.servicesProvided && (
+                  <div>
+                    <p className="text-gray-600">Contact us for more information about this project.</p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -306,23 +345,21 @@ const ProjectDetail = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* This would use actual related projects from the API in a real implementation */}
             {[1, 2, 3].map((_, index) => (
-              <Link key={index} href={`/projects/${(projectId % 6) + index + 1}`}>
-                <a className="group block overflow-hidden shadow-lg">
-                  <div className="relative h-64 overflow-hidden">
-                    <img 
-                      src={`https://images.unsplash.com/photo-151968714593${index}-d81bb19240f5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80`} 
-                      alt="Related Project" 
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                      <span className="text-white font-montserrat font-medium">View Project</span>
-                    </div>
+              <Link key={index} href={`/projects/${(projectId % 6) + index + 1}`} className="group block overflow-hidden shadow-lg">
+                <div className="relative h-64 overflow-hidden">
+                  <img 
+                    src={`https://images.unsplash.com/photo-151968714593${index}-d81bb19240f5?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80`} 
+                    alt="Related Project" 
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <span className="text-white font-montserrat font-medium">View Project</span>
                   </div>
-                  <div className="p-4">
-                    <h3 className="font-montserrat font-bold">Similar {project.category} Project</h3>
-                    <p className="text-gray-600 text-sm">Another exceptional project in our portfolio</p>
-                  </div>
-                </a>
+                </div>
+                <div className="p-4">
+                  <h3 className="font-montserrat font-bold">Similar {project.category} Project</h3>
+                  <p className="text-gray-600 text-sm">Another exceptional project in our portfolio</p>
+                </div>
               </Link>
             ))}
           </div>
