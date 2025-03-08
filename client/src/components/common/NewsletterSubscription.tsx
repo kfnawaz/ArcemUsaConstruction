@@ -53,15 +53,17 @@ const NewsletterSubscription = ({ extendedForm = false, className = "" }: Newsle
 
   return (
     <div className={`newsletter-subscription ${className} p-4 rounded-lg bg-primary-50 dark:bg-gray-800`}>
-      <div className="mb-4">
-        <h3 className="text-xl font-bold flex items-center gap-2">
-          <Mail className="h-5 w-5" />
-          Stay Updated
-        </h3>
-        <p className="text-sm text-muted-foreground">
-          Subscribe to our newsletter for the latest construction news and updates.
-        </p>
-      </div>
+      {!className.includes("bg-transparent") && (
+        <div className="mb-4">
+          <h3 className="text-xl font-bold flex items-center gap-2">
+            <Mail className="h-5 w-5" />
+            Stay Updated
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            Subscribe to our newsletter for the latest construction news and updates.
+          </p>
+        </div>
+      )}
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
@@ -102,19 +104,26 @@ const NewsletterSubscription = ({ extendedForm = false, className = "" }: Newsle
               render={({ field }) => (
                 <FormItem className="flex-1">
                   <FormControl>
-                    <Input placeholder="Your Email" type="email" {...field} />
+                    <Input 
+                      placeholder="Your Email" 
+                      type="email" 
+                      {...field}
+                      className={className.includes("text-white") ? 
+                        "bg-gray-800 border-gray-700 focus:border-[#C09E5E] text-white" : ""}
+                    />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className={className.includes("text-white") ? "text-red-300" : ""} />
                 </FormItem>
               )}
             />
 
             <Button 
               type="submit" 
-              className="whitespace-nowrap"
+              className={`whitespace-nowrap ${className.includes("text-white") ? 
+                "bg-[#C09E5E] hover:bg-[#A78B4E] text-sm px-4 py-2" : ""}`}
               disabled={subscriptionMutation.isPending}
             >
-              {subscriptionMutation.isPending ? "Subscribing..." : "Subscribe"}
+              {subscriptionMutation.isPending ? "Subscribing..." : "SUBSCRIBE"}
             </Button>
           </div>
         </form>

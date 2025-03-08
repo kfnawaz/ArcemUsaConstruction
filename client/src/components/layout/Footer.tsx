@@ -60,22 +60,8 @@ const Footer = () => {
             <p className="text-gray-400 mb-4 leading-relaxed">
               Subscribe to our newsletter to receive updates on our latest projects and industry insights.
             </p>
-            <form className="flex mb-6">
-              <input 
-                type="email" 
-                placeholder="Your email address" 
-                className="flex-1 px-4 py-2 bg-gray-800 border border-gray-700 focus:border-[#C09E5E] outline-none transition-colors" 
-                required 
-              />
-              <Button 
-                type="submit" 
-                variant="gold" 
-                className="px-4 py-2 text-sm"
-              >
-                SUBSCRIBE
-              </Button>
-            </form>
-            <p className="text-gray-400 text-sm">
+            <NewsletterSubscription className="bg-transparent p-0 text-white" />
+            <p className="text-gray-400 text-sm mt-2">
               By subscribing, you agree to our Privacy Policy.
             </p>
           </div>
