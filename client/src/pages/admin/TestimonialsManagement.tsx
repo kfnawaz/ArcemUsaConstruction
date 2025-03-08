@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 import { useTestimonials } from "@/hooks/useTestimonials";
 import AdminNav from "@/components/admin/AdminNav";
 import { Input } from "@/components/ui/input";
@@ -21,6 +22,7 @@ import {
 } from "@/components/ui/dialog";
 
 const TestimonialsManagement = () => {
+  const [location, setLocation] = useLocation();
   const { toast } = useToast();
   const {
     allTestimonials,
@@ -36,9 +38,23 @@ const TestimonialsManagement = () => {
   } = useTestimonials();
   
   // Use effect to load testimonials data on component mount
+  // and handle URL params for tab state
   useEffect(() => {
     scrollToTop();
     document.title = 'Testimonials Management - ARCEMUSA';
+    
+    // Parse URL parameters to set the active tab
+    const searchParams = new URLSearchParams(location.split('?')[1] || '');
+    const tab = searchParams.get('tab');
+    
+    if (tab === 'all') {
+      setActiveTab('all');
+    } else if (tab === 'pending') {
+      setActiveTab('pending');
+    } else {
+      // Default to pending tab if no valid parameter
+      setActiveTab('pending');
+    }
     
     // Force fetch all testimonial data
     const fetchData = async () => {
@@ -53,7 +69,7 @@ const TestimonialsManagement = () => {
     };
     
     fetchData();
-  }, [refetchAllTestimonials, refetchPendingTestimonials]);
+  }, [location, refetchAllTestimonials, refetchPendingTestimonials]);
 
   // State variables
   const [searchQuery, setSearchQuery] = useState('');
@@ -115,14 +131,20 @@ const TestimonialsManagement = () => {
                 <div className="flex space-x-2">
                   <Button 
                     variant={activeTab === 'all' ? 'default' : 'outline'} 
-                    onClick={() => setActiveTab('all')}
+                    onClick={() => {
+                      setActiveTab('all');
+                      setLocation('/admin/testimonials?tab=all');
+                    }}
                     className="relative"
                   >
                     All Testimonials 
                   </Button>
                   <Button 
                     variant={activeTab === 'pending' ? 'default' : 'outline'} 
-                    onClick={() => setActiveTab('pending')}
+                    onClick={() => {
+                      setActiveTab('pending');
+                      setLocation('/admin/testimonials?tab=pending');
+                    }}
                     className="relative"
                   >
                     Pending Approval
@@ -172,13 +194,38 @@ const TestimonialsManagement = () => {
                   <tbody className="bg-white divide-y divide-gray-200">
                     {(activeTab === 'all' && isLoadingAllTestimonials) || 
                      (activeTab === 'pending' && isLoadingPendingTestimonials) ? (
-                      <tr>
-                        <td colSpan={5} className="px-6 py-4 text-center">
-                          <div className="animate-pulse flex items-center justify-center">
-                            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                          </div>
-                        </td>
-                      </tr>
+                      <>
+                        {[...Array(3)].map((_, index) => (
+                          <tr key={`skeleton-${index}`}>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center">
+                                <div className="animate-pulse w-10 h-10 mr-3 rounded-full bg-gray-200"></div>
+                                <div>
+                                  <div className="animate-pulse h-4 w-20 bg-gray-200 rounded mb-2"></div>
+                                  <div className="animate-pulse h-3 w-24 bg-gray-100 rounded"></div>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="animate-pulse flex items-center space-x-1">
+                                {[...Array(5)].map((_, i) => (
+                                  <div key={i} className="h-4 w-4 bg-gray-200 rounded"></div>
+                                ))}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="animate-pulse h-4 w-36 bg-gray-200 rounded mb-2"></div>
+                              <div className="animate-pulse h-4 w-24 bg-gray-100 rounded"></div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="animate-pulse h-5 w-16 bg-gray-200 rounded"></div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-right">
+                              <div className="animate-pulse h-6 w-12 bg-gray-200 rounded ml-auto"></div>
+                            </td>
+                          </tr>
+                        ))}
+                      </>
                     ) : activeTab === 'all' && filteredAllTestimonials?.length === 0 ? (
                       <tr>
                         <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
