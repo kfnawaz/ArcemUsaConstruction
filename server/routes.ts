@@ -10,7 +10,9 @@ import {
   extendedInsertBlogPostSchema,
   insertMessageSchema,
   insertTestimonialSchema,
-  publicTestimonialSchema
+  publicTestimonialSchema,
+  insertNewsletterSubscriberSchema,
+  insertQuoteRequestSchema
 } from "@shared/schema";
 import { z } from "zod";
 import { setupAuth } from "./auth";
@@ -691,6 +693,229 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.setHeader('Cache-Control', 'public, max-age=86400'); // 24 hours
     next();
   }, express.static(path.join(process.cwd(), 'public/uploads')));
+
+  // Newsletter Subscriber Routes
+  app.post(`${apiRouter}/newsletter/subscribe`, async (req: Request, res: Response) => {
+    try {
+      // Validate the input data
+      const subscriberData = insertNewsletterSubscriberSchema.parse(req.body);
+      
+      // Check if email already exists
+      const existingSubscriber = await storage.getNewsletterSubscriberByEmail(subscriberData.email);
+      if (existingSubscriber) {
+        // If already subscribed, return success
+        if (existingSubscriber.subscribed) {
+          return res.json({ message: "You are already subscribed to our newsletter" });
+        }
+        
+        // If previously unsubscribed, resubscribe them
+        const updatedSubscriber = await storage.updateNewsletterSubscriber(
+          existingSubscriber.id, 
+          { subscribed: true }
+        );
+        
+        return res.json({ 
+          message: "Welcome back! You have been resubscribed to our newsletter",
+          subscriber: updatedSubscriber
+        });
+      }
+      
+      // Create new subscriber
+      const subscriber = await storage.createNewsletterSubscriber(subscriberData);
+      res.status(201).json({ 
+        message: "Thank you for subscribing to our newsletter!",
+        subscriber 
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid subscription data", 
+          errors: error.errors 
+        });
+      }
+      console.error("Newsletter subscription error:", error);
+      res.status(500).json({ message: "Failed to process newsletter subscription" });
+    }
+  });
+  
+  app.post(`${apiRouter}/newsletter/unsubscribe`, async (req: Request, res: Response) => {
+    try {
+      // Validate that we have an email
+      const { email } = req.body;
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+      
+      // Find the subscriber
+      const subscriber = await storage.getNewsletterSubscriberByEmail(email);
+      if (!subscriber) {
+        return res.status(404).json({ message: "Email not found in subscriber list" });
+      }
+      
+      // Update the subscriber to unsubscribed
+      const updatedSubscriber = await storage.updateNewsletterSubscriber(
+        subscriber.id, 
+        { subscribed: false }
+      );
+      
+      res.json({ 
+        message: "You have been unsubscribed from our newsletter",
+        subscriber: updatedSubscriber
+      });
+    } catch (error) {
+      console.error("Newsletter unsubscribe error:", error);
+      res.status(500).json({ message: "Failed to process unsubscribe request" });
+    }
+  });
+  
+  // Admin newsletter management
+  app.get(`${apiRouter}/admin/newsletter/subscribers`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const subscribers = await storage.getNewsletterSubscribers();
+      res.json(subscribers);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch newsletter subscribers" });
+    }
+  });
+  
+  app.delete(`${apiRouter}/admin/newsletter/subscribers/:id`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid subscriber ID" });
+      }
+      
+      const success = await storage.deleteNewsletterSubscriber(id);
+      if (!success) {
+        return res.status(404).json({ message: "Subscriber not found" });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete subscriber" });
+    }
+  });
+  
+  // Quote Request Routes
+  app.post(`${apiRouter}/quote/request`, async (req: Request, res: Response) => {
+    try {
+      // Validate the input data
+      const quoteData = insertQuoteRequestSchema.parse(req.body);
+      
+      // Create the quote request
+      const quote = await storage.createQuoteRequest(quoteData);
+      
+      res.status(201).json({ 
+        message: "Your quote request has been submitted successfully!",
+        quote 
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid quote request data", 
+          errors: error.errors 
+        });
+      }
+      console.error("Quote request error:", error);
+      res.status(500).json({ message: "Failed to process quote request" });
+    }
+  });
+  
+  // Admin quote request management
+  app.get(`${apiRouter}/admin/quote/requests`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const quotes = await storage.getQuoteRequests();
+      res.json(quotes);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch quote requests" });
+    }
+  });
+  
+  app.get(`${apiRouter}/admin/quote/requests/:id`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid quote request ID" });
+      }
+      
+      const quote = await storage.getQuoteRequest(id);
+      if (!quote) {
+        return res.status(404).json({ message: "Quote request not found" });
+      }
+      
+      res.json(quote);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch quote request" });
+    }
+  });
+  
+  app.put(`${apiRouter}/admin/quote/requests/:id/status`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid quote request ID" });
+      }
+      
+      const { status } = req.body;
+      if (!status || typeof status !== 'string') {
+        return res.status(400).json({ message: "Status is required" });
+      }
+      
+      // Valid status values
+      const validStatuses = ['pending', 'reviewing', 'accepted', 'rejected', 'completed'];
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({ 
+          message: "Invalid status value",
+          validValues: validStatuses
+        });
+      }
+      
+      const quote = await storage.updateQuoteRequestStatus(id, status);
+      if (!quote) {
+        return res.status(404).json({ message: "Quote request not found" });
+      }
+      
+      res.json(quote);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update quote request status" });
+    }
+  });
+  
+  app.put(`${apiRouter}/admin/quote/requests/:id/reviewed`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid quote request ID" });
+      }
+      
+      const quote = await storage.markQuoteRequestAsReviewed(id);
+      if (!quote) {
+        return res.status(404).json({ message: "Quote request not found" });
+      }
+      
+      res.json(quote);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to mark quote request as reviewed" });
+    }
+  });
+  
+  app.delete(`${apiRouter}/admin/quote/requests/:id`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid quote request ID" });
+      }
+      
+      const success = await storage.deleteQuoteRequest(id);
+      if (!success) {
+        return res.status(404).json({ message: "Quote request not found" });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete quote request" });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;

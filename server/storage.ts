@@ -803,6 +803,131 @@ export class MemStorage implements IStorage {
   async deleteMessage(id: number): Promise<boolean> {
     return this.messages.delete(id);
   }
+
+  // Newsletter Subscribers
+  async getNewsletterSubscribers(): Promise<NewsletterSubscriber[]> {
+    return Array.from(this.newsletterSubscribers.values());
+  }
+
+  async getNewsletterSubscriber(id: number): Promise<NewsletterSubscriber | undefined> {
+    return this.newsletterSubscribers.get(id);
+  }
+
+  async getNewsletterSubscriberByEmail(email: string): Promise<NewsletterSubscriber | undefined> {
+    return Array.from(this.newsletterSubscribers.values()).find(
+      (subscriber) => subscriber.email === email
+    );
+  }
+
+  async createNewsletterSubscriber(subscriber: InsertNewsletterSubscriber): Promise<NewsletterSubscriber> {
+    const id = this.newsletterSubscriberCurrentId++;
+    const now = new Date();
+
+    const newSubscriber: NewsletterSubscriber = {
+      id,
+      email: subscriber.email,
+      firstName: subscriber.firstName || null,
+      lastName: subscriber.lastName || null,
+      subscribed: subscriber.subscribed ?? true,
+      createdAt: now
+    };
+
+    this.newsletterSubscribers.set(id, newSubscriber);
+    return newSubscriber;
+  }
+
+  async updateNewsletterSubscriber(id: number, updates: Partial<InsertNewsletterSubscriber>): Promise<NewsletterSubscriber | undefined> {
+    const subscriber = this.newsletterSubscribers.get(id);
+    if (!subscriber) return undefined;
+
+    const updatedSubscriber: NewsletterSubscriber = {
+      ...subscriber,
+      ...updates
+    };
+
+    this.newsletterSubscribers.set(id, updatedSubscriber);
+    return updatedSubscriber;
+  }
+
+  async deleteNewsletterSubscriber(id: number): Promise<boolean> {
+    return this.newsletterSubscribers.delete(id);
+  }
+
+  // Quote Requests
+  async getQuoteRequests(): Promise<QuoteRequest[]> {
+    return Array.from(this.quoteRequests.values());
+  }
+
+  async getQuoteRequest(id: number): Promise<QuoteRequest | undefined> {
+    return this.quoteRequests.get(id);
+  }
+
+  async createQuoteRequest(request: InsertQuoteRequest): Promise<QuoteRequest> {
+    const id = this.quoteRequestCurrentId++;
+    const now = new Date();
+
+    const newRequest: QuoteRequest = {
+      id,
+      name: request.name,
+      email: request.email,
+      phone: request.phone || null,
+      company: request.company || null,
+      projectType: request.projectType,
+      projectSize: request.projectSize || null,
+      budget: request.budget || null,
+      timeframe: request.timeframe || null,
+      description: request.description,
+      status: "pending",
+      reviewed: false,
+      createdAt: now
+    };
+
+    this.quoteRequests.set(id, newRequest);
+    return newRequest;
+  }
+
+  async updateQuoteRequest(id: number, updates: Partial<QuoteRequest>): Promise<QuoteRequest | undefined> {
+    const request = this.quoteRequests.get(id);
+    if (!request) return undefined;
+
+    const updatedRequest: QuoteRequest = {
+      ...request,
+      ...updates
+    };
+
+    this.quoteRequests.set(id, updatedRequest);
+    return updatedRequest;
+  }
+
+  async markQuoteRequestAsReviewed(id: number): Promise<QuoteRequest | undefined> {
+    const request = this.quoteRequests.get(id);
+    if (!request) return undefined;
+
+    const updatedRequest: QuoteRequest = {
+      ...request,
+      reviewed: true
+    };
+
+    this.quoteRequests.set(id, updatedRequest);
+    return updatedRequest;
+  }
+
+  async updateQuoteRequestStatus(id: number, status: string): Promise<QuoteRequest | undefined> {
+    const request = this.quoteRequests.get(id);
+    if (!request) return undefined;
+
+    const updatedRequest: QuoteRequest = {
+      ...request,
+      status
+    };
+
+    this.quoteRequests.set(id, updatedRequest);
+    return updatedRequest;
+  }
+
+  async deleteQuoteRequest(id: number): Promise<boolean> {
+    return this.quoteRequests.delete(id);
+  }
 }
 
 // Import DBStorage
