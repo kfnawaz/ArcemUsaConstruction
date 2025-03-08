@@ -48,7 +48,7 @@ const TestimonialsManagement = () => {
         <div className="flex justify-between items-start">
           <div className="flex items-center">
             <Avatar className="h-10 w-10 mr-3">
-              <AvatarImage src={testimonial.image} alt={testimonial.name} />
+              <AvatarImage src={testimonial.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(testimonial.name)}&background=random`} alt={testimonial.name} />
               <AvatarFallback>
                 {testimonial.name.split(" ").map(n => n[0]).join("")}
               </AvatarFallback>
@@ -82,7 +82,7 @@ const TestimonialsManagement = () => {
             </Badge>
           )}
           <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">
-            {formatDate(testimonial.createdAt)}
+            {testimonial.createdAt ? formatDate(testimonial.createdAt) : 'N/A'}
           </Badge>
         </div>
       </CardHeader>

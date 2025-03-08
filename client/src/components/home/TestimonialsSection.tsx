@@ -80,7 +80,7 @@ const TestimonialsSection = () => {
                 company={testimonial.company}
                 content={testimonial.content}
                 rating={testimonial.rating}
-                image={testimonial.image}
+                image={testimonial.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(testimonial.name)}&background=random`}
               />
             ))}
           </div>
@@ -101,7 +101,7 @@ const TestimonialsSection = () => {
                     company={testimonial.company}
                     content={testimonial.content}
                     rating={testimonial.rating}
-                    image={testimonial.image}
+                    image={testimonial.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(testimonial.name)}&background=random`}
                   />
                 </CarouselItem>
               ))}

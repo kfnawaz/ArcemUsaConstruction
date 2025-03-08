@@ -5,11 +5,12 @@ import {
   FileText, 
   MessageSquare, 
   Settings,
-  Eye
+  Eye,
+  Star
 } from 'lucide-react';
 
 type AdminNavProps = {
-  activePage: 'dashboard' | 'projects' | 'blog' | 'messages' | 'settings' | 'accessibility';
+  activePage: 'dashboard' | 'projects' | 'blog' | 'messages' | 'testimonials' | 'settings' | 'accessibility';
 };
 
 const AdminNav = ({ activePage }: AdminNavProps) => {
@@ -33,6 +34,12 @@ const AdminNav = ({ activePage }: AdminNavProps) => {
       label: 'Blog', 
       icon: <FileText className="w-5 h-5 mr-3" />,
       active: activePage === 'blog'
+    },
+    { 
+      href: '/admin/testimonials', 
+      label: 'Testimonials', 
+      icon: <Star className="w-5 h-5 mr-3" />,
+      active: activePage === 'testimonials'
     },
     { 
       href: '/admin/messages', 

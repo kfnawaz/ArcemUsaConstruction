@@ -23,6 +23,7 @@ import Dashboard from "@/pages/admin/Dashboard";
 import ProjectManagement from "@/pages/admin/ProjectManagement";
 import BlogManagement from "@/pages/admin/BlogManagement";
 import MessagesManagement from "@/pages/admin/MessagesManagement";
+import TestimonialsManagement from "@/pages/admin/TestimonialsManagement";
 import SettingsPage from "@/pages/admin/Settings";
 import AccessibilityCheckerPage from "@/pages/admin/AccessibilityChecker";
 import NotFound from "@/pages/not-found";
