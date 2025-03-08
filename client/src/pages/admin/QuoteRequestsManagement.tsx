@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { 
   Table, 
@@ -11,22 +11,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogClose
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -37,34 +28,45 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Trash2, Search, ClipboardList, Eye, CheckCircle2 } from "lucide-react";
+import { 
+  Loader2, 
+  Trash2, 
+  Search, 
+  ClipboardList, 
+  Eye, 
+  CheckCircle2, 
+  Download,
+  Filter
+} from "lucide-react";
 import AdminNav from "@/components/admin/AdminNav";
 import { apiRequest } from "@/lib/queryClient";
 import { QuoteRequest } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
-import { formatDate } from "@/lib/utils";
+import { formatDate, scrollToTop } from "@/lib/utils";
 
 const QuoteRequestsManagement = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [quoteToDelete, setQuoteToDelete] = useState<QuoteRequest | null>(null);
   const [quoteToView, setQuoteToView] = useState<QuoteRequest | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("all");
+
+  useEffect(() => {
+    scrollToTop();
+    document.title = 'Quote Requests - ARCEMUSA';
+  }, []);
   
   // Fetch quote requests
-  const { data: quoteRequests = [], isLoading } = useQuery({
+  const { data: quoteRequests = [], isLoading } = useQuery<QuoteRequest[]>({
     queryKey: ["/api/admin/quote/requests"],
-    queryFn: async () => {
-      const res = await apiRequest("GET", "/api/admin/quote/requests");
-      return res.json();
-    }
   });
 
   // Delete quote request mutation
-  const deleteQuoteMutation = useMutation({
+  const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      await apiRequest("DELETE", `/api/admin/quote/requests/${id}`);
+      return apiRequest("DELETE", `/api/admin/quote/requests/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/quote/requests"] });
@@ -73,14 +75,16 @@ const QuoteRequestsManagement = () => {
         description: "The quote request has been removed.",
         variant: "default",
       });
+      setShowDeleteDialog(false);
       setQuoteToDelete(null);
     },
-    onError: (error: Error) => {
+    onError: (error) => {
       toast({
-        title: "Delete failed",
-        description: error.message || "Failed to delete the quote request. Please try again.",
-        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete quote request. Please try again.",
+        variant: "destructive"
       });
+      console.error("Error deleting quote request:", error);
     }
   });
 
@@ -97,13 +101,18 @@ const QuoteRequestsManagement = () => {
         description: "The quote request status has been updated.",
         variant: "default",
       });
+      // Close detail view after status update
+      if (quoteToView) {
+        setQuoteToView(null);
+      }
     },
-    onError: (error: Error) => {
+    onError: (error) => {
       toast({
         title: "Update failed",
-        description: error.message || "Failed to update the quote request status. Please try again.",
-        variant: "destructive",
+        description: "Failed to update the status. Please try again.",
+        variant: "destructive"
       });
+      console.error("Error updating status:", error);
     }
   });
 
@@ -121,21 +130,23 @@ const QuoteRequestsManagement = () => {
         variant: "default",
       });
     },
-    onError: (error: Error) => {
+    onError: (error) => {
       toast({
         title: "Update failed",
-        description: error.message || "Failed to mark as reviewed. Please try again.",
-        variant: "destructive",
+        description: "Failed to mark as reviewed. Please try again.",
+        variant: "destructive"
       });
+      console.error("Error marking as reviewed:", error);
     }
   });
 
-  // Filter quote requests based on search term and status
+  // Filter quote requests based on search query and status
   const filteredQuoteRequests = quoteRequests.filter((quote: QuoteRequest) => {
     const searchMatches = 
-      quote.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      quote.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (quote.company && quote.company.toLowerCase().includes(searchTerm.toLowerCase()));
+      quote.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      quote.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (quote.company && quote.company.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      quote.projectType.toLowerCase().includes(searchQuery.toLowerCase());
     
     const statusMatches = statusFilter === "all" || quote.status === statusFilter;
     
@@ -143,22 +154,28 @@ const QuoteRequestsManagement = () => {
   });
 
   // Get counts for tabs
-  const pendingCount = quoteRequests.filter(q => q.status === "pending").length;
-  const reviewingCount = quoteRequests.filter(q => q.status === "reviewing").length;
-  const acceptedCount = quoteRequests.filter(q => q.status === "accepted").length;
-  const rejectedCount = quoteRequests.filter(q => q.status === "rejected").length;
-  const completedCount = quoteRequests.filter(q => q.status === "completed").length;
-  const unreadCount = quoteRequests.filter(q => !q.reviewed).length;
+  const pendingCount = quoteRequests.filter((quote: QuoteRequest) => quote.status === "pending").length;
+  const reviewingCount = quoteRequests.filter((quote: QuoteRequest) => quote.status === "reviewing").length;
+  const acceptedCount = quoteRequests.filter((quote: QuoteRequest) => quote.status === "accepted").length;
+  const rejectedCount = quoteRequests.filter((quote: QuoteRequest) => quote.status === "rejected").length;
+  const completedCount = quoteRequests.filter((quote: QuoteRequest) => quote.status === "completed").length;
+  const unreadCount = quoteRequests.filter((quote: QuoteRequest) => !quote.reviewed).length;
 
-  // Handle delete confirmation
-  const confirmDelete = (quote: QuoteRequest) => {
-    setQuoteToDelete(quote);
+  // Handle search input change
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
   };
 
-  // Handle delete
-  const handleDelete = () => {
+  // Show delete confirmation
+  const handleDeleteClick = (quote: QuoteRequest) => {
+    setQuoteToDelete(quote);
+    setShowDeleteDialog(true);
+  };
+
+  // Confirm delete
+  const confirmDelete = () => {
     if (quoteToDelete) {
-      deleteQuoteMutation.mutate(quoteToDelete.id);
+      deleteMutation.mutate(quoteToDelete.id);
     }
   };
 
@@ -176,158 +193,207 @@ const QuoteRequestsManagement = () => {
     updateStatusMutation.mutate({ id, status });
   };
 
+  // Export quote requests as CSV
+  const exportQuoteRequests = () => {
+    const quotesToExport = statusFilter === "all" 
+      ? quoteRequests 
+      : filteredQuoteRequests;
+    
+    const csvHeader = 'Name,Email,Company,Phone,Project Type,Budget,Timeframe,Status,Date Submitted\n';
+    const csvContent = quotesToExport.map(quote => {
+      const date = quote.createdAt ? new Date(quote.createdAt).toLocaleDateString() : 'N/A';
+      return `"${quote.name}","${quote.email}","${quote.company || ''}","${quote.phone || ''}","${quote.projectType}","${quote.budget || ''}","${quote.timeframe || ''}","${quote.status}","${date}"`;
+    }).join('\n');
+    
+    const csvData = csvHeader + csvContent;
+    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `quote-requests-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast({
+      title: "Export successful",
+      description: `${quotesToExport.length} quote requests exported to CSV.`,
+      variant: "default"
+    });
+  };
+
   // Status badge color mapping
   const getStatusBadge = (status: string) => {
-    const styles = {
-      pending: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
-      reviewing: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-      accepted: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-      rejected: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-      completed: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200"
+    const styles: Record<string, string> = {
+      pending: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100",
+      reviewing: "bg-blue-100 text-blue-800 hover:bg-blue-100",
+      accepted: "bg-green-100 text-green-800 hover:bg-green-100",
+      rejected: "bg-red-100 text-red-800 hover:bg-red-100",
+      completed: "bg-purple-100 text-purple-800 hover:bg-purple-100"
     };
     
+    const displayName = status.charAt(0).toUpperCase() + status.slice(1);
+    
     return (
-      <Badge className={`${styles[status as keyof typeof styles]}`}>
-        {status.charAt(0).toUpperCase() + status.slice(1)}
+      <Badge className={styles[status] || "bg-gray-100 text-gray-800 hover:bg-gray-100"}>
+        {displayName}
       </Badge>
     );
   };
 
   return (
-    <div className="admin-quote-requests-management">
-      <AdminNav activePage="dashboard" />
-      
-      <div className="container mx-auto py-8 px-4">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold flex items-center">
-            <ClipboardList className="mr-2 h-6 w-6" />
-            Quote Requests
-            {unreadCount > 0 && (
-              <Badge variant="destructive" className="ml-2">
-                {unreadCount} Unread
-              </Badge>
-            )}
-          </h1>
+    <div className="min-h-screen pt-32 pb-20 bg-gray-50">
+      <div className="container mx-auto px-4 md:px-8">
+        <div className="flex flex-col md:flex-row gap-8">
+          {/* Admin Navigation */}
+          <AdminNav activePage="quotes" />
           
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search requests..."
-              className="pl-10 w-[200px] md:w-[300px]"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+          {/* Main Content */}
+          <div className="flex-1">
+            <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                <h1 className="text-2xl font-montserrat font-bold flex items-center">
+                  <ClipboardList className="mr-2 h-6 w-6" />
+                  Quote Requests
+                  {unreadCount > 0 && (
+                    <Badge variant="destructive" className="ml-2">
+                      {unreadCount} Unread
+                    </Badge>
+                  )}
+                </h1>
+                
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex items-center gap-2"
+                  onClick={exportQuoteRequests}
+                >
+                  <Download className="h-4 w-4" />
+                  Export CSV
+                </Button>
+              </div>
+              
+              {/* Status filter tabs */}
+              <Tabs 
+                defaultValue="all" 
+                onValueChange={(value) => setStatusFilter(value)}
+                className="mb-6"
+              >
+                <TabsList className="mb-4 flex flex-wrap">
+                  <TabsTrigger value="all">All ({quoteRequests.length})</TabsTrigger>
+                  <TabsTrigger value="pending">Pending ({pendingCount})</TabsTrigger>
+                  <TabsTrigger value="reviewing">Reviewing ({reviewingCount})</TabsTrigger>
+                  <TabsTrigger value="accepted">Accepted ({acceptedCount})</TabsTrigger>
+                  <TabsTrigger value="rejected">Rejected ({rejectedCount})</TabsTrigger>
+                  <TabsTrigger value="completed">Completed ({completedCount})</TabsTrigger>
+                </TabsList>
+              
+                {/* Search bar */}
+                <div className="mb-6 relative">
+                  <Input
+                    type="text"
+                    placeholder="Search quote requests..."
+                    value={searchQuery}
+                    onChange={handleSearchChange}
+                    className="pl-10 pr-4 py-2 border border-gray-300"
+                  />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                </div>
+                
+                {/* Quote requests table */}
+                <div className="overflow-x-auto">
+                  {isLoading ? (
+                    <div className="flex justify-center items-center h-64">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                  ) : (
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-[200px]">Contact Info</TableHead>
+                          <TableHead>Project Type</TableHead>
+                          <TableHead>Budget</TableHead>
+                          <TableHead>Submitted</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredQuoteRequests.length === 0 ? (
+                          <TableRow>
+                            <TableCell colSpan={6} className="h-24 text-center text-gray-500">
+                              No quote requests found
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          filteredQuoteRequests.map(quote => (
+                            <TableRow 
+                              key={quote.id}
+                              className={!quote.reviewed ? "bg-muted/30" : ""}
+                            >
+                              <TableCell className="font-medium">
+                                <div className="flex flex-col">
+                                  <span className="font-semibold">{quote.name}</span>
+                                  <span className="text-sm text-muted-foreground">{quote.email}</span>
+                                  {quote.company && (
+                                    <span className="text-xs text-muted-foreground">{quote.company}</span>
+                                  )}
+                                </div>
+                              </TableCell>
+                              <TableCell>{quote.projectType}</TableCell>
+                              <TableCell>{quote.budget || "—"}</TableCell>
+                              <TableCell>
+                                {quote.createdAt ? formatDate(quote.createdAt) : 'N/A'}
+                                {!quote.reviewed && (
+                                  <Badge variant="secondary" className="ml-2">New</Badge>
+                                )}
+                              </TableCell>
+                              <TableCell>{getStatusBadge(quote.status || 'pending')}</TableCell>
+                              <TableCell className="text-right">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => viewQuoteDetails(quote)}
+                                  className="text-blue-600 hover:text-blue-900 mr-2"
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleDeleteClick(quote)}
+                                  className="text-red-600 hover:text-red-900"
+                                  disabled={deleteMutation.isPending}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
+                  )}
+                </div>
+                
+                <div className="mt-4 text-sm text-muted-foreground">
+                  Showing {filteredQuoteRequests.length} of {quoteRequests.length} quote requests
+                </div>
+              </Tabs>
+            </div>
           </div>
         </div>
-        
-        <Tabs 
-          defaultValue="all" 
-          onValueChange={(value) => setStatusFilter(value)}
-          className="mb-6"
-        >
-          <TabsList className="mb-4 flex flex-wrap">
-            <TabsTrigger value="all">All ({quoteRequests.length})</TabsTrigger>
-            <TabsTrigger value="pending">Pending ({pendingCount})</TabsTrigger>
-            <TabsTrigger value="reviewing">Reviewing ({reviewingCount})</TabsTrigger>
-            <TabsTrigger value="accepted">Accepted ({acceptedCount})</TabsTrigger>
-            <TabsTrigger value="rejected">Rejected ({rejectedCount})</TabsTrigger>
-            <TabsTrigger value="completed">Completed ({completedCount})</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="all">
-            {isLoading ? (
-              <div className="flex justify-center items-center h-64">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            ) : (
-              <div className="rounded-md border bg-white dark:bg-gray-800 overflow-hidden">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[200px]">Contact Info</TableHead>
-                      <TableHead>Project Type</TableHead>
-                      <TableHead>Budget</TableHead>
-                      <TableHead>Submitted</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredQuoteRequests.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={6} className="h-24 text-center">
-                          No quote requests found.
-                        </TableCell>
-                      </TableRow>
-                    ) : (
-                      filteredQuoteRequests.map((quote: QuoteRequest) => (
-                        <TableRow 
-                          key={quote.id}
-                          className={!quote.reviewed ? "bg-muted/30" : ""}
-                        >
-                          <TableCell className="font-medium">
-                            <div className="flex flex-col">
-                              <span className="font-semibold">{quote.name}</span>
-                              <span className="text-sm text-muted-foreground">{quote.email}</span>
-                              {quote.company && (
-                                <span className="text-xs text-muted-foreground">{quote.company}</span>
-                              )}
-                            </div>
-                          </TableCell>
-                          <TableCell>{quote.projectType}</TableCell>
-                          <TableCell>{quote.budget || "—"}</TableCell>
-                          <TableCell>
-                            {formatDate(quote.createdAt)}
-                            {!quote.reviewed && (
-                              <Badge variant="secondary" className="ml-2">New</Badge>
-                            )}
-                          </TableCell>
-                          <TableCell>{getStatusBadge(quote.status)}</TableCell>
-                          <TableCell className="text-right">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => viewQuoteDetails(quote)}
-                              className="mr-1"
-                            >
-                              <Eye className="h-4 w-4 text-primary" />
-                              <span className="sr-only">View</span>
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => confirmDelete(quote)}
-                              disabled={deleteQuoteMutation.isPending}
-                            >
-                              <Trash2 className="h-4 w-4 text-red-500" />
-                              <span className="sr-only">Delete</span>
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </TabsContent>
-          
-          {/* Repeat similar TabsContent for other tabs (pending, reviewing, etc.) if needed */}
-          <TabsContent value="pending">{/* Similar table structure with filtered data */}</TabsContent>
-          <TabsContent value="reviewing">{/* Similar table structure with filtered data */}</TabsContent>
-          <TabsContent value="accepted">{/* Similar table structure with filtered data */}</TabsContent>
-          <TabsContent value="rejected">{/* Similar table structure with filtered data */}</TabsContent>
-          <TabsContent value="completed">{/* Similar table structure with filtered data */}</TabsContent>
-        </Tabs>
       </div>
       
       {/* Quote Details Dialog */}
-      <Dialog open={!!quoteToView} onOpenChange={() => setQuoteToView(null)}>
+      <Dialog open={!!quoteToView} onOpenChange={(open) => !open && setQuoteToView(null)}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
             <DialogTitle>Quote Request Details</DialogTitle>
             <DialogDescription>
-              Submitted on {quoteToView ? formatDate(quoteToView.createdAt) : ""}
+              Submitted on {quoteToView?.createdAt ? formatDate(quoteToView.createdAt) : "N/A"}
             </DialogDescription>
           </DialogHeader>
           
@@ -336,7 +402,7 @@ const QuoteRequestsManagement = () => {
               <div className="space-y-4">
                 <div>
                   <h3 className="font-semibold text-sm text-muted-foreground">Contact Information</h3>
-                  <div className="mt-1">
+                  <div className="mt-1 p-3 bg-gray-50 rounded-md">
                     <p className="font-semibold">{quoteToView.name}</p>
                     <p>{quoteToView.email}</p>
                     <p>{quoteToView.phone || "No phone provided"}</p>
@@ -346,7 +412,7 @@ const QuoteRequestsManagement = () => {
                 
                 <div>
                   <h3 className="font-semibold text-sm text-muted-foreground">Project Details</h3>
-                  <div className="mt-1">
+                  <div className="mt-1 p-3 bg-gray-50 rounded-md">
                     <p><span className="font-semibold">Type:</span> {quoteToView.projectType}</p>
                     {quoteToView.projectSize && (
                       <p><span className="font-semibold">Size:</span> {quoteToView.projectSize}</p>
@@ -363,16 +429,16 @@ const QuoteRequestsManagement = () => {
               
               <div>
                 <h3 className="font-semibold text-sm text-muted-foreground">Project Description</h3>
-                <div className="mt-1 p-3 bg-muted rounded-md max-h-[200px] overflow-y-auto">
-                  <p>{quoteToView.description}</p>
+                <div className="mt-1 p-3 bg-gray-50 rounded-md max-h-[200px] overflow-y-auto">
+                  <p>{quoteToView.description || "No description provided"}</p>
                 </div>
               </div>
               
               <div className="md:col-span-2">
                 <h3 className="font-semibold text-sm text-muted-foreground">Update Status</h3>
-                <div className="flex items-center mt-1 space-x-2">
+                <div className="flex flex-wrap items-center mt-1 gap-4">
                   <Select
-                    defaultValue={quoteToView.status}
+                    defaultValue={quoteToView.status || 'pending'}
                     onValueChange={(value) => handleStatusChange(quoteToView.id, value)}
                   >
                     <SelectTrigger className="w-[180px]">
@@ -386,25 +452,26 @@ const QuoteRequestsManagement = () => {
                       <SelectItem value="completed">Completed</SelectItem>
                     </SelectContent>
                   </Select>
-                  <span className="text-sm text-muted-foreground">
-                    Current: {getStatusBadge(quoteToView.status)}
+                  <span className="text-sm text-muted-foreground flex items-center">
+                    Current: {getStatusBadge(quoteToView.status || 'pending')}
                   </span>
+                  {!quoteToView.reviewed && (
+                    <Badge variant="outline" className="ml-auto">Unreviewed</Badge>
+                  )}
                 </div>
               </div>
             </div>
           )}
           
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setQuoteToView(null)}
-            >
-              Close
-            </Button>
+            <DialogClose asChild>
+              <Button variant="outline">Close</Button>
+            </DialogClose>
             {quoteToView && !quoteToView.reviewed && (
               <Button
                 onClick={() => markAsReviewedMutation.mutate(quoteToView.id)}
                 disabled={markAsReviewedMutation.isPending}
+                variant="default"
               >
                 <CheckCircle2 className="mr-2 h-4 w-4" />
                 {markAsReviewedMutation.isPending ? "Marking..." : "Mark as Reviewed"}
@@ -414,37 +481,29 @@ const QuoteRequestsManagement = () => {
         </DialogContent>
       </Dialog>
       
-      {/* Confirmation Dialog for Delete */}
-      <AlertDialog open={!!quoteToDelete} onOpenChange={() => setQuoteToDelete(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this quote request? This action cannot be undone.
-              <div className="mt-2 p-2 bg-muted rounded-sm">
-                <strong className="block">From:</strong> {quoteToDelete?.name} ({quoteToDelete?.email})
-                <strong className="block mt-1">Project Type:</strong> {quoteToDelete?.projectType}
-              </div>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleDelete}
-              className="bg-red-500 hover:bg-red-600"
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this quote request from {quoteToDelete?.name}? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button 
+              variant="destructive" 
+              onClick={confirmDelete}
+              disabled={deleteMutation.isPending}
             >
-              {deleteQuoteMutation.isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Deleting...
-                </>
-              ) : (
-                "Delete"
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+              {deleteMutation.isPending ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
