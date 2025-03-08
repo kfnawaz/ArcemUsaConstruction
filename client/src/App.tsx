@@ -8,7 +8,7 @@ import Footer from "@/components/layout/Footer";
 import BackToTop from "@/components/common/BackToTop";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
-import Chatbot from "@/components/chatbot/Chatbot";
+import ChatbotWidget from "@/components/custom/ChatbotWidget";
 
 // Pages
 import Home from "@/pages/Home";
@@ -153,7 +153,7 @@ function Router() {
       
       <BackToTop />
       {/* Show Chatbot on non-admin pages */}
-      {!isAdminPage && <Chatbot />}
+      {!isAdminPage && <ChatbotWidget />}
       {/* Show Footer on all pages */}
       <Footer />
     </div>
