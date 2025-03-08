@@ -18,7 +18,11 @@ import { useTestimonials } from "@/hooks/useTestimonials";
 import { Loader2, Star } from "lucide-react";
 import { publicTestimonialSchema } from "@shared/schema";
 
-const TestimonialForm = () => {
+interface TestimonialFormProps {
+  onSuccess?: () => void;
+}
+
+const TestimonialForm = ({ onSuccess }: TestimonialFormProps) => {
   const { submitTestimonial, isSubmitting } = useTestimonials();
 
   // Extend the schema with client-side validation
@@ -47,11 +51,18 @@ const TestimonialForm = () => {
   const onSubmit = (data: FormValues) => {
     submitTestimonial(data);
     form.reset();
+    
+    // Call the onSuccess callback after a short delay to allow the success toast to be seen
+    if (onSuccess) {
+      setTimeout(() => {
+        onSuccess();
+      }, 2000);
+    }
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <h3 className="text-xl font-bold mb-4">Share Your Experience</h3>
+    <div>
+      {/* Title is now handled by the parent component */}
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -1,16 +1,23 @@
-import React from "react";
+import React, { useState } from "react";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Skeleton } from "@/components/ui/skeleton";
 import TestimonialCard from "@/components/common/TestimonialCard";
+import TestimonialForm from "@/components/common/TestimonialForm";
 import { useTestimonials } from "@/hooks/useTestimonials";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, MessageSquarePlus, ChevronDown, ChevronUp } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import { Testimonial } from "@shared/schema";
 
 const TestimonialsSection = () => {
+  const [isFormOpen, setIsFormOpen] = useState(false);
   const { testimonials: testimonialsData, isLoadingTestimonials } = useTestimonials();
   const testimonials: Testimonial[] = Array.isArray(testimonialsData) ? testimonialsData : [];
   const testimonialsError = null; // We'll simplify error handling for now
+  
+  const toggleForm = () => {
+    setIsFormOpen(!isFormOpen);
+  };
 
   if (isLoadingTestimonials) {
     return (
@@ -66,12 +73,30 @@ const TestimonialsSection = () => {
   return (
     <section className="py-16 bg-secondary/5">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
+        <div className="text-center mb-10">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">What Our Clients Say</h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-muted-foreground max-w-2xl mx-auto mb-4">
             Hear from our satisfied clients about their experiences working with ARCEMUSA Construction.
           </p>
+          
+          <Button 
+            onClick={toggleForm} 
+            className="mt-2"
+            variant="outline" 
+            size="lg"
+          >
+            <MessageSquarePlus className="mr-2 h-5 w-5" />
+            {isFormOpen ? "Close Form" : "Share Your Experience"}
+            {isFormOpen ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />}
+          </Button>
         </div>
+
+        {isFormOpen && (
+          <div className="max-w-2xl mx-auto mb-12 bg-card rounded-lg shadow-md p-6 border border-border">
+            <h3 className="text-xl font-bold mb-4">Submit Your Testimonial</h3>
+            <TestimonialForm onSuccess={() => setIsFormOpen(false)} />
+          </div>
+        )}
 
         {testimonials.length <= 3 ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
