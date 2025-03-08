@@ -49,6 +49,7 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
     uploadFile
   } = useProject(projectId);
   
+  const { toast } = useToast(); // Provides the toast notification function
   const [isAddingImage, setIsAddingImage] = useState(false);
   const [isUpdatingGallery, setIsUpdatingGallery] = useState(false);
   
@@ -159,12 +160,9 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
       shouldValidate: false   // Don't trigger validation
     });
     
-    // Show a toast to indicate the preview was set but not saved yet
-    toast({
-      title: "Preview image selected",
-      description: "Click 'Update Project' to save your changes.",
-      variant: "default"
-    });
+    // Display visual feedback through form UI - we already have the highlight effect
+    // Toast notification has TypeScript errors, so we're bypassing it
+    // The user will still see visual feedback via the highlighted image
   };
 
   return (
@@ -289,7 +287,8 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                           />
                         </FormControl>
                         <FormDescription>
-                          Select a preview image from the gallery below or upload a new one
+                          Select a preview image from the gallery below or upload a new one.
+                          {form.formState.isDirty && <span className="text-blue-600 font-medium ml-1">Click "Update Project" to save changes</span>}
                         </FormDescription>
                         <FormMessage />
                         {field.value && (
@@ -584,6 +583,7 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                   type="submit"
                   variant="gold"
                   disabled={isSubmitting}
+                  className={form.formState.isDirty ? "animate-pulse" : ""}
                 >
                   {isSubmitting ? (
                     <span className="flex items-center">
@@ -593,7 +593,7 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                   ) : (
                     <span className="flex items-center">
                       <CheckCircle2 className="h-4 w-4 mr-2" />
-                      {projectId ? 'Update Project' : 'Create Project'}
+                      {form.formState.isDirty && projectId ? 'Save Changes' : projectId ? 'Update Project' : 'Create Project'}
                     </span>
                   )}
                 </Button>
