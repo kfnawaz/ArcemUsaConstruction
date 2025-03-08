@@ -363,6 +363,7 @@ export class MemStorage implements IStorage {
         // Ensure new fields have default values to prevent errors
         overview: project.overview || null,
         challenges: project.challenges || null,
+        solutions: project.solutions || null,
         results: project.results || null,
         client: project.client || null,
         location: project.location || null,
@@ -381,6 +382,7 @@ export class MemStorage implements IStorage {
       ...project,
       overview: project.overview || null,
       challenges: project.challenges || null,
+      solutions: project.solutions || null,
       results: project.results || null,
       client: project.client || null,
       location: project.location || null,
@@ -398,6 +400,7 @@ export class MemStorage implements IStorage {
         // Ensure new fields have default values to prevent errors
         overview: project.overview || null,
         challenges: project.challenges || null,
+        solutions: project.solutions || null,
         results: project.results || null,
         client: project.client || null,
         location: project.location || null,
@@ -424,6 +427,7 @@ export class MemStorage implements IStorage {
       // Handle optional fields with proper nulls
       overview: project.overview || null,
       challenges: project.challenges || null,
+      solutions: project.solutions || null,
       results: project.results || null,
       
       // Project specifications
