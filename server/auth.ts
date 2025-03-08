@@ -1,10 +1,12 @@
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
-import { Express } from "express";
+import { Express, Request, Response, NextFunction } from "express";
 import session from "express-session";
+import connectPg from "connect-pg-simple";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
+import { DATABASE_URL } from "./db";
 import { User as SelectUser } from "@shared/schema";
 
 declare global {
@@ -29,7 +31,18 @@ async function comparePasswords(supplied: string, stored: string) {
 }
 
 export function setupAuth(app: Express) {
+  // Initialize PostgreSQL session store
+  const PostgresStore = connectPg(session);
+  
   const sessionSettings: session.SessionOptions = {
+    store: new PostgresStore({
+      tableName: "session",
+      conObject: {
+        connectionString: process.env.DATABASE_URL,
+        max: 10
+      },
+      createTableIfMissing: true
+    }),
     secret: process.env.SESSION_SECRET || "arcemusaVerySecureSecret2025",
     resave: false,
     saveUninitialized: false,
@@ -94,7 +107,7 @@ export function setupAuth(app: Express) {
   });
 
   app.post("/api/login", (req, res, next) => {
-    passport.authenticate("local", (err, user, info) => {
+    passport.authenticate("local", (err: any, user: SelectUser | false, info: any) => {
       if (err) return next(err);
       if (!user) {
         return res.status(401).json({ message: "Invalid username or password" });
