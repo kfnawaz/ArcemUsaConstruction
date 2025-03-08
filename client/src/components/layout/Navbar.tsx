@@ -171,15 +171,41 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
             ))}
             
             
-            {/* Mobile Login/Admin Button */}
-            <Link 
-              href={isAuthenticated ? "/admin" : "/auth/login"}
-              className="bg-[#C09E5E] hover:bg-[#A98D54] text-white px-4 py-2 rounded-sm flex items-center justify-center space-x-1 font-montserrat text-sm transition-colors"
-              onClick={closeMobileMenu}
-            >
-              <User className="w-4 h-4 mr-1" />
-              {isAuthenticated ? "ADMIN" : "LOGIN"}
-            </Link>
+            {/* Mobile Auth Buttons */}
+            {isAuthenticated ? (
+              <div className="flex flex-col space-y-2">
+                <Link 
+                  href="/admin"
+                  className="bg-[#C09E5E] hover:bg-[#A98D54] text-white px-4 py-2 rounded-sm flex items-center justify-center space-x-1 font-montserrat text-sm transition-colors"
+                  onClick={closeMobileMenu}
+                >
+                  <User className="w-4 h-4 mr-1" />
+                  ADMIN
+                </Link>
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  className="bg-transparent border-white text-white hover:bg-white/10 font-montserrat text-sm transition-colors w-full"
+                  onClick={() => {
+                    closeMobileMenu();
+                    handleLogout();
+                  }}
+                  disabled={logoutMutation.isPending}
+                >
+                  <LogOut className="w-4 h-4 mr-1" />
+                  LOGOUT
+                </Button>
+              </div>
+            ) : (
+              <Link 
+                href="/auth/login"
+                className="bg-[#C09E5E] hover:bg-[#A98D54] text-white px-4 py-2 rounded-sm flex items-center justify-center space-x-1 font-montserrat text-sm transition-colors"
+                onClick={closeMobileMenu}
+              >
+                <User className="w-4 h-4 mr-1" />
+                LOGIN
+              </Link>
+            )}
           </div>
         </div>
       </div>
