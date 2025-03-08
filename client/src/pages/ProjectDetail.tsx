@@ -138,13 +138,7 @@ const ProjectDetail = () => {
     );
   };
 
-  useEffect(() => {
-    if (project) {
-      document.title = `${project.title} - ARCEMUSA Projects`;
-    } else {
-      document.title = 'Project Details - ARCEMUSA';
-    }
-  }, [project]);
+  // SEO metadata is now handled by ProjectSeo component
 
   if (isLoading) {
     return (
@@ -186,6 +180,15 @@ const ProjectDetail = () => {
 
   return (
     <div className="min-h-screen pt-32 pb-20 bg-white">
+      {project && (
+        <ProjectSeo 
+          title={project.title}
+          description={project.description}
+          imageUrl={project.image}
+          projectId={projectId}
+          category={project.category}
+        />
+      )}
       <div className="container mx-auto px-4 md:px-8">
         <div className="mb-8">
           <Link href="/projects">

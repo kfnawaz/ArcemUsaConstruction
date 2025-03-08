@@ -9,7 +9,7 @@ interface BlogPostSeoProps {
   imageUrl: string;
   author: string;
   publishedDate: string;
-  modifiedDate?: string;
+  modifiedDate?: string; // Optional
   url: string;
   slug: string;
 }

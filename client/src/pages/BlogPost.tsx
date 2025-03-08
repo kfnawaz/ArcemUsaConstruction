@@ -71,7 +71,7 @@ const BlogPost = () => {
           imageUrl={post.image || ''}
           author={post.author}
           publishedDate={post.createdAt ? new Date(post.createdAt).toISOString() : new Date().toISOString()}
-          modifiedDate={post.updatedAt ? new Date(post.updatedAt).toISOString() : undefined}
+          modifiedDate={undefined}
           url={window.location.href}
           slug={slug || ''}
         />
