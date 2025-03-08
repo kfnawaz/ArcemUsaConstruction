@@ -1,143 +1,117 @@
-import { useEffect, useState, useRef } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { initializeRevealEffects } from '@/lib/utils';
-import TestimonialCard from '@/components/common/TestimonialCard';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Testimonial } from '@shared/schema';
+import React from "react";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { Skeleton } from "@/components/ui/skeleton";
+import TestimonialCard from "@/components/common/TestimonialCard";
+import { useTestimonials } from "@/hooks/useTestimonials";
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const TestimonialsSection = () => {
-  const { data: testimonials, isLoading, error } = useQuery<Testimonial[]>({
-    queryKey: ['/api/testimonials'],
-  });
+  const { testimonials, isLoadingTestimonials, testimonialsError } = useTestimonials();
 
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const slideContainerRef = useRef<HTMLDivElement>(null);
-  const [totalSlides, setTotalSlides] = useState(0);
+  if (isLoadingTestimonials) {
+    return (
+      <section className="py-16 bg-secondary/5">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">What Our Clients Say</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Hear from our satisfied clients about their experiences working with ARCEMUSA Construction.
+            </p>
+          </div>
 
-  useEffect(() => {
-    if (testimonials) {
-      setTotalSlides(testimonials.length);
-    }
-  }, [testimonials]);
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="bg-card rounded-lg p-6 h-64">
+                <div className="flex items-center mb-4">
+                  <Skeleton className="h-12 w-12 rounded-full" />
+                  <div className="ml-4 space-y-2">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-3 w-24" />
+                  </div>
+                </div>
+                <Skeleton className="h-4 w-24 mb-4" />
+                <Skeleton className="h-20 w-full" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
-  useEffect(() => {
-    const cleanup = initializeRevealEffects();
-    return cleanup;
-  }, []);
+  if (testimonialsError) {
+    return (
+      <section className="py-16 bg-secondary/5">
+        <div className="container mx-auto px-4">
+          <Alert variant="destructive" className="max-w-2xl mx-auto">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>
+              Unable to load testimonials. Please try again later.
+            </AlertDescription>
+          </Alert>
+        </div>
+      </section>
+    );
+  }
 
-  const handlePrevSlide = () => {
-    if (currentSlide > 0) {
-      setCurrentSlide(currentSlide - 1);
-    } else {
-      setCurrentSlide(totalSlides - 1);
-    }
-  };
-
-  const handleNextSlide = () => {
-    if (currentSlide < totalSlides - 1) {
-      setCurrentSlide(currentSlide + 1);
-    } else {
-      setCurrentSlide(0);
-    }
-  };
-
-  useEffect(() => {
-    // Auto scroll testimonials
-    const interval = setInterval(() => {
-      handleNextSlide();
-    }, 5000);
-    
-    return () => clearInterval(interval);
-  }, [currentSlide, totalSlides]);
-
-  useEffect(() => {
-    if (slideContainerRef.current && testimonials && testimonials.length > 0) {
-      // Calculate slide width (including padding)
-      const slideWidth = slideContainerRef.current.children[0].clientWidth;
-      
-      // Apply transformation
-      slideContainerRef.current.style.transform = `translateX(-${currentSlide * slideWidth}px)`;
-    }
-  }, [currentSlide, testimonials]);
-
-  if (error) {
-    console.error('Error loading testimonials:', error);
+  if (!testimonials || testimonials.length === 0) {
+    return null; // Don't show the section if there are no testimonials
   }
 
   return (
-    <section className="py-20 md:py-32 bg-gray-100">
-      <div className="container mx-auto px-4 md:px-8">
-        <div className="text-center max-w-3xl mx-auto mb-16 reveal">
-          <h2 className="text-sm font-montserrat text-[#C09E5E] mb-4">TESTIMONIALS</h2>
-          <h3 className="text-3xl md:text-4xl font-montserrat font-bold mb-6">What Our Clients Say</h3>
-          <p className="text-gray-600 leading-relaxed">
-            Hear from our satisfied clients about their experience working with ARCEMUSA on their construction projects.
+    <section className="py-16 bg-secondary/5">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">What Our Clients Say</h2>
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            Hear from our satisfied clients about their experiences working with ARCEMUSA Construction.
           </p>
         </div>
-        
-        <div className="testimonial-slider overflow-hidden relative reveal">
-          {isLoading ? (
-            // Loading state
-            <div className="flex">
-              {Array(3).fill(0).map((_, index) => (
-                <div key={index} className="w-full md:w-1/2 lg:w-1/3 flex-shrink-0 px-4">
-                  <div className="bg-white p-8 shadow-lg h-full animate-pulse">
-                    <div className="h-40 bg-gray-200 mb-4"></div>
-                    <div className="flex items-center">
-                      <div className="w-12 h-12 rounded-full bg-gray-200 mr-4"></div>
-                      <div>
-                        <div className="h-4 w-24 bg-gray-200 mb-2"></div>
-                        <div className="h-3 w-16 bg-gray-200"></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : error ? (
-            // Error state
-            <div className="text-center text-red-500 p-8">
-              Failed to load testimonials. Please try again later.
-            </div>
-          ) : (
-            // Render actual testimonials
-            <div 
-              id="testimonials-container" 
-              ref={slideContainerRef}
-              className="flex transition-transform duration-500"
-            >
-              {testimonials?.map((testimonial) => (
-                <TestimonialCard 
-                  key={testimonial.id}
-                  name={testimonial.name}
-                  position={testimonial.position}
-                  company={testimonial.company || ''}
-                  content={testimonial.content}
-                  rating={testimonial.rating}
-                  image={testimonial.image || ''}
-                />
-              ))}
-            </div>
-          )}
-          
-          <button 
-            id="prev-testimonial" 
-            className="absolute top-1/2 left-4 -translate-y-1/2 bg-white p-2 rounded-full shadow-md text-[#C09E5E] hover:text-[#A98D54] focus:outline-none"
-            onClick={handlePrevSlide}
-            aria-label="Previous testimonial"
+
+        {testimonials.length <= 3 ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {testimonials.map((testimonial) => (
+              <TestimonialCard
+                key={testimonial.id}
+                name={testimonial.name}
+                position={testimonial.position}
+                company={testimonial.company}
+                content={testimonial.content}
+                rating={testimonial.rating}
+                image={testimonial.image}
+              />
+            ))}
+          </div>
+        ) : (
+          <Carousel
+            opts={{
+              align: "start",
+              loop: true,
+            }}
+            className="w-full"
           >
-            <ChevronLeft className="w-6 h-6" />
-          </button>
-          
-          <button 
-            id="next-testimonial" 
-            className="absolute top-1/2 right-4 -translate-y-1/2 bg-white p-2 rounded-full shadow-md text-[#C09E5E] hover:text-[#A98D54] focus:outline-none"
-            onClick={handleNextSlide}
-            aria-label="Next testimonial"
-          >
-            <ChevronRight className="w-6 h-6" />
-          </button>
-        </div>
+            <CarouselContent>
+              {testimonials.map((testimonial) => (
+                <CarouselItem key={testimonial.id} className="md:basis-1/3 p-2">
+                  <TestimonialCard
+                    name={testimonial.name}
+                    position={testimonial.position}
+                    company={testimonial.company}
+                    content={testimonial.content}
+                    rating={testimonial.rating}
+                    image={testimonial.image}
+                  />
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <div className="flex justify-center mt-8">
+              <CarouselPrevious className="relative static mr-2" />
+              <CarouselNext className="relative static" />
+            </div>
+          </Carousel>
+        )}
       </div>
     </section>
   );

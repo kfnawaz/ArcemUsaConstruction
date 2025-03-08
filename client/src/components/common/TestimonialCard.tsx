@@ -1,4 +1,8 @@
-import { Star } from 'lucide-react';
+import React from "react";
+import { Star, StarHalf } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 interface TestimonialCardProps {
   name: string;
@@ -10,46 +14,62 @@ interface TestimonialCardProps {
 }
 
 const TestimonialCard = ({ name, position, company, content, rating, image }: TestimonialCardProps) => {
-  // Generate star rating elements
+  // Generate star rating display
   const renderStars = () => {
-    return Array(rating).fill(0).map((_, index) => (
-      <Star key={index} className="w-5 h-5" fill="currentColor" />
-    ));
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 !== 0;
+
+    // Add full stars
+    for (let i = 0; i < fullStars; i++) {
+      stars.push(
+        <Star key={`star-${i}`} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+      );
+    }
+
+    // Add half star if necessary
+    if (hasHalfStar) {
+      stars.push(
+        <StarHalf key="half-star" className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+      );
+    }
+
+    // Add empty stars to make 5 total
+    const emptyStars = 5 - stars.length;
+    for (let i = 0; i < emptyStars; i++) {
+      stars.push(
+        <Star key={`empty-${i}`} className="h-4 w-4 text-yellow-400" />
+      );
+    }
+
+    return stars;
   };
 
-  // Format position and company
-  const formattedPosition = company 
-    ? `${position}, ${company}` 
-    : position;
-
   return (
-    <div className="w-full md:w-1/2 lg:w-1/3 flex-shrink-0 px-4">
-      <div className="bg-white p-8 shadow-lg h-full">
-        <div className="flex items-center mb-6">
-          <div className="text-[#C09E5E]">
-            <div className="flex">
-              {renderStars()}
-            </div>
-          </div>
-        </div>
-        <p className="text-gray-600 mb-6 italic leading-relaxed">
-          "{content}"
-        </p>
-        <div className="flex items-center">
-          <div className="mr-4">
-            <img 
-              src={image || "https://via.placeholder.com/48"} 
-              alt={name} 
-              className="w-12 h-12 rounded-full object-cover"
-            />
-          </div>
+    <Card className="h-full bg-primary/5 hover:bg-primary/10 transition-colors border-none">
+      <CardContent className="p-6 h-full flex flex-col">
+        <div className="flex flex-row items-center mb-4">
+          <Avatar className="h-12 w-12 mr-4 border border-primary/20">
+            <AvatarImage src={image} alt={name} />
+            <AvatarFallback>
+              {name.split(' ').map(n => n[0]).join('')}
+            </AvatarFallback>
+          </Avatar>
           <div>
-            <h5 className="font-montserrat font-bold">{name}</h5>
-            <p className="text-gray-600 text-sm">{formattedPosition}</p>
+            <h3 className="font-medium text-lg">{name}</h3>
+            <p className="text-sm text-muted-foreground">
+              {position}, {company}
+            </p>
           </div>
         </div>
-      </div>
-    </div>
+        
+        <div className="flex mb-4">
+          {renderStars()}
+        </div>
+        
+        <p className="text-sm flex-grow italic">"{content}"</p>
+      </CardContent>
+    </Card>
   );
 };
 
