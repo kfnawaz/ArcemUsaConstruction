@@ -28,8 +28,7 @@ export const projects = pgTable("projects", {
   
   // Project details from detail page
   overview: text("overview"),
-  challenges: text("challenges"),
-  solutions: text("solutions"),
+  challenges: text("challenges"), // Now contains both challenges and solutions
   results: text("results"),
   
   // Project specifications
