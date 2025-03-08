@@ -84,6 +84,32 @@ export const useTestimonials = () => {
       });
     },
   });
+  
+  // Mutation to revoke approval of a testimonial - admin only
+  const revokeApprovalMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await apiRequest("PUT", `/api/admin/testimonials/${id}`, { 
+        approved: false 
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/testimonials"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/testimonials"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/testimonials/pending"] });
+      toast({
+        title: "Approval revoked",
+        description: "The testimonial has been unpublished from the website.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Failed to revoke approval",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
 
   // Mutation to delete a testimonial - admin only
   const deleteTestimonialMutation = useMutation({
@@ -121,6 +147,10 @@ export const useTestimonials = () => {
     approveTestimonialMutation.mutate(id);
   };
 
+  const revokeApproval = (id: number) => {
+    revokeApprovalMutation.mutate(id);
+  };
+
   const deleteTestimonial = (id: number) => {
     deleteTestimonialMutation.mutate(id);
   };
@@ -139,11 +169,13 @@ export const useTestimonials = () => {
     // Submission states
     isSubmitting: submitTestimonialMutation.isPending,
     isApproving: approveTestimonialMutation.isPending,
+    isRevoking: revokeApprovalMutation.isPending,
     isDeleting: deleteTestimonialMutation.isPending,
     
     // Actions
     submitTestimonial,
     approveTestimonial,
+    revokeApproval,
     deleteTestimonial,
     
     // Refetch

@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Loader2, CheckCircle, Trash2, Star, Search } from "lucide-react";
+import { Loader2, CheckCircle, Trash2, Star, Search, ShieldX } from "lucide-react";
 import { Testimonial } from "@shared/schema";
 import { scrollToTop } from '@/lib/utils';
 import { formatDate } from "@/lib/utils";
@@ -30,8 +30,10 @@ const TestimonialsManagement = () => {
     isLoadingAllTestimonials,
     isLoadingPendingTestimonials,
     approveTestimonial,
+    revokeApproval,
     deleteTestimonial,
     isApproving,
+    isRevoking,
     isDeleting,
     refetchPendingTestimonials,
     refetchAllTestimonials
@@ -112,6 +114,14 @@ const TestimonialsManagement = () => {
     toast({
       title: "Processing approval",
       description: "The testimonial is being approved...",
+    });
+  };
+  
+  const handleRevokeApproval = (id: number) => {
+    revokeApproval(id);
+    toast({
+      title: "Revoking approval",
+      description: "The testimonial approval is being revoked...",
     });
   };
 
@@ -287,15 +297,27 @@ const TestimonialsManagement = () => {
                             )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            {!testimonial.approved && (
+                            {!testimonial.approved ? (
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handleApprove(testimonial.id)}
                                 disabled={isApproving}
                                 className="text-green-600 hover:text-green-900 mr-2"
+                                title="Approve testimonial"
                               >
                                 <CheckCircle className="h-4 w-4" />
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleRevokeApproval(testimonial.id)}
+                                disabled={isRevoking}
+                                className="text-amber-600 hover:text-amber-900 mr-2"
+                                title="Revoke approval"
+                              >
+                                <ShieldX className="h-4 w-4" />
                               </Button>
                             )}
                             <Button
@@ -304,6 +326,7 @@ const TestimonialsManagement = () => {
                               onClick={() => handleDeleteClick(testimonial)}
                               disabled={isDeleting}
                               className="text-red-600 hover:text-red-900"
+                              title="Delete testimonial"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
