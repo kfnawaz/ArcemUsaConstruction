@@ -76,8 +76,8 @@ const TestimonialsSection = () => {
               <TestimonialCard
                 key={testimonial.id}
                 name={testimonial.name}
-                position={testimonial.position}
-                company={testimonial.company}
+                position={testimonial.position || 'Client'}
+                company={testimonial.company || 'Happy Customer'}
                 content={testimonial.content}
                 rating={testimonial.rating}
                 image={testimonial.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(testimonial.name)}&background=random`}

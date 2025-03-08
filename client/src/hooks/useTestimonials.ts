@@ -1,39 +1,45 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Testimonial, InsertTestimonial, PublicTestimonial } from "@shared/schema";
+import { Testimonial, PublicTestimonial, InsertTestimonial } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useToast } from "./use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 export const useTestimonials = () => {
   const { toast } = useToast();
 
-  // Get all approved testimonials (public)
+  // Get all approved testimonials
   const {
     data: testimonials = [],
     isLoading: isLoadingTestimonials,
-    error: testimonialsError,
-  } = useQuery<Testimonial[]>({
+    error: testimonialError,
+  } = useQuery({
     queryKey: ["/api/testimonials"],
+    retry: 1,
   });
 
-  // Get all testimonials (admin only)
+  // Get all testimonials (including pending ones) - admin only
   const {
     data: allTestimonials = [],
     isLoading: isLoadingAllTestimonials,
     error: allTestimonialsError,
-  } = useQuery<Testimonial[]>({
+  } = useQuery({
     queryKey: ["/api/admin/testimonials"],
+    retry: 1,
+    enabled: false, // Only load when needed
   });
 
-  // Get pending testimonials (admin only)
+  // Get pending testimonials - admin only
   const {
     data: pendingTestimonials = [],
     isLoading: isLoadingPendingTestimonials,
     error: pendingTestimonialsError,
-  } = useQuery<Testimonial[]>({
+    refetch: refetchPendingTestimonials,
+  } = useQuery({
     queryKey: ["/api/admin/testimonials/pending"],
+    retry: 1,
+    enabled: false, // Only load when needed
   });
 
-  // Submit a new testimonial (public)
+  // Mutation to submit a new testimonial
   const submitTestimonialMutation = useMutation({
     mutationFn: async (data: PublicTestimonial) => {
       const response = await apiRequest("POST", "/api/testimonials/submit", data);
@@ -41,89 +47,82 @@ export const useTestimonials = () => {
     },
     onSuccess: () => {
       toast({
-        title: "Testimonial Submitted",
-        description: "Thank you for your testimonial! It will be reviewed by our team before being published.",
+        title: "Testimonial submitted",
+        description: "Thank you for your feedback! Your testimonial will be reviewed before being published.",
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Error Submitting Testimonial",
+        title: "Failed to submit testimonial",
         description: error.message,
         variant: "destructive",
       });
     },
   });
 
-  // Update a testimonial (admin only)
-  const updateTestimonialMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: number; data: Partial<InsertTestimonial> }) => {
-      const response = await apiRequest("PUT", `/api/admin/testimonials/${id}`, data);
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "Testimonial Updated",
-        description: "The testimonial has been updated successfully.",
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/testimonials"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/testimonials"] });
-    },
-    onError: (error: Error) => {
-      toast({
-        title: "Error Updating Testimonial",
-        description: error.message,
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Approve a testimonial (admin only)
+  // Mutation to approve a testimonial - admin only
   const approveTestimonialMutation = useMutation({
     mutationFn: async (id: number) => {
       const response = await apiRequest("PUT", `/api/admin/testimonials/${id}/approve`);
       return response.json();
     },
     onSuccess: () => {
-      toast({
-        title: "Testimonial Approved",
-        description: "The testimonial has been approved and is now visible to the public.",
-      });
+      queryClient.invalidateQueries({ queryKey: ["/api/testimonials"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/testimonials"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/testimonials/pending"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/testimonials"] });
+      toast({
+        title: "Testimonial approved",
+        description: "The testimonial has been published to the website.",
+      });
     },
     onError: (error: Error) => {
       toast({
-        title: "Error Approving Testimonial",
+        title: "Failed to approve testimonial",
         description: error.message,
         variant: "destructive",
       });
     },
   });
 
-  // Delete a testimonial (admin only)
+  // Mutation to delete a testimonial - admin only
   const deleteTestimonialMutation = useMutation({
     mutationFn: async (id: number) => {
       const response = await apiRequest("DELETE", `/api/admin/testimonials/${id}`);
-      return response.json();
+      if (!response.ok) {
+        throw new Error("Failed to delete testimonial");
+      }
+      return true;
     },
     onSuccess: () => {
-      toast({
-        title: "Testimonial Deleted",
-        description: "The testimonial has been deleted successfully.",
-      });
+      queryClient.invalidateQueries({ queryKey: ["/api/testimonials"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/testimonials"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/testimonials/pending"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/testimonials"] });
+      toast({
+        title: "Testimonial deleted",
+        description: "The testimonial has been removed.",
+      });
     },
     onError: (error: Error) => {
       toast({
-        title: "Error Deleting Testimonial",
+        title: "Failed to delete testimonial",
         description: error.message,
         variant: "destructive",
       });
     },
   });
+
+  // Wrapper functions
+  const submitTestimonial = (data: PublicTestimonial) => {
+    submitTestimonialMutation.mutate(data);
+  };
+
+  const approveTestimonial = (id: number) => {
+    approveTestimonialMutation.mutate(id);
+  };
+
+  const deleteTestimonial = (id: number) => {
+    deleteTestimonialMutation.mutate(id);
+  };
 
   return {
     // Data
@@ -136,21 +135,17 @@ export const useTestimonials = () => {
     isLoadingAllTestimonials,
     isLoadingPendingTestimonials,
     
-    // Error states
-    testimonialsError,
-    allTestimonialsError,
-    pendingTestimonialsError,
-    
-    // Mutations
-    submitTestimonial: submitTestimonialMutation.mutate,
-    updateTestimonial: updateTestimonialMutation.mutate,
-    approveTestimonial: approveTestimonialMutation.mutate,
-    deleteTestimonial: deleteTestimonialMutation.mutate,
-    
-    // Mutation states
+    // Submission states
     isSubmitting: submitTestimonialMutation.isPending,
-    isUpdating: updateTestimonialMutation.isPending,
     isApproving: approveTestimonialMutation.isPending,
     isDeleting: deleteTestimonialMutation.isPending,
+    
+    // Actions
+    submitTestimonial,
+    approveTestimonial,
+    deleteTestimonial,
+    
+    // Refetch
+    refetchPendingTestimonials,
   };
 };

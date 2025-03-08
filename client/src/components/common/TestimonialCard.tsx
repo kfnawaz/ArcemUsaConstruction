@@ -10,7 +10,7 @@ interface TestimonialCardProps {
   company: string;
   content: string;
   rating: number;
-  image: string;
+  image: string; // We already handle null values in the parent component
 }
 
 const TestimonialCard = ({ name, position, company, content, rating, image }: TestimonialCardProps) => {
