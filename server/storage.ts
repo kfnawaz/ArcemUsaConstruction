@@ -84,6 +84,23 @@ export interface IStorage {
   createMessage(message: InsertMessage): Promise<Message>;
   markMessageAsRead(id: number): Promise<Message | undefined>;
   deleteMessage(id: number): Promise<boolean>;
+  
+  // Newsletter Subscribers
+  getNewsletterSubscribers(): Promise<NewsletterSubscriber[]>;
+  getNewsletterSubscriber(id: number): Promise<NewsletterSubscriber | undefined>;
+  getNewsletterSubscriberByEmail(email: string): Promise<NewsletterSubscriber | undefined>;
+  createNewsletterSubscriber(subscriber: InsertNewsletterSubscriber): Promise<NewsletterSubscriber>;
+  updateNewsletterSubscriber(id: number, subscriber: Partial<InsertNewsletterSubscriber>): Promise<NewsletterSubscriber | undefined>;
+  deleteNewsletterSubscriber(id: number): Promise<boolean>;
+  
+  // Quote Requests
+  getQuoteRequests(): Promise<QuoteRequest[]>;
+  getQuoteRequest(id: number): Promise<QuoteRequest | undefined>;
+  createQuoteRequest(request: InsertQuoteRequest): Promise<QuoteRequest>;
+  updateQuoteRequest(id: number, request: Partial<QuoteRequest>): Promise<QuoteRequest | undefined>;
+  markQuoteRequestAsReviewed(id: number): Promise<QuoteRequest | undefined>;
+  updateQuoteRequestStatus(id: number, status: string): Promise<QuoteRequest | undefined>;
+  deleteQuoteRequest(id: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {

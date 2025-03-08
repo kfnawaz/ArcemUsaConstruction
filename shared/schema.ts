@@ -265,3 +265,48 @@ export type InsertService = z.infer<typeof insertServiceSchema>;
 
 export type Message = typeof messages.$inferSelect;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
+
+// Newsletter subscribers table
+export const newsletterSubscribers = pgTable("newsletter_subscribers", {
+  id: serial("id").primaryKey(),
+  email: text("email").notNull().unique(),
+  firstName: text("first_name"),
+  lastName: text("last_name"),
+  subscribed: boolean("subscribed").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertNewsletterSubscriberSchema = createInsertSchema(newsletterSubscribers).omit({
+  id: true,
+  createdAt: true
+});
+
+export type NewsletterSubscriber = typeof newsletterSubscribers.$inferSelect;
+export type InsertNewsletterSubscriber = z.infer<typeof insertNewsletterSubscriberSchema>;
+
+// Quote requests table
+export const quoteRequests = pgTable("quote_requests", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone"),
+  company: text("company"),
+  projectType: text("project_type").notNull(),
+  projectSize: text("project_size"),
+  budget: text("budget"),
+  timeframe: text("timeframe"),
+  description: text("description").notNull(),
+  status: text("status").default("pending"),
+  reviewed: boolean("reviewed").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertQuoteRequestSchema = createInsertSchema(quoteRequests).omit({
+  id: true,
+  status: true,
+  reviewed: true,
+  createdAt: true
+});
+
+export type QuoteRequest = typeof quoteRequests.$inferSelect;
+export type InsertQuoteRequest = z.infer<typeof insertQuoteRequestSchema>;
