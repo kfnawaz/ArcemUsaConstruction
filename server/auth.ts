@@ -1,13 +1,14 @@
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
-import { Express, Request, Response, NextFunction } from "express";
+import { Express } from "express";
 import session from "express-session";
-import connectPg from "connect-pg-simple";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
-import { DATABASE_URL } from "./db";
 import { User as SelectUser } from "@shared/schema";
+import pg from "pg";
+import connectPgSimple from "connect-pg-simple";
+import { DATABASE_URL } from "./db";
 
 declare global {
   namespace Express {
@@ -31,26 +32,25 @@ async function comparePasswords(supplied: string, stored: string) {
 }
 
 export function setupAuth(app: Express) {
-  // Initialize PostgreSQL session store
-  const PostgresStore = connectPg(session);
+  // Create a standard PostgreSQL pool for session store
+  const pgPool = new pg.Pool({
+    connectionString: DATABASE_URL
+  });
+  
+  // Create a PostgreSQL session store
+  const PgSession = connectPgSimple(session);
   
   const sessionSettings: session.SessionOptions = {
-    store: new PostgresStore({
-      tableName: "session",
-      conObject: {
-        connectionString: process.env.DATABASE_URL,
-        max: 10
-      },
-      createTableIfMissing: true
-    }),
-    secret: process.env.SESSION_SECRET || "arcemusaVerySecureSecret2025",
+    secret: process.env.SESSION_SECRET || 'arcemusa-construction-secret',
     resave: false,
     saveUninitialized: false,
+    store: new PgSession({ 
+      pool: pgPool,
+      createTableIfMissing: true
+    }),
     cookie: {
-      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-    },
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+    }
   };
 
   app.set("trust proxy", 1);
@@ -93,28 +93,28 @@ export function setupAuth(app: Express) {
       const user = await storage.createUser({
         ...req.body,
         password: await hashPassword(req.body.password),
-        role: "user" // Default role for new users
+        role: req.body.role || "user", // Default role
       });
 
       req.login(user, (err) => {
         if (err) return next(err);
-        res.status(201).json(user);
+        const { password, ...userWithoutPassword } = user;
+        res.status(201).json(userWithoutPassword);
       });
-    } catch (error) {
-      console.error("Registration error:", error);
-      res.status(500).json({ message: "An error occurred during registration" });
+    } catch (err) {
+      next(err);
     }
   });
 
   app.post("/api/login", (req, res, next) => {
-    passport.authenticate("local", (err: any, user: SelectUser | false, info: any) => {
+    passport.authenticate("local", (err: Error | null, user: SelectUser | false, info: any) => {
       if (err) return next(err);
-      if (!user) {
-        return res.status(401).json({ message: "Invalid username or password" });
-      }
-      req.login(user, (loginErr) => {
-        if (loginErr) return next(loginErr);
-        return res.status(200).json(user);
+      if (!user) return res.status(401).json({ message: "Invalid credentials" });
+      
+      req.login(user, (err) => {
+        if (err) return next(err);
+        const { password, ...userWithoutPassword } = user;
+        res.status(200).json(userWithoutPassword);
       });
     })(req, res, next);
   });
@@ -128,6 +128,7 @@ export function setupAuth(app: Express) {
 
   app.get("/api/user", (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
-    res.json(req.user);
+    const { password, ...userWithoutPassword } = req.user as SelectUser;
+    res.json(userWithoutPassword);
   });
 }

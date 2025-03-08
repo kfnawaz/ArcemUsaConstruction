@@ -6,9 +6,9 @@ import { useState, useEffect } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import BackToTop from "@/components/common/BackToTop";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { SeoProvider } from "@/contexts/SeoContext";
-import { AuthProvider } from "@/hooks/use-auth";
-import { ProtectedRoute } from "@/lib/protected-route";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ChatbotWidget from "@/components/custom/ChatbotWidget";
 
 // Pages
@@ -21,7 +21,7 @@ import Blog from "@/pages/Blog";
 import BlogPost from "@/pages/BlogPost";
 import Contact from "@/pages/Contact";
 import RequestQuote from "@/pages/RequestQuote";
-import AuthPage from "@/pages/auth-page";
+import Login from "@/pages/auth/Login";
 import Dashboard from "@/pages/admin/Dashboard";
 import ProjectManagement from "@/pages/admin/ProjectManagement";
 import BlogManagement from "@/pages/admin/BlogManagement";
@@ -34,7 +34,15 @@ import AccessibilityCheckerPage from "@/pages/admin/AccessibilityChecker";
 import NotFound from "@/pages/not-found";
 import RequestQuoteButton from "@/components/common/A11yFloatingButton";
 
-// Removed AdminRoute function as we now use ProtectedRoute directly
+function AdminRoute({ component: Component }: { component: React.ComponentType }) {
+  return (
+    <Route>
+      <ProtectedRoute>
+        <Component />
+      </ProtectedRoute>
+    </Route>
+  );
+}
 
 function Router() {
   // For navbar color change on scroll
@@ -99,19 +107,60 @@ function Router() {
           <Route path="/blog/:slug" component={BlogPost} />
           <Route path="/contact" component={Contact} />
           <Route path="/request-quote" component={RequestQuote} />
-          <Route path="/auth" component={AuthPage} />
-          <Route path="/auth/login" component={AuthPage} />
+          <Route path="/auth">
+            <Login />
+          </Route>
+          
+          <Route path="/auth/login">
+            <Login />
+          </Route>
           
           {/* Protected Admin Routes */}
-          <ProtectedRoute path="/admin" component={Dashboard} />
-          <ProtectedRoute path="/admin/projects" component={ProjectManagement} />
-          <ProtectedRoute path="/admin/blog" component={BlogManagement} />
-          <ProtectedRoute path="/admin/messages" component={MessagesManagement} />
-          <ProtectedRoute path="/admin/testimonials" component={TestimonialsManagement} />
-          <ProtectedRoute path="/admin/newsletter" component={NewsletterManagement} />
-          <ProtectedRoute path="/admin/quotes" component={QuoteRequestsManagement} />
-          <ProtectedRoute path="/admin/settings" component={SettingsPage} />
-          <ProtectedRoute path="/admin/accessibility" component={AccessibilityCheckerPage} />
+          <Route path="/admin">
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/admin/projects">
+            <ProtectedRoute>
+              <ProjectManagement />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/admin/blog">
+            <ProtectedRoute>
+              <BlogManagement />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/admin/messages">
+            <ProtectedRoute>
+              <MessagesManagement />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/admin/testimonials">
+            <ProtectedRoute>
+              <TestimonialsManagement />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/admin/newsletter">
+            <ProtectedRoute>
+              <NewsletterManagement />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/admin/quotes">
+            <ProtectedRoute>
+              <QuoteRequestsManagement />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/admin/settings">
+            <ProtectedRoute>
+              <SettingsPage />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/admin/accessibility">
+            <ProtectedRoute>
+              <AccessibilityCheckerPage />
+            </ProtectedRoute>
+          </Route>
           
           <Route component={NotFound} />
         </Switch>

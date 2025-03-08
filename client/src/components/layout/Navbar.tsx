@@ -1,21 +1,17 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'wouter';
 import { cn } from '@/lib/utils';
-import { Menu, X, User, LogOut } from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
+import { Menu, X, User } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 type NavbarProps = {
   isScrolled: boolean;
 };
 
 const Navbar = ({ isScrolled }: NavbarProps) => {
-  const [location, navigate] = useLocation();
+  const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const { user, logoutMutation } = useAuth();
-  const { toast } = useToast();
-  const isAuthenticated = !!user;
+  const { isAuthenticated, user } = useAuth();
   
   // Check if we're on an admin page
   const isAdminPage = location.startsWith('/admin');
@@ -26,19 +22,6 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
 
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
-  };
-  
-  const handleLogout = async () => {
-    try {
-      await logoutMutation.mutateAsync();
-      toast({
-        title: "Logged out",
-        description: "You have been successfully logged out.",
-      });
-      navigate('/');
-    } catch (error) {
-      console.error("Logout error:", error);
-    }
   };
 
   // Close mobile menu when clicking outside
@@ -76,12 +59,8 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
     >
       <div className="container mx-auto px-4 md:px-8">
         <div className="flex justify-between items-center">
-          <Link href="/" className="flex items-center">
-            <img 
-              src="/images/logo.png" 
-              alt="A+R C.E.M Construction Engineering Management" 
-              className="h-12 mr-2" 
-            />
+          <Link href="/" className="text-white text-2xl font-montserrat font-bold">
+            ARCEMUSA
           </Link>
           
           {/* Desktop Navigation */}
@@ -100,36 +79,14 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
             ))}
             
             
-            {/* Auth Buttons */}
-            {isAuthenticated ? (
-              <div className="flex space-x-2">
-                <Link 
-                  href="/admin" 
-                  className="bg-[#C09E5E] hover:bg-[#A98D54] text-white px-4 py-2 rounded-sm flex items-center space-x-1 font-montserrat text-sm transition-colors"
-                >
-                  <User className="w-4 h-4 mr-1" />
-                  ADMIN
-                </Link>
-                <Button 
-                  variant="outline"
-                  size="sm"
-                  className="bg-transparent border-white text-white hover:bg-white/10 font-montserrat text-sm transition-colors"
-                  onClick={handleLogout}
-                  disabled={logoutMutation.isPending}
-                >
-                  <LogOut className="w-4 h-4 mr-1" />
-                  LOGOUT
-                </Button>
-              </div>
-            ) : (
-              <Link 
-                href="/auth/login" 
-                className="bg-[#C09E5E] hover:bg-[#A98D54] text-white px-4 py-2 rounded-sm flex items-center space-x-1 font-montserrat text-sm transition-colors"
-              >
-                <User className="w-4 h-4 mr-1" />
-                LOGIN
-              </Link>
-            )}
+            {/* Login/Admin Button */}
+            <Link 
+              href={isAuthenticated ? "/admin" : "/auth/login"} 
+              className="bg-[#C09E5E] hover:bg-[#A98D54] text-white px-4 py-2 rounded-sm flex items-center space-x-1 font-montserrat text-sm transition-colors"
+            >
+              <User className="w-4 h-4 mr-1" />
+              {isAuthenticated ? "ADMIN" : "LOGIN"}
+            </Link>
           </div>
           
           {/* Mobile menu button */}
@@ -171,41 +128,15 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
             ))}
             
             
-            {/* Mobile Auth Buttons */}
-            {isAuthenticated ? (
-              <div className="flex flex-col space-y-2">
-                <Link 
-                  href="/admin"
-                  className="bg-[#C09E5E] hover:bg-[#A98D54] text-white px-4 py-2 rounded-sm flex items-center justify-center space-x-1 font-montserrat text-sm transition-colors"
-                  onClick={closeMobileMenu}
-                >
-                  <User className="w-4 h-4 mr-1" />
-                  ADMIN
-                </Link>
-                <Button 
-                  variant="outline"
-                  size="sm"
-                  className="bg-transparent border-white text-white hover:bg-white/10 font-montserrat text-sm transition-colors w-full"
-                  onClick={() => {
-                    closeMobileMenu();
-                    handleLogout();
-                  }}
-                  disabled={logoutMutation.isPending}
-                >
-                  <LogOut className="w-4 h-4 mr-1" />
-                  LOGOUT
-                </Button>
-              </div>
-            ) : (
-              <Link 
-                href="/auth/login"
-                className="bg-[#C09E5E] hover:bg-[#A98D54] text-white px-4 py-2 rounded-sm flex items-center justify-center space-x-1 font-montserrat text-sm transition-colors"
-                onClick={closeMobileMenu}
-              >
-                <User className="w-4 h-4 mr-1" />
-                LOGIN
-              </Link>
-            )}
+            {/* Mobile Login/Admin Button */}
+            <Link 
+              href={isAuthenticated ? "/admin" : "/auth/login"}
+              className="bg-[#C09E5E] hover:bg-[#A98D54] text-white px-4 py-2 rounded-sm flex items-center justify-center space-x-1 font-montserrat text-sm transition-colors"
+              onClick={closeMobileMenu}
+            >
+              <User className="w-4 h-4 mr-1" />
+              {isAuthenticated ? "ADMIN" : "LOGIN"}
+            </Link>
           </div>
         </div>
       </div>
