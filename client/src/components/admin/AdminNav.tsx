@@ -6,11 +6,13 @@ import {
   MessageSquare, 
   Settings,
   Eye,
-  Star
+  Star,
+  Mail,
+  ClipboardList
 } from 'lucide-react';
 
 type AdminNavProps = {
-  activePage: 'dashboard' | 'projects' | 'blog' | 'messages' | 'testimonials' | 'settings' | 'accessibility';
+  activePage: 'dashboard' | 'projects' | 'blog' | 'messages' | 'testimonials' | 'settings' | 'accessibility' | 'newsletter' | 'quotes';
 };
 
 const AdminNav = ({ activePage }: AdminNavProps) => {
@@ -46,6 +48,18 @@ const AdminNav = ({ activePage }: AdminNavProps) => {
       label: 'Messages', 
       icon: <MessageSquare className="w-5 h-5 mr-3" />,
       active: activePage === 'messages'
+    },
+    { 
+      href: '/admin/newsletter', 
+      label: 'Newsletter', 
+      icon: <Mail className="w-5 h-5 mr-3" />,
+      active: activePage === 'newsletter'
+    },
+    { 
+      href: '/admin/quotes', 
+      label: 'Quote Requests', 
+      icon: <ClipboardList className="w-5 h-5 mr-3" />,
+      active: activePage === 'quotes'
     },
     { 
       href: '/admin/settings', 
