@@ -226,7 +226,7 @@ const ChatbotWidget: React.FC = () => {
   const displayContactInfo = () => {
     const contactMessage: ChatMessage = {
       id: messages.length + 3,
-      text: 'Phone: (123) 456-7890\nEmail: info@arcemusa.com\nAddress: 123 Construction Avenue, Building City, BC 12345\nBusiness Hours: Monday - Friday: 8:00 AM - 5:00 PM, Saturday: 9:00 AM - 2:00 PM, Sunday: Closed',
+      text: 'Phone: (123) 456-7890\nEmail: aj@arcemusa.com\nAddress: 215 Birch Hill Dr, Sugar Land, TX 77479\nBusiness Hours: Monday - Friday: 8:00 AM - 5:00 PM, Saturday: 9:00 AM - 2:00 PM, Sunday: Closed',
       sender: 'bot',
       timestamp: new Date(),
     };

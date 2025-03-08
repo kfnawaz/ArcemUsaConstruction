@@ -41,14 +41,14 @@ const HomeSeo: React.FC<HomeSeoProps> = ({
           'https://linkedin.com/company/arcemusa'
         ]}
         address={{
-          streetAddress: '123 Construction Way',
-          addressLocality: 'Building City',
-          addressRegion: 'CA',
-          postalCode: '90210',
+          streetAddress: '215 Birch Hill Dr',
+          addressLocality: 'Sugar Land',
+          addressRegion: 'TX',
+          postalCode: '77479',
           addressCountry: 'US'
         }}
-        telephone="+1-555-123-4567"
-        email="info@arcemusa.com"
+        telephone="+1-713-624-0083"
+        email="aj@arcemusa.com"
         priceRange="$$$"
         openingHours={[
           'Monday-Friday 08:00-17:00',

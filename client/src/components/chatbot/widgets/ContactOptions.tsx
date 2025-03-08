@@ -17,7 +17,7 @@ const ContactOptions: React.FC = () => {
           <Mail className="w-4 h-4 text-[#C09E5E] mt-1" />
           <div>
             <div className="font-semibold">Email</div>
-            <div className="text-sm text-gray-600">info@arcemusa.com</div>
+            <div className="text-sm text-gray-600">aj@arcemusa.com</div>
           </div>
         </div>
         
@@ -26,8 +26,8 @@ const ContactOptions: React.FC = () => {
           <div>
             <div className="font-semibold">Address</div>
             <div className="text-sm text-gray-600">
-              123 Construction Avenue<br />
-              Building City, BC 12345
+              215 Birch Hill Dr<br />
+              Sugar Land, TX 77479
             </div>
           </div>
         </div>

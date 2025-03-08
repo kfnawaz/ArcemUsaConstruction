@@ -37,7 +37,7 @@ async function seedAdminUser() {
         username: "admin",
         password: hashedPassword,
         role: "admin",
-        email: "admin@arcemusa.com"
+        email: "aj@arcemusa.com"
       });
       console.log("Admin user created successfully");
     }

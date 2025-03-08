@@ -88,8 +88,8 @@ const ContactSection = () => {
               </div>
               <div>
                 <h4 className="font-montserrat font-bold mb-2">Our Location</h4>
-                <p>123 Construction Way, Building District</p>
-                <p>New York, NY 10001</p>
+                <p>215 Birch Hill Dr </p>
+                <p>Sugar Land, TX 77479</p>
               </div>
             </div>
             
@@ -99,7 +99,7 @@ const ContactSection = () => {
               </div>
               <div>
                 <h4 className="font-montserrat font-bold mb-2">Phone Number</h4>
-                <p>(555) 123-4567</p>
+                <p>(713) 624-0083</p>
               </div>
             </div>
             
@@ -109,7 +109,7 @@ const ContactSection = () => {
               </div>
               <div>
                 <h4 className="font-montserrat font-bold mb-2">Email Address</h4>
-                <p>info@arcemusa.com</p>
+                <p>aj@arcemusa.com</p>
               </div>
             </div>
             
