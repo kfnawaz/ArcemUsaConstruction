@@ -29,6 +29,7 @@ import { Label } from '@/components/ui/label';
 import FileUpload from '@/components/common/FileUpload';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { useToast } from '@/hooks/use-toast';
 
 interface ProjectFormProps {
   projectId?: number;
@@ -156,6 +157,13 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
       shouldDirty: true,      // Mark the form as dirty since we changed a value
       shouldTouch: true,      // Mark the field as touched
       shouldValidate: false   // Don't trigger validation
+    });
+    
+    // Show a toast to indicate the preview was set but not saved yet
+    toast({
+      title: "Preview image selected",
+      description: "Click 'Update Project' to save your changes.",
+      variant: "default"
     });
   };
 
@@ -519,7 +527,7 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                                 size="icon"
                                 className="h-8 w-8 rounded-full bg-white/90 hover:bg-white"
                                 onClick={() => handleSetAsPreview(image.imageUrl)}
-                                title="Set as preview image"
+                                title={form.getValues('image') === image.imageUrl ? "Selected as preview (click Update Project to save)" : "Set as preview image"}
                               >
                                 <Star className={`h-4 w-4 ${form.getValues('image') === image.imageUrl ? 'text-yellow-500 fill-yellow-500' : 'text-gray-700'}`} />
                               </Button>
