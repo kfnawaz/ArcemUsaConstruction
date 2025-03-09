@@ -36,7 +36,7 @@ const ImageSlider = ({ className = '' }: ImageSliderProps) => {
         {clientLogos.map((logo, index) => (
           <div 
             key={`logo-${index}`} 
-            className="slider-item flex-shrink-0 min-w-[180px] sm:min-w-[220px] md:min-w-[250px] h-16 mx-4 transform transition-all duration-300 hover:scale-110 flex items-center justify-center bg-white rounded-md px-4"
+            className="slider-item flex-shrink-0 min-w-[180px] sm:min-w-[220px] md:min-w-[250px] h-16 mx-4 flex items-center justify-center rounded-md px-4"
           >
             <img 
               src={logo.src} 
@@ -51,7 +51,7 @@ const ImageSlider = ({ className = '' }: ImageSliderProps) => {
         {clientLogos.map((logo, index) => (
           <div 
             key={`logo-dup-${index}`} 
-            className="slider-item flex-shrink-0 min-w-[180px] sm:min-w-[220px] md:min-w-[250px] h-16 mx-4 transform transition-all duration-300 hover:scale-110 flex items-center justify-center bg-white rounded-md px-4"
+            className="slider-item flex-shrink-0 min-w-[180px] sm:min-w-[220px] md:min-w-[250px] h-16 mx-4 flex items-center justify-center rounded-md px-4"
           >
             <img 
               src={logo.src} 
