@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useRoute, Link } from 'wouter';
 import { Service, ServiceGallery } from '@shared/schema';
 import { scrollToTop } from '@/lib/utils';
-import { Building, Home, Wrench, Clipboard, Factory, Settings, ArrowRight, Check } from 'lucide-react';
+import { Building, Home, Wrench, Clipboard, Factory, Settings, ArrowRight, Check, PencilRuler, BarChart, HardHat } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
 import { 
   Carousel, 
@@ -127,6 +127,12 @@ const ServiceDetail = () => {
         return <Factory className="w-16 h-16" />;
       case 'settings':
         return <Settings className="w-16 h-16" />;
+      case 'pencil-ruler':
+        return <PencilRuler className="w-16 h-16" />;
+      case 'bar-chart':
+        return <BarChart className="w-16 h-16" />;
+      case 'hard-hat':
+        return <HardHat className="w-16 h-16" />;
       default:
         return <Building className="w-16 h-16" />;
     }

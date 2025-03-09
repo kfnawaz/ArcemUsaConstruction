@@ -209,6 +209,24 @@ const ServiceManager: React.FC<ServiceManagerProps> = ({ service, onSuccess }) =
                             Settings
                           </div>
                         </SelectItem>
+                        <SelectItem value="pencil-ruler">
+                          <div className="flex items-center">
+                            <PencilRuler className="w-4 h-4 mr-2" />
+                            Architectural Design
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="bar-chart">
+                          <div className="flex items-center">
+                            <BarChart className="w-4 h-4 mr-2" />
+                            Project Management
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="hard-hat">
+                          <div className="flex items-center">
+                            <HardHat className="w-4 h-4 mr-2" />
+                            Construction Consultation
+                          </div>
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />

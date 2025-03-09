@@ -28,7 +28,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Loader2, Plus, Pencil, Trash2, Building, Home, Wrench, Clipboard, Factory, Settings } from 'lucide-react';
+import { Loader2, Plus, Pencil, Trash2, Building, Home, Wrench, Clipboard, Factory, Settings, PencilRuler, BarChart, HardHat } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const ServicesManagement = () => {
@@ -101,6 +101,12 @@ const ServicesManagement = () => {
         return <Factory className="w-5 h-5" />;
       case 'settings':
         return <Settings className="w-5 h-5" />;
+      case 'pencil-ruler':
+        return <PencilRuler className="w-5 h-5" />;
+      case 'bar-chart':
+        return <BarChart className="w-5 h-5" />;
+      case 'hard-hat':
+        return <HardHat className="w-5 h-5" />;
       default:
         return <Building className="w-5 h-5" />;
     }
