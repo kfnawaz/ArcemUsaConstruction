@@ -7,7 +7,7 @@ import { scrollToElement } from "@/lib/utils";
 const HeroSection = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [showVideo, setShowVideo] = useState(false);
-  const heroContainerRef = useRef<HTMLDivElement>(null);
+  const [userInteracted, setUserInteracted] = useState(false);
 
   useEffect(() => {
     // Animate content reveal
@@ -16,76 +16,70 @@ const HeroSection = () => {
       reveal.forEach((element) => element.classList.add("active"));
     }, 100);
 
-    // Add event listener for first user interaction
+    // Setup event handlers for user interaction
     const handleUserInteraction = () => {
-      setShowVideo(true);
-      
-      // Start the video
-      if (videoRef.current) {
-        videoRef.current.play().catch(err => {
-          console.error('Video playback failed:', err);
-        });
-      }
-      
-      // Remove event listeners after first interaction
-      if (heroContainerRef.current) {
-        heroContainerRef.current.removeEventListener('mousemove', handleUserInteraction);
-        heroContainerRef.current.removeEventListener('click', handleUserInteraction);
+      if (!userInteracted) {
+        console.log("User interaction detected, loading video");
+        setUserInteracted(true);
+        setShowVideo(true);
+        
+        // Try to play the video
+        if (videoRef.current) {
+          videoRef.current.play().catch(err => {
+            console.error('Video playback failed:', err);
+          });
+        }
+        
+        // Remove event listeners
+        document.removeEventListener('mousemove', handleUserInteraction);
+        document.removeEventListener('click', handleUserInteraction);
         document.removeEventListener('scroll', handleUserInteraction);
+        document.removeEventListener('keydown', handleUserInteraction);
       }
     };
     
-    // Add event listeners for user interaction
-    if (heroContainerRef.current) {
-      heroContainerRef.current.addEventListener('mousemove', handleUserInteraction);
-      heroContainerRef.current.addEventListener('click', handleUserInteraction);
-      document.addEventListener('scroll', handleUserInteraction);
-    }
+    // Add event listeners
+    document.addEventListener('mousemove', handleUserInteraction);
+    document.addEventListener('click', handleUserInteraction);
+    document.addEventListener('scroll', handleUserInteraction);
+    document.addEventListener('keydown', handleUserInteraction);
     
     return () => {
       clearTimeout(timeout);
-      // Cleanup event listeners
-      if (heroContainerRef.current) {
-        heroContainerRef.current.removeEventListener('mousemove', handleUserInteraction);
-        heroContainerRef.current.removeEventListener('click', handleUserInteraction);
-        document.removeEventListener('scroll', handleUserInteraction);
-      }
+      // Clean up event listeners
+      document.removeEventListener('mousemove', handleUserInteraction);
+      document.removeEventListener('click', handleUserInteraction);
+      document.removeEventListener('scroll', handleUserInteraction);
+      document.removeEventListener('keydown', handleUserInteraction);
     };
-  }, []);
+  }, [userInteracted]);
 
   const handleScrollDown = () => {
     scrollToElement("about");
   };
 
   return (
-    <div ref={heroContainerRef} className="hero-video-container relative h-screen">
-      {/* Background media - starts with image, switches to video on user interaction */}
-      <div className="absolute inset-0 z-0 bg-gray-900">
-        {/* Static image (visible initially) */}
-        <div className={`absolute inset-0 transition-opacity duration-1000 ${showVideo ? 'opacity-0' : 'opacity-100'}`}>
-          <img 
-            src="/images/projects.webp" 
-            alt="ARCEMUSA construction projects showcase" 
-            className="w-full h-full object-cover"
-          />
-        </div>
+    <div className="hero-section-container relative h-screen">
+      {/* Background media layer */}
+      <div className="absolute inset-0 z-0 bg-gray-900 overflow-hidden">
+        {/* Static image background (visible initially) */}
+        <img 
+          src="/images/projects.webp" 
+          alt="ARCEMUSA construction projects showcase" 
+          className={`w-full h-full object-cover transition-opacity duration-1000 ${showVideo ? 'opacity-0' : 'opacity-100'}`}
+        />
         
-        {/* Video (loads in background, visible after user interaction) */}
+        {/* Video (loads in background, becomes visible after user interaction) */}
         <video
           ref={videoRef}
-          className={`w-full h-full object-cover transition-opacity duration-1000 ${showVideo ? 'opacity-100' : 'opacity-0'}`}
-          preload="auto"
+          className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-1000 ${showVideo ? 'opacity-100' : 'opacity-0'}`}
           muted
           loop
           playsInline
           poster="/images/projects.webp"
           aria-label="Construction site timelapse video showing building progress"
-          title="ARCEMUSA construction showcase video"
         >
-          <source
-            src="/videos/file.mp4"
-            type="video/mp4"
-          />
+          <source src="/videos/file.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
       </div>
