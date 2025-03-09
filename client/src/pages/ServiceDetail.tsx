@@ -241,25 +241,25 @@ const ServiceDetail = () => {
               "Successful project completion within scope, time, and budget"
             ]
           };
-        case 'construction management':
+        case 'construction consultation':
           return {
-            description: "Our experienced construction management team oversees every aspect of your project from pre-construction planning through completion. We coordinate all activities, manage resources, and ensure quality control to deliver successful projects on time and within budget.",
+            description: "Our expert construction consultation services provide valuable advice and guidance for all types of construction projects. We help you make informed decisions, optimize your building plans, and avoid common pitfalls that can lead to delays and budget overruns.",
             features: [
-              "Comprehensive project oversight",
-              "Schedule development and management",
-              "Budget administration and cost control",
-              "Subcontractor coordination and management",
-              "Quality assurance and control",
-              "Risk management and problem resolution"
+              "Pre-construction feasibility studies",
+              "Building code and regulatory compliance",
+              "Material selection and sourcing advice",
+              "Construction method recommendations",
+              "Cost estimation and value engineering",
+              "Quality control and inspection services"
             ],
-            approach: "Our construction management approach combines meticulous planning with proactive oversight. We establish clear communication channels, detailed documentation systems, and regular reporting processes to keep your project running smoothly and all stakeholders informed.",
+            approach: "Our consultation approach focuses on understanding your specific needs and project goals. We provide objective, expert advice based on years of industry experience, helping you navigate the complexities of construction planning and execution with confidence.",
             benefits: [
-              "Single point of responsibility",
-              "Reduced administrative burden for owners",
-              "Proactive issue identification and resolution",
-              "Improved coordination among all parties",
-              "Consistent quality control throughout the project",
-              "Optimized project schedule and budget performance"
+              "Reduced risk of costly mistakes",
+              "Access to expert industry knowledge",
+              "Improved project planning and preparation",
+              "Time and cost savings through optimization",
+              "Compliance with building codes and regulations",
+              "Informed decision-making throughout the process"
             ]
           };
         default:
