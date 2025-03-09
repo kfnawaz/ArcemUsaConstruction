@@ -23,7 +23,7 @@ const ServiceDetail = () => {
   const serviceId = params ? parseInt(params.id) : undefined;
   
   // State for gallery images
-  const [galleryImages, setGalleryImages] = useState<string[]>([]);
+  const [galleryImages, setGalleryImages] = useState<ServiceGallery[]>([]);
   
   useEffect(() => {
     scrollToTop();
@@ -52,7 +52,7 @@ const ServiceDetail = () => {
   // Update gallery images when serviceGallery data changes
   useEffect(() => {
     if (serviceGallery && serviceGallery.length > 0) {
-      setGalleryImages(serviceGallery.map(item => item.imageUrl));
+      setGalleryImages(serviceGallery);
     }
   }, [serviceGallery]);
 
@@ -111,12 +111,14 @@ const ServiceDetail = () => {
         case 'architectural design':
           return [
             '/images/slider1.png',
-            '/images/slider2.png'
+            '/images/slider2.png',
+            '/images/image_1741509665889.png'
           ];
         case 'project management':
           return [
             '/images/slider3.png',
-            '/images/slider4.png'
+            '/images/slider4.png',
+            '/images/image_1741509691873.png'
           ];
         case 'construction consultation':
           return [
