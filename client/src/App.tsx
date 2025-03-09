@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import BackToTop from "@/components/common/BackToTop";
+import ScrollProgressBar from "@/components/common/ScrollProgressBar";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { SeoProvider } from "@/contexts/SeoContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
@@ -94,6 +95,8 @@ function Router() {
 
   return (
     <div className="flex flex-col min-h-screen">
+      {/* Show scroll progress indicator on non-admin pages */}
+      {!isAdminPage && <ScrollProgressBar />}
       {/* Show Navbar on all pages */}
       <Navbar isScrolled={isScrolled} />
       

@@ -3,6 +3,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { Skeleton } from "@/components/ui/skeleton";
 import TestimonialCard from "@/components/common/TestimonialCard";
 import TestimonialForm from "@/components/common/TestimonialForm";
+import TestimonialCarousel from "@/components/home/TestimonialCarousel";
 import { useTestimonials } from "@/hooks/useTestimonials";
 import { AlertCircle, MessageSquarePlus, ChevronDown, ChevronUp } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -98,47 +99,33 @@ const TestimonialsSection = () => {
           </div>
         )}
 
-        {testimonials.length <= 3 ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {testimonials.map((testimonial) => (
-              <TestimonialCard
-                key={testimonial.id}
-                name={testimonial.name}
-                position={testimonial.position || 'Client'}
-                company={testimonial.company || 'Happy Customer'}
-                content={testimonial.content}
-                rating={testimonial.rating}
-                image={testimonial.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(testimonial.name)}&background=random`}
-              />
-            ))}
-          </div>
-        ) : (
-          <Carousel
-            opts={{
-              align: "start",
-              loop: true,
-            }}
-            className="w-full"
-          >
-            <CarouselContent>
-              {testimonials.map((testimonial) => (
-                <CarouselItem key={testimonial.id} className="md:basis-1/3 p-2">
-                  <TestimonialCard
-                    name={testimonial.name}
-                    position={testimonial.position || 'Client'}
-                    company={testimonial.company || 'Happy Customer'}
-                    content={testimonial.content}
-                    rating={testimonial.rating}
-                    image={testimonial.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(testimonial.name)}&background=random`}
-                  />
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <div className="flex justify-center mt-8">
-              <CarouselPrevious className="relative static mr-2" />
-              <CarouselNext className="relative static" />
+        <div className="max-w-4xl mx-auto mt-8">
+          <div className="relative bg-gray-900 rounded-xl shadow-2xl overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-b from-[#21201F] to-black opacity-90"></div>
+            <div className="relative z-10">
+              <TestimonialCarousel testimonials={testimonials} autoplaySpeed={7000} />
             </div>
-          </Carousel>
+          </div>
+        </div>
+        
+        {/* Show additional testimonials in grid for larger collections */}
+        {testimonials.length > 4 && (
+          <div className="mt-12">
+            <h3 className="text-xl font-bold mb-6 text-center">More Success Stories</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {testimonials.slice(4, 7).map((testimonial) => (
+                <TestimonialCard
+                  key={testimonial.id}
+                  name={testimonial.name}
+                  position={testimonial.position || 'Client'}
+                  company={testimonial.company || 'Happy Customer'}
+                  content={testimonial.content}
+                  rating={testimonial.rating}
+                  image={testimonial.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(testimonial.name)}&background=random`}
+                />
+              ))}
+            </div>
+          </div>
         )}
       </div>
     </section>
