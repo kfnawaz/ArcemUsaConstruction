@@ -121,7 +121,12 @@
   }
   
   .hero-overlay {
-    background: rgba(0, 0, 0, 0.5);
+    background: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.7) 0%,
+      rgba(0, 0, 0, 0.5) 50%,
+      rgba(0, 0, 0, 0.7) 100%
+    );
   }
   
   .navbar-fixed {
@@ -166,7 +171,8 @@
   
   .slider-track {
     display: flex;
-    animation: slide 40s linear infinite;
+    animation: slide 60s linear infinite;
+    width: fit-content;
   }
   
   @keyframes slide {
