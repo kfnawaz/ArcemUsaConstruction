@@ -33,12 +33,12 @@ const HeroSection = () => {
           muted
           loop
           playsInline
-          poster="/videos/hero-video.mp4"
+          poster="https://video.wixstatic.com/video/6331e9_e98391c4a6dc4d85b10501c7aac5caee/1080p/mp4/file.mp4"
           aria-label="Construction site timelapse video showing building progress"
           title="ARCEMUSA construction showcase video"
         >
           <source
-            src="/videos/hero-video.mp4"
+            src="https://video.wixstatic.com/video/6331e9_e98391c4a6dc4d85b10501c7aac5caee/1080p/mp4/file.mp4"
             type="video/mp4"
           />
           Your browser does not support the video tag.
