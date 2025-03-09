@@ -12,7 +12,9 @@ import {
   insertTestimonialSchema,
   publicTestimonialSchema,
   insertNewsletterSubscriberSchema,
-  insertQuoteRequestSchema
+  insertQuoteRequestSchema,
+  insertServiceSchema,
+  insertServiceGallerySchema
 } from "@shared/schema";
 import { z } from "zod";
 import { setupAuth } from "./auth";
@@ -512,7 +514,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.status(201).json(service);
     } catch (error) {
-      if (error instanceof ZodError) {
+      if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid service data", errors: error.errors });
       }
       res.status(500).json({ message: "Failed to create service" });
@@ -535,7 +537,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(updatedService);
     } catch (error) {
-      if (error instanceof ZodError) {
+      if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid service data", errors: error.errors });
       }
       res.status(500).json({ message: "Failed to update service" });
@@ -596,7 +598,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const galleryImage = await storage.addServiceGalleryImage(galleryData);
       res.status(201).json(galleryImage);
     } catch (error) {
-      if (error instanceof ZodError) {
+      if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid gallery data", errors: error.errors });
       }
       res.status(500).json({ message: "Failed to add gallery image" });
@@ -619,7 +621,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(updatedImage);
     } catch (error) {
-      if (error instanceof ZodError) {
+      if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid gallery data", errors: error.errors });
       }
       res.status(500).json({ message: "Failed to update gallery image" });
