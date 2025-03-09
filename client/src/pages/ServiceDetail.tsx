@@ -52,6 +52,7 @@ const ServiceDetail = () => {
   // Update gallery images when serviceGallery data changes
   useEffect(() => {
     if (serviceGallery && serviceGallery.length > 0) {
+      console.log("Service gallery images:", serviceGallery);
       setGalleryImages(serviceGallery as ServiceGallery[]);
     }
   }, [serviceGallery]);
@@ -62,6 +63,52 @@ const ServiceDetail = () => {
       document.title = `${service.title} - ARCEMUSA`;
     }
   }, [service]);
+
+  // Images for each service type
+  const getServiceImages = (serviceType: string) => {
+    switch (serviceType.toLowerCase()) {
+      case 'commercial construction':
+        return [
+          '/images/commercial1.jpg',
+          '/images/commercial2.jpg',
+          '/images/commercial3.jpg'
+        ];
+      case 'residential construction':
+        return [
+          '/images/residential1.jpg',
+          '/images/residential2.jpg',
+          '/images/residential3.jpg'
+        ];
+      case 'renovation & remodeling':
+        return [
+          '/images/renovation1.jpg',
+          '/images/renovation2.jpg',
+          '/images/renovation3.jpg'
+        ];
+      case 'architectural design':
+        return [
+          '/images/slider1.png',
+          '/images/slider2.png',
+          '/images/image_1741509665889.png'
+        ];
+      case 'project management':
+        return [
+          '/images/slider3.png',
+          '/images/slider4.png',
+          '/images/image_1741509691873.png'
+        ];
+      case 'construction consultation':
+        return [
+          '/images/slider5.png',
+          '/images/image_1741432012642.png'
+        ];
+      default:
+        return [
+          '/images/slider1.png',
+          '/images/slider2.png'
+        ];
+    }
+  };
 
   // Get icon component based on icon name
   const getIcon = (iconName?: string) => {
@@ -87,51 +134,6 @@ const ServiceDetail = () => {
 
   // Service-specific content based on service type
   const getServiceDetails = (service: Service) => {
-    // Images for each service type
-    const getServiceImages = (serviceType: string) => {
-      switch (serviceType.toLowerCase()) {
-        case 'commercial construction':
-          return [
-            '/images/commercial1.jpg',
-            '/images/commercial2.jpg',
-            '/images/commercial3.jpg'
-          ];
-        case 'residential construction':
-          return [
-            '/images/residential1.jpg',
-            '/images/residential2.jpg',
-            '/images/residential3.jpg'
-          ];
-        case 'renovation & remodeling':
-          return [
-            '/images/renovation1.jpg',
-            '/images/renovation2.jpg',
-            '/images/renovation3.jpg'
-          ];
-        case 'architectural design':
-          return [
-            '/images/slider1.png',
-            '/images/slider2.png',
-            '/images/image_1741509665889.png'
-          ];
-        case 'project management':
-          return [
-            '/images/slider3.png',
-            '/images/slider4.png',
-            '/images/image_1741509691873.png'
-          ];
-        case 'construction consultation':
-          return [
-            '/images/slider5.png',
-            '/images/image_1741432012642.png'
-          ];
-        default:
-          return [
-            '/images/slider1.png',
-            '/images/slider2.png'
-          ];
-      }
-    };
 
     // Get detailed service description based on title
     const getServiceDescription = (title: string) => {
