@@ -52,7 +52,7 @@ const ServiceDetail = () => {
   // Update gallery images when serviceGallery data changes
   useEffect(() => {
     if (serviceGallery && serviceGallery.length > 0) {
-      setGalleryImages(serviceGallery);
+      setGalleryImages(serviceGallery as ServiceGallery[]);
     }
   }, [serviceGallery]);
 
@@ -199,18 +199,18 @@ const ServiceDetail = () => {
               "Preserved architectural character where desired"
             ]
           };
-        case 'project planning & design':
+        case 'architectural design':
           return {
-            description: "Our comprehensive planning and design services set the foundation for successful construction projects. We combine creative design thinking with practical construction knowledge to develop plans that are both aesthetically pleasing and buildable within your budget.",
+            description: "Our comprehensive architectural design services set the foundation for successful construction projects. We combine creative design thinking with practical construction knowledge to develop plans that are both aesthetically pleasing and buildable within your budget.",
             features: [
-              "Architectural design services",
+              "Innovative architectural designs",
               "Construction planning and feasibility studies",
               "3D modeling and visualizations",
               "Budget development and cost estimating",
               "Permit acquisition assistance",
               "Sustainable design solutions"
             ],
-            approach: "We take a collaborative approach to planning and design, working closely with you to understand your vision, needs, and constraints. Our team integrates creative design concepts with practical construction considerations to develop comprehensive plans that guide successful project execution.",
+            approach: "We take a collaborative approach to architectural design, working closely with you to understand your vision, needs, and constraints. Our team integrates creative design concepts with practical construction considerations to develop comprehensive plans that guide successful project execution.",
             benefits: [
               "Cohesive vision and design direction",
               "Early identification of potential challenges",
@@ -220,25 +220,25 @@ const ServiceDetail = () => {
               "Integrated sustainable design elements"
             ]
           };
-        case 'industrial construction':
+        case 'project management':
           return {
-            description: "Our industrial construction services deliver robust, efficient facilities designed for manufacturing, processing, storage, and distribution operations. We understand the unique requirements of industrial buildings and create spaces that optimize workflow and operational efficiency.",
+            description: "Our professional project management services ensure your construction project is executed efficiently and effectively. We coordinate all aspects of the project, from planning and design to execution and completion, delivering a seamless experience and superior results.",
             features: [
-              "Manufacturing facility construction",
-              "Warehouse and distribution center building",
-              "Processing plant construction",
-              "Industrial facility expansions",
-              "Cold storage facility construction",
-              "Industrial retrofits and renovations"
+              "Comprehensive project planning",
+              "Budget development and management",
+              "Schedule coordination and optimization",
+              "Resource allocation and management",
+              "Quality control and assurance",
+              "Risk assessment and mitigation"
             ],
-            approach: "We approach industrial projects with a focus on functionality, durability, and operational efficiency. Our team works closely with your operations personnel to understand specific workflows and equipment requirements, incorporating these needs into every aspect of the design and construction process.",
+            approach: "We approach project management with a focus on clear communication, proactive problem-solving, and meticulous attention to detail. Our experienced project managers work closely with all stakeholders to ensure alignment, anticipate challenges, and deliver successful outcomes.",
             benefits: [
-              "Durable structures built to withstand industrial use",
-              "Efficient layout for optimized operations",
-              "Compliance with all safety and regulatory requirements",
-              "Integration of specialized equipment and systems",
-              "Flexible spaces adaptable to changing operations",
-              "Energy-efficient building systems"
+              "Streamlined project execution",
+              "Minimized delays and disruptions",
+              "Optimized resource utilization",
+              "Enhanced collaboration among all parties",
+              "Regular progress updates and transparency",
+              "Successful project completion within scope, time, and budget"
             ]
           };
         case 'construction management':
