@@ -278,12 +278,22 @@ const ServiceDetail = () => {
                 <div className="mb-8">
                   <h3 className="text-2xl font-montserrat font-bold mb-4">Key Features</h3>
                   <ul className="space-y-2 mb-6">
-                    {serviceDetails.features.map((feature, index) => (
-                      <li key={index} className="flex items-start">
-                        <Check className="w-5 h-5 text-[#C09E5E] mr-2 mt-1 flex-shrink-0" />
-                        <span className="text-gray-600">{feature}</span>
-                      </li>
-                    ))}
+                    {service.features && service.features.length > 0 ? (
+                      service.features.map((feature, index) => (
+                        <li key={index} className="flex items-start">
+                          <Check className="w-5 h-5 text-[#C09E5E] mr-2 mt-1 flex-shrink-0" />
+                          <span className="text-gray-600">{feature}</span>
+                        </li>
+                      ))
+                    ) : (
+                      // Fallback to hard-coded features if none are found in database
+                      serviceDetails.features.map((feature, index) => (
+                        <li key={index} className="flex items-start">
+                          <Check className="w-5 h-5 text-[#C09E5E] mr-2 mt-1 flex-shrink-0" />
+                          <span className="text-gray-600">{feature}</span>
+                        </li>
+                      ))
+                    )}
                   </ul>
                 </div>
                 

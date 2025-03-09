@@ -97,20 +97,30 @@ const Services = () => {
                       {service.description}
                     </p>
                     <ul className="space-y-2 text-gray-600 mb-6">
-                      {[
-                        'Expert Team of Professionals',
-                        'Quality Materials and Craftsmanship',
-                        'Timely Project Completion',
-                        'Competitive Pricing',
-                        'Attention to Detail',
-                      ].map((feature, i) => (
-                        <li key={i} className="flex items-start">
-                          <svg className="w-5 h-5 text-[#C09E5E] mr-2 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                          </svg>
-                          {feature}
-                        </li>
-                      ))}
+                      {service.features && service.features.length > 0 ? (
+                        service.features.map((feature, i) => (
+                          <li key={i} className="flex items-start">
+                            <svg className="w-5 h-5 text-[#C09E5E] mr-2 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            {feature}
+                          </li>
+                        ))
+                      ) : (
+                        // Fallback to default features if none are provided
+                        ['Expert Team of Professionals', 
+                        'Quality Materials and Craftsmanship', 
+                        'Timely Project Completion', 
+                        'Competitive Pricing', 
+                        'Attention to Detail'].map((feature, i) => (
+                          <li key={i} className="flex items-start">
+                            <svg className="w-5 h-5 text-[#C09E5E] mr-2 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                            {feature}
+                          </li>
+                        ))
+                      )}
                     </ul>
                     
                     <Link 
