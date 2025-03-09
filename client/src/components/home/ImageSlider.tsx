@@ -41,7 +41,7 @@ const ImageSlider = ({ className = '' }: ImageSliderProps) => {
             <img 
               src={logo.src} 
               alt={logo.alt} 
-              className="max-h-14 max-w-full object-contain"
+              className="max-h-14 max-w-full object-contain filter drop-shadow(0 0 2px rgba(192, 158, 94, 0.3))"
               loading="lazy"
             />
           </div>

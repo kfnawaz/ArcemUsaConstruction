@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { initializeRevealEffects } from '@/lib/utils';
+import ImageSlider from './ImageSlider';
 
 const AboutSection = () => {
   useEffect(() => {
@@ -53,6 +54,11 @@ const AboutSection = () => {
               </Button>
             </Link>
           </div>
+        </div>
+        
+        <div className="mt-16 reveal">
+          <h3 className="text-2xl font-montserrat font-bold mb-8 text-center">Our Trusted Clients</h3>
+          <ImageSlider className="overflow-hidden" />
         </div>
       </div>
     </section>
