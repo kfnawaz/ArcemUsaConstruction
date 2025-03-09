@@ -87,45 +87,41 @@ const Services = () => {
     switch (service.title.toLowerCase()) {
       case 'commercial construction':
         return [
-          '/uploads/images/services/commercial/commercial1.jpg',
-          '/uploads/images/services/commercial/commercial2.jpg',
-          '/uploads/images/services/commercial/commercial3.jpg'
+          '/images/commercial1.jpg',
+          '/images/commercial2.jpg',
+          '/images/commercial3.jpg'
         ];
       case 'residential construction':
         return [
-          '/uploads/images/services/residential/residential1.jpg',
-          '/uploads/images/services/residential/residential2.jpg',
-          '/uploads/images/services/residential/residential3.jpg'
+          '/images/residential1.jpg',
+          '/images/residential2.jpg',
+          '/images/residential3.jpg'
         ];
       case 'renovation & remodeling':
         return [
-          '/uploads/images/services/renovation/renovation1.jpg',
-          '/uploads/images/services/renovation/renovation2.jpg',
-          '/uploads/images/services/renovation/renovation3.jpg'
+          '/images/renovation1.jpg',
+          '/images/renovation2.jpg',
+          '/images/renovation3.jpg'
         ];
-      case 'project planning & design':
+      case 'architectural design':
         return [
-          '/uploads/images/services/planning/planning1.jpg',
-          '/uploads/images/services/planning/planning2.jpg',
-          '/uploads/images/services/planning/planning3.jpg'
+          '/attached_assets/slider1.png',
+          '/attached_assets/slider2.png'
         ];
-      case 'industrial construction':
+      case 'project management':
         return [
-          '/uploads/images/services/industrial/industrial1.jpg',
-          '/uploads/images/services/industrial/industrial2.jpg',
-          '/uploads/images/services/industrial/industrial3.jpg'
+          '/attached_assets/slider3.png',
+          '/attached_assets/slider4.png'
         ];
-      case 'construction management':
+      case 'construction consultation':
         return [
-          '/uploads/images/services/management/management1.jpg',
-          '/uploads/images/services/management/management2.jpg',
-          '/uploads/images/services/management/management3.jpg'
+          '/attached_assets/slider5.png',
+          '/attached_assets/image_1741432012642.png'
         ];
       default:
         return [
-          '/uploads/images/services/commercial/commercial1.jpg',
-          '/uploads/images/services/residential/residential1.jpg',
-          '/uploads/images/services/renovation/renovation1.jpg'
+          '/attached_assets/slider1.png',
+          '/attached_assets/slider2.png'
         ];
     }
   };
