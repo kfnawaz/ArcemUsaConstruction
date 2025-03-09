@@ -570,10 +570,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid service ID" });
       }
       
+      // Add detailed logging for debugging
+      console.log(`[DEBUG] Fetching gallery for service ID: ${serviceId}`);
+      
       const galleryImages = await storage.getServiceGallery(serviceId);
+      
+      console.log(`[DEBUG] Gallery images found: ${JSON.stringify(galleryImages)}`);
+      
       res.json(galleryImages);
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch service gallery" });
+      console.error(`[ERROR] Failed to fetch service gallery:`, error);
+      res.status(500).json({ 
+        message: "Failed to fetch service gallery", 
+        error: String(error) 
+      });
     }
   });
   
