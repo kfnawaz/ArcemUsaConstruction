@@ -24,7 +24,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import ServiceGalleryManager from './ServiceGalleryManager';
-import { Loader2, Save, Building, Home, Wrench, Clipboard, Factory, Settings, PencilRuler, BarChart, HardHat } from 'lucide-react';
+import { 
+  Loader2, Save, ArrowLeft, Building, Home, Wrench, Clipboard, 
+  Factory, Settings, PencilRuler, BarChart, HardHat 
+} from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
 
 // Extend the base schema with client-side validation
 const serviceFormSchema = z.object({
@@ -48,6 +53,7 @@ interface ServiceManagerProps {
 }
 
 const ServiceManager: React.FC<ServiceManagerProps> = ({ service, onSuccess }) => {
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('details');
   const [featureInput, setFeatureInput] = useState('');
   const [featuresList, setFeaturesList] = useState<string[]>(
@@ -113,7 +119,24 @@ const ServiceManager: React.FC<ServiceManagerProps> = ({ service, onSuccess }) =
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-white rounded-lg shadow-md p-6 mb-8">
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={onSuccess}
+            className="h-8 w-8"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span className="sr-only">Back</span>
+          </Button>
+          <h2 className="text-2xl font-montserrat font-bold">
+            {service ? 'Edit Service' : 'Add New Service'}
+          </h2>
+        </div>
+      </div>
+      
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="details">Service Details</TabsTrigger>

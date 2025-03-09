@@ -32,8 +32,6 @@ import AdminNav from '@/components/admin/AdminNav';
 const ServicesManagement = () => {
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
-  const [isServiceDialogOpen, setIsServiceDialogOpen] = useState(false);
-  const [selectedService, setSelectedService] = useState<Service | undefined>(undefined);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [serviceToDelete, setServiceToDelete] = useState<Service | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -58,26 +56,16 @@ const ServicesManagement = () => {
       setIsAdding(true);
       setIsEditing(false);
       setCurrentEditId(undefined);
-      setSelectedService(undefined);
-      setIsServiceDialogOpen(true);
     } else if (editId) {
       setIsEditing(true);
       setIsAdding(false);
-      const id = Number(editId);
-      setCurrentEditId(id);
-      // Find the service with this ID
-      const service = services?.find(s => s.id === id);
-      if (service) {
-        setSelectedService(service);
-      }
-      setIsServiceDialogOpen(true);
+      setCurrentEditId(Number(editId));
     } else {
       setIsEditing(false);
       setIsAdding(false);
       setCurrentEditId(undefined);
-      setIsServiceDialogOpen(false);
     }
-  }, [location, services]);
+  }, [location]);
 
   useEffect(() => {
     scrollToTop();
@@ -86,7 +74,6 @@ const ServicesManagement = () => {
 
   // Handle clicking edit button
   const handleEditClick = (service: Service) => {
-    setSelectedService(service);
     setIsEditing(true);
     setIsAdding(false);
     setCurrentEditId(service.id);
@@ -95,7 +82,6 @@ const ServicesManagement = () => {
 
   // Handle clicking add new service
   const handleAddNewClick = () => {
-    setSelectedService(undefined);
     setIsAdding(true);
     setIsEditing(false);
     setCurrentEditId(undefined);
@@ -138,7 +124,6 @@ const ServicesManagement = () => {
 
   // Close form and return to list
   const handleCloseForm = () => {
-    setIsServiceDialogOpen(false);
     setIsEditing(false);
     setIsAdding(false);
     setCurrentEditId(undefined);
@@ -186,175 +171,129 @@ const ServicesManagement = () => {
           
           {/* Main Content */}
           <div className="flex-1">
-            {/* Service List */}
-            <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-                <h1 className="text-2xl font-montserrat font-bold">Service Management</h1>
-                <Button variant="gold" onClick={handleAddNewClick}>
-                  <Plus className="mr-2 h-4 w-4" /> Add New Service
-                </Button>
-              </div>
-              
-              {/* Search bar */}
-              <div className="mb-6 relative">
-                <Input
-                  type="text"
-                  placeholder="Search services..."
-                  value={searchQuery}
-                  onChange={handleSearchChange}
-                  className="pl-10 pr-4 py-2 border border-gray-300"
-                />
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              </div>
-              
-              {/* Services table */}
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-montserrat font-medium text-gray-500 uppercase tracking-wider">
-                        Icon
-                      </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-montserrat font-medium text-gray-500 uppercase tracking-wider">
-                        Title
-                      </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-montserrat font-medium text-gray-500 uppercase tracking-wider">
-                        Features
-                      </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-montserrat font-medium text-gray-500 uppercase tracking-wider">
-                        Description
-                      </th>
-                      <th scope="col" className="px-6 py-3 text-right text-xs font-montserrat font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {isLoadingServices ? (
-                      <tr>
-                        <td colSpan={5} className="px-6 py-4 text-center">
-                          <div className="animate-pulse flex items-center justify-center">
-                            <div className="h-4 w-36 bg-gray-200 rounded"></div>
-                          </div>
-                        </td>
-                      </tr>
-                    ) : filteredServices?.length === 0 ? (
-                      <tr>
-                        <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
-                          No services found
-                        </td>
-                      </tr>
-                    ) : (
-                      filteredServices?.map((service) => (
-                        <tr key={service.id}>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center justify-center text-primary">
-                              {getIcon(service.icon)}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">
-                              {service.title}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-500">
-                              {service.features && service.features.length > 0
-                                ? `${service.features.length} feature${service.features.length !== 1 ? 's' : ''}`
-                                : 'No features'}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
-                            <div className="text-sm text-gray-500 max-w-xs truncate">
-                              {service.description}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleEditClick(service)}
-                              className="text-blue-600 hover:text-blue-900 mr-2"
-                            >
-                              <Pencil className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeleteClick(service)}
-                              className="text-red-600 hover:text-red-900"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </td>
+            {/* Add/Edit Service Form */}
+            {isAdding || isEditing ? (
+              <ServiceManager 
+                service={isEditing && currentEditId ? services?.find(s => s.id === currentEditId) : undefined} 
+                onSuccess={handleCloseForm} 
+              />
+            ) : (
+              <>
+                {/* Service List */}
+                <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                    <h1 className="text-2xl font-montserrat font-bold">Service Management</h1>
+                    <Button variant="gold" onClick={handleAddNewClick}>
+                      <Plus className="mr-2 h-4 w-4" /> Add New Service
+                    </Button>
+                  </div>
+                  
+                  {/* Search bar */}
+                  <div className="mb-6 relative">
+                    <Input
+                      type="text"
+                      placeholder="Search services..."
+                      value={searchQuery}
+                      onChange={handleSearchChange}
+                      className="pl-10 pr-4 py-2 border border-gray-300"
+                    />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  </div>
+                  
+                  {/* Services table */}
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-montserrat font-medium text-gray-500 uppercase tracking-wider">
+                            Icon
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-montserrat font-medium text-gray-500 uppercase tracking-wider">
+                            Title
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-montserrat font-medium text-gray-500 uppercase tracking-wider">
+                            Features
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-left text-xs font-montserrat font-medium text-gray-500 uppercase tracking-wider">
+                            Description
+                          </th>
+                          <th scope="col" className="px-6 py-3 text-right text-xs font-montserrat font-medium text-gray-500 uppercase tracking-wider">
+                            Actions
+                          </th>
                         </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {isLoadingServices ? (
+                          <tr>
+                            <td colSpan={5} className="px-6 py-4 text-center">
+                              <div className="animate-pulse flex items-center justify-center">
+                                <div className="h-4 w-36 bg-gray-200 rounded"></div>
+                              </div>
+                            </td>
+                          </tr>
+                        ) : filteredServices?.length === 0 ? (
+                          <tr>
+                            <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                              No services found
+                            </td>
+                          </tr>
+                        ) : (
+                          filteredServices?.map((service) => (
+                            <tr key={service.id}>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="flex items-center justify-center text-primary">
+                                  {getIcon(service.icon)}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm font-medium text-gray-900">
+                                  {service.title}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap">
+                                <div className="text-sm text-gray-500">
+                                  {service.features && service.features.length > 0
+                                    ? `${service.features.length} feature${service.features.length !== 1 ? 's' : ''}`
+                                    : 'No features'}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="text-sm text-gray-500 max-w-xs truncate">
+                                  {service.description}
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleEditClick(service)}
+                                  className="text-blue-600 hover:text-blue-900 mr-2"
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleDeleteClick(service)}
+                                  className="text-red-600 hover:text-red-900"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </td>
+                            </tr>
+                          ))
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Service Form (Add/Edit) */}
-      {isServiceDialogOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-          onClick={(e) => {
-            // Close when clicking the backdrop (outside the modal)
-            if (e.target === e.currentTarget) {
-              handleCloseForm();
-            }
-          }}
-          onKeyDown={(e) => {
-            // Close when pressing Escape
-            if (e.key === 'Escape') {
-              handleCloseForm();
-            }
-          }}
-          tabIndex={0} // Make div focusable for keyboard events
-        >
-          <div className="bg-white rounded-lg shadow-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h2 className="text-xl font-bold">
-                    {selectedService ? 'Edit Service' : 'Add New Service'}
-                  </h2>
-                  <p className="text-gray-500">
-                    {selectedService ? 'Update the details of this service' : 'Create a new service for your website'}
-                  </p>
-                </div>
-                <Button 
-                  variant="ghost" 
-                  className="h-8 w-8 p-0" 
-                  onClick={handleCloseForm}
-                >
-                  <span className="sr-only">Close</span>
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-              
-              <ServiceManager
-                service={selectedService}
-                onSuccess={handleCloseForm}
-              />
-              
-              <div className="mt-4 flex justify-end">
-                <Button 
-                  variant="outline" 
-                  onClick={handleCloseForm}
-                  className="mr-2"
-                >
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* No modal dialog needed anymore since we're rendering the ServiceManager directly */}
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
