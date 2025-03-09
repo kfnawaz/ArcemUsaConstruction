@@ -187,8 +187,8 @@
   .slider-item {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    background-image: linear-gradient(to right, #e0c080, #d4b36b);
-    border: 1px solid #f0d090;
+    background-image: linear-gradient(to right, #f8f0dd, #f5e9c8);
+    border: 1px solid #e8daba;
   }
   
   .slider-item:hover {
