@@ -15,6 +15,7 @@ import ChatbotWidget from "@/components/custom/ChatbotWidget";
 import Home from "@/pages/Home";
 import About from "@/pages/About";
 import Services from "@/pages/Services";
+import ServiceDetail from "@/pages/ServiceDetail";
 import Projects from "@/pages/Projects";
 import ProjectDetail from "@/pages/ProjectDetail";
 import Blog from "@/pages/Blog";
@@ -101,6 +102,7 @@ function Router() {
           <Route path="/" component={Home} />
           <Route path="/about" component={About} />
           <Route path="/services" component={Services} />
+          <Route path="/services/:id/:slug" component={ServiceDetail} />
           <Route path="/projects" component={Projects} />
           <Route path="/projects/:id" component={ProjectDetail} />
           <Route path="/blog" component={Blog} />

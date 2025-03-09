@@ -96,7 +96,7 @@ const Services = () => {
                     <p className="text-gray-600 mb-6 leading-relaxed">
                       {service.description}
                     </p>
-                    <ul className="space-y-2 text-gray-600">
+                    <ul className="space-y-2 text-gray-600 mb-6">
                       {[
                         'Expert Team of Professionals',
                         'Quality Materials and Craftsmanship',
@@ -112,6 +112,13 @@ const Services = () => {
                         </li>
                       ))}
                     </ul>
+                    
+                    <Link 
+                      href={`/services/${service.id}/${service.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
+                      className="bg-[#C09E5E] hover:bg-[#A98D54] text-white py-2 px-6 font-montserrat font-medium text-sm tracking-wider inline-block transition-colors"
+                    >
+                      LEARN MORE
+                    </Link>
                   </div>
                 </div>
               ))}

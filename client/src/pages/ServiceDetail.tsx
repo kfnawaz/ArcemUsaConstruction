@@ -55,50 +55,50 @@ const ServiceDetail = () => {
 
   // Service-specific content based on service type
   const getServiceDetails = (service: Service) => {
-    // Placeholder images for each service type
+    // Images for each service type
     const getServiceImages = (serviceType: string) => {
       switch (serviceType.toLowerCase()) {
         case 'commercial construction':
           return [
-            '/uploads/images/commercial1.jpg',
-            '/uploads/images/commercial2.jpg',
-            '/uploads/images/commercial3.jpg'
+            '/uploads/images/services/commercial/commercial1.jpg',
+            '/uploads/images/services/commercial/commercial2.jpg',
+            '/uploads/images/services/commercial/commercial3.jpg'
           ];
         case 'residential construction':
           return [
-            '/uploads/images/residential1.jpg',
-            '/uploads/images/residential2.jpg',
-            '/uploads/images/residential3.jpg'
+            '/uploads/images/services/residential/residential1.jpg',
+            '/uploads/images/services/residential/residential2.jpg',
+            '/uploads/images/services/residential/residential3.jpg'
           ];
         case 'renovation & remodeling':
           return [
-            '/uploads/images/renovation1.jpg',
-            '/uploads/images/renovation2.jpg',
-            '/uploads/images/renovation3.jpg'
+            '/uploads/images/services/renovation/renovation1.jpg',
+            '/uploads/images/services/renovation/renovation2.jpg',
+            '/uploads/images/services/renovation/renovation3.jpg'
           ];
         case 'project planning & design':
           return [
-            '/uploads/images/planning1.jpg',
-            '/uploads/images/planning2.jpg',
-            '/uploads/images/planning3.jpg'
+            '/uploads/images/services/planning/planning1.jpg',
+            '/uploads/images/services/planning/planning2.jpg',
+            '/uploads/images/services/planning/planning3.jpg'
           ];
         case 'industrial construction':
           return [
-            '/uploads/images/industrial1.jpg',
-            '/uploads/images/industrial2.jpg',
-            '/uploads/images/industrial3.jpg'
+            '/uploads/images/services/industrial/industrial1.jpg',
+            '/uploads/images/services/industrial/industrial2.jpg',
+            '/uploads/images/services/industrial/industrial3.jpg'
           ];
         case 'construction management':
           return [
-            '/uploads/images/management1.jpg',
-            '/uploads/images/management2.jpg',
-            '/uploads/images/management3.jpg'
+            '/uploads/images/services/management/management1.jpg',
+            '/uploads/images/services/management/management2.jpg',
+            '/uploads/images/services/management/management3.jpg'
           ];
         default:
           return [
-            '/uploads/images/construction1.jpg',
-            '/uploads/images/construction2.jpg',
-            '/uploads/images/construction3.jpg'
+            '/uploads/images/services/commercial/commercial1.jpg',
+            '/uploads/images/services/residential/residential1.jpg',
+            '/uploads/images/services/renovation/renovation1.jpg'
           ];
       }
     };
