@@ -63,9 +63,9 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
             <img 
               src="/uploads/images/logo.png" 
               alt="ARCEMUSA Logo" 
-              className="h-10 w-10 mr-3 logo-img" 
+              className="h-20 w-20 mr-2 logo-img" 
             />
-            <span>ARCEMUSA</span>
+            <span>A+R C.E.M. USA</span>
           </Link>
           
           {/* Desktop Navigation */}
