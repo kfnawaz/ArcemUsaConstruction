@@ -15,7 +15,17 @@ import {
   DialogFooter, 
   DialogClose
 } from '@/components/ui/dialog';
-import { Loader2, Plus, Pencil, Trash2, Search, Building, Home, Wrench, Clipboard, Factory, Settings, PencilRuler, BarChart, HardHat } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Loader2, Plus, Pencil, Trash2, Search, Building, Home, Wrench, Clipboard, Factory, Settings, PencilRuler, BarChart, HardHat, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import AdminNav from '@/components/admin/AdminNav';
 
@@ -288,70 +298,87 @@ const ServicesManagement = () => {
         </div>
       </div>
 
-      {/* Service Dialog (Add/Edit) */}
-      <Dialog 
-        open={isServiceDialogOpen} 
-        onOpenChange={(open) => {
-          if (!open) {
-            // When dialog is closed, reset URL and state
-            handleCloseForm();
-          }
-          setIsServiceDialogOpen(open);
-        }}
-      >
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>
-              {selectedService ? 'Edit Service' : 'Add New Service'}
-            </DialogTitle>
-            <DialogDescription>
-              {selectedService ? 'Update the details of this service' : 'Create a new service for your website'}
-            </DialogDescription>
-          </DialogHeader>
-          <ServiceManager
-            service={selectedService}
-            onSuccess={handleCloseForm}
-          />
-          <DialogFooter className="mt-4">
-            <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
-            </DialogClose>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Service Form (Add/Edit) */}
+      {isServiceDialogOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={(e) => {
+            // Close when clicking the backdrop (outside the modal)
+            if (e.target === e.currentTarget) {
+              handleCloseForm();
+            }
+          }}
+          onKeyDown={(e) => {
+            // Close when pressing Escape
+            if (e.key === 'Escape') {
+              handleCloseForm();
+            }
+          }}
+          tabIndex={0} // Make div focusable for keyboard events
+        >
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h2 className="text-xl font-bold">
+                    {selectedService ? 'Edit Service' : 'Add New Service'}
+                  </h2>
+                  <p className="text-gray-500">
+                    {selectedService ? 'Update the details of this service' : 'Create a new service for your website'}
+                  </p>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  className="h-8 w-8 p-0" 
+                  onClick={handleCloseForm}
+                >
+                  <span className="sr-only">Close</span>
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <ServiceManager
+                service={selectedService}
+                onSuccess={handleCloseForm}
+              />
+              
+              <div className="mt-4 flex justify-end">
+                <Button 
+                  variant="outline" 
+                  onClick={handleCloseForm}
+                  className="mr-2"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Delete Confirmation Dialog */}
-      <Dialog 
-        open={showDeleteDialog} 
-        onOpenChange={(open) => {
-          if (!open) {
-            // Clean up when dialog is closed without confirmation
-            setServiceToDelete(null);
-          }
-          setShowDeleteDialog(open);
-        }}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm Deletion</DialogTitle>
-            <DialogDescription>
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+            <AlertDialogDescription>
               Are you sure you want to delete the service "{serviceToDelete?.title}"? This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
-            </DialogClose>
-            <Button 
-              variant="destructive" 
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setServiceToDelete(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
               onClick={confirmDelete}
               disabled={isDeletingService}
+              className={`${isDeletingService ? 'bg-red-400' : 'bg-red-600 hover:bg-red-700'} text-white`}
             >
               {isDeletingService ? "Deleting..." : "Delete"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
