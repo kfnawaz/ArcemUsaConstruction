@@ -185,15 +185,16 @@
   }
   
   .slider-item {
-    transition: transform 0.3s ease;
-    background: transparent;
-    border: none;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background-image: linear-gradient(to right, #f8f0dd, #f5e9c8);
+    border: 1px solid #e8daba;
   }
   
   .slider-item:hover {
     transform: scale(1.05);
     z-index: 10;
-    filter: brightness(1.1);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
   }
 
   .slide-in {
