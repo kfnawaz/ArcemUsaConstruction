@@ -13,7 +13,7 @@ const RequestQuoteButton = () => {
   }
 
   return (
-    <div className="fixed bottom-4 left-4 z-50">
+    <div className="fixed bottom-6 left-6 z-50">
       <Link href="/request-quote">
         <Button
           size="lg"

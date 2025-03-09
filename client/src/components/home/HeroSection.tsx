@@ -92,7 +92,7 @@ type="video/mp4"
 
       {/* Image Slider - positioned at 80% from the top */}
       <div className="absolute left-0 right-0 z-30" style={{ top: "75%" }}>
-        <ImageSlider className="py-4 px-2 bg-black bg-opacity-30 backdrop-blur-sm" />
+        <ImageSlider className="py-4 px-2 bg-black bg-opacity-0 backdrop-blur-sm" />
       </div>
 
       {/* Overlay */}
