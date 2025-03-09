@@ -78,7 +78,17 @@ export interface IStorage {
   
   // Services
   getServices(): Promise<Service[]>;
+  getService(id: number): Promise<Service | undefined>;
   createService(service: InsertService): Promise<Service>;
+  updateService(id: number, service: Partial<InsertService>): Promise<Service | undefined>;
+  deleteService(id: number): Promise<boolean>;
+  
+  // Service Gallery
+  getServiceGallery(serviceId: number): Promise<ServiceGallery[]>;
+  addServiceGalleryImage(galleryImage: InsertServiceGallery): Promise<ServiceGallery>;
+  updateServiceGalleryImage(id: number, galleryImage: Partial<InsertServiceGallery>): Promise<ServiceGallery | undefined>;
+  deleteServiceGalleryImage(id: number): Promise<boolean>;
+  deleteAllServiceGalleryImages(serviceId: number): Promise<boolean>;
   
   // Messages/Contact
   getMessages(): Promise<Message[]>;
@@ -754,6 +764,10 @@ export class MemStorage implements IStorage {
   // Services
   async getServices(): Promise<Service[]> {
     return Array.from(this.services.values());
+  }
+  
+  async getService(id: number): Promise<Service | undefined> {
+    return this.services.get(id);
   }
   
   async createService(service: InsertService): Promise<Service> {

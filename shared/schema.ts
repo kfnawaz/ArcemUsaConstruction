@@ -217,9 +217,47 @@ export const services = pgTable("services", {
   features: text("features").array(), // Array of feature strings
 });
 
+// Service gallery images table
+export const serviceGallery = pgTable("service_gallery", {
+  id: serial("id").primaryKey(),
+  serviceId: integer("service_id").notNull().references(() => services.id, { onDelete: "cascade" }),
+  imageUrl: text("image_url").notNull(),
+  alt: text("alt"),
+  order: integer("order").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 export const insertServiceSchema = createInsertSchema(services).omit({
   id: true,
 });
+
+export const insertServiceGallerySchema = createInsertSchema(serviceGallery).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Extended service schema that includes gallery images
+export const extendedInsertServiceSchema = insertServiceSchema.extend({
+  galleryImages: z.array(
+    z.object({
+      imageUrl: z.string(),
+      alt: z.string().optional(),
+      order: z.number().optional(),
+    })
+  ).optional(),
+});
+
+// Define service relations
+export const servicesRelations = relations(services, ({ many }) => ({
+  galleryImages: many(serviceGallery),
+}));
+
+export const serviceGalleryRelations = relations(serviceGallery, ({ one }) => ({
+  service: one(services, {
+    fields: [serviceGallery.serviceId],
+    references: [services.id],
+  }),
+}));
 
 export const messages = pgTable("messages", {
   id: serial("id").primaryKey(),
@@ -263,6 +301,9 @@ export type PublicTestimonial = z.infer<typeof publicTestimonialSchema>;
 
 export type Service = typeof services.$inferSelect;
 export type InsertService = z.infer<typeof insertServiceSchema>;
+export type ExtendedInsertService = z.infer<typeof extendedInsertServiceSchema>;
+export type ServiceGallery = typeof serviceGallery.$inferSelect;
+export type InsertServiceGallery = z.infer<typeof insertServiceGallerySchema>;
 
 export type Message = typeof messages.$inferSelect;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
