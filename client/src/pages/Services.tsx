@@ -1,9 +1,16 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { initializeRevealEffects, scrollToTop } from '@/lib/utils';
 import { Service } from '@shared/schema';
-import { Building, Home, Wrench, Clipboard, Factory, Settings } from 'lucide-react';
+import { Building, Home, Wrench, Clipboard, Factory, Settings, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'wouter';
+import { 
+  Carousel, 
+  CarouselContent, 
+  CarouselItem, 
+  CarouselPrevious, 
+  CarouselNext 
+} from "@/components/ui/carousel";
 
 const Services = () => {
   useEffect(() => {
@@ -18,22 +25,72 @@ const Services = () => {
   });
 
   // Get icon component based on icon name
-  const getIcon = (iconName: string) => {
+  const getIcon = (iconName: string, size: "small" | "large" = "large") => {
+    const className = size === "small" ? "w-6 h-6 mr-2" : "w-16 h-16";
+    
     switch (iconName.toLowerCase()) {
       case 'building':
-        return <Building className="w-16 h-16" />;
+        return <Building className={className} />;
       case 'home':
-        return <Home className="w-16 h-16" />;
+        return <Home className={className} />;
       case 'tool':
-        return <Wrench className="w-16 h-16" />;
+        return <Wrench className={className} />;
       case 'clipboard':
-        return <Clipboard className="w-16 h-16" />;
+        return <Clipboard className={className} />;
       case 'factory':
-        return <Factory className="w-16 h-16" />;
+        return <Factory className={className} />;
       case 'settings':
-        return <Settings className="w-16 h-16" />;
+        return <Settings className={className} />;
       default:
-        return <Building className="w-16 h-16" />;
+        return <Building className={className} />;
+    }
+  };
+  
+  // Get service images based on service type
+  const getServiceImages = (serviceTitle: string) => {
+    switch (serviceTitle.toLowerCase()) {
+      case 'commercial construction':
+        return [
+          '/uploads/images/services/commercial/commercial1.jpg',
+          '/uploads/images/services/commercial/commercial2.jpg',
+          '/uploads/images/services/commercial/commercial3.jpg'
+        ];
+      case 'residential construction':
+        return [
+          '/uploads/images/services/residential/residential1.jpg',
+          '/uploads/images/services/residential/residential2.jpg',
+          '/uploads/images/services/residential/residential3.jpg'
+        ];
+      case 'renovation & remodeling':
+        return [
+          '/uploads/images/services/renovation/renovation1.jpg',
+          '/uploads/images/services/renovation/renovation2.jpg',
+          '/uploads/images/services/renovation/renovation3.jpg'
+        ];
+      case 'project planning & design':
+        return [
+          '/uploads/images/services/planning/planning1.jpg',
+          '/uploads/images/services/planning/planning2.jpg',
+          '/uploads/images/services/planning/planning3.jpg'
+        ];
+      case 'industrial construction':
+        return [
+          '/uploads/images/services/industrial/industrial1.jpg',
+          '/uploads/images/services/industrial/industrial2.jpg',
+          '/uploads/images/services/industrial/industrial3.jpg'
+        ];
+      case 'construction management':
+        return [
+          '/uploads/images/services/management/management1.jpg',
+          '/uploads/images/services/management/management2.jpg',
+          '/uploads/images/services/management/management3.jpg'
+        ];
+      default:
+        return [
+          '/uploads/images/services/commercial/commercial1.jpg',
+          '/uploads/images/services/residential/residential1.jpg',
+          '/uploads/images/services/renovation/renovation1.jpg'
+        ];
     }
   };
 
@@ -64,13 +121,28 @@ const Services = () => {
             // Loading state
             <div className="grid grid-cols-1 gap-12">
               {[1, 2, 3, 4, 5, 6].map(i => (
-                <div key={i} className="animate-pulse flex flex-col md:flex-row gap-8 items-center">
-                  <div className="md:w-1/3 bg-gray-200 h-64 w-full"></div>
+                <div key={i} className={`animate-pulse flex flex-col ${i % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'} gap-8 items-center`}>
+                  <div className="md:w-1/3">
+                    <div className="rounded-lg overflow-hidden">
+                      <div className="bg-gray-200 h-64 w-full"></div>
+                    </div>
+                  </div>
                   <div className="md:w-2/3 space-y-4">
-                    <div className="h-6 bg-gray-200 rounded w-1/3"></div>
+                    <div className="flex items-center">
+                      <div className="h-6 w-6 bg-gray-200 rounded-full mr-2"></div>
+                      <div className="h-6 bg-gray-200 rounded w-1/3"></div>
+                    </div>
                     <div className="h-4 bg-gray-200 rounded w-full"></div>
                     <div className="h-4 bg-gray-200 rounded w-full"></div>
-                    <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+                    <div className="space-y-2">
+                      {[1, 2, 3, 4, 5].map(j => (
+                        <div key={j} className="flex items-start">
+                          <div className="w-5 h-5 bg-gray-200 rounded-full mr-2 mt-1"></div>
+                          <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="h-10 bg-gray-200 rounded w-36 mt-4"></div>
                   </div>
                 </div>
               ))}
@@ -86,13 +158,35 @@ const Services = () => {
                   key={service.id}
                   className={`flex flex-col ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'} gap-12 items-center reveal`}
                 >
-                  <div className="md:w-1/3 bg-gray-100 p-12 flex justify-center items-center">
-                    <div className="text-[#C09E5E]">
-                      {getIcon(service.icon)}
-                    </div>
+                  <div className="md:w-1/3">
+                    <Carousel className="w-full overflow-hidden rounded-lg shadow-xl">
+                      <CarouselContent>
+                        {getServiceImages(service.title).map((image, i) => (
+                          <CarouselItem key={i}>
+                            <div className="h-64 w-full overflow-hidden">
+                              <img 
+                                src={image}
+                                alt={`${service.title} showcase ${i+1}`}
+                                className="w-full h-full object-cover transition-transform hover:scale-105 duration-500"
+                                onError={(e) => {
+                                  e.currentTarget.src = "https://placehold.co/600x400/e2e8f0/1e293b?text=Service+Image";
+                                }}
+                              />
+                            </div>
+                          </CarouselItem>
+                        ))}
+                      </CarouselContent>
+                      <CarouselPrevious className="left-2" />
+                      <CarouselNext className="right-2" />
+                    </Carousel>
                   </div>
                   <div className="md:w-2/3">
-                    <h4 className="text-2xl font-montserrat font-bold mb-4">{service.title}</h4>
+                    <div className="flex items-center mb-4">
+                      <div className="text-[#C09E5E]">
+                        {getIcon(service.icon, "small")}
+                      </div>
+                      <h4 className="text-2xl font-montserrat font-bold">{service.title}</h4>
+                    </div>
                     <p className="text-gray-600 mb-6 leading-relaxed">
                       {service.description}
                     </p>
