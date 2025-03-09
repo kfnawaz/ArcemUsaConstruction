@@ -1,42 +1,35 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useService } from '@/hooks/useService';
 import { Service } from '@shared/schema';
 import ServiceManager from '@/components/admin/ServiceManager';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { useLocation } from 'wouter';
+import { scrollToTop } from '@/lib/utils';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  DialogDescription,
+  DialogFooter, 
+  DialogClose
 } from '@/components/ui/dialog';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Loader2, Plus, Pencil, Trash2, Building, Home, Wrench, Clipboard, Factory, Settings, PencilRuler, BarChart, HardHat } from 'lucide-react';
+import { Loader2, Plus, Pencil, Trash2, Search, Building, Home, Wrench, Clipboard, Factory, Settings, PencilRuler, BarChart, HardHat } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import AdminNav from '@/components/admin/AdminNav';
 
 const ServicesManagement = () => {
+  const [location, setLocation] = useLocation();
   const { toast } = useToast();
   const [isServiceDialogOpen, setIsServiceDialogOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<Service | undefined>(undefined);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [serviceToDelete, setServiceToDelete] = useState<Service | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
+  const [currentEditId, setCurrentEditId] = useState<number | undefined>(undefined);
 
   const {
     services,
@@ -45,22 +38,62 @@ const ServicesManagement = () => {
     isDeletingService,
   } = useService();
 
+  // Get URL params from location for initial state
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.split('?')[1] || '');
+    const action = searchParams.get('action');
+    const editId = searchParams.get('edit');
+    
+    if (action === 'new') {
+      setIsAdding(true);
+      setIsEditing(false);
+      setCurrentEditId(undefined);
+      setIsServiceDialogOpen(true);
+    } else if (editId) {
+      setIsEditing(true);
+      setIsAdding(false);
+      setCurrentEditId(Number(editId));
+      setIsServiceDialogOpen(true);
+    } else {
+      setIsEditing(false);
+      setIsAdding(false);
+      setCurrentEditId(undefined);
+      setIsServiceDialogOpen(false);
+    }
+  }, [location]);
+
+  useEffect(() => {
+    scrollToTop();
+    document.title = 'Service Management - ARCEMUSA';
+  }, []);
+
   // Handle clicking edit button
   const handleEditClick = (service: Service) => {
     setSelectedService(service);
-    setIsServiceDialogOpen(true);
+    setIsEditing(true);
+    setIsAdding(false);
+    setCurrentEditId(service.id);
+    setLocation(`/admin/services?edit=${service.id}`);
   };
 
   // Handle clicking add new service
   const handleAddNewClick = () => {
     setSelectedService(undefined);
-    setIsServiceDialogOpen(true);
+    setIsAdding(true);
+    setIsEditing(false);
+    setCurrentEditId(undefined);
+    setLocation('/admin/services?action=new');
   };
 
   // Handle clicking delete button
   const handleDeleteClick = (service: Service) => {
     setServiceToDelete(service);
-    setIsDeleteDialogOpen(true);
+    setShowDeleteDialog(true);
+  };
+
+  // Handle search input change
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
   };
 
   // Confirm and execute service deletion
@@ -80,11 +113,26 @@ const ServicesManagement = () => {
           variant: 'destructive',
         });
       } finally {
-        setIsDeleteDialogOpen(false);
+        setShowDeleteDialog(false);
         setServiceToDelete(null);
       }
     }
   };
+
+  // Close form and return to list
+  const handleCloseForm = () => {
+    setIsServiceDialogOpen(false);
+    setIsEditing(false);
+    setIsAdding(false);
+    setCurrentEditId(undefined);
+    setLocation('/admin/services');
+  };
+
+  // Filter services based on search query
+  const filteredServices = services?.filter(service => 
+    service.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    service.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   // Get icon component based on icon name
   const getIcon = (iconName: string) => {
@@ -113,83 +161,125 @@ const ServicesManagement = () => {
   };
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Services Management</h1>
-        <Button onClick={handleAddNewClick} className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          Add New Service
-        </Button>
+    <div className="min-h-screen pt-32 pb-20 bg-gray-50">
+      <div className="container mx-auto px-4 md:px-8">
+        <div className="flex flex-col md:flex-row gap-8">
+          {/* Admin Navigation */}
+          <AdminNav activePage="services" />
+          
+          {/* Main Content */}
+          <div className="flex-1">
+            {/* Service List */}
+            <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                <h1 className="text-2xl font-montserrat font-bold">Service Management</h1>
+                <Button variant="gold" onClick={handleAddNewClick}>
+                  <Plus className="mr-2 h-4 w-4" /> Add New Service
+                </Button>
+              </div>
+              
+              {/* Search bar */}
+              <div className="mb-6 relative">
+                <Input
+                  type="text"
+                  placeholder="Search services..."
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  className="pl-10 pr-4 py-2 border border-gray-300"
+                />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              </div>
+              
+              {/* Services table */}
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-montserrat font-medium text-gray-500 uppercase tracking-wider">
+                        Icon
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-montserrat font-medium text-gray-500 uppercase tracking-wider">
+                        Title
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-montserrat font-medium text-gray-500 uppercase tracking-wider">
+                        Features
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-montserrat font-medium text-gray-500 uppercase tracking-wider">
+                        Description
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-right text-xs font-montserrat font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {isLoadingServices ? (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-4 text-center">
+                          <div className="animate-pulse flex items-center justify-center">
+                            <div className="h-4 w-36 bg-gray-200 rounded"></div>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : filteredServices?.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                          No services found
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredServices?.map((service) => (
+                        <tr key={service.id}>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center justify-center text-primary">
+                              {getIcon(service.icon)}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-medium text-gray-900">
+                              {service.title}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-500">
+                              {service.features && service.features.length > 0
+                                ? `${service.features.length} feature${service.features.length !== 1 ? 's' : ''}`
+                                : 'No features'}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-sm text-gray-500 max-w-xs truncate">
+                              {service.description}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEditClick(service)}
+                              className="text-blue-600 hover:text-blue-900 mr-2"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteClick(service)}
+                              className="text-red-600 hover:text-red-900"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-
-      {isLoadingServices ? (
-        <div className="flex justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      ) : services && services.length > 0 ? (
-        <div className="border rounded-md">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Icon</TableHead>
-                <TableHead>Title</TableHead>
-                <TableHead>Features</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {services.map((service) => (
-                <TableRow key={service.id}>
-                  <TableCell>
-                    <div className="flex items-center justify-center text-primary">
-                      {getIcon(service.icon)}
-                    </div>
-                  </TableCell>
-                  <TableCell className="font-medium">{service.title}</TableCell>
-                  <TableCell>
-                    {service.features && service.features.length > 0
-                      ? `${service.features.length} feature${service.features.length !== 1 ? 's' : ''}`
-                      : 'No features'}
-                  </TableCell>
-                  <TableCell className="max-w-xs truncate">
-                    {service.description}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleEditClick(service)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                        <span className="sr-only">Edit</span>
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-destructive"
-                        onClick={() => handleDeleteClick(service)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        <span className="sr-only">Delete</span>
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      ) : (
-        <div className="text-center py-12 border rounded-md bg-muted/30">
-          <h3 className="text-lg font-medium mb-2">No services found</h3>
-          <p className="text-sm text-muted-foreground mb-4">
-            Get started by creating your first service.
-          </p>
-          <Button onClick={handleAddNewClick}>Add a Service</Button>
-        </div>
-      )}
 
       {/* Service Dialog (Add/Edit) */}
       <Dialog open={isServiceDialogOpen} onOpenChange={setIsServiceDialogOpen}>
@@ -198,38 +288,45 @@ const ServicesManagement = () => {
             <DialogTitle>
               {selectedService ? 'Edit Service' : 'Add New Service'}
             </DialogTitle>
+            <DialogDescription>
+              {selectedService ? 'Update the details of this service' : 'Create a new service for your website'}
+            </DialogDescription>
           </DialogHeader>
           <ServiceManager
             service={selectedService}
-            onSuccess={() => setIsServiceDialogOpen(false)}
+            onSuccess={handleCloseForm}
           />
+          <DialogFooter className="mt-4">
+            <DialogClose asChild>
+              <Button variant="outline" onClick={handleCloseForm}>Cancel</Button>
+            </DialogClose>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Service</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete "{serviceToDelete?.title}"? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete the service "{serviceToDelete?.title}"? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button 
+              variant="destructive" 
               onClick={confirmDelete}
-              className="bg-destructive text-destructive-foreground"
               disabled={isDeletingService}
             >
-              {isDeletingService ? (
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              ) : null}
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+              {isDeletingService ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
