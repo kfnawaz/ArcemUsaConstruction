@@ -354,7 +354,7 @@ export class DBStorage implements IStorage {
     return db.select()
       .from(serviceGallery)
       .where(eq(serviceGallery.serviceId, serviceId))
-      .orderBy(serviceGallery.displayOrder);
+      .orderBy(serviceGallery.order);
   }
   
   async addServiceGalleryImage(galleryImage: InsertServiceGallery): Promise<ServiceGallery> {
