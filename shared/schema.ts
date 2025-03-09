@@ -214,6 +214,7 @@ export const services = pgTable("services", {
   title: text("title").notNull(),
   description: text("description").notNull(),
   icon: text("icon").notNull(),
+  features: text("features").array(), // Array of feature strings
 });
 
 export const insertServiceSchema = createInsertSchema(services).omit({
