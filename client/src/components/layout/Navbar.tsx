@@ -12,10 +12,10 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { isAuthenticated, user } = useAuth();
-  
+
   // Check if we're on an admin page
   const isAdminPage = location.startsWith('/admin');
-  
+
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
@@ -65,9 +65,9 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
               alt="ARCEMUSA Logo" 
               className="h-20 w-20 mr-2 logo-img" 
             />
-            <span>A+R C.E.M. USA</span>
+            <span className="text-[#C09E5E]">A+R C.E.M. USA</span>
           </Link>
-          
+
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             {navItems.map((item) => (
@@ -82,8 +82,8 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
                 {item.label}
               </Link>
             ))}
-            
-            
+
+
             {/* Login/Admin Button */}
             <Link 
               href={isAuthenticated ? "/admin" : "/auth/login"} 
@@ -93,7 +93,7 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
               {isAuthenticated ? "ADMIN" : "LOGIN"}
             </Link>
           </div>
-          
+
           {/* Mobile menu button */}
           <button 
             id="mobile-menu-button" 
@@ -108,7 +108,7 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
             )}
           </button>
         </div>
-        
+
         {/* Mobile Navigation */}
         <div 
           id="mobile-menu" 
@@ -131,8 +131,8 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
                 {item.label}
               </Link>
             ))}
-            
-            
+
+
             {/* Mobile Login/Admin Button */}
             <Link 
               href={isAuthenticated ? "/admin" : "/auth/login"}
