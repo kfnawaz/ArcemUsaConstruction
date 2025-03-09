@@ -64,7 +64,7 @@ const HeroSection = () => {
       <div className="absolute inset-0 z-0 bg-gray-900 overflow-hidden">
         {/* Static image background (visible initially) */}
         <img
-          src="/images/projects.webp"
+          src="https://images.unsplash.com/photo-1535732759880-bbd5c7265e3f?q=80&w=3764&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80"
           alt="ARCEMUSA construction projects showcase"
           className={`w-full h-full object-cover transition-opacity duration-1000 ${showVideo ? "opacity-0" : "opacity-100"}`}
         />
