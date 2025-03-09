@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { ArrowDown } from "lucide-react";
@@ -6,16 +6,51 @@ import { scrollToElement } from "@/lib/utils";
 
 const HeroSection = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [showVideo, setShowVideo] = useState(false);
+  const heroContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Simulate video loading
+    // Animate content reveal
     const reveal = document.querySelectorAll(".reveal");
-
     const timeout = setTimeout(() => {
       reveal.forEach((element) => element.classList.add("active"));
     }, 100);
 
-    return () => clearTimeout(timeout);
+    // Add event listener for first user interaction
+    const handleUserInteraction = () => {
+      setShowVideo(true);
+      
+      // Start the video
+      if (videoRef.current) {
+        videoRef.current.play().catch(err => {
+          console.error('Video playback failed:', err);
+        });
+      }
+      
+      // Remove event listeners after first interaction
+      if (heroContainerRef.current) {
+        heroContainerRef.current.removeEventListener('mousemove', handleUserInteraction);
+        heroContainerRef.current.removeEventListener('click', handleUserInteraction);
+        document.removeEventListener('scroll', handleUserInteraction);
+      }
+    };
+    
+    // Add event listeners for user interaction
+    if (heroContainerRef.current) {
+      heroContainerRef.current.addEventListener('mousemove', handleUserInteraction);
+      heroContainerRef.current.addEventListener('click', handleUserInteraction);
+      document.addEventListener('scroll', handleUserInteraction);
+    }
+    
+    return () => {
+      clearTimeout(timeout);
+      // Cleanup event listeners
+      if (heroContainerRef.current) {
+        heroContainerRef.current.removeEventListener('mousemove', handleUserInteraction);
+        heroContainerRef.current.removeEventListener('click', handleUserInteraction);
+        document.removeEventListener('scroll', handleUserInteraction);
+      }
+    };
   }, []);
 
   const handleScrollDown = () => {
@@ -23,17 +58,27 @@ const HeroSection = () => {
   };
 
   return (
-    <div className="hero-video-container relative h-screen">
-      {/* Video background */}
+    <div ref={heroContainerRef} className="hero-video-container relative h-screen">
+      {/* Background media - starts with image, switches to video on user interaction */}
       <div className="absolute inset-0 z-0 bg-gray-900">
+        {/* Static image (visible initially) */}
+        <div className={`absolute inset-0 transition-opacity duration-1000 ${showVideo ? 'opacity-0' : 'opacity-100'}`}>
+          <img 
+            src="/images/projects.webp" 
+            alt="ARCEMUSA construction projects showcase" 
+            className="w-full h-full object-cover"
+          />
+        </div>
+        
+        {/* Video (loads in background, visible after user interaction) */}
         <video
           ref={videoRef}
-          className="w-full h-full object-cover"
-          autoPlay
+          className={`w-full h-full object-cover transition-opacity duration-1000 ${showVideo ? 'opacity-100' : 'opacity-0'}`}
+          preload="auto"
           muted
           loop
           playsInline
-          poster="/videos/file.mp4"
+          poster="/images/projects.webp"
           aria-label="Construction site timelapse video showing building progress"
           title="ARCEMUSA construction showcase video"
         >
