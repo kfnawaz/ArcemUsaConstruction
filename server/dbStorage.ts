@@ -3,7 +3,7 @@ import { db } from "./db";
 import { 
   users, projects, projectGallery, blogCategories, blogTags, blogPosts, 
   blogPostCategories, blogPostTags,
-  testimonials, services, messages, newsletterSubscribers, quoteRequests,
+  testimonials, services, serviceGallery, messages, newsletterSubscribers, quoteRequests,
   type User, type InsertUser, 
   type Project, type InsertProject,
   type ProjectGallery, type InsertProjectGallery,
@@ -12,6 +12,7 @@ import {
   type BlogPost, type InsertBlogPost, 
   type Testimonial, type InsertTestimonial, 
   type Service, type InsertService, 
+  type ServiceGallery, type InsertServiceGallery,
   type Message, type InsertMessage,
   type NewsletterSubscriber, type InsertNewsletterSubscriber,
   type QuoteRequest, type InsertQuoteRequest

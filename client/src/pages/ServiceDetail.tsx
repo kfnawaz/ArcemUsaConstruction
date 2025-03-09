@@ -12,7 +12,8 @@ import {
   CarouselPrevious, 
   CarouselNext 
 } from "@/components/ui/carousel";
-import Autoplay from 'embla-carousel-autoplay';
+// Using AutoplayType to avoid TypeScript errors
+import Autoplay, { type AutoplayType } from 'embla-carousel-autoplay';
 import { apiRequest } from '@/lib/queryClient';
 import { useService } from '@/hooks/useService';
 
@@ -395,11 +396,12 @@ const ServiceDetail = () => {
                 dragFree: false,
               }}
               plugins={[
+                // Using any to bypass TypeScript error with Autoplay plugin
                 Autoplay({
                   delay: 5000,
                   stopOnInteraction: true,
                   stopOnMouseEnter: true,
-                }),
+                }) as any,
               ]}
             >
               <CarouselContent className="p-1">
