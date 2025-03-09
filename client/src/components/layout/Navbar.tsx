@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'wouter';
 import { cn } from '@/lib/utils';
 import { Menu, X, User } from 'lucide-react';
@@ -11,10 +11,23 @@ type NavbarProps = {
 const Navbar = ({ isScrolled }: NavbarProps) => {
   const [location] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [logoAnimated, setLogoAnimated] = useState(false);
   const { isAuthenticated, user } = useAuth();
+  const logoRef = useRef<HTMLImageElement>(null);
+  const textRef = useRef<HTMLSpanElement>(null);
 
   // Check if we're on an admin page
   const isAdminPage = location.startsWith('/admin');
+
+  // Logo animation on page load
+  useEffect(() => {
+    // Delay the animation to ensure it happens after initial render
+    const timer = setTimeout(() => {
+      setLogoAnimated(true);
+    }, 300);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -59,13 +72,25 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
     >
       <div className="container mx-auto px-4 md:px-8">
         <div className="flex justify-between items-center">
-          <Link href="/" className="text-white text-2xl font-montserrat font-bold flex items-center">
+          <Link href="/" className="text-white text-2xl font-montserrat font-bold flex items-center overflow-hidden">
             <img 
+              ref={logoRef}
               src="/uploads/images/logo.png" 
               alt="ARCEMUSA Logo" 
-              className="h-20 w-20 mr-2 logo-img" 
+              className={cn(
+                "h-20 w-20 mr-2 transform transition-all duration-1000 ease-out",
+                logoAnimated ? "translate-x-0 rotate-0 opacity-100" : "-translate-x-full rotate-90 opacity-0"
+              )}
             />
-            <span className="text-[#C09E5E]">A+R C.E.M. USA</span>
+            <span 
+              ref={textRef}
+              className={cn(
+                "text-[#C09E5E] transition-all duration-700 delay-500 transform",
+                logoAnimated ? "translate-x-0 opacity-100" : "translate-x-20 opacity-0"
+              )}
+            >
+              A+R C.E.M. USA
+            </span>
           </Link>
 
           {/* Desktop Navigation */}
@@ -75,11 +100,17 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "text-white hover:text-[#e0c080] transition-colors font-montserrat text-sm font-medium",
-                  location === item.href && "text-[#e0c080]"
+                  "text-white font-montserrat text-sm font-medium relative group px-2 py-1",
+                  location === item.href ? "text-[#e0c080]" : ""
                 )}
               >
-                {item.label}
+                <span className="relative z-10 transition-colors duration-300 group-hover:text-[#e0c080]">
+                  {item.label}
+                </span>
+                <span className={cn(
+                  "absolute bottom-0 left-0 w-0 h-0.5 bg-[#e0c080] transition-all duration-300 group-hover:w-full",
+                  location === item.href ? "w-full" : "w-0"
+                )}></span>
               </Link>
             ))}
 
@@ -123,12 +154,18 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "text-white hover:text-[#e0c080] transition-colors font-montserrat text-sm font-medium",
-                  location === item.href && "text-[#e0c080]"
+                  "text-white font-montserrat text-sm font-medium relative group px-2 py-2 block",
+                  location === item.href ? "text-[#e0c080]" : ""
                 )}
                 onClick={closeMobileMenu}
               >
-                {item.label}
+                <span className="relative z-10 transition-colors duration-300 group-hover:text-[#e0c080]">
+                  {item.label}
+                </span>
+                <span className={cn(
+                  "absolute bottom-0 left-0 w-0 h-0.5 bg-[#e0c080] transition-all duration-300 group-hover:w-full",
+                  location === item.href ? "w-full" : "w-0"
+                )}></span>
               </Link>
             ))}
 
