@@ -20,7 +20,10 @@ const ServiceDetail = () => {
   // Extract service ID from URL
   const [, params] = useRoute('/services/:id/:slug');
   const serviceId = params ? parseInt(params.id) : undefined;
-
+  
+  // State for gallery images
+  const [galleryImages, setGalleryImages] = useState<string[]>([]);
+  
   useEffect(() => {
     scrollToTop();
     // Title will be updated after data is loaded
@@ -30,9 +33,27 @@ const ServiceDetail = () => {
   const { data: services, isLoading, error } = useQuery<Service[]>({
     queryKey: ['/api/services'],
   });
-
+  
+  // Fetch service gallery images
+  const { data: serviceGallery, isLoading: isLoadingGallery } = useQuery<ServiceGallery[]>({
+    queryKey: ['/api/services', serviceId, 'gallery'],
+    queryFn: async () => {
+      if (!serviceId) return [];
+      const res = await apiRequest('GET', `/api/services/${serviceId}/gallery`);
+      return await res.json();
+    },
+    enabled: !!serviceId,
+  });
+  
   // Find the specific service data
   const service = services?.find(s => s.id === serviceId);
+  
+  // Update gallery images when serviceGallery data changes
+  useEffect(() => {
+    if (serviceGallery && serviceGallery.length > 0) {
+      setGalleryImages(serviceGallery.map(item => item.imageUrl));
+    }
+  }, [serviceGallery]);
 
   // Update page title when service data is loaded
   useEffect(() => {
@@ -267,7 +288,11 @@ const ServiceDetail = () => {
     };
 
     const serviceDetails = getServiceDescription(service.title);
-    const serviceImages = getServiceImages(service.title);
+    
+    // Use gallery images from the API if available, otherwise fall back to hardcoded images
+    const serviceImages = galleryImages.length > 0 
+      ? galleryImages 
+      : getServiceImages(service.title);
 
     return (
       <>

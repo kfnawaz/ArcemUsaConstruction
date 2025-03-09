@@ -27,6 +27,7 @@ import Login from "@/pages/auth/Login";
 import Dashboard from "@/pages/admin/Dashboard";
 import ProjectManagement from "@/pages/admin/ProjectManagement";
 import BlogManagement from "@/pages/admin/BlogManagement";
+import ServicesManagement from "@/pages/admin/ServicesManagement";
 import MessagesManagement from "@/pages/admin/MessagesManagement";
 import TestimonialsManagement from "@/pages/admin/TestimonialsManagement";
 import NewsletterManagement from "@/pages/admin/NewsletterManagement";
