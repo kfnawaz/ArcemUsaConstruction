@@ -48,11 +48,18 @@ const ServicesManagement = () => {
       setIsAdding(true);
       setIsEditing(false);
       setCurrentEditId(undefined);
+      setSelectedService(undefined);
       setIsServiceDialogOpen(true);
     } else if (editId) {
       setIsEditing(true);
       setIsAdding(false);
-      setCurrentEditId(Number(editId));
+      const id = Number(editId);
+      setCurrentEditId(id);
+      // Find the service with this ID
+      const service = services?.find(s => s.id === id);
+      if (service) {
+        setSelectedService(service);
+      }
       setIsServiceDialogOpen(true);
     } else {
       setIsEditing(false);
@@ -60,7 +67,7 @@ const ServicesManagement = () => {
       setCurrentEditId(undefined);
       setIsServiceDialogOpen(false);
     }
-  }, [location]);
+  }, [location, services]);
 
   useEffect(() => {
     scrollToTop();
@@ -282,7 +289,16 @@ const ServicesManagement = () => {
       </div>
 
       {/* Service Dialog (Add/Edit) */}
-      <Dialog open={isServiceDialogOpen} onOpenChange={setIsServiceDialogOpen}>
+      <Dialog 
+        open={isServiceDialogOpen} 
+        onOpenChange={(open) => {
+          if (!open) {
+            // When dialog is closed, reset URL and state
+            handleCloseForm();
+          }
+          setIsServiceDialogOpen(open);
+        }}
+      >
         <DialogContent className="max-w-3xl">
           <DialogHeader>
             <DialogTitle>
@@ -298,14 +314,23 @@ const ServicesManagement = () => {
           />
           <DialogFooter className="mt-4">
             <DialogClose asChild>
-              <Button variant="outline" onClick={handleCloseForm}>Cancel</Button>
+              <Button variant="outline">Cancel</Button>
             </DialogClose>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+      <Dialog 
+        open={showDeleteDialog} 
+        onOpenChange={(open) => {
+          if (!open) {
+            // Clean up when dialog is closed without confirmation
+            setServiceToDelete(null);
+          }
+          setShowDeleteDialog(open);
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Confirm Deletion</DialogTitle>
