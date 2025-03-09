@@ -171,7 +171,7 @@
   
   .slider-track {
     display: flex;
-    animation: slide 60s linear infinite;
+    animation: slide 80s linear infinite;
     width: fit-content;
   }
   

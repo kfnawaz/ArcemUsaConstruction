@@ -4,57 +4,59 @@ interface ImageSliderProps {
   className?: string;
 }
 
+interface ClientLogo {
+  src: string;
+  alt: string;
+}
+
 const ImageSlider = ({ className = '' }: ImageSliderProps) => {
-  const [sliderImages, setSliderImages] = useState<string[]>([]);
+  const [clientLogos, setClientLogos] = useState<ClientLogo[]>([]);
   
   useEffect(() => {
-    // Project portfolio images
-    const images = [
-      '/slider/slide1.jpg',
-      '/slider/slide2.jpg',
-      '/slider/slide3.jpg',
-      '/slider/slide4.jpg',
-      '/slider/slide5.jpg',
-      '/slider/slide6.jpg',
-      '/slider/slide7.jpg',
-      '/slider/slide8.jpg',
+    // Client logos for the slider
+    const logos: ClientLogo[] = [
+      { src: '/client-logos/chevron.png', alt: 'Chevron logo' },
+      { src: '/client-logos/dairy-queen.png', alt: 'Dairy Queen logo' },
+      { src: '/client-logos/hilton.png', alt: 'Hilton Garden logo' },
+      { src: '/client-logos/little-caesars.png', alt: 'Little Caesars logo' },
+      { src: '/client-logos/shell.png', alt: 'Shell logo' },
     ];
     
-    setSliderImages(images);
+    setClientLogos(logos);
   }, []);
 
-  if (sliderImages.length === 0) {
+  if (clientLogos.length === 0) {
     return null;
   }
 
   return (
     <div className={`image-slider-container ${className}`}>
-      <div className="slider-track flex">
-        {/* First set of images */}
-        {sliderImages.map((image, index) => (
+      <div className="slider-track flex items-center">
+        {/* First set of client logos */}
+        {clientLogos.map((logo, index) => (
           <div 
-            key={`slide-${index}`} 
-            className="slider-item flex-shrink-0 min-w-[180px] sm:min-w-[220px] md:min-w-[250px] h-24 sm:h-28 md:h-32 mx-2 transform transition-all duration-300 hover:scale-110"
+            key={`logo-${index}`} 
+            className="slider-item flex-shrink-0 min-w-[180px] sm:min-w-[220px] md:min-w-[250px] h-16 mx-4 transform transition-all duration-300 hover:scale-110 flex items-center justify-center bg-white rounded-md px-4"
           >
             <img 
-              src={image} 
-              alt={`ARCEMUSA Project ${index + 1}`} 
-              className="w-full h-full object-cover rounded-md shadow-lg border border-amber-300/30"
+              src={logo.src} 
+              alt={logo.alt} 
+              className="max-h-14 max-w-full object-contain"
               loading="lazy"
             />
           </div>
         ))}
         
-        {/* Duplicate the images for continuous scroll effect */}
-        {sliderImages.map((image, index) => (
+        {/* Duplicate the logos for continuous scroll effect */}
+        {clientLogos.map((logo, index) => (
           <div 
-            key={`slide-dup-${index}`} 
-            className="slider-item flex-shrink-0 min-w-[180px] sm:min-w-[220px] md:min-w-[250px] h-24 sm:h-28 md:h-32 mx-2 transform transition-all duration-300 hover:scale-110"
+            key={`logo-dup-${index}`} 
+            className="slider-item flex-shrink-0 min-w-[180px] sm:min-w-[220px] md:min-w-[250px] h-16 mx-4 transform transition-all duration-300 hover:scale-110 flex items-center justify-center bg-white rounded-md px-4"
           >
             <img 
-              src={image} 
-              alt={`ARCEMUSA Project ${index + 1}`} 
-              className="w-full h-full object-cover rounded-md shadow-lg border border-amber-300/30"
+              src={logo.src} 
+              alt={logo.alt}
+              className="max-h-14 max-w-full object-contain"
               loading="lazy"
             />
           </div>
