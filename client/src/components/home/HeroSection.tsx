@@ -77,25 +77,24 @@ const HeroSection = () => {
           muted
           loop
           playsInline
-          poster="/images/projects.webp"
-          aria-label="Construction site timelapse video showing building progress"
+          poster="/uploads/hero/heroposter.avif"
+          /* poster="https://images.unsplash.com/photo-1535732759880-bbd5c7265e3f?q=80&w=3764&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80" */
+aria-label="Construction site timelapse video showing building progress"
         >
           <source
-            src="/videos/file.mp4"
-            type="video/mp4"
+            src="/uploads/hero/herovideo.mp4"
+            /* src="https://video.wixstatic.com/video/6331e9_e98391c4a6dc4d85b10501c7aac5caee/1080p/mp4/file.mp4" */
+type="video/mp4"
           />
           Your browser does not support the video tag.
         </video>
       </div>
 
-      {/* Client Logos Slider - positioned at 80% from the top */}
-      <div className="absolute left-0 right-0 z-30" style={{ top: '80%' }}>
-        <div className="container mx-auto">
-          <h3 className="text-white text-sm md:text-base text-center mb-2 font-medium">Our Trusted Clients</h3>
-          <ImageSlider className="py-4 px-2 bg-black bg-opacity-40 backdrop-blur-sm rounded-lg" />
-        </div>
+      {/* Image Slider - positioned at 80% from the top */}
+      <div className="absolute left-0 right-0 z-30" style={{ top: "75%" }}>
+        <ImageSlider className="py-4 px-2 bg-black bg-opacity-30 backdrop-blur-sm" />
       </div>
-      
+
       {/* Overlay */}
       <div className="hero-overlay absolute inset-0 z-10"></div>
 

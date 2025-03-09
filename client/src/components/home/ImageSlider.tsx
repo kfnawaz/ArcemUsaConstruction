@@ -15,11 +15,11 @@ const ImageSlider = ({ className = '' }: ImageSliderProps) => {
   useEffect(() => {
     // Client logos for the slider
     const logos: ClientLogo[] = [
-      { src: '/client-logos/chevron.png', alt: 'Chevron logo' },
-      { src: '/client-logos/dairy-queen.png', alt: 'Dairy Queen logo' },
-      { src: '/client-logos/hilton.png', alt: 'Hilton Garden logo' },
-      { src: '/client-logos/little-caesars.png', alt: 'Little Caesars logo' },
-      { src: '/client-logos/shell.png', alt: 'Shell logo' },
+      { src: '/uploads/client-logos/chevron.png', alt: 'Chevron logo' },
+      { src: '/uploads/client-logos/dairy-queen.png', alt: 'Dairy Queen logo' },
+      { src: '/uploads/client-logos/hilton.png', alt: 'Hilton Garden logo' },
+      { src: '/uploads/client-logos/little-caesars.png', alt: 'Little Caesars logo' },
+      { src: '/uploads/client-logos/shell.png', alt: 'Shell logo' },
     ];
     
     setClientLogos(logos);
