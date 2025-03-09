@@ -157,6 +157,35 @@
     from { opacity: 1; }
     to { opacity: 0; }
   }
+  
+  /* Image slider animations */
+  .image-slider-container {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .slider-track {
+    display: flex;
+    animation: slide 40s linear infinite;
+  }
+  
+  @keyframes slide {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+  
+  .slider-item {
+    transition: transform 0.3s ease;
+  }
+  
+  .slider-item:hover {
+    transform: scale(1.05);
+    z-index: 10;
+  }
 
   .slide-in {
     animation: slideIn 0.5s forwards;

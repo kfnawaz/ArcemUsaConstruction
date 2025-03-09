@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { ArrowDown } from "lucide-react";
 import { scrollToElement } from "@/lib/utils";
+import ImageSlider from "./ImageSlider";
 
 const HeroSection = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -64,7 +65,7 @@ const HeroSection = () => {
       <div className="absolute inset-0 z-0 bg-gray-900 overflow-hidden">
         {/* Static image background (visible initially) */}
         <img
-          src="https://images.unsplash.com/photo-1535732759880-bbd5c7265e3f?q=80&w=3764&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80"
+          src="/images/projects.webp"
           alt="ARCEMUSA construction projects showcase"
           className={`w-full h-full object-cover transition-opacity duration-1000 ${showVideo ? "opacity-0" : "opacity-100"}`}
         />
@@ -76,17 +77,22 @@ const HeroSection = () => {
           muted
           loop
           playsInline
-          poster="https://images.unsplash.com/photo-1503387762-592deb58ef4e"
+          poster="/images/projects.webp"
           aria-label="Construction site timelapse video showing building progress"
         >
           <source
-            src="https://video.wixstatic.com/video/6331e9_e98391c4a6dc4d85b10501c7aac5caee/1080p/mp4/file.mp4"
+            src="/videos/file.mp4"
             type="video/mp4"
           />
           Your browser does not support the video tag.
         </video>
       </div>
 
+      {/* Image Slider - positioned at 80% from the top */}
+      <div className="absolute left-0 right-0 z-30" style={{ top: '80%' }}>
+        <ImageSlider className="py-4 px-2 bg-black bg-opacity-30 backdrop-blur-sm" />
+      </div>
+      
       {/* Overlay */}
       <div className="hero-overlay absolute inset-0 z-10"></div>
 
