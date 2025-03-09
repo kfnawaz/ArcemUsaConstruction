@@ -7,6 +7,7 @@ import {
   blogPosts, type BlogPost, type InsertBlogPost,
   testimonials, type Testimonial, type InsertTestimonial,
   services, type Service, type InsertService,
+  serviceGallery, type ServiceGallery, type InsertServiceGallery,
   messages, type Message, type InsertMessage,
   newsletterSubscribers, type NewsletterSubscriber, type InsertNewsletterSubscriber,
   quoteRequests, type QuoteRequest, type InsertQuoteRequest
@@ -126,6 +127,7 @@ export class MemStorage implements IStorage {
   private blogPostTags: Map<number, Set<number>>;        // postId -> Set of tagIds
   private testimonials: Map<number, Testimonial>;
   private services: Map<number, Service>;
+  private serviceGallery: Map<number, ServiceGallery>;
   private messages: Map<number, Message>;
   private newsletterSubscribers: Map<number, NewsletterSubscriber>;
   private quoteRequests: Map<number, QuoteRequest>;
@@ -142,6 +144,8 @@ export class MemStorage implements IStorage {
   newsletterSubscriberCurrentId: number;
   quoteRequestCurrentId: number;
 
+  serviceGalleryCurrentId: number;
+  
   constructor() {
     this.users = new Map();
     this.projects = new Map();
@@ -153,6 +157,7 @@ export class MemStorage implements IStorage {
     this.blogPostTags = new Map();
     this.testimonials = new Map();
     this.services = new Map();
+    this.serviceGallery = new Map();
     this.messages = new Map();
     this.newsletterSubscribers = new Map();
     this.quoteRequests = new Map();
@@ -165,6 +170,7 @@ export class MemStorage implements IStorage {
     this.blogPostCurrentId = 1;
     this.testimonialCurrentId = 1;
     this.serviceCurrentId = 1;
+    this.serviceGalleryCurrentId = 1;
     this.messageCurrentId = 1;
     this.newsletterSubscriberCurrentId = 1;
     this.quoteRequestCurrentId = 1;
@@ -772,9 +778,88 @@ export class MemStorage implements IStorage {
   
   async createService(service: InsertService): Promise<Service> {
     const id = this.serviceCurrentId++;
-    const newService: Service = { ...service, id };
+    const newService: Service = { 
+      ...service, 
+      id,
+      features: service.features || null
+    };
     this.services.set(id, newService);
     return newService;
+  }
+  
+  async updateService(id: number, serviceUpdate: Partial<InsertService>): Promise<Service | undefined> {
+    const service = this.services.get(id);
+    if (!service) return undefined;
+    
+    const updatedService: Service = { 
+      ...service, 
+      ...serviceUpdate,
+      features: serviceUpdate.features !== undefined ? serviceUpdate.features : service.features
+    };
+    
+    this.services.set(id, updatedService);
+    return updatedService;
+  }
+  
+  async deleteService(id: number): Promise<boolean> {
+    // Also delete all gallery images for this service
+    this.deleteAllServiceGalleryImages(id);
+    return this.services.delete(id);
+  }
+  
+  // Service Gallery
+  async getServiceGallery(serviceId: number): Promise<ServiceGallery[]> {
+    return Array.from(this.serviceGallery.values())
+      .filter(image => image.serviceId === serviceId)
+      .sort((a, b) => {
+        const orderA = a.order !== null ? a.order : 0;
+        const orderB = b.order !== null ? b.order : 0;
+        return orderA - orderB;
+      });
+  }
+
+  async addServiceGalleryImage(galleryImage: InsertServiceGallery): Promise<ServiceGallery> {
+    const id = this.serviceGalleryCurrentId++;
+    const now = new Date();
+    
+    const newImage: ServiceGallery = {
+      ...galleryImage,
+      id,
+      order: galleryImage.order || 0,
+      alt: galleryImage.alt || null,
+      createdAt: now
+    };
+    
+    this.serviceGallery.set(id, newImage);
+    return newImage;
+  }
+
+  async updateServiceGalleryImage(id: number, galleryImageUpdate: Partial<InsertServiceGallery>): Promise<ServiceGallery | undefined> {
+    const image = this.serviceGallery.get(id);
+    if (!image) return undefined;
+    
+    const updatedImage: ServiceGallery = {
+      ...image,
+      ...galleryImageUpdate,
+      alt: galleryImageUpdate.alt !== undefined ? galleryImageUpdate.alt : image.alt,
+      order: galleryImageUpdate.order !== undefined ? galleryImageUpdate.order : image.order
+    };
+    
+    this.serviceGallery.set(id, updatedImage);
+    return updatedImage;
+  }
+
+  async deleteServiceGalleryImage(id: number): Promise<boolean> {
+    return this.serviceGallery.delete(id);
+  }
+
+  async deleteAllServiceGalleryImages(serviceId: number): Promise<boolean> {
+    const imagesToDelete = Array.from(this.serviceGallery.values())
+      .filter(image => image.serviceId === serviceId)
+      .map(image => image.id);
+      
+    imagesToDelete.forEach(id => this.serviceGallery.delete(id));
+    return true;
   }
   
   // Messages

@@ -475,6 +475,175 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  app.get(`${apiRouter}/services/:id`, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid service ID" });
+      }
+      
+      const service = await storage.getService(id);
+      if (!service) {
+        return res.status(404).json({ message: "Service not found" });
+      }
+      
+      res.json(service);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch service" });
+    }
+  });
+  
+  app.post(`${apiRouter}/services`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const serviceData = insertServiceSchema.parse(req.body);
+      const service = await storage.createService(serviceData);
+      
+      // Handle gallery images if provided
+      if (req.body.galleryImages && Array.isArray(req.body.galleryImages)) {
+        for (const image of req.body.galleryImages) {
+          await storage.addServiceGalleryImage({
+            serviceId: service.id,
+            imageUrl: image.imageUrl,
+            alt: image.alt,
+            order: image.order
+          });
+        }
+      }
+      
+      res.status(201).json(service);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ message: "Invalid service data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create service" });
+    }
+  });
+  
+  app.put(`${apiRouter}/services/:id`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid service ID" });
+      }
+      
+      const serviceData = insertServiceSchema.partial().parse(req.body);
+      const updatedService = await storage.updateService(id, serviceData);
+      
+      if (!updatedService) {
+        return res.status(404).json({ message: "Service not found" });
+      }
+      
+      res.json(updatedService);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ message: "Invalid service data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update service" });
+    }
+  });
+  
+  app.delete(`${apiRouter}/services/:id`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid service ID" });
+      }
+      
+      const deleted = await storage.deleteService(id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Service not found" });
+      }
+      
+      res.status(204).end();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete service" });
+    }
+  });
+  
+  // Service Gallery Routes
+  app.get(`${apiRouter}/services/:serviceId/gallery`, async (req: Request, res: Response) => {
+    try {
+      const serviceId = parseInt(req.params.serviceId);
+      if (isNaN(serviceId)) {
+        return res.status(400).json({ message: "Invalid service ID" });
+      }
+      
+      const galleryImages = await storage.getServiceGallery(serviceId);
+      res.json(galleryImages);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch service gallery" });
+    }
+  });
+  
+  app.post(`${apiRouter}/services/:serviceId/gallery`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const serviceId = parseInt(req.params.serviceId);
+      if (isNaN(serviceId)) {
+        return res.status(400).json({ message: "Invalid service ID" });
+      }
+      
+      // Check if service exists
+      const service = await storage.getService(serviceId);
+      if (!service) {
+        return res.status(404).json({ message: "Service not found" });
+      }
+      
+      const galleryData = insertServiceGallerySchema.parse({
+        ...req.body,
+        serviceId
+      });
+      
+      const galleryImage = await storage.addServiceGalleryImage(galleryData);
+      res.status(201).json(galleryImage);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ message: "Invalid gallery data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to add gallery image" });
+    }
+  });
+  
+  app.put(`${apiRouter}/services/gallery/:id`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid gallery image ID" });
+      }
+      
+      const galleryData = insertServiceGallerySchema.partial().parse(req.body);
+      const updatedImage = await storage.updateServiceGalleryImage(id, galleryData);
+      
+      if (!updatedImage) {
+        return res.status(404).json({ message: "Gallery image not found" });
+      }
+      
+      res.json(updatedImage);
+    } catch (error) {
+      if (error instanceof ZodError) {
+        return res.status(400).json({ message: "Invalid gallery data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update gallery image" });
+    }
+  });
+  
+  app.delete(`${apiRouter}/services/gallery/:id`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid gallery image ID" });
+      }
+      
+      const deleted = await storage.deleteServiceGalleryImage(id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Gallery image not found" });
+      }
+      
+      res.status(204).end();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete gallery image" });
+    }
+  });
+  
   // Testimonials Routes
   // Testimonials Public Routes
   app.get(`${apiRouter}/testimonials`, async (req: Request, res: Response) => {
