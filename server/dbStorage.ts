@@ -322,9 +322,61 @@ export class DBStorage implements IStorage {
     return db.select().from(services);
   }
 
+  async getService(id: number): Promise<Service | undefined> {
+    const results = await db.select().from(services).where(eq(services.id, id));
+    return results[0];
+  }
+
   async createService(service: InsertService): Promise<Service> {
     const result = await db.insert(services).values(service).returning();
     return result[0];
+  }
+
+  async updateService(id: number, serviceUpdate: Partial<InsertService>): Promise<Service | undefined> {
+    const result = await db.update(services)
+      .set(serviceUpdate)
+      .where(eq(services.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteService(id: number): Promise<boolean> {
+    // First delete all gallery images for this service
+    await this.deleteAllServiceGalleryImages(id);
+    // Then delete the service
+    const result = await db.delete(services).where(eq(services.id, id)).returning();
+    return result.length > 0;
+  }
+  
+  // Service Gallery
+  async getServiceGallery(serviceId: number): Promise<ServiceGallery[]> {
+    return db.select()
+      .from(serviceGallery)
+      .where(eq(serviceGallery.serviceId, serviceId))
+      .orderBy(serviceGallery.displayOrder);
+  }
+  
+  async addServiceGalleryImage(galleryImage: InsertServiceGallery): Promise<ServiceGallery> {
+    const result = await db.insert(serviceGallery).values(galleryImage).returning();
+    return result[0];
+  }
+  
+  async updateServiceGalleryImage(id: number, galleryImageUpdate: Partial<InsertServiceGallery>): Promise<ServiceGallery | undefined> {
+    const result = await db.update(serviceGallery)
+      .set(galleryImageUpdate)
+      .where(eq(serviceGallery.id, id))
+      .returning();
+    return result[0];
+  }
+  
+  async deleteServiceGalleryImage(id: number): Promise<boolean> {
+    const result = await db.delete(serviceGallery).where(eq(serviceGallery.id, id)).returning();
+    return result.length > 0;
+  }
+  
+  async deleteAllServiceGalleryImages(serviceId: number): Promise<boolean> {
+    const result = await db.delete(serviceGallery).where(eq(serviceGallery.serviceId, serviceId)).returning();
+    return result.length >= 0; // Return true even if there were no images to delete
   }
 
   // Messages/Contact
