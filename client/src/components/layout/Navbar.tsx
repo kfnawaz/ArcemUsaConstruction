@@ -60,7 +60,12 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
       <div className="container mx-auto px-4 md:px-8">
         <div className="flex justify-between items-center">
           <Link href="/" className="text-white text-2xl font-montserrat font-bold flex items-center">
-            A+R C.E.M.
+            <img 
+              src="/uploads/images/logo.png" 
+              alt="ARCEMUSA Logo" 
+              className="h-10 w-10 mr-3 logo-img" 
+            />
+            <span>ARCEMUSA</span>
           </Link>
           
           {/* Desktop Navigation */}

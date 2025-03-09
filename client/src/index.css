@@ -207,4 +207,14 @@
       transform: translateY(0);
     }
   }
+  
+  /* Logo styles */
+  .logo-img {
+    transition: all 0.3s ease;
+    filter: drop-shadow(0 0 6px rgba(224, 192, 128, 0.5));
+  }
+  
+  .navbar-fixed .logo-img {
+    transform: scale(0.9);
+  }
 }
