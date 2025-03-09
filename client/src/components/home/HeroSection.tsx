@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { ArrowDown } from "lucide-react";
@@ -6,84 +6,43 @@ import { scrollToElement } from "@/lib/utils";
 
 const HeroSection = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [showVideo, setShowVideo] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Animate content reveal
+    // Simulate video loading
     const reveal = document.querySelectorAll(".reveal");
+
     const timeout = setTimeout(() => {
       reveal.forEach((element) => element.classList.add("active"));
     }, 100);
 
-    // Function to handle user interaction and load video
-    const handleUserInteraction = () => {
-      if (showVideo) return; // Only trigger once
-      
-      console.log("User interaction detected, loading video");
-      setShowVideo(true);
-      
-      // Play the video if it's loaded
-      if (videoRef.current) {
-        videoRef.current.play().catch(err => {
-          console.error('Video playback failed:', err);
-        });
-      }
-      
-      // Remove all event listeners after first interaction
-      window.removeEventListener('mousemove', handleUserInteraction);
-      window.removeEventListener('click', handleUserInteraction);
-      window.removeEventListener('scroll', handleUserInteraction);
-      window.removeEventListener('touchstart', handleUserInteraction);
-    };
-    
-    // Add event listeners to window for better detection
-    window.addEventListener('mousemove', handleUserInteraction);
-    window.addEventListener('click', handleUserInteraction);
-    window.addEventListener('scroll', handleUserInteraction);
-    window.addEventListener('touchstart', handleUserInteraction);
-    
-    return () => {
-      clearTimeout(timeout);
-      
-      // Clean up event listeners
-      window.removeEventListener('mousemove', handleUserInteraction);
-      window.removeEventListener('click', handleUserInteraction);
-      window.removeEventListener('scroll', handleUserInteraction);
-      window.removeEventListener('touchstart', handleUserInteraction);
-    };
-  }, [showVideo]);
+    return () => clearTimeout(timeout);
+  }, []);
 
   const handleScrollDown = () => {
     scrollToElement("about");
   };
 
   return (
-    <div ref={containerRef} className="hero-video-container relative h-screen overflow-hidden">
-      {/* Background media container */}
+    <div className="hero-video-container relative h-screen">
+      {/* Video background */}
       <div className="absolute inset-0 z-0 bg-gray-900">
-        {/* Static image (shown first) */}
-        <img 
-          src="/images/projects.webp" 
-          alt="ARCEMUSA construction projects showcase" 
-          className={`w-full h-full object-cover absolute inset-0 transition-opacity duration-700 ${showVideo ? 'opacity-0' : 'opacity-100'}`}
-        />
-        
-        {/* Video (loaded after user interaction) */}
-        {showVideo && (
-          <video
-            ref={videoRef}
-            className="w-full h-full object-cover absolute inset-0 transition-opacity duration-700"
-            autoPlay
-            muted
-            loop
-            playsInline
-            aria-label="Construction site timelapse video showing building progress"
-          >
-            <source src="/videos/file.mp4" type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
-        )}
+        <video
+          ref={videoRef}
+          className="w-full h-full object-cover"
+          autoPlay
+          muted
+          loop
+          playsInline
+          poster="/videos/hero-video.mp4"
+          aria-label="Construction site timelapse video showing building progress"
+          title="ARCEMUSA construction showcase video"
+        >
+          <source
+            src="/videos/hero-video.mp4"
+            type="video/mp4"
+          />
+          Your browser does not support the video tag.
+        </video>
       </div>
 
       {/* Overlay */}
