@@ -1,0 +1,58 @@
+{
+            “‘Commercial Construction'”: [
+              "Turn-key commercial building solutions",
+              "Office and retail space construction",
+              "Restaurant and hospitality building projects",
+              "Medical facility construction",
+              "Educational institution construction",
+              "Commercial renovations and expansions"
+            ],
+            “Residential Construction”: [
+              "Custom home design and construction",
+              "Luxury home building services",
+              "Multi-family residential projects",
+              "Housing development construction",
+              "Residential additions and expansions",
+              "Energy-efficient home construction"
+            ],
+            “Renovation & Remodeling”: [
+              "Complete home renovations",
+              "Kitchen and bathroom remodeling",
+              "Basement finishing and conversions",
+              "Commercial space renovations",
+              "Historic building restoration",
+              "Structural renovations and repairs"
+            ],
+            “Project Planning & Design”: [
+              "Architectural design services",
+              "Construction planning and feasibility studies",
+              "3D modeling and visualizations",
+              "Budget development and cost estimating",
+              "Permit acquisition assistance",
+              "Sustainable design solutions"
+            ],
+            “Industrial Construction”: [
+              "Manufacturing facility construction",
+              "Warehouse and distribution center building",
+              "Processing plant construction",
+              "Industrial facility expansions",
+              "Cold storage facility construction",
+              "Industrial retrofits and renovations"
+            ],
+            “Construction Management”: [
+              "Comprehensive project oversight",
+              "Schedule development and management",
+              "Budget administration and cost control",
+              "Subcontractor coordination and management",
+              "Quality assurance and control",
+              "Risk management and problem resolution"
+            ],
+            “default”: [
+              "Professional construction services",
+              "Expert team of builders and craftsmen",
+              "Quality materials and construction methods",
+              "Adherence to building codes and regulations",
+              "Comprehensive project management",
+              "Attention to detail at every stage"
+            ]
+      }
