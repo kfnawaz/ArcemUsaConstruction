@@ -1,0 +1,241 @@
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { Service, InsertService, ServiceGallery, InsertServiceGallery } from '@shared/schema';
+import { apiRequest, queryClient } from '../lib/queryClient';
+import { useToast } from './use-toast';
+
+export const useService = (serviceId?: number) => {
+  const { toast } = useToast();
+
+  // Query to fetch all services
+  const {
+    data: services,
+    isLoading: isLoadingServices,
+    error: servicesError,
+  } = useQuery<Service[]>({
+    queryKey: ['/api/services'],
+  });
+
+  // Query to fetch single service if serviceId is provided
+  const {
+    data: service,
+    isLoading: isLoadingService,
+    error: serviceError,
+  } = useQuery<Service>({
+    queryKey: ['/api/services', serviceId],
+    enabled: !!serviceId,
+  });
+
+  // Query to fetch service gallery
+  const {
+    data: serviceGallery,
+    isLoading: isLoadingGallery,
+    error: galleryError,
+  } = useQuery<ServiceGallery[]>({
+    queryKey: ['/api/services', serviceId, 'gallery'],
+    queryFn: async () => {
+      const res = await apiRequest('GET', `/api/services/${serviceId}/gallery`);
+      return await res.json();
+    },
+    enabled: !!serviceId,
+  });
+
+  // Create service mutation
+  const createServiceMutation = useMutation({
+    mutationFn: async (data: InsertService) => {
+      const res = await apiRequest('POST', '/api/services', data);
+      return await res.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: 'Service created',
+        description: 'The service has been created successfully.',
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/services'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Failed to create service',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Update service mutation
+  const updateServiceMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: Partial<InsertService> }) => {
+      const res = await apiRequest('PUT', `/api/services/${id}`, data);
+      return await res.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: 'Service updated',
+        description: 'The service has been updated successfully.',
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/services'] });
+      if (serviceId) {
+        queryClient.invalidateQueries({ queryKey: ['/api/services', serviceId] });
+      }
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Failed to update service',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Delete service mutation
+  const deleteServiceMutation = useMutation({
+    mutationFn: async (id: number) => {
+      await apiRequest('DELETE', `/api/services/${id}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: 'Service deleted',
+        description: 'The service has been deleted successfully.',
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/services'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Failed to delete service',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Add gallery image mutation
+  const addGalleryImageMutation = useMutation({
+    mutationFn: async ({ serviceId, data }: { serviceId: number; data: InsertServiceGallery }) => {
+      const res = await apiRequest('POST', `/api/services/${serviceId}/gallery`, data);
+      return await res.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: 'Gallery image added',
+        description: 'The gallery image has been added successfully.',
+      });
+      if (serviceId) {
+        queryClient.invalidateQueries({ queryKey: ['/api/services', serviceId, 'gallery'] });
+      }
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Failed to add gallery image',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Update gallery image mutation
+  const updateGalleryImageMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: Partial<InsertServiceGallery> }) => {
+      const res = await apiRequest('PUT', `/api/services/gallery/${id}`, data);
+      return await res.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: 'Gallery image updated',
+        description: 'The gallery image has been updated successfully.',
+      });
+      if (serviceId) {
+        queryClient.invalidateQueries({ queryKey: ['/api/services', serviceId, 'gallery'] });
+      }
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Failed to update gallery image',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Delete gallery image mutation
+  const deleteGalleryImageMutation = useMutation({
+    mutationFn: async (id: number) => {
+      await apiRequest('DELETE', `/api/services/gallery/${id}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: 'Gallery image deleted',
+        description: 'The gallery image has been deleted successfully.',
+      });
+      if (serviceId) {
+        queryClient.invalidateQueries({ queryKey: ['/api/services', serviceId, 'gallery'] });
+      }
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Failed to delete gallery image',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  // Helper function to upload a file
+  const uploadFile = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to upload file');
+      }
+      
+      const data = await response.json();
+      return data.url;
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      throw error;
+    }
+  };
+
+  return {
+    // Service data
+    services,
+    service,
+    serviceGallery,
+    isLoadingServices,
+    isLoadingService,
+    isLoadingGallery,
+    servicesError,
+    serviceError,
+    galleryError,
+    
+    // Mutations
+    createService: (data: InsertService) => createServiceMutation.mutate(data),
+    updateService: (id: number, data: Partial<InsertService>) => 
+      updateServiceMutation.mutate({ id, data }),
+    deleteService: (id: number) => deleteServiceMutation.mutate(id),
+    
+    // Gallery mutations
+    addGalleryImage: (serviceId: number, data: InsertServiceGallery) => 
+      addGalleryImageMutation.mutate({ serviceId, data }),
+    updateGalleryImage: (id: number, data: Partial<InsertServiceGallery>) => 
+      updateGalleryImageMutation.mutate({ id, data }),
+    deleteGalleryImage: (id: number) => deleteGalleryImageMutation.mutate(id),
+    
+    // File upload helper
+    uploadFile,
+    
+    // Mutation states
+    isCreatingService: createServiceMutation.isPending,
+    isUpdatingService: updateServiceMutation.isPending,
+    isDeletingService: deleteServiceMutation.isPending,
+    isAddingGalleryImage: addGalleryImageMutation.isPending,
+    isUpdatingGalleryImage: updateGalleryImageMutation.isPending,
+    isDeletingGalleryImage: deleteGalleryImageMutation.isPending,
+  };
+};

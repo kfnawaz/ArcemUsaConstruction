@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { initializeRevealEffects, scrollToTop } from '@/lib/utils';
-import { Service } from '@shared/schema';
-import { Building, Home, Wrench, Clipboard, Factory, Settings, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Service, ServiceGallery } from '@shared/schema';
+import { Building, Home, Wrench, Clipboard, Factory, Settings } from 'lucide-react';
 import { Link } from 'wouter';
 import { 
   Carousel, 
@@ -12,6 +12,7 @@ import {
   CarouselNext 
 } from "@/components/ui/carousel";
 import Autoplay from 'embla-carousel-autoplay';
+import { apiRequest } from '@/lib/queryClient';
 
 const Services = () => {
   useEffect(() => {
@@ -47,9 +48,42 @@ const Services = () => {
     }
   };
   
-  // Get service images based on service type
-  const getServiceImages = (serviceTitle: string) => {
-    switch (serviceTitle.toLowerCase()) {
+  // State to store service gallery images
+  const [serviceGalleries, setServiceGalleries] = useState<{ [key: number]: ServiceGallery[] }>({});
+  
+  // Fetch gallery images for each service
+  useEffect(() => {
+    const fetchGalleryImages = async () => {
+      if (services && services.length > 0) {
+        const galleries: { [key: number]: ServiceGallery[] } = {};
+        
+        for (const service of services) {
+          try {
+            const response = await apiRequest('GET', `/api/services/${service.id}/gallery`);
+            const galleryData = await response.json();
+            galleries[service.id] = galleryData;
+          } catch (error) {
+            console.error(`Error fetching gallery for service ${service.id}:`, error);
+            galleries[service.id] = [];
+          }
+        }
+        
+        setServiceGalleries(galleries);
+      }
+    };
+    
+    fetchGalleryImages();
+  }, [services]);
+  
+  // Get service images from gallery or fallback to defaults
+  const getServiceImages = (service: Service) => {
+    // If we have gallery images for this service, use them
+    if (serviceGalleries[service.id] && serviceGalleries[service.id].length > 0) {
+      return serviceGalleries[service.id].map(image => image.imageUrl);
+    }
+    
+    // Otherwise use default images based on service type
+    switch (service.title.toLowerCase()) {
       case 'commercial construction':
         return [
           '/uploads/images/services/commercial/commercial1.jpg',
@@ -177,7 +211,7 @@ const Services = () => {
                       ]}
                     >
                       <CarouselContent>
-                        {getServiceImages(service.title).map((image, i) => (
+                        {getServiceImages(service).map((image, i) => (
                           <CarouselItem key={i}>
                             <div className="h-64 w-full overflow-hidden">
                               <img 

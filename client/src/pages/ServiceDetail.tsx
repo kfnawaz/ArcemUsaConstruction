@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useRoute, Link } from 'wouter';
-import { Service } from '@shared/schema';
+import { Service, ServiceGallery } from '@shared/schema';
 import { scrollToTop } from '@/lib/utils';
 import { Building, Home, Wrench, Clipboard, Factory, Settings, ArrowRight, Check } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
@@ -13,6 +13,8 @@ import {
   CarouselNext 
 } from "@/components/ui/carousel";
 import Autoplay from 'embla-carousel-autoplay';
+import { apiRequest } from '@/lib/queryClient';
+import { useService } from '@/hooks/useService';
 
 const ServiceDetail = () => {
   // Extract service ID from URL
