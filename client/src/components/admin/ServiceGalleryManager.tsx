@@ -51,8 +51,8 @@ const ServiceGalleryManager: React.FC<ServiceGalleryManagerProps> = ({ serviceId
       const galleryImage: InsertServiceGallery = {
         serviceId,
         imageUrl,
-        caption: file.name,
-        displayOrder: serviceGallery ? serviceGallery.length + 1 : 1,
+        alt: file.name,
+        order: serviceGallery ? serviceGallery.length + 1 : 1,
       };
       
       await addGalleryImage(serviceId, galleryImage);
@@ -143,7 +143,7 @@ const ServiceGalleryManager: React.FC<ServiceGalleryManagerProps> = ({ serviceId
               <div className="aspect-video relative group">
                 <img
                   src={image.imageUrl}
-                  alt={image.caption || `Gallery image ${image.id}`}
+                  alt={image.alt || `Gallery image ${image.id}`}
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     e.currentTarget.src = "https://placehold.co/600x400/e2e8f0/1e293b?text=Image+Error";
@@ -163,7 +163,7 @@ const ServiceGalleryManager: React.FC<ServiceGalleryManagerProps> = ({ serviceId
                 </div>
               </div>
               <CardContent className="p-3">
-                <p className="text-sm truncate">{image.caption || `Image ${image.id}`}</p>
+                <p className="text-sm truncate">{image.alt || `Image ${image.id}`}</p>
               </CardContent>
             </Card>
           ))}

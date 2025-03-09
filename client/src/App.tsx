@@ -137,6 +137,11 @@ function Router() {
               <BlogManagement />
             </ProtectedRoute>
           </Route>
+          <Route path="/admin/services">
+            <ProtectedRoute>
+              <ServicesManagement />
+            </ProtectedRoute>
+          </Route>
           <Route path="/admin/messages">
             <ProtectedRoute>
               <MessagesManagement />
