@@ -22,35 +22,35 @@ const HeroSection = () => {
         console.log("User interaction detected, loading video");
         setUserInteracted(true);
         setShowVideo(true);
-        
+
         // Try to play the video
         if (videoRef.current) {
-          videoRef.current.play().catch(err => {
-            console.error('Video playback failed:', err);
+          videoRef.current.play().catch((err) => {
+            console.error("Video playback failed:", err);
           });
         }
-        
+
         // Remove event listeners
-        document.removeEventListener('mousemove', handleUserInteraction);
-        document.removeEventListener('click', handleUserInteraction);
-        document.removeEventListener('scroll', handleUserInteraction);
-        document.removeEventListener('keydown', handleUserInteraction);
+        document.removeEventListener("mousemove", handleUserInteraction);
+        document.removeEventListener("click", handleUserInteraction);
+        document.removeEventListener("scroll", handleUserInteraction);
+        document.removeEventListener("keydown", handleUserInteraction);
       }
     };
-    
+
     // Add event listeners
-    document.addEventListener('mousemove', handleUserInteraction);
-    document.addEventListener('click', handleUserInteraction);
-    document.addEventListener('scroll', handleUserInteraction);
-    document.addEventListener('keydown', handleUserInteraction);
-    
+    document.addEventListener("mousemove", handleUserInteraction);
+    document.addEventListener("click", handleUserInteraction);
+    document.addEventListener("scroll", handleUserInteraction);
+    document.addEventListener("keydown", handleUserInteraction);
+
     return () => {
       clearTimeout(timeout);
       // Clean up event listeners
-      document.removeEventListener('mousemove', handleUserInteraction);
-      document.removeEventListener('click', handleUserInteraction);
-      document.removeEventListener('scroll', handleUserInteraction);
-      document.removeEventListener('keydown', handleUserInteraction);
+      document.removeEventListener("mousemove", handleUserInteraction);
+      document.removeEventListener("click", handleUserInteraction);
+      document.removeEventListener("scroll", handleUserInteraction);
+      document.removeEventListener("keydown", handleUserInteraction);
     };
   }, [userInteracted]);
 
@@ -63,23 +63,26 @@ const HeroSection = () => {
       {/* Background media layer */}
       <div className="absolute inset-0 z-0 bg-gray-900 overflow-hidden">
         {/* Static image background (visible initially) */}
-        <img 
-          src="/images/projects.webp" 
-          alt="ARCEMUSA construction projects showcase" 
-          className={`w-full h-full object-cover transition-opacity duration-1000 ${showVideo ? 'opacity-0' : 'opacity-100'}`}
+        <img
+          src="/images/projects.webp"
+          alt="ARCEMUSA construction projects showcase"
+          className={`w-full h-full object-cover transition-opacity duration-1000 ${showVideo ? "opacity-0" : "opacity-100"}`}
         />
-        
+
         {/* Video (loads in background, becomes visible after user interaction) */}
         <video
           ref={videoRef}
-          className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-1000 ${showVideo ? 'opacity-100' : 'opacity-0'}`}
+          className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-1000 ${showVideo ? "opacity-100" : "opacity-0"}`}
           muted
           loop
           playsInline
-          poster="/images/projects.webp"
+          poster="https://images.unsplash.com/photo-1503387762-592deb58ef4e"
           aria-label="Construction site timelapse video showing building progress"
         >
-          <source src="/videos/file.mp4" type="video/mp4" />
+          <source
+            src="https://video.wixstatic.com/video/6331e9_e98391c4a6dc4d85b10501c7aac5caee/1080p/mp4/file.mp4"
+            type="video/mp4"
+          />
           Your browser does not support the video tag.
         </video>
       </div>
