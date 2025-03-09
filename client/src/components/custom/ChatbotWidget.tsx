@@ -1,27 +1,27 @@
-import React, { useState } from 'react';
-import { MessageCircle, X, Send } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Building2 } from 'lucide-react';
-import { useEffect, useRef } from 'react';
-import { apiRequest } from '@/lib/queryClient';
+import React, { useState } from "react";
+import { MessageCircle, X, Send } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Building2 } from "lucide-react";
+import { useEffect, useRef } from "react";
+import { apiRequest } from "@/lib/queryClient";
 
 type ChatMessage = {
   id: number;
   text: string;
-  sender: 'user' | 'bot';
+  sender: "user" | "bot";
   timestamp: Date;
 };
 
 // Simple implementation of a chatbot without using the react-chatbot-kit
 const ChatbotWidget: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [inputMessage, setInputMessage] = useState('');
+  const [inputMessage, setInputMessage] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 1,
-      text: 'Hello! Welcome to ARCEMUSA Construction. How can I help you today?',
-      sender: 'bot',
+      text: "Hello! Welcome to ARCEMUSA Construction. How can I help you today?",
+      sender: "bot",
       timestamp: new Date(),
     },
   ]);
@@ -42,27 +42,27 @@ const ChatbotWidget: React.FC = () => {
   // Auto-scroll to the bottom of messages
   useEffect(() => {
     if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages]);
 
   const fetchServices = async () => {
     try {
-      const response = await apiRequest('GET', '/api/services');
+      const response = await apiRequest("GET", "/api/services");
       const data = await response.json();
       setServices(data);
     } catch (error) {
-      console.error('Error fetching services:', error);
+      console.error("Error fetching services:", error);
     }
   };
 
   const fetchProjects = async () => {
     try {
-      const response = await apiRequest('GET', '/api/projects/featured');
+      const response = await apiRequest("GET", "/api/projects/featured");
       const data = await response.json();
       setProjects(data);
     } catch (error) {
-      console.error('Error fetching projects:', error);
+      console.error("Error fetching projects:", error);
     }
   };
 
@@ -75,17 +75,17 @@ const ChatbotWidget: React.FC = () => {
   };
 
   const handleSendMessage = () => {
-    if (inputMessage.trim() === '') return;
+    if (inputMessage.trim() === "") return;
 
     // Add user message
     const userMessage: ChatMessage = {
       id: messages.length + 1,
       text: inputMessage,
-      sender: 'user',
+      sender: "user",
       timestamp: new Date(),
     };
     setMessages([...messages, userMessage]);
-    setInputMessage('');
+    setInputMessage("");
 
     // Process the message and generate a bot response
     setTimeout(() => {
@@ -93,151 +93,153 @@ const ChatbotWidget: React.FC = () => {
       const botMessage: ChatMessage = {
         id: messages.length + 2,
         text: botResponse.text,
-        sender: 'bot',
+        sender: "bot",
         timestamp: new Date(),
       };
-      setMessages(prev => [...prev, botMessage]);
+      setMessages((prev) => [...prev, botMessage]);
 
       // If there's a special response with a services list
-      if (botResponse.type === 'services') {
+      if (botResponse.type === "services") {
         displayServicesList();
-      } else if (botResponse.type === 'projects') {
+      } else if (botResponse.type === "projects") {
         displayProjectsList();
-      } else if (botResponse.type === 'contact') {
+      } else if (botResponse.type === "contact") {
         displayContactInfo();
       }
     }, 600);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleSendMessage();
     }
   };
 
-  const processUserMessage = (message: string): { text: string; type?: string } => {
+  const processUserMessage = (
+    message: string,
+  ): { text: string; type?: string } => {
     const lowerCaseMessage = message.toLowerCase();
 
     // Check for greetings
     if (
-      lowerCaseMessage.includes('hi') ||
-      lowerCaseMessage.includes('hello') ||
-      lowerCaseMessage.includes('hey')
+      lowerCaseMessage.includes("hi") ||
+      lowerCaseMessage.includes("hello") ||
+      lowerCaseMessage.includes("hey")
     ) {
       return {
-        text: 'Hello! How can I assist you with your construction needs today?',
+        text: "Hello! How can I assist you with your construction needs today?",
       };
     }
 
     // Check for services related queries
     if (
-      lowerCaseMessage.includes('service') ||
-      lowerCaseMessage.includes('offer') ||
-      lowerCaseMessage.includes('provide') ||
-      lowerCaseMessage.includes('do you do')
+      lowerCaseMessage.includes("service") ||
+      lowerCaseMessage.includes("offer") ||
+      lowerCaseMessage.includes("provide") ||
+      lowerCaseMessage.includes("do you do")
     ) {
       return {
-        text: 'We offer a wide range of construction services. Here are some of our main services:',
-        type: 'services',
+        text: "We offer a wide range of construction services. Here are some of our main services:",
+        type: "services",
       };
     }
 
     // Check for project related queries
     if (
-      lowerCaseMessage.includes('project') ||
-      lowerCaseMessage.includes('portfolio') ||
-      lowerCaseMessage.includes('work') ||
-      lowerCaseMessage.includes('built') ||
-      lowerCaseMessage.includes('examples')
+      lowerCaseMessage.includes("project") ||
+      lowerCaseMessage.includes("portfolio") ||
+      lowerCaseMessage.includes("work") ||
+      lowerCaseMessage.includes("built") ||
+      lowerCaseMessage.includes("examples")
     ) {
       return {
-        text: 'Take a look at some of our featured projects:',
-        type: 'projects',
+        text: "Take a look at some of our featured projects:",
+        type: "projects",
       };
     }
 
     // Check for contact related queries
     if (
-      lowerCaseMessage.includes('contact') ||
-      lowerCaseMessage.includes('reach') ||
-      lowerCaseMessage.includes('email') ||
-      lowerCaseMessage.includes('phone') ||
-      lowerCaseMessage.includes('call') ||
-      lowerCaseMessage.includes('talk to')
+      lowerCaseMessage.includes("contact") ||
+      lowerCaseMessage.includes("reach") ||
+      lowerCaseMessage.includes("email") ||
+      lowerCaseMessage.includes("phone") ||
+      lowerCaseMessage.includes("call") ||
+      lowerCaseMessage.includes("talk to")
     ) {
       return {
-        text: 'You can reach us through any of the following methods:',
-        type: 'contact',
+        text: "You can reach us through any of the following methods:",
+        type: "contact",
       };
     }
 
     // Check for testimonial related queries
     if (
-      lowerCaseMessage.includes('testimonial') ||
-      lowerCaseMessage.includes('review') ||
-      lowerCaseMessage.includes('feedback') ||
-      lowerCaseMessage.includes('client')
+      lowerCaseMessage.includes("testimonial") ||
+      lowerCaseMessage.includes("review") ||
+      lowerCaseMessage.includes("feedback") ||
+      lowerCaseMessage.includes("client")
     ) {
       return {
-        text: 'Our clients speak highly of our work. You can view testimonials on our testimonials page or submit your own experience working with us.',
+        text: "Our clients speak highly of our work. You can view testimonials on our testimonials page or submit your own experience working with us.",
       };
     }
 
     // Check for quote related queries
     if (
-      lowerCaseMessage.includes('quote') ||
-      lowerCaseMessage.includes('estimate') ||
-      lowerCaseMessage.includes('cost') ||
-      lowerCaseMessage.includes('price') ||
-      lowerCaseMessage.includes('pricing') ||
-      lowerCaseMessage.includes('how much')
+      lowerCaseMessage.includes("quote") ||
+      lowerCaseMessage.includes("estimate") ||
+      lowerCaseMessage.includes("cost") ||
+      lowerCaseMessage.includes("price") ||
+      lowerCaseMessage.includes("pricing") ||
+      lowerCaseMessage.includes("how much")
     ) {
       return {
-        text: 'We\'d be happy to provide a quote for your project. Please fill out our contact form with details about your project, and our team will get back to you within 24-48 hours.',
+        text: "We'd be happy to provide a quote for your project. Please fill out our contact form with details about your project, and our team will get back to you within 24-48 hours.",
       };
     }
 
     // Default fallback
     return {
-      text: 'I\'m not sure I understand. Would you like to know about our services, projects, or how to contact us?',
+      text: "I'm not sure I understand. Would you like to know about our services, projects, or how to contact us?",
     };
   };
 
   const displayServicesList = () => {
     const serviceMessage: ChatMessage = {
       id: messages.length + 3,
-      text: '',
-      sender: 'bot',
+      text: "",
+      sender: "bot",
       timestamp: new Date(),
     };
-    setMessages(prev => [...prev, serviceMessage]);
+    setMessages((prev) => [...prev, serviceMessage]);
   };
 
   const displayProjectsList = () => {
     const projectMessage: ChatMessage = {
       id: messages.length + 3,
-      text: '',
-      sender: 'bot',
+      text: "",
+      sender: "bot",
       timestamp: new Date(),
     };
-    setMessages(prev => [...prev, projectMessage]);
+    setMessages((prev) => [...prev, projectMessage]);
   };
 
   const displayContactInfo = () => {
     const contactMessage: ChatMessage = {
       id: messages.length + 3,
-      text: 'Phone: (123) 456-7890\nEmail: aj@arcemusa.com\nAddress: 215 Birch Hill Dr, Sugar Land, TX 77479\nBusiness Hours: Monday - Friday: 8:00 AM - 5:00 PM, Saturday: 9:00 AM - 2:00 PM, Sunday: Closed',
-      sender: 'bot',
+      text: "Phone: (713) 624-0083\nEmail: aj@arcemusa.com\nAddress: 215 Birch Hill Dr, Sugar Land, TX 77479\nBusiness Hours: Monday - Friday: 8:00 AM - 5:00 PM, Saturday: 9:00 AM - 2:00 PM, Sunday: Closed",
+      sender: "bot",
       timestamp: new Date(),
     };
-    setMessages(prev => [...prev, contactMessage]);
+    setMessages((prev) => [...prev, contactMessage]);
   };
 
   const formatMessageText = (text: string) => {
-    return text.split('\n').map((line, i) => (
+    return text.split("\n").map((line, i) => (
       <React.Fragment key={i}>
         {line}
-        {i < text.split('\n').length - 1 && <br />}
+        {i < text.split("\n").length - 1 && <br />}
       </React.Fragment>
     ));
   };
@@ -255,7 +257,9 @@ const ChatbotWidget: React.FC = () => {
               key={service.id}
               className="p-2 hover:bg-gray-200 rounded-md cursor-pointer transition-colors"
             >
-              <div className="font-semibold text-[#C09E5E]">{service.title}</div>
+              <div className="font-semibold text-[#C09E5E]">
+                {service.title}
+              </div>
               <div className="text-sm text-gray-600">
                 {service.description.substring(0, 100)}...
               </div>
@@ -295,7 +299,9 @@ const ChatbotWidget: React.FC = () => {
                 <div className="font-semibold text-[#C09E5E] group-hover:underline">
                   {project.title}
                 </div>
-                <div className="text-xs text-gray-500 mb-1">{project.category}</div>
+                <div className="text-xs text-gray-500 mb-1">
+                  {project.category}
+                </div>
                 <div className="text-sm text-gray-600 line-clamp-2">
                   {project.description}
                 </div>
@@ -333,10 +339,10 @@ const ChatbotWidget: React.FC = () => {
               <div
                 key={msg.id}
                 className={`mb-3 flex ${
-                  msg.sender === 'user' ? 'justify-end' : 'justify-start'
+                  msg.sender === "user" ? "justify-end" : "justify-start"
                 }`}
               >
-                {msg.sender === 'bot' && (
+                {msg.sender === "bot" && (
                   <div className="flex-shrink-0 mr-2">
                     <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#C09E5E] text-white">
                       <Building2 className="w-5 h-5" />
@@ -345,17 +351,21 @@ const ChatbotWidget: React.FC = () => {
                 )}
                 <div
                   className={`rounded-lg px-3 py-2 max-w-[80%] ${
-                    msg.sender === 'user'
-                      ? 'bg-[#080808] text-white'
-                      : 'bg-gray-100'
+                    msg.sender === "user"
+                      ? "bg-[#080808] text-white"
+                      : "bg-gray-100"
                   }`}
                 >
                   {msg.text ? (
                     <div className="text-sm">{formatMessageText(msg.text)}</div>
                   ) : (
                     <div>
-                      {msg.sender === 'bot' && services.length > 0 && renderServicesList()}
-                      {msg.sender === 'bot' && projects.length > 0 && renderProjectsList()}
+                      {msg.sender === "bot" &&
+                        services.length > 0 &&
+                        renderServicesList()}
+                      {msg.sender === "bot" &&
+                        projects.length > 0 &&
+                        renderProjectsList()}
                     </div>
                   )}
                 </div>
@@ -387,15 +397,15 @@ const ChatbotWidget: React.FC = () => {
           onClick={toggleChatbot}
           className="rounded-full h-14 w-14 bg-[#C09E5E] hover:bg-[#ae8d54] shadow-lg flex items-center justify-center p-0"
         >
-          <svg 
-            xmlns="http://www.w3.org/2000/svg" 
-            width="24" 
-            height="24" 
-            viewBox="0 0 24 24" 
-            fill="none" 
-            stroke="currentColor" 
-            strokeWidth="2" 
-            strokeLinecap="round" 
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
             strokeLinejoin="round"
             className="h-6 w-6 text-white"
           >
