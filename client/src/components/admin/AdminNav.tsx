@@ -8,11 +8,12 @@ import {
   Eye,
   Star,
   Mail,
-  ClipboardList
+  ClipboardList,
+  Wrench
 } from 'lucide-react';
 
 type AdminNavProps = {
-  activePage: 'dashboard' | 'projects' | 'blog' | 'messages' | 'testimonials' | 'settings' | 'accessibility' | 'newsletter' | 'quotes';
+  activePage: 'dashboard' | 'projects' | 'services' | 'blog' | 'messages' | 'testimonials' | 'settings' | 'accessibility' | 'newsletter' | 'quotes';
 };
 
 const AdminNav = ({ activePage }: AdminNavProps) => {
@@ -30,6 +31,12 @@ const AdminNav = ({ activePage }: AdminNavProps) => {
       label: 'Projects', 
       icon: <Building className="w-5 h-5 mr-3" />,
       active: activePage === 'projects'
+    },
+    { 
+      href: '/admin/services', 
+      label: 'Services', 
+      icon: <Wrench className="w-5 h-5 mr-3" />,
+      active: activePage === 'services'
     },
     { 
       href: '/admin/blog', 

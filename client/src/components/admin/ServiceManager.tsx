@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import ServiceGalleryManager from './ServiceGalleryManager';
-import { Loader2, Save, Building, Home, Wrench, Clipboard, Factory, Settings } from 'lucide-react';
+import { Loader2, Save, Building, Home, Wrench, Clipboard, Factory, Settings, PencilRuler, BarChart, HardHat } from 'lucide-react';
 
 // Extend the base schema with client-side validation
 const serviceFormSchema = z.object({
