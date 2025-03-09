@@ -110,23 +110,23 @@ const ServiceDetail = () => {
           ];
         case 'architectural design':
           return [
-            '/attached_assets/slider1.png',
-            '/attached_assets/slider2.png'
+            '/images/slider1.png',
+            '/images/slider2.png'
           ];
         case 'project management':
           return [
-            '/attached_assets/slider3.png',
-            '/attached_assets/slider4.png'
+            '/images/slider3.png',
+            '/images/slider4.png'
           ];
         case 'construction consultation':
           return [
-            '/attached_assets/slider5.png',
-            '/attached_assets/image_1741432012642.png'
+            '/images/slider5.png',
+            '/images/image_1741432012642.png'
           ];
         default:
           return [
-            '/attached_assets/slider1.png',
-            '/attached_assets/slider2.png'
+            '/images/slider1.png',
+            '/images/slider2.png'
           ];
       }
     };
@@ -288,7 +288,7 @@ const ServiceDetail = () => {
     
     // Use gallery images from the API if available, otherwise fall back to hardcoded images
     const serviceImages = galleryImages.length > 0 
-      ? galleryImages 
+      ? galleryImages.map(image => image.imageUrl)
       : getServiceImages(service.title);
 
     return (
