@@ -5,6 +5,14 @@ import { Service } from '@shared/schema';
 import { scrollToTop } from '@/lib/utils';
 import { Building, Home, Wrench, Clipboard, Factory, Settings, ArrowRight, Check } from 'lucide-react';
 import { Loader2 } from 'lucide-react';
+import { 
+  Carousel, 
+  CarouselContent, 
+  CarouselItem, 
+  CarouselPrevious, 
+  CarouselNext 
+} from "@/components/ui/carousel";
+import Autoplay from 'embla-carousel-autoplay';
 
 const ServiceDetail = () => {
   // Extract service ID from URL
@@ -351,31 +359,54 @@ const ServiceDetail = () => {
           <div className="container mx-auto px-4 md:px-8">
             <h2 className="text-3xl font-montserrat font-bold mb-12 text-center">Our {service.title} Projects</h2>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {serviceImages.map((img, index) => (
-                <div key={index} className="bg-white shadow-lg overflow-hidden hover-scale">
-                  <div className="h-64 bg-gray-300 relative overflow-hidden">
-                    <img 
-                      src={img} 
-                      alt={`${service.title} project ${index + 1}`}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        // Fallback for missing images
-                        e.currentTarget.src = "https://placehold.co/600x400/e2e8f0/1e293b?text=Project+Image";
-                      }}
-                    />
-                  </div>
-                  <div className="p-6">
-                    <h3 className="font-montserrat font-bold text-lg mb-2">{service.title} Project {index + 1}</h3>
-                    <p className="text-gray-600 mb-4">Example {service.title.toLowerCase()} project showcasing our expertise and quality craftsmanship.</p>
-                    <Link href="/projects" className="text-[#C09E5E] hover:text-[#A98D54] inline-flex items-center">
-                      View More Projects
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
+            <Carousel 
+              className="w-full"
+              opts={{
+                align: "start",
+                loop: true,
+                skipSnaps: false,
+                dragFree: false,
+              }}
+              plugins={[
+                Autoplay({
+                  delay: 5000,
+                  stopOnInteraction: true,
+                  stopOnMouseEnter: true,
+                }),
+              ]}
+            >
+              <CarouselContent className="p-1">
+                {serviceImages.map((img, index) => (
+                  <CarouselItem key={index} className="basis-full md:basis-1/3 pl-1 pr-5">
+                    <div className="bg-white shadow-lg overflow-hidden hover-scale h-full">
+                      <div className="h-64 bg-gray-300 relative overflow-hidden">
+                        <img 
+                          src={img} 
+                          alt={`${service.title} project ${index + 1}`}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            // Fallback for missing images
+                            e.currentTarget.src = "https://placehold.co/600x400/e2e8f0/1e293b?text=Project+Image";
+                          }}
+                        />
+                      </div>
+                      <div className="p-6">
+                        <h3 className="font-montserrat font-bold text-lg mb-2">{service.title} Project {index + 1}</h3>
+                        <p className="text-gray-600 mb-4">Example {service.title.toLowerCase()} project showcasing our expertise and quality craftsmanship.</p>
+                        <Link href="/projects" className="text-[#C09E5E] hover:text-[#A98D54] inline-flex items-center">
+                          View More Projects
+                          <ArrowRight className="w-4 h-4 ml-2" />
+                        </Link>
+                      </div>
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <div className="hidden md:flex justify-end gap-2 mt-4">
+                <CarouselPrevious className="static transform-none" />
+                <CarouselNext className="static transform-none" />
+              </div>
+            </Carousel>
           </div>
         </section>
         

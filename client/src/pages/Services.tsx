@@ -11,6 +11,7 @@ import {
   CarouselPrevious, 
   CarouselNext 
 } from "@/components/ui/carousel";
+import Autoplay from 'embla-carousel-autoplay';
 
 const Services = () => {
   useEffect(() => {
@@ -159,7 +160,22 @@ const Services = () => {
                   className={`flex flex-col ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'} gap-12 items-center reveal`}
                 >
                   <div className="md:w-1/3">
-                    <Carousel className="w-full overflow-hidden rounded-lg shadow-xl">
+                    <Carousel 
+                      className="w-full overflow-hidden rounded-lg shadow-xl"
+                      opts={{
+                        align: "start",
+                        loop: true,
+                        skipSnaps: false,
+                        dragFree: false,
+                      }}
+                      plugins={[
+                        Autoplay({
+                          delay: 4000,
+                          stopOnInteraction: true,
+                          stopOnMouseEnter: true,
+                        }),
+                      ]}
+                    >
                       <CarouselContent>
                         {getServiceImages(service.title).map((image, i) => (
                           <CarouselItem key={i}>
