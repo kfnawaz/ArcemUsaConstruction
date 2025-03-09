@@ -52,6 +52,7 @@ const ServicesSection = () => {
             services?.map((service) => (
               <ServiceCard 
                 key={service.id}
+                id={service.id}
                 icon={getIconName(service.icon)}
                 title={service.title}
                 description={service.description}

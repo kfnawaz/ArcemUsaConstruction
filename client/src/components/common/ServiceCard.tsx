@@ -1,13 +1,15 @@
 import { ArrowRight } from 'lucide-react';
 import { Building, Home, Wrench, Clipboard, Factory, Settings } from 'lucide-react';
+import { Link } from 'wouter';
 
 interface ServiceCardProps {
   icon: string;
   title: string;
   description: string;
+  id: number;
 }
 
-const ServiceCard = ({ icon, title, description }: ServiceCardProps) => {
+const ServiceCard = ({ icon, title, description, id }: ServiceCardProps) => {
   const getIcon = (iconName: string) => {
     switch (iconName.toLowerCase()) {
       case 'building':
@@ -27,6 +29,9 @@ const ServiceCard = ({ icon, title, description }: ServiceCardProps) => {
     }
   };
 
+  // Create URL-friendly slug from the title
+  const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+
   return (
     <div className="bg-white p-8 shadow-lg hover-scale reveal">
       <div className="text-[#C09E5E] mb-6">
@@ -36,10 +41,10 @@ const ServiceCard = ({ icon, title, description }: ServiceCardProps) => {
       <p className="text-gray-600 mb-6 leading-relaxed">
         {description}
       </p>
-      <a className="text-[#C09E5E] hover:text-[#A98D54] font-montserrat text-sm font-medium inline-flex items-center cursor-pointer">
+      <Link href={`/services/${id}/${slug}`} className="text-[#C09E5E] hover:text-[#A98D54] font-montserrat text-sm font-medium inline-flex items-center cursor-pointer">
         LEARN MORE
         <ArrowRight className="w-4 h-4 ml-2" />
-      </a>
+      </Link>
     </div>
   );
 };
