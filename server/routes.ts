@@ -321,6 +321,99 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Blog Gallery Routes
+  app.get(`${apiRouter}/blog/:postId/gallery`, async (req: Request, res: Response) => {
+    try {
+      const postId = parseInt(req.params.postId);
+      if (isNaN(postId)) {
+        return res.status(400).json({ message: "Invalid blog post ID" });
+      }
+      
+      console.log(`[DEBUG] Fetching gallery for blog post ID: ${postId}`);
+      
+      const galleryImages = await storage.getBlogGallery(postId);
+      
+      console.log(`[DEBUG] Blog gallery images found: ${galleryImages.length}`);
+      
+      res.json(galleryImages);
+    } catch (error) {
+      console.error(`[ERROR] Failed to fetch blog gallery:`, error);
+      res.status(500).json({ 
+        message: "Failed to fetch blog gallery", 
+        error: String(error) 
+      });
+    }
+  });
+
+  app.post(`${apiRouter}/blog/:postId/gallery`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const postId = parseInt(req.params.postId);
+      if (isNaN(postId)) {
+        return res.status(400).json({ message: "Invalid blog post ID" });
+      }
+      
+      // Check if blog post exists
+      const post = await storage.getBlogPost(postId);
+      if (!post) {
+        return res.status(404).json({ message: "Blog post not found" });
+      }
+      
+      const galleryData = insertBlogGallerySchema.parse({
+        ...req.body,
+        postId
+      });
+      
+      const galleryImage = await storage.addBlogGalleryImage(galleryData);
+      res.status(201).json(galleryImage);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid gallery data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to add gallery image" });
+    }
+  });
+
+  app.put(`${apiRouter}/blog/gallery/:id`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid gallery image ID" });
+      }
+      
+      const galleryData = insertBlogGallerySchema.partial().parse(req.body);
+      const updatedImage = await storage.updateBlogGalleryImage(id, galleryData);
+      
+      if (!updatedImage) {
+        return res.status(404).json({ message: "Gallery image not found" });
+      }
+      
+      res.json(updatedImage);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid gallery data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update gallery image" });
+    }
+  });
+
+  app.delete(`${apiRouter}/blog/gallery/:id`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid gallery image ID" });
+      }
+      
+      const deleted = await storage.deleteBlogGalleryImage(id);
+      if (!deleted) {
+        return res.status(404).json({ message: "Gallery image not found" });
+      }
+      
+      res.status(204).end();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete gallery image" });
+    }
+  });
+  
   app.get(`${apiRouter}/blog/slug/:slug`, async (req: Request, res: Response) => {
     try {
       const slug = req.params.slug;
@@ -380,11 +473,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin-only endpoints for blog management
   app.post(`${apiRouter}/blog`, isAdmin, async (req: Request, res: Response) => {
     try {
-      // Use the extended schema that includes categoryIds and tagIds
+      // Use the extended schema that includes categoryIds, tagIds, and galleryImages
       const postData = extendedInsertBlogPostSchema.parse(req.body);
       
-      // Extract category and tag IDs
-      const { categoryIds, tagIds, ...blogPostData } = postData;
+      // Extract category and tag IDs, and gallery images
+      const { categoryIds, tagIds, galleryImages, ...blogPostData } = postData;
       
       // Create the blog post
       const post = await storage.createBlogPost(blogPostData);
@@ -397,6 +490,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Link tags if provided
       if (tagIds && tagIds.length > 0) {
         await storage.linkBlogPostTags(post.id, tagIds);
+      }
+      
+      // Add gallery images if provided
+      if (galleryImages && galleryImages.length > 0) {
+        for (let i = 0; i < galleryImages.length; i++) {
+          const galleryImage = {
+            postId: post.id,
+            imageUrl: galleryImages[i].imageUrl,
+            caption: galleryImages[i].caption || null,
+            order: galleryImages[i].order || i // Use provided order or index as default
+          };
+          await storage.addBlogGalleryImage(galleryImage);
+        }
       }
       
       res.status(201).json(post);
@@ -419,8 +525,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Use the extended schema for update
       const postData = extendedInsertBlogPostSchema.partial().parse(req.body);
       
-      // Extract category and tag IDs
-      const { categoryIds, tagIds, ...blogPostData } = postData;
+      // Extract category and tag IDs, and gallery images
+      const { categoryIds, tagIds, galleryImages, ...blogPostData } = postData;
       
       // Update the blog post
       const post = await storage.updateBlogPost(id, blogPostData);
@@ -437,6 +543,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update tags if provided
       if (tagIds) {
         await storage.updateBlogPostTags(id, tagIds);
+      }
+      
+      // Update gallery images if provided
+      if (galleryImages) {
+        // First remove all existing gallery images
+        await storage.deleteAllBlogGalleryImages(id);
+        
+        // Then add the new gallery images
+        if (galleryImages.length > 0) {
+          for (let i = 0; i < galleryImages.length; i++) {
+            const galleryImage = {
+              postId: id,
+              imageUrl: galleryImages[i].imageUrl,
+              caption: galleryImages[i].caption || null,
+              order: galleryImages[i].order || i // Use provided order or index as default
+            };
+            await storage.addBlogGalleryImage(galleryImage);
+          }
+        }
       }
       
       res.json(post);
