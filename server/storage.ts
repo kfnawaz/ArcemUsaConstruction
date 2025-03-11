@@ -5,6 +5,7 @@ import {
   blogCategories, type BlogCategory, type InsertBlogCategory,
   blogTags, type BlogTag, type InsertBlogTag,
   blogPosts, type BlogPost, type InsertBlogPost,
+  blogGallery, type BlogGallery, type InsertBlogGallery,
   testimonials, type Testimonial, type InsertTestimonial,
   services, type Service, type InsertService,
   serviceGallery, type ServiceGallery, type InsertServiceGallery,
@@ -611,10 +612,74 @@ export class MemStorage implements IStorage {
   }
   
   async deleteBlogPost(id: number): Promise<boolean> {
-    // Also clean up any categories and tags references
+    // Also clean up any categories, tags, and gallery images references
     this.blogPostCategories.delete(id);
     this.blogPostTags.delete(id);
+    this.deleteAllBlogGalleryImages(id);
     return this.blogPosts.delete(id);
+  }
+  
+  // Blog Gallery
+  async getBlogGallery(postId: number): Promise<BlogGallery[]> {
+    return Array.from(this.blogGallery.values())
+      .filter(image => image.postId === postId)
+      .sort((a, b) => {
+        const orderA = a.order || 0;
+        const orderB = b.order || 0;
+        return orderA - orderB;
+      });
+  }
+
+  async addBlogGalleryImage(galleryImage: InsertBlogGallery): Promise<BlogGallery> {
+    const id = this.blogGalleryCurrentId++;
+    const now = new Date();
+    
+    const newImage: BlogGallery = {
+      id,
+      postId: galleryImage.postId,
+      imageUrl: galleryImage.imageUrl,
+      caption: galleryImage.caption || null,
+      order: galleryImage.order || 0,
+      createdAt: now
+    };
+    
+    this.blogGallery.set(id, newImage);
+    return newImage;
+  }
+
+  async updateBlogGalleryImage(id: number, galleryImageUpdate: Partial<InsertBlogGallery>): Promise<BlogGallery | undefined> {
+    const image = this.blogGallery.get(id);
+    if (!image) return undefined;
+    
+    const updatedImage: BlogGallery = {
+      ...image,
+      ...galleryImageUpdate
+    };
+    
+    this.blogGallery.set(id, updatedImage);
+    return updatedImage;
+  }
+
+  async deleteBlogGalleryImage(id: number): Promise<boolean> {
+    return this.blogGallery.delete(id);
+  }
+
+  async deleteAllBlogGalleryImages(postId: number): Promise<boolean> {
+    let success = true;
+    
+    // Find all gallery images for this post
+    const galleryImagesToDelete = Array.from(this.blogGallery.values())
+      .filter(image => image.postId === postId)
+      .map(image => image.id);
+    
+    // Delete each gallery image
+    galleryImagesToDelete.forEach(id => {
+      if (!this.blogGallery.delete(id)) {
+        success = false;
+      }
+    });
+    
+    return success;
   }
   
   // Blog Categories

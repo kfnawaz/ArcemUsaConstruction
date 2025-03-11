@@ -2,14 +2,15 @@ import { eq, and, inArray } from "drizzle-orm";
 import { db } from "./db";
 import { 
   users, projects, projectGallery, blogCategories, blogTags, blogPosts, 
-  blogPostCategories, blogPostTags,
+  blogPostCategories, blogPostTags, blogGallery,
   testimonials, services, serviceGallery, messages, newsletterSubscribers, quoteRequests,
   type User, type InsertUser, 
   type Project, type InsertProject,
   type ProjectGallery, type InsertProjectGallery,
   type BlogCategory, type InsertBlogCategory,
   type BlogTag, type InsertBlogTag, 
-  type BlogPost, type InsertBlogPost, 
+  type BlogPost, type InsertBlogPost,
+  type BlogGallery, type InsertBlogGallery,
   type Testimonial, type InsertTestimonial, 
   type Service, type InsertService, 
   type ServiceGallery, type InsertServiceGallery,
@@ -145,8 +146,41 @@ export class DBStorage implements IStorage {
   }
 
   async deleteBlogPost(id: number): Promise<boolean> {
+    // First delete all blog gallery images
+    await this.deleteAllBlogGalleryImages(id);
     const result = await db.delete(blogPosts).where(eq(blogPosts.id, id)).returning();
     return result.length > 0;
+  }
+  
+  // Blog Gallery
+  async getBlogGallery(postId: number): Promise<BlogGallery[]> {
+    return db.select()
+      .from(blogGallery)
+      .where(eq(blogGallery.postId, postId))
+      .orderBy(blogGallery.order);
+  }
+
+  async addBlogGalleryImage(galleryImage: InsertBlogGallery): Promise<BlogGallery> {
+    const result = await db.insert(blogGallery).values(galleryImage).returning();
+    return result[0];
+  }
+
+  async updateBlogGalleryImage(id: number, galleryImageUpdate: Partial<InsertBlogGallery>): Promise<BlogGallery | undefined> {
+    const result = await db.update(blogGallery)
+      .set(galleryImageUpdate)
+      .where(eq(blogGallery.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteBlogGalleryImage(id: number): Promise<boolean> {
+    const result = await db.delete(blogGallery).where(eq(blogGallery.id, id)).returning();
+    return result.length > 0;
+  }
+
+  async deleteAllBlogGalleryImages(postId: number): Promise<boolean> {
+    const result = await db.delete(blogGallery).where(eq(blogGallery.postId, postId)).returning();
+    return result.length >= 0; // Return true even if there were no images to delete
   }
   
   // Blog Categories
