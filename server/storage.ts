@@ -56,6 +56,13 @@ export interface IStorage {
   updateBlogPost(id: number, post: Partial<InsertBlogPost>): Promise<BlogPost | undefined>;
   deleteBlogPost(id: number): Promise<boolean>;
   
+  // Blog Gallery
+  getBlogGallery(postId: number): Promise<BlogGallery[]>;
+  addBlogGalleryImage(galleryImage: InsertBlogGallery): Promise<BlogGallery>;
+  updateBlogGalleryImage(id: number, galleryImage: Partial<InsertBlogGallery>): Promise<BlogGallery | undefined>;
+  deleteBlogGalleryImage(id: number): Promise<boolean>;
+  deleteAllBlogGalleryImages(postId: number): Promise<boolean>;
+  
   // Blog Post Categories
   getBlogPostCategories(postId: number): Promise<BlogCategory[]>;
   linkBlogPostCategories(postId: number, categoryIds: number[]): Promise<void>;
@@ -123,6 +130,7 @@ export class MemStorage implements IStorage {
   private blogCategories: Map<number, BlogCategory>;
   private blogTags: Map<number, BlogTag>;
   private blogPosts: Map<number, BlogPost>;
+  private blogGallery: Map<number, BlogGallery>;
   private blogPostCategories: Map<number, Set<number>>;  // postId -> Set of categoryIds
   private blogPostTags: Map<number, Set<number>>;        // postId -> Set of tagIds
   private testimonials: Map<number, Testimonial>;
@@ -138,6 +146,7 @@ export class MemStorage implements IStorage {
   blogCategoryCurrentId: number;
   blogTagCurrentId: number;
   blogPostCurrentId: number;
+  blogGalleryCurrentId: number;
   testimonialCurrentId: number;
   serviceCurrentId: number;
   messageCurrentId: number;
@@ -153,6 +162,7 @@ export class MemStorage implements IStorage {
     this.blogCategories = new Map();
     this.blogTags = new Map();
     this.blogPosts = new Map();
+    this.blogGallery = new Map();
     this.blogPostCategories = new Map();
     this.blogPostTags = new Map();
     this.testimonials = new Map();
@@ -168,6 +178,7 @@ export class MemStorage implements IStorage {
     this.blogCategoryCurrentId = 1;
     this.blogTagCurrentId = 1;
     this.blogPostCurrentId = 1;
+    this.blogGalleryCurrentId = 1;
     this.testimonialCurrentId = 1;
     this.serviceCurrentId = 1;
     this.serviceGalleryCurrentId = 1;

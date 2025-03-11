@@ -136,9 +136,32 @@ export const blogPostTags = pgTable("blog_post_tags", {
 }));
 
 // Define relationships
+// Blog gallery images table
+export const blogGallery = pgTable("blog_gallery", {
+  id: serial("id").primaryKey(),
+  postId: integer("post_id").notNull().references(() => blogPosts.id, { onDelete: "cascade" }),
+  imageUrl: text("image_url").notNull(),
+  caption: text("caption"),
+  order: integer("order").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertBlogGallerySchema = createInsertSchema(blogGallery).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const blogGalleryRelations = relations(blogGallery, ({ one }) => ({
+  post: one(blogPosts, {
+    fields: [blogGallery.postId],
+    references: [blogPosts.id],
+  }),
+}));
+
 export const blogPostsRelations = relations(blogPosts, ({ many }) => ({
   categories: many(blogPostCategories),
   tags: many(blogPostTags),
+  gallery: many(blogGallery),
 }));
 
 export const blogCategoriesRelations = relations(blogCategories, ({ many }) => ({
@@ -176,10 +199,17 @@ export const insertBlogPostSchema = createInsertSchema(blogPosts).omit({
   createdAt: true,
 });
 
-// Extend the schema to include categories and tags
+// Extend the schema to include categories, tags, and gallery images
 export const extendedInsertBlogPostSchema = insertBlogPostSchema.extend({
   categoryIds: z.array(z.number()).optional(),
   tagIds: z.array(z.number()).optional(),
+  galleryImages: z.array(
+    z.object({
+      imageUrl: z.string(),
+      caption: z.string().optional(),
+      order: z.number().optional(),
+    })
+  ).optional(),
 });
 
 export const testimonials = pgTable("testimonials", {
@@ -294,6 +324,8 @@ export type InsertBlogTag = z.infer<typeof insertBlogTagSchema>;
 export type BlogPost = typeof blogPosts.$inferSelect;
 export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;
 export type ExtendedInsertBlogPost = z.infer<typeof extendedInsertBlogPostSchema>;
+export type BlogGallery = typeof blogGallery.$inferSelect;
+export type InsertBlogGallery = z.infer<typeof insertBlogGallerySchema>;
 
 export type Testimonial = typeof testimonials.$inferSelect;
 export type InsertTestimonial = z.infer<typeof insertTestimonialSchema>;
