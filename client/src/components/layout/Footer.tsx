@@ -78,7 +78,7 @@ const Footer = () => {
             </p>
             <NewsletterSubscription className="bg-transparent p-0 text-white" />
             <p className="text-gray-400 text-sm mt-2">
-              By subscribing, you agree to our Privacy Policy.
+              By subscribing, you agree to our <Link href="/privacy-policy" className="text-[#1E90DB] hover:underline">Privacy Policy</Link>.
             </p>
           </div>
         </div>
@@ -87,9 +87,9 @@ const Footer = () => {
           <div className="flex flex-col md:flex-col justify-center items-center text-gray-400 text-sm">
             <p className="text-center mb-4">&copy; {new Date().getFullYear()} ARCEMUSA Construction Company. All rights reserved.</p>
             <div className="flex space-x-6 mt-2 md:mt-2">
-              <a href="#" className="hover:text-[#1E90DB] transition-colors">Privacy Policy</a>
-              <a href="#" className="hover:text-[#1E90DB] transition-colors">Terms of Service</a>
-              <a href="#" className="hover:text-[#1E90DB] transition-colors">Sitemap</a>
+              <Link href="/privacy-policy" className="hover:text-[#1E90DB] transition-colors">Privacy Policy</Link>
+              <Link href="/terms-of-service" className="hover:text-[#1E90DB] transition-colors">Terms of Service</Link>
+              <Link href="/sitemap" className="hover:text-[#1E90DB] transition-colors">Sitemap</Link>
             </div>
           </div>
         </div>

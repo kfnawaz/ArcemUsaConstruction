@@ -23,6 +23,9 @@ import Blog from "@/pages/Blog";
 import BlogPost from "@/pages/BlogPost";
 import Contact from "@/pages/Contact";
 import RequestQuote from "@/pages/RequestQuote";
+import PrivacyPolicy from "@/pages/PrivacyPolicy";
+import TermsOfService from "@/pages/TermsOfService";
+import Sitemap from "@/pages/Sitemap";
 import Login from "@/pages/auth/Login";
 import Dashboard from "@/pages/admin/Dashboard";
 import ProjectManagement from "@/pages/admin/ProjectManagement";
@@ -113,6 +116,9 @@ function Router() {
           <Route path="/blog/:slug" component={BlogPost} />
           <Route path="/contact" component={Contact} />
           <Route path="/request-quote" component={RequestQuote} />
+          <Route path="/privacy-policy" component={PrivacyPolicy} />
+          <Route path="/terms-of-service" component={TermsOfService} />
+          <Route path="/sitemap" component={Sitemap} />
           <Route path="/auth">
             <Login />
           </Route>
