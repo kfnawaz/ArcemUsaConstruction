@@ -55,7 +55,14 @@ export const useSubcontractors = () => {
   // Submit vendor application
   const submitVendorMutation = useMutation({
     mutationFn: async (data: InsertVendor) => {
-      const res = await apiRequest("POST", "/api/vendors/apply", data);
+      console.log("Vendor application data in mutation:", data);
+      // Ensure supplyTypes is an array
+      const vendorData = {
+        ...data,
+        supplyTypes: Array.isArray(data.supplyTypes) ? data.supplyTypes : [],
+      };
+      console.log("Processed vendor data:", vendorData);
+      const res = await apiRequest("POST", "/api/vendors/apply", vendorData);
       return await res.json();
     },
     onSuccess: () => {
@@ -65,6 +72,7 @@ export const useSubcontractors = () => {
       });
     },
     onError: (error: Error) => {
+      console.error("Vendor application submission error:", error);
       toast({
         title: "Submission Failed",
         description: error.message || "Failed to submit vendor application. Please try again.",

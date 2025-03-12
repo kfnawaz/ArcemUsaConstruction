@@ -95,6 +95,7 @@ const Subcontractors = () => {
     try {
       // Convert form data to the appropriate format based on the active tab
       if (activeTab === "subcontractor") {
+        console.log("Preparing subcontractor data", { serviceTypes: data.serviceTypes });
         const subcontractorData = {
           companyName: data.companyName,
           contactName: data.contactName,
@@ -115,10 +116,12 @@ const Subcontractors = () => {
           howDidYouHear: data.howDidYouHear || "",
         };
         
+        console.log("Submitting subcontractor application", subcontractorData);
         // Submit subcontractor application
         await submitSubcontractorApplication(subcontractorData);
       } else {
         // Vendor application
+        console.log("Preparing vendor data", { supplyTypes: data.supplyTypes });
         const vendorData = {
           companyName: data.companyName,
           contactName: data.contactName,
@@ -129,13 +132,14 @@ const Subcontractors = () => {
           state: data.state,
           zip: data.zip,
           website: data.website || undefined,
-          supplyTypes: data.supplyTypes,
+          supplyTypes: data.supplyTypes, // This must be an array
           serviceDescription: data.serviceDescription,
           yearsInBusiness: data.yearsInBusiness,
           references: data.references || "",
           howDidYouHear: data.howDidYouHear || "",
         };
         
+        console.log("Submitting vendor application", vendorData);
         // Submit vendor application
         await submitVendorApplication(vendorData);
       }
