@@ -3,6 +3,7 @@ import { useSubcontractors } from '@/hooks/useSubcontractors';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useLocation } from 'wouter';
+import AdminNav from '@/components/admin/AdminNav';
 import {
   Tabs,
   TabsContent,
@@ -223,519 +224,497 @@ export default function SubcontractorManagement() {
   }
 
   return (
-    <div className="container mx-auto py-10 px-4 md:px-6">
-      <h1 className="text-3xl font-bold mb-6">Subcontractor & Vendor Management</h1>
+    <div className="min-h-screen pt-32 pb-20 bg-gray-50">
+      <div className="container mx-auto px-4 md:px-8">
+        <div className="flex flex-col md:flex-row gap-8">
+          {/* Admin Navigation */}
+          <AdminNav activePage="subcontractors" />
+          
+          {/* Main Content */}
+          <div className="flex-1">
+            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+              <h1 className="text-2xl font-montserrat font-bold mb-2">Subcontractor & Vendor Management</h1>
+              <p className="text-gray-600">
+                Manage subcontractor and vendor applications, track status, and add notes.
+              </p>
+            </div>
 
-      {/* Dashboard Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <Card className="bg-blue-50">
-          <CardContent className="p-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Subcontractors</p>
-                <h3 className="text-2xl font-bold">{subcontractors.length}</h3>
-              </div>
-              <div className="rounded-full p-2 bg-blue-100">
-                <Building className="h-5 w-5 text-blue-600" />
-              </div>
+            {/* Dashboard Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+              <Card className="bg-blue-50">
+                <CardContent className="p-6">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Total Subcontractors</p>
+                      <h3 className="text-2xl font-bold">{subcontractors.length}</h3>
+                    </div>
+                    <div className="rounded-full p-2 bg-blue-100">
+                      <Building className="h-5 w-5 text-blue-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-green-50">
+                <CardContent className="p-6">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Approved Subcontractors</p>
+                      <h3 className="text-2xl font-bold">{subcontractors.filter(s => s.status === 'approved').length}</h3>
+                    </div>
+                    <div className="rounded-full p-2 bg-green-100">
+                      <Building className="h-5 w-5 text-green-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-amber-50">
+                <CardContent className="p-6">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Total Vendors</p>
+                      <h3 className="text-2xl font-bold">{vendors.length}</h3>
+                    </div>
+                    <div className="rounded-full p-2 bg-amber-100">
+                      <Building className="h-5 w-5 text-amber-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-purple-50">
+                <CardContent className="p-6">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="text-sm font-medium text-muted-foreground">Approved Vendors</p>
+                      <h3 className="text-2xl font-bold">{vendors.filter(v => v.status === 'approved').length}</h3>
+                    </div>
+                    <div className="rounded-full p-2 bg-purple-100">
+                      <Building className="h-5 w-5 text-purple-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-green-50">
-          <CardContent className="p-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Approved Subcontractors</p>
-                <h3 className="text-2xl font-bold">{subcontractors.filter(s => s.status === 'approved').length}</h3>
-              </div>
-              <div className="rounded-full p-2 bg-green-100">
-                <Building className="h-5 w-5 text-green-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-amber-50">
-          <CardContent className="p-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Total Vendors</p>
-                <h3 className="text-2xl font-bold">{vendors.length}</h3>
-              </div>
-              <div className="rounded-full p-2 bg-amber-100">
-                <Building className="h-5 w-5 text-amber-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-purple-50">
-          <CardContent className="p-6">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">Approved Vendors</p>
-                <h3 className="text-2xl font-bold">{vendors.filter(v => v.status === 'approved').length}</h3>
-              </div>
-              <div className="rounded-full p-2 bg-purple-100">
-                <Building className="h-5 w-5 text-purple-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
 
-      <div className="flex flex-col sm:flex-row gap-4 mb-6 items-start sm:items-center justify-between">
-        <Tabs defaultValue={activeTab} className="w-full" onValueChange={setActiveTab}>
-          <TabsList className="grid w-full max-w-md grid-cols-2">
-            <TabsTrigger value="subcontractors">Subcontractors</TabsTrigger>
-            <TabsTrigger value="vendors">Vendors</TabsTrigger>
-          </TabsList>
-        </Tabs>
+            <div className="flex flex-col sm:flex-row gap-4 mb-6 items-start sm:items-center justify-between">
+              <Tabs defaultValue={activeTab} className="w-full" onValueChange={setActiveTab}>
+                <TabsList className="grid w-full max-w-md grid-cols-2">
+                  <TabsTrigger value="subcontractors">Subcontractors</TabsTrigger>
+                  <TabsTrigger value="vendors">Vendors</TabsTrigger>
+                </TabsList>
+              </Tabs>
 
-        <div className="flex items-center gap-2">
-          <Label htmlFor="status-filter" className="text-sm">Filter:</Label>
-          <Select 
-            value={statusFilter} 
-            onValueChange={setStatusFilter}
-          >
-            <SelectTrigger id="status-filter" className="w-[140px]">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Applications</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="approved">Approved</SelectItem>
-              <SelectItem value="rejected">Rejected</SelectItem>
-            </SelectContent>
-          </Select>
+              <div className="flex items-center gap-2">
+                <Label htmlFor="status-filter" className="text-sm">Filter:</Label>
+                <Select 
+                  value={statusFilter} 
+                  onValueChange={setStatusFilter}
+                >
+                  <SelectTrigger id="status-filter" className="w-[140px]">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Applications</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="approved">Approved</SelectItem>
+                    <SelectItem value="rejected">Rejected</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Subcontractors Tab Content */}
+            {activeTab === 'subcontractors' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Subcontractor Applications</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {isLoadingSubcontractors ? (
+                    <div className="flex justify-center py-8">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                  ) : filteredSubcontractors.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No subcontractor applications found
+                    </div>
+                  ) : (
+                    <Table>
+                      <TableCaption>A list of all subcontractor applications</TableCaption>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Company</TableHead>
+                          <TableHead>Contact</TableHead>
+                          <TableHead>Services</TableHead>
+                          <TableHead>Years in Business</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Date Applied</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredSubcontractors.map((subcontractor) => (
+                          <TableRow key={subcontractor.id} className="cursor-pointer hover:bg-muted/50" onClick={() => viewSubcontractorDetails(subcontractor)}>
+                            <TableCell className="font-medium">{subcontractor.companyName}</TableCell>
+                            <TableCell>
+                              <div>{subcontractor.contactName}</div>
+                              <div className="text-xs text-muted-foreground">{subcontractor.email}</div>
+                            </TableCell>
+                            <TableCell>
+                              {subcontractor.serviceTypes && (
+                                <div className="flex flex-wrap gap-1 max-w-[200px]">
+                                  {subcontractor.serviceTypes.slice(0, 2).map((service, i) => (
+                                    <Badge key={i} variant="outline" className="text-xs">{service}</Badge>
+                                  ))}
+                                  {subcontractor.serviceTypes.length > 2 && (
+                                    <Badge variant="outline" className="text-xs">+{subcontractor.serviceTypes.length - 2} more</Badge>
+                                  )}
+                                </div>
+                              )}
+                            </TableCell>
+                            <TableCell>{subcontractor.yearsInBusiness || 'N/A'}</TableCell>
+                            <TableCell>{getStatusBadge(subcontractor.status || 'pending')}</TableCell>
+                            <TableCell>{subcontractor.createdAt ? formatDate(subcontractor.createdAt) : 'N/A'}</TableCell>
+                            <TableCell className="text-right">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                                  <Button variant="ghost" size="sm">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                    <span className="sr-only">Actions</span>
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => viewSubcontractorDetails(subcontractor)}>
+                                    View Details
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeleteSubcontractor(subcontractor.id);
+                                    }} 
+                                    className="text-red-600 hover:text-red-600 focus:text-red-600"
+                                  >
+                                    Delete
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Vendors Tab Content */}
+            {activeTab === 'vendors' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Vendor Applications</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {isLoadingVendors ? (
+                    <div className="flex justify-center py-8">
+                      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                  ) : filteredVendors.length === 0 ? (
+                    <div className="text-center py-8 text-muted-foreground">
+                      No vendor applications found
+                    </div>
+                  ) : (
+                    <Table>
+                      <TableCaption>A list of all vendor applications</TableCaption>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Company</TableHead>
+                          <TableHead>Contact</TableHead>
+                          <TableHead>Supply Types</TableHead>
+                          <TableHead>Years in Business</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Date Applied</TableHead>
+                          <TableHead className="text-right">Actions</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredVendors.map((vendor) => (
+                          <TableRow key={vendor.id} className="cursor-pointer hover:bg-muted/50" onClick={() => viewVendorDetails(vendor)}>
+                            <TableCell className="font-medium">{vendor.companyName}</TableCell>
+                            <TableCell>
+                              <div>{vendor.contactName}</div>
+                              <div className="text-xs text-muted-foreground">{vendor.email}</div>
+                            </TableCell>
+                            <TableCell>
+                              {vendor.supplyTypes && (
+                                <div className="flex flex-wrap gap-1 max-w-[200px]">
+                                  {vendor.supplyTypes.slice(0, 2).map((supply, i) => (
+                                    <Badge key={i} variant="outline" className="text-xs">{supply}</Badge>
+                                  ))}
+                                  {vendor.supplyTypes.length > 2 && (
+                                    <Badge variant="outline" className="text-xs">+{vendor.supplyTypes.length - 2} more</Badge>
+                                  )}
+                                </div>
+                              )}
+                            </TableCell>
+                            <TableCell>{vendor.yearsInBusiness || 'N/A'}</TableCell>
+                            <TableCell>{getStatusBadge(vendor.status || 'pending')}</TableCell>
+                            <TableCell>{vendor.createdAt ? formatDate(vendor.createdAt) : 'N/A'}</TableCell>
+                            <TableCell className="text-right">
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                                  <Button variant="ghost" size="sm">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                    <span className="sr-only">Actions</span>
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => viewVendorDetails(vendor)}>
+                                    View Details
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem 
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeleteVendor(vendor.id);
+                                    }} 
+                                    className="text-red-600 hover:text-red-600 focus:text-red-600"
+                                  >
+                                    Delete
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Details Dialog */}
+            <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+              <DialogContent className="sm:max-w-[700px]">
+                <DialogHeader>
+                  <DialogTitle>
+                    {selectedSubcontractor 
+                      ? `Subcontractor: ${selectedSubcontractor.companyName}`
+                      : selectedVendor 
+                        ? `Vendor: ${selectedVendor.companyName}`
+                        : 'Application Details'
+                    }
+                  </DialogTitle>
+                  <DialogDescription>
+                    View and update application details
+                  </DialogDescription>
+                </DialogHeader>
+                
+                {selectedSubcontractor && (
+                  <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <h3 className="text-lg font-semibold">Contact Information</h3>
+                        <div className="space-y-2 mt-2">
+                          <div className="flex items-center gap-2">
+                            <Building className="h-4 w-4 text-muted-foreground" />
+                            <span className="font-medium">{selectedSubcontractor.companyName}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Mail className="h-4 w-4 text-muted-foreground" />
+                            <a href={`mailto:${selectedSubcontractor.email}`} className="text-blue-600 hover:underline">
+                              {selectedSubcontractor.email}
+                            </a>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Phone className="h-4 w-4 text-muted-foreground" />
+                            <a href={`tel:${selectedSubcontractor.phone}`} className="text-blue-600 hover:underline">
+                              {selectedSubcontractor.phone}
+                            </a>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <MapPin className="h-4 w-4 text-muted-foreground" />
+                            <span>
+                              {selectedSubcontractor.address}, {selectedSubcontractor.city}, {selectedSubcontractor.state} {selectedSubcontractor.zip}
+                            </span>
+                          </div>
+                          {selectedSubcontractor.website && (
+                            <div className="flex items-center gap-2">
+                              <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                              <a 
+                                href={selectedSubcontractor.website} 
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:underline"
+                              >
+                                Website
+                              </a>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold">Location</h3>
+                        <div className="mt-2">
+                          <p>{selectedSubcontractor.address}</p>
+                          <p>{selectedSubcontractor.city}, {selectedSubcontractor.state} {selectedSubcontractor.zip}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <h3 className="text-lg font-semibold">Business Information</h3>
+                        <div className="mt-2">
+                          <p>Years in business: <span className="font-medium">{selectedSubcontractor.yearsInBusiness || 'N/A'}</span></p>
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold">Service Types</h3>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {selectedSubcontractor.serviceTypes && selectedSubcontractor.serviceTypes.map((service, index) => (
+                            <Badge key={index} variant="secondary">{service}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h3 className="text-lg font-semibold mb-2">Status</h3>
+                      <Select value={status} onValueChange={setStatus}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pending">Pending</SelectItem>
+                          <SelectItem value="approved">Approved</SelectItem>
+                          <SelectItem value="rejected">Rejected</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <h3 className="text-lg font-semibold mb-2">Notes</h3>
+                      <Textarea
+                        value={notes}
+                        onChange={(e) => setNotes(e.target.value)}
+                        placeholder="Add notes about this subcontractor..."
+                        className="min-h-[100px]"
+                      />
+                    </div>
+                  </div>
+                )}
+                
+                {selectedVendor && (
+                  <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <h3 className="text-lg font-semibold">Contact Information</h3>
+                        <div className="space-y-2 mt-2">
+                          <div className="flex items-center gap-2">
+                            <Building className="h-4 w-4 text-muted-foreground" />
+                            <span className="font-medium">{selectedVendor.companyName}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Mail className="h-4 w-4 text-muted-foreground" />
+                            <a href={`mailto:${selectedVendor.email}`} className="text-blue-600 hover:underline">
+                              {selectedVendor.email}
+                            </a>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Phone className="h-4 w-4 text-muted-foreground" />
+                            <a href={`tel:${selectedVendor.phone}`} className="text-blue-600 hover:underline">
+                              {selectedVendor.phone}
+                            </a>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <MapPin className="h-4 w-4 text-muted-foreground" />
+                            <span>
+                              {selectedVendor.address}, {selectedVendor.city}, {selectedVendor.state} {selectedVendor.zip}
+                            </span>
+                          </div>
+                          {selectedVendor.website && (
+                            <div className="flex items-center gap-2">
+                              <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                              <a 
+                                href={selectedVendor.website} 
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:underline"
+                              >
+                                Website
+                              </a>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold">Location</h3>
+                        <div className="mt-2">
+                          <p>{selectedVendor.address}</p>
+                          <p>{selectedVendor.city}, {selectedVendor.state} {selectedVendor.zip}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <h3 className="text-lg font-semibold">Business Information</h3>
+                        <div className="mt-2">
+                          <p>Years in business: <span className="font-medium">{selectedVendor.yearsInBusiness || 'N/A'}</span></p>
+                        </div>
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-semibold">Supply Types</h3>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {selectedVendor.supplyTypes && selectedVendor.supplyTypes.map((supply, index) => (
+                            <Badge key={index} variant="secondary">{supply}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h3 className="text-lg font-semibold mb-2">Status</h3>
+                      <Select value={status} onValueChange={setStatus}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pending">Pending</SelectItem>
+                          <SelectItem value="approved">Approved</SelectItem>
+                          <SelectItem value="rejected">Rejected</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <h3 className="text-lg font-semibold mb-2">Notes</h3>
+                      <Textarea
+                        value={notes}
+                        onChange={(e) => setNotes(e.target.value)}
+                        placeholder="Add notes about this vendor..."
+                        className="min-h-[100px]"
+                      />
+                    </div>
+                  </div>
+                )}
+                
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsDetailsOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button 
+                    onClick={selectedSubcontractor ? saveSubcontractorChanges : saveVendorChanges}
+                  >
+                    Save Changes
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
       </div>
-
-      {/* Subcontractors Tab Content */}
-      {activeTab === 'subcontractors' && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Subcontractor Applications</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoadingSubcontractors ? (
-              <div className="flex justify-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            ) : filteredSubcontractors.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                No subcontractor applications found
-              </div>
-            ) : (
-              <Table>
-                <TableCaption>A list of all subcontractor applications</TableCaption>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Company</TableHead>
-                    <TableHead>Contact</TableHead>
-                    <TableHead>Services</TableHead>
-                    <TableHead>Years in Business</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Date Applied</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredSubcontractors.map((subcontractor) => (
-                    <TableRow key={subcontractor.id} className="cursor-pointer hover:bg-muted/50" onClick={() => viewSubcontractorDetails(subcontractor)}>
-                      <TableCell className="font-medium">{subcontractor.companyName}</TableCell>
-                      <TableCell>
-                        <div>{subcontractor.contactName}</div>
-                        <div className="text-xs text-muted-foreground">{subcontractor.email}</div>
-                      </TableCell>
-                      <TableCell>
-                        {subcontractor.serviceTypes && (
-                          <div className="flex flex-wrap gap-1 max-w-[200px]">
-                            {subcontractor.serviceTypes.slice(0, 2).map((service, i) => (
-                              <Badge key={i} variant="outline" className="text-xs">{service}</Badge>
-                            ))}
-                            {subcontractor.serviceTypes.length > 2 && (
-                              <Badge variant="outline" className="text-xs">+{subcontractor.serviceTypes.length - 2} more</Badge>
-                            )}
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell>{subcontractor.yearsInBusiness || 'N/A'}</TableCell>
-                      <TableCell>{getStatusBadge(subcontractor.status || 'pending')}</TableCell>
-                      <TableCell>{subcontractor.createdAt ? formatDate(subcontractor.createdAt) : 'N/A'}</TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                            <Button variant="ghost" size="sm">
-                              <MoreHorizontal className="h-4 w-4" />
-                              <span className="sr-only">Actions</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => viewSubcontractorDetails(subcontractor)}>
-                              View Details
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteSubcontractor(subcontractor.id);
-                              }} 
-                              className="text-red-600 hover:text-red-600 focus:text-red-600"
-                            >
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Vendors Tab Content */}
-      {activeTab === 'vendors' && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Vendor Applications</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoadingVendors ? (
-              <div className="flex justify-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            ) : filteredVendors.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                No vendor applications found
-              </div>
-            ) : (
-              <Table>
-                <TableCaption>A list of all vendor applications</TableCaption>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Company</TableHead>
-                    <TableHead>Contact</TableHead>
-                    <TableHead>Supply Types</TableHead>
-                    <TableHead>Years in Business</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Date Applied</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredVendors.map((vendor) => (
-                    <TableRow key={vendor.id} className="cursor-pointer hover:bg-muted/50" onClick={() => viewVendorDetails(vendor)}>
-                      <TableCell className="font-medium">{vendor.companyName}</TableCell>
-                      <TableCell>
-                        <div>{vendor.contactName}</div>
-                        <div className="text-xs text-muted-foreground">{vendor.email}</div>
-                      </TableCell>
-                      <TableCell>
-                        {vendor.supplyTypes && (
-                          <div className="flex flex-wrap gap-1 max-w-[200px]">
-                            {vendor.supplyTypes.slice(0, 2).map((supply, i) => (
-                              <Badge key={i} variant="outline" className="text-xs">{supply}</Badge>
-                            ))}
-                            {vendor.supplyTypes.length > 2 && (
-                              <Badge variant="outline" className="text-xs">+{vendor.supplyTypes.length - 2} more</Badge>
-                            )}
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell>{vendor.yearsInBusiness || 'N/A'}</TableCell>
-                      <TableCell>{getStatusBadge(vendor.status || 'pending')}</TableCell>
-                      <TableCell>{vendor.createdAt ? formatDate(vendor.createdAt) : 'N/A'}</TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                            <Button variant="ghost" size="sm">
-                              <MoreHorizontal className="h-4 w-4" />
-                              <span className="sr-only">Actions</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => viewVendorDetails(vendor)}>
-                              View Details
-                            </DropdownMenuItem>
-                            <DropdownMenuItem 
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDeleteVendor(vendor.id);
-                              }} 
-                              className="text-red-600 hover:text-red-600 focus:text-red-600"
-                            >
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            )}
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Details Dialog */}
-      <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-        <DialogContent className="sm:max-w-[700px]">
-          <DialogHeader>
-            <DialogTitle>
-              {selectedSubcontractor 
-                ? `Subcontractor: ${selectedSubcontractor.companyName}`
-                : selectedVendor 
-                  ? `Vendor: ${selectedVendor.companyName}`
-                  : 'Application Details'
-              }
-            </DialogTitle>
-            <DialogDescription>
-              View and update application details
-            </DialogDescription>
-          </DialogHeader>
-          
-          {selectedSubcontractor && (
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <h3 className="text-lg font-semibold">Contact Information</h3>
-                  <div className="space-y-2 mt-2">
-                    <div className="flex items-center gap-2">
-                      <Building className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium">{selectedSubcontractor.companyName}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      <a href={`mailto:${selectedSubcontractor.email}`} className="text-blue-600 hover:underline">
-                        {selectedSubcontractor.email}
-                      </a>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Phone className="h-4 w-4 text-muted-foreground" />
-                      <a href={`tel:${selectedSubcontractor.phone}`} className="text-blue-600 hover:underline">
-                        {selectedSubcontractor.phone}
-                      </a>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-muted-foreground" />
-                      <span>
-                        {selectedSubcontractor.address}, {selectedSubcontractor.city}, {selectedSubcontractor.state} {selectedSubcontractor.zip}
-                      </span>
-                    </div>
-                    {selectedSubcontractor.website && (
-                      <div className="flex items-center gap-2">
-                        <ExternalLink className="h-4 w-4 text-muted-foreground" />
-                        <a 
-                          href={selectedSubcontractor.website} 
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:underline"
-                        >
-                          Website
-                        </a>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold">Location</h3>
-                  <div className="space-y-2 mt-2">
-                    <div className="flex items-start gap-2">
-                      <MapPin className="h-4 w-4 text-muted-foreground mt-1" />
-                      <div>
-                        <div>{selectedSubcontractor.address}</div>
-                        <div>{selectedSubcontractor.city}, {selectedSubcontractor.state} {selectedSubcontractor.zip}</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Services</h3>
-                <div className="text-sm bg-gray-50 p-3 rounded-md">
-                  {selectedSubcontractor.serviceTypes && selectedSubcontractor.serviceTypes.join(', ')}
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Description</h3>
-                <div className="text-sm bg-gray-50 p-3 rounded-md">
-                  {selectedSubcontractor.serviceDescription}
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">Additional Information</h3>
-                  <ul className="text-sm">
-                    <li><span className="font-medium">Years in Business:</span> {selectedSubcontractor.yearsInBusiness}</li>
-                    <li><span className="font-medium">Insurance:</span> {selectedSubcontractor.insurance ? 'Yes' : 'No'}</li>
-                    <li><span className="font-medium">Bondable:</span> {selectedSubcontractor.bondable ? 'Yes' : 'No'}</li>
-                    {selectedSubcontractor.licenses && (
-                      <li><span className="font-medium">Licenses:</span> {selectedSubcontractor.licenses}</li>
-                    )}
-                    {selectedSubcontractor.references && (
-                      <li><span className="font-medium">References:</span> {selectedSubcontractor.references}</li>
-                    )}
-                    {selectedSubcontractor.howDidYouHear && (
-                      <li><span className="font-medium">How they heard about us:</span> {selectedSubcontractor.howDidYouHear}</li>
-                    )}
-                  </ul>
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">Application Status</h3>
-                  <Select value={status} onValueChange={setStatus}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="approved">Approved</SelectItem>
-                      <SelectItem value="rejected">Rejected</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Admin Notes</h3>
-                <Textarea 
-                  value={notes} 
-                  onChange={(e) => setNotes(e.target.value)} 
-                  placeholder="Add notes about this application"
-                  className="min-h-[100px]"
-                />
-              </div>
-            </div>
-          )}
-          
-          {selectedVendor && (
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <h3 className="text-lg font-semibold">Contact Information</h3>
-                  <div className="space-y-2 mt-2">
-                    <div className="flex items-center gap-2">
-                      <Building className="h-4 w-4 text-muted-foreground" />
-                      <span className="font-medium">{selectedVendor.companyName}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      <a href={`mailto:${selectedVendor.email}`} className="text-blue-600 hover:underline">
-                        {selectedVendor.email}
-                      </a>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Phone className="h-4 w-4 text-muted-foreground" />
-                      <a href={`tel:${selectedVendor.phone}`} className="text-blue-600 hover:underline">
-                        {selectedVendor.phone}
-                      </a>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-muted-foreground" />
-                      <span>
-                        {selectedVendor.address}, {selectedVendor.city}, {selectedVendor.state} {selectedVendor.zip}
-                      </span>
-                    </div>
-                    {selectedVendor.website && (
-                      <div className="flex items-center gap-2">
-                        <ExternalLink className="h-4 w-4 text-muted-foreground" />
-                        <a 
-                          href={selectedVendor.website} 
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:underline"
-                        >
-                          Website
-                        </a>
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold">Location</h3>
-                  <div className="space-y-2 mt-2">
-                    <div className="flex items-start gap-2">
-                      <MapPin className="h-4 w-4 text-muted-foreground mt-1" />
-                      <div>
-                        <div>{selectedVendor.address}</div>
-                        <div>{selectedVendor.city}, {selectedVendor.state} {selectedVendor.zip}</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Products</h3>
-                <div className="text-sm bg-gray-50 p-3 rounded-md">
-                  {selectedVendor.supplyTypes && selectedVendor.supplyTypes.join(', ')}
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Description</h3>
-                <div className="text-sm bg-gray-50 p-3 rounded-md">
-                  {selectedVendor.serviceDescription}
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">Additional Information</h3>
-                  <ul className="text-sm">
-                    <li><span className="font-medium">Years in Business:</span> {selectedVendor.yearsInBusiness}</li>
-                    {selectedVendor.references && (
-                      <li><span className="font-medium">References:</span> {selectedVendor.references}</li>
-                    )}
-                    {selectedVendor.howDidYouHear && (
-                      <li><span className="font-medium">How they heard about us:</span> {selectedVendor.howDidYouHear}</li>
-                    )}
-                  </ul>
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold mb-2">Application Status</h3>
-                  <Select value={status} onValueChange={setStatus}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="approved">Approved</SelectItem>
-                      <SelectItem value="rejected">Rejected</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Admin Notes</h3>
-                <Textarea 
-                  value={notes} 
-                  onChange={(e) => setNotes(e.target.value)} 
-                  placeholder="Add notes about this application"
-                  className="min-h-[100px]"
-                />
-              </div>
-            </div>
-          )}
-  
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDetailsOpen(false)}>Cancel</Button>
-            <Button 
-              onClick={selectedSubcontractor ? saveSubcontractorChanges : saveVendorChanges}
-            >
-              Save Changes
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
