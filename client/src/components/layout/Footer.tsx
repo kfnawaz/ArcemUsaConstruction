@@ -1,5 +1,5 @@
 import { Link } from 'wouter';
-import { Facebook, Github, Instagram, Linkedin } from 'lucide-react';
+import { Facebook, Github, Instagram, Linkedin, MapPin, Phone, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import NewsletterSubscription from '@/components/common/NewsletterSubscription';
 
@@ -15,7 +15,7 @@ const Footer = () => {
             <p className="text-gray-400 mb-6 leading-relaxed">
               Premier construction company delivering exceptional quality and innovative solutions for over three decades.
             </p>
-            <div className="flex space-x-4">
+            <div className="flex space-x-4 mb-6">
               <a href="#" className="text-gray-400 hover:text-[#1E90DB] transition-colors" aria-label="Facebook">
                 <Facebook className="w-5 h-5" />
               </a>
@@ -28,6 +28,22 @@ const Footer = () => {
               <a href="#" className="text-gray-400 hover:text-[#1E90DB] transition-colors" aria-label="LinkedIn">
                 <Linkedin className="w-5 h-5" />
               </a>
+            </div>
+            
+            {/* Contact Info with Icons */}
+            <div className="space-y-3 text-gray-400">
+              <div className="flex items-center space-x-3">
+                <MapPin className="w-4 h-4 text-[#1E90DB]" />
+                <span className="text-sm">215 Birch Hill Dr, Sugar Land, TX 77479</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <Phone className="w-4 h-4 text-[#1E90DB]" />
+                <span className="text-sm">(713) 624-0083</span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <Mail className="w-4 h-4 text-[#1E90DB]" />
+                <span className="text-sm">aj@arcemusa.com</span>
+              </div>
             </div>
           </div>
           
