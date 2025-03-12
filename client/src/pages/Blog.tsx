@@ -30,7 +30,7 @@ const Blog = () => {
 
   // Get unique categories from blog posts
   const categories = blogPosts 
-    ? ['all', ...new Set(blogPosts.map(post => post.category))] 
+    ? ['all', ...Array.from(new Set(blogPosts.map(post => post.category)))] 
     : ['all'];
 
   // Filter blog posts based on search query and selected category
@@ -70,7 +70,7 @@ const Blog = () => {
                     onClick={() => setSelectedCategory(category)}
                     className={`px-4 py-2 font-montserrat text-sm transition-colors ${
                       selectedCategory === category 
-                        ? 'bg-[#C09E5E] text-white' 
+                        ? 'bg-[#1E90DB] text-white' 
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                   >
@@ -86,7 +86,7 @@ const Blog = () => {
                   placeholder="Search articles..."
                   value={searchQuery}
                   onChange={handleSearchChange}
-                  className="pl-10 pr-4 py-2 border border-gray-300 focus:border-[#C09E5E] outline-none w-full"
+                  className="pl-10 pr-4 py-2 border border-gray-300 focus:border-[#1E90DB] outline-none w-full"
                 />
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               </div>
@@ -132,11 +132,11 @@ const Blog = () => {
                   title={post.title}
                   excerpt={post.excerpt}
                   imageUrl={post.image}
-                  date={new Date(post.createdAt).toLocaleDateString('en-US', {
+                  date={post.createdAt ? new Date(post.createdAt).toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric'
-                  })}
+                  }) : 'N/A'}
                   category={post.category}
                 />
               ))}
@@ -157,9 +157,9 @@ const Blog = () => {
               <Input
                 type="email"
                 placeholder="Your email address"
-                className="flex-grow py-3 px-4 border border-gray-300 focus:border-[#C09E5E] outline-none"
+                className="flex-grow py-3 px-4 border border-gray-300 focus:border-[#1E90DB] outline-none"
               />
-              <Button variant="gold">
+              <Button variant="default">
                 SUBSCRIBE
               </Button>
             </div>
