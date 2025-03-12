@@ -49,7 +49,7 @@ import { Subcontractor, Vendor } from '@shared/schema';
 
 export default function SubcontractorManagement() {
   const [location, setLocation] = useLocation();
-  const { user, isLoading: isLoadingAuth } = useAuth();
+  const { user, loading: isLoadingAuth } = useAuth();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('subcontractors');
   const [selectedSubcontractor, setSelectedSubcontractor] = useState<Subcontractor | null>(null);
@@ -286,9 +286,9 @@ export default function SubcontractorManagement() {
                     <TableRow key={subcontractor.id}>
                       <TableCell className="font-medium">{subcontractor.companyName}</TableCell>
                       <TableCell>{subcontractor.contactName}</TableCell>
-                      <TableCell className="max-w-[200px] truncate">{subcontractor.services}</TableCell>
-                      <TableCell>{getStatusBadge(subcontractor.status)}</TableCell>
-                      <TableCell>{formatDate(subcontractor.createdAt)}</TableCell>
+                      <TableCell className="max-w-[200px] truncate">{subcontractor.serviceDescription}</TableCell>
+                      <TableCell>{getStatusBadge(subcontractor.status || 'pending')}</TableCell>
+                      <TableCell>{subcontractor.createdAt ? formatDate(subcontractor.createdAt) : 'N/A'}</TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -349,9 +349,9 @@ export default function SubcontractorManagement() {
                     <TableRow key={vendor.id}>
                       <TableCell className="font-medium">{vendor.companyName}</TableCell>
                       <TableCell>{vendor.contactName}</TableCell>
-                      <TableCell className="max-w-[200px] truncate">{vendor.products}</TableCell>
-                      <TableCell>{getStatusBadge(vendor.status)}</TableCell>
-                      <TableCell>{formatDate(vendor.createdAt)}</TableCell>
+                      <TableCell className="max-w-[200px] truncate">{vendor.serviceDescription}</TableCell>
+                      <TableCell>{getStatusBadge(vendor.status || 'pending')}</TableCell>
+                      <TableCell>{vendor.createdAt ? formatDate(vendor.createdAt) : 'N/A'}</TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -450,7 +450,7 @@ export default function SubcontractorManagement() {
               <div>
                 <h3 className="text-lg font-semibold mb-2">Services</h3>
                 <div className="text-sm bg-gray-50 p-3 rounded-md">
-                  {selectedSubcontractor.services}
+                  {selectedSubcontractor.serviceTypes && selectedSubcontractor.serviceTypes.join(', ')}
                 </div>
               </div>
               
@@ -474,8 +474,8 @@ export default function SubcontractorManagement() {
                     {selectedSubcontractor.references && (
                       <li><span className="font-medium">References:</span> {selectedSubcontractor.references}</li>
                     )}
-                    {selectedSubcontractor.howHeardAboutUs && (
-                      <li><span className="font-medium">How they heard about us:</span> {selectedSubcontractor.howHeardAboutUs}</li>
+                    {selectedSubcontractor.howDidYouHear && (
+                      <li><span className="font-medium">How they heard about us:</span> {selectedSubcontractor.howDidYouHear}</li>
                     )}
                   </ul>
                 </div>
@@ -560,14 +560,14 @@ export default function SubcontractorManagement() {
               <div>
                 <h3 className="text-lg font-semibold mb-2">Products</h3>
                 <div className="text-sm bg-gray-50 p-3 rounded-md">
-                  {selectedVendor.products}
+                  {selectedVendor.supplyTypes && selectedVendor.supplyTypes.join(', ')}
                 </div>
               </div>
               
               <div>
                 <h3 className="text-lg font-semibold mb-2">Description</h3>
                 <div className="text-sm bg-gray-50 p-3 rounded-md">
-                  {selectedVendor.productDescription}
+                  {selectedVendor.serviceDescription}
                 </div>
               </div>
               
@@ -579,8 +579,8 @@ export default function SubcontractorManagement() {
                     {selectedVendor.references && (
                       <li><span className="font-medium">References:</span> {selectedVendor.references}</li>
                     )}
-                    {selectedVendor.howHeardAboutUs && (
-                      <li><span className="font-medium">How they heard about us:</span> {selectedVendor.howHeardAboutUs}</li>
+                    {selectedVendor.howDidYouHear && (
+                      <li><span className="font-medium">How they heard about us:</span> {selectedVendor.howDidYouHear}</li>
                     )}
                   </ul>
                 </div>
