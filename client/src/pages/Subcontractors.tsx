@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLocation } from 'wouter';
 import { Badge } from '@/components/ui/badge';
 import { X } from 'lucide-react';
+import { useSubcontractors } from '@/hooks/useSubcontractors';
 
 // Form schema
 const formSchema = z.object({
@@ -46,6 +47,7 @@ const Subcontractors = () => {
   const [activeTab, setActiveTab] = useState("subcontractor");
   const { toast } = useToast();
   const [location] = useLocation();
+  const { submitSubcontractorApplication, submitVendorApplication } = useSubcontractors();
 
   // Check for tab parameter in URL
   useEffect(() => {
@@ -90,24 +92,62 @@ const Subcontractors = () => {
     setIsSubmitting(true);
     
     try {
-      // In a real application, this would be an API call to save the form data
-      console.log('Form submitted:', data);
+      // Convert form data to the appropriate format based on the active tab
+      if (activeTab === "subcontractor") {
+        const subcontractorData = {
+          companyName: data.companyName,
+          contactName: data.contactName,
+          email: data.email,
+          phone: data.phone,
+          address: data.address,
+          city: data.city,
+          state: data.state,
+          zip: data.zip,
+          website: data.website || null,
+          services: data.serviceTypes.join(", "),
+          serviceDescription: data.serviceDescription,
+          yearsInBusiness: data.yearsInBusiness,
+          insurance: data.insurance,
+          bondable: data.bondable,
+          licenses: data.licenses || "",
+          references: data.references || "",
+          howHeardAboutUs: data.howDidYouHear || "",
+          status: "pending",
+          notes: "",
+        };
+        
+        // Submit subcontractor application
+        await submitSubcontractorApplication(subcontractorData);
+      } else {
+        // Vendor application
+        const vendorData = {
+          companyName: data.companyName,
+          contactName: data.contactName,
+          email: data.email,
+          phone: data.phone,
+          address: data.address,
+          city: data.city,
+          state: data.state,
+          zip: data.zip,
+          website: data.website || null,
+          products: data.supplyTypes.join(", "),
+          productDescription: data.serviceDescription,
+          yearsInBusiness: data.yearsInBusiness,
+          references: data.references || "",
+          howHeardAboutUs: data.howDidYouHear || "",
+          status: "pending",
+          notes: "",
+        };
+        
+        // Submit vendor application
+        await submitVendorApplication(vendorData);
+      }
       
-      // Simulate API request
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      toast({
-        title: "Registration received",
-        description: "Thank you for your interest. Your registration has been submitted successfully.",
-      });
-      
+      // Reset form after successful submission
       form.reset();
     } catch (error) {
-      toast({
-        title: "Error submitting form",
-        description: "There was an error submitting your registration. Please try again.",
-        variant: "destructive",
-      });
+      // Error handling is done in the hook itself with the toast notifications
+      console.error("Error submitting application:", error);
     } finally {
       setIsSubmitting(false);
     }
