@@ -34,14 +34,14 @@ const ServiceCard = ({ icon, title, description, id }: ServiceCardProps) => {
 
   return (
     <div className="bg-white p-8 shadow-lg hover-scale reveal">
-      <div className="text-[#C09E5E] mb-6">
+      <div className="text-[#1E90DB] mb-6">
         {getIcon(icon)}
       </div>
       <h4 className="text-xl font-montserrat font-bold mb-4">{title}</h4>
       <p className="text-gray-600 mb-6 leading-relaxed">
         {description}
       </p>
-      <Link href={`/services/${id}/${slug}`} className="text-[#C09E5E] hover:text-[#A98D54] font-montserrat text-sm font-medium inline-flex items-center cursor-pointer">
+      <Link href={`/services/${id}/${slug}`} className="text-[#1E90DB] hover:text-[#1670B0] font-montserrat text-sm font-medium inline-flex items-center cursor-pointer">
         LEARN MORE
         <ArrowRight className="w-4 h-4 ml-2" />
       </Link>
