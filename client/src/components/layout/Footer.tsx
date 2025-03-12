@@ -68,19 +68,12 @@ const Footer = () => {
         </div>
         
         <div className="border-t border-gray-800 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center text-gray-400 text-sm">
-            <div className="mb-6 md:mb-0 text-left">
-              <div className="mb-1"><span className="text-[#1E90DB] font-medium">Address:</span> 123 Construction Ave, Suite 101, New York, NY 10001</div>
-              <div className="mb-1"><span className="text-[#1E90DB] font-medium">Phone:</span> (555) 123-4567</div>
-              <div className="mb-1"><span className="text-[#1E90DB] font-medium">Email:</span> <a href="mailto:info@arcemusa.com" className="hover:text-white transition-colors">info@arcemusa.com</a></div>
-            </div>
-            <div className="flex flex-col items-center md:items-end">
-              <p className="mb-4 text-center md:text-right">&copy; {new Date().getFullYear()} ARCEMUSA Construction Company. All rights reserved.</p>
-              <div className="flex flex-wrap justify-center md:justify-end gap-4 md:gap-6">
-                <a href="#" className="hover:text-[#1E90DB] transition-colors">Privacy Policy</a>
-                <a href="#" className="hover:text-[#1E90DB] transition-colors">Terms of Service</a>
-                <a href="#" className="hover:text-[#1E90DB] transition-colors">Sitemap</a>
-              </div>
+          <div className="flex flex-col md:flex-col justify-center items-center text-gray-400 text-sm">
+            <p className="text-center mb-4">&copy; {new Date().getFullYear()} ARCEMUSA Construction Company. All rights reserved.</p>
+            <div className="flex space-x-6 mt-2 md:mt-2">
+              <a href="#" className="hover:text-[#1E90DB] transition-colors">Privacy Policy</a>
+              <a href="#" className="hover:text-[#1E90DB] transition-colors">Terms of Service</a>
+              <a href="#" className="hover:text-[#1E90DB] transition-colors">Sitemap</a>
             </div>
           </div>
         </div>
