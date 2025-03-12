@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, primaryKey, foreignKey } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, primaryKey, foreignKey, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { relations } from "drizzle-orm";
 import { z } from "zod";
@@ -384,3 +384,69 @@ export const insertQuoteRequestSchema = createInsertSchema(quoteRequests).omit({
 
 export type QuoteRequest = typeof quoteRequests.$inferSelect;
 export type InsertQuoteRequest = z.infer<typeof insertQuoteRequestSchema>;
+
+// Subcontractors table
+export const subcontractors = pgTable("subcontractors", {
+  id: serial("id").primaryKey(),
+  companyName: text("company_name").notNull(),
+  contactName: text("contact_name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone").notNull(),
+  address: text("address").notNull(),
+  city: text("city").notNull(),
+  state: text("state").notNull(),
+  zip: text("zip").notNull(),
+  website: text("website"),
+  serviceTypes: text("service_types").array(),
+  serviceDescription: text("service_description").notNull(),
+  yearsInBusiness: text("years_in_business").notNull(),
+  insurance: boolean("insurance").default(false),
+  bondable: boolean("bondable").default(false),
+  licenses: text("licenses"),
+  references: text("references"),
+  howDidYouHear: text("how_did_you_hear"),
+  status: text("status").default("pending"), // pending, approved, rejected
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertSubcontractorSchema = createInsertSchema(subcontractors).omit({
+  id: true,
+  status: true,
+  notes: true,
+  createdAt: true
+});
+
+// Vendors table
+export const vendors = pgTable("vendors", {
+  id: serial("id").primaryKey(),
+  companyName: text("company_name").notNull(),
+  contactName: text("contact_name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone").notNull(),
+  address: text("address").notNull(),
+  city: text("city").notNull(),
+  state: text("state").notNull(),
+  zip: text("zip").notNull(),
+  website: text("website"),
+  supplyTypes: text("supply_types").array(),
+  serviceDescription: text("service_description").notNull(),
+  yearsInBusiness: text("years_in_business").notNull(),
+  references: text("references"),
+  howDidYouHear: text("how_did_you_hear"),
+  status: text("status").default("pending"), // pending, approved, rejected
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertVendorSchema = createInsertSchema(vendors).omit({
+  id: true,
+  status: true,
+  notes: true,
+  createdAt: true
+});
+
+export type Subcontractor = typeof subcontractors.$inferSelect;
+export type InsertSubcontractor = z.infer<typeof insertSubcontractorSchema>;
+export type Vendor = typeof vendors.$inferSelect;
+export type InsertVendor = z.infer<typeof insertVendorSchema>;
