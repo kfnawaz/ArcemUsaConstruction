@@ -90,6 +90,14 @@ const Subcontractors = () => {
 
   const onSubmit = async (data: FormValues) => {
     console.log("Form submission started", { data, activeTab });
+    
+    // Log form errors to help debug validation issues
+    console.log("Form state:", form.formState);
+    if (Object.keys(form.formState.errors).length > 0) {
+      console.error("Form has validation errors:", form.formState.errors);
+      return; // Don't proceed if there are validation errors
+    }
+    
     setIsSubmitting(true);
     
     try {
@@ -177,14 +185,28 @@ const Subcontractors = () => {
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger 
                   value="subcontractor" 
-                  onClick={() => setActiveTab("subcontractor")}
+                  onClick={() => {
+                    console.log("Switching to subcontractor tab");
+                    setActiveTab("subcontractor");
+                    // Clear any previous errors
+                    form.clearErrors();
+                    // Reset specific fields for subcontractor form
+                    form.setValue("serviceTypes", []);
+                  }}
                   className="text-lg font-medium"
                 >
                   Subcontractor Registration
                 </TabsTrigger>
                 <TabsTrigger 
                   value="vendor" 
-                  onClick={() => setActiveTab("vendor")}
+                  onClick={() => {
+                    console.log("Switching to vendor tab");
+                    setActiveTab("vendor");
+                    // Clear any previous errors
+                    form.clearErrors();
+                    // Reset specific fields for vendor form
+                    form.setValue("supplyTypes", []);
+                  }}
                   className="text-lg font-medium"
                 >
                   Vendor Registration
