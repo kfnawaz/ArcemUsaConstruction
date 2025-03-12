@@ -27,7 +27,7 @@ import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfService from "@/pages/TermsOfService";
 import Sitemap from "@/pages/Sitemap";
 import JoinUs from "@/pages/JoinUs";
-import Subcontractors from "@/pages/Subcontractors";
+import SubcontractorVendorRegistration from "@/pages/SubcontractorVendorRegistration";
 import Login from "@/pages/auth/Login";
 import Dashboard from "@/pages/admin/Dashboard";
 import ProjectManagement from "@/pages/admin/ProjectManagement";
@@ -123,7 +123,7 @@ function Router() {
           <Route path="/terms-of-service" component={TermsOfService} />
           <Route path="/sitemap" component={Sitemap} />
           <Route path="/join-us" component={JoinUs} />
-          <Route path="/subcontractors" component={Subcontractors} />
+          <Route path="/subcontractors" component={SubcontractorVendorRegistration} />
           <Route path="/auth">
             <Login />
           </Route>
