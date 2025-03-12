@@ -10,10 +10,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { scrollToTop } from '@/lib/utils';
+import { scrollToTop, cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useLocation } from 'wouter';
+import { Badge } from '@/components/ui/badge';
+import { X } from 'lucide-react';
 
 // Form schema
 const formSchema = z.object({
@@ -26,7 +28,8 @@ const formSchema = z.object({
   state: z.string().min(2, { message: 'State is required' }),
   zip: z.string().min(5, { message: 'ZIP code is required' }),
   website: z.string().optional(),
-  serviceType: z.string().min(1, { message: 'Please select a service type' }),
+  serviceTypes: z.array(z.string()).min(1, { message: 'Please select at least one service type' }),
+  supplyTypes: z.array(z.string()).min(1, { message: 'Please select at least one product/supply type' }),
   serviceDescription: z.string().min(10, { message: 'Please provide a brief description of your services' }),
   yearsInBusiness: z.string().min(1, { message: 'Years in business is required' }),
   insurance: z.boolean(),
@@ -71,7 +74,8 @@ const Subcontractors = () => {
       state: '',
       zip: '',
       website: '',
-      serviceType: '',
+      serviceTypes: [],
+      supplyTypes: [],
       serviceDescription: '',
       yearsInBusiness: '',
       insurance: false,
@@ -293,36 +297,60 @@ const Subcontractors = () => {
 
                         <FormField
                           control={form.control}
-                          name="serviceType"
+                          name="serviceTypes"
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Service Type *</FormLabel>
-                              <Select 
-                                onValueChange={field.onChange} 
-                                defaultValue={field.value}
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select service type" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="concrete">Concrete</SelectItem>
-                                  <SelectItem value="carpentry">Carpentry</SelectItem>
-                                  <SelectItem value="electrical">Electrical</SelectItem>
-                                  <SelectItem value="plumbing">Plumbing</SelectItem>
-                                  <SelectItem value="hvac">HVAC</SelectItem>
-                                  <SelectItem value="roofing">Roofing</SelectItem>
-                                  <SelectItem value="drywall">Drywall</SelectItem>
-                                  <SelectItem value="painting">Painting</SelectItem>
-                                  <SelectItem value="flooring">Flooring</SelectItem>
-                                  <SelectItem value="landscaping">Landscaping</SelectItem>
-                                  <SelectItem value="masonry">Masonry</SelectItem>
-                                  <SelectItem value="glazing">Glazing</SelectItem>
-                                  <SelectItem value="steel">Steel/Metal Work</SelectItem>
-                                  <SelectItem value="other">Other (Please specify)</SelectItem>
-                                </SelectContent>
-                              </Select>
+                              <div className="flex flex-col space-y-4">
+                                <div className="flex flex-wrap gap-2">
+                                  {field.value.map((service) => (
+                                    <Badge key={service} className="py-1.5 px-2 flex items-center gap-1">
+                                      {service.charAt(0).toUpperCase() + service.slice(1)}
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-4 w-4 p-0 hover:bg-transparent"
+                                        onClick={() => {
+                                          const newValue = field.value.filter((s) => s !== service);
+                                          field.onChange(newValue);
+                                        }}
+                                      >
+                                        <X className="h-3 w-3" />
+                                      </Button>
+                                    </Badge>
+                                  ))}
+                                </div>
+                                <Select
+                                  onValueChange={(value) => {
+                                    if (!field.value.includes(value)) {
+                                      field.onChange([...field.value, value]);
+                                    }
+                                  }}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select service type" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="concrete">Concrete</SelectItem>
+                                    <SelectItem value="carpentry">Carpentry</SelectItem>
+                                    <SelectItem value="electrical">Electrical</SelectItem>
+                                    <SelectItem value="plumbing">Plumbing</SelectItem>
+                                    <SelectItem value="hvac">HVAC</SelectItem>
+                                    <SelectItem value="roofing">Roofing</SelectItem>
+                                    <SelectItem value="drywall">Drywall</SelectItem>
+                                    <SelectItem value="painting">Painting</SelectItem>
+                                    <SelectItem value="flooring">Flooring</SelectItem>
+                                    <SelectItem value="landscaping">Landscaping</SelectItem>
+                                    <SelectItem value="masonry">Masonry</SelectItem>
+                                    <SelectItem value="glazing">Glazing</SelectItem>
+                                    <SelectItem value="steel">Steel/Metal Work</SelectItem>
+                                    <SelectItem value="other">Other (Please specify)</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
                               <FormMessage />
                             </FormItem>
                           )}
