@@ -18,7 +18,9 @@ export const useSubcontractors = () => {
     error: subcontractorsError 
   } = useQuery<Subcontractor[]>({
     queryKey: ["/api/admin/subcontractors"],
-    enabled: false // Only load when explicitly needed in admin pages
+    enabled: true, // Load automatically for admin pages
+    refetchOnWindowFocus: true,
+    staleTime: 30000 // 30 seconds
   });
 
   // For admin: Get all vendor applications
@@ -28,7 +30,9 @@ export const useSubcontractors = () => {
     error: vendorsError 
   } = useQuery<Vendor[]>({
     queryKey: ["/api/admin/vendors"],
-    enabled: false // Only load when explicitly needed in admin pages
+    enabled: true, // Load automatically for admin pages
+    refetchOnWindowFocus: true,
+    staleTime: 30000 // 30 seconds
   });
 
   // Enhanced submit subcontractor application with better validation and error handling

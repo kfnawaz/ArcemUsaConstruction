@@ -224,7 +224,66 @@ export default function SubcontractorManagement() {
 
   return (
     <div className="container mx-auto py-10 px-4 md:px-6">
-      <h1 className="text-3xl font-bold mb-8">Subcontractor & Vendor Management</h1>
+      <h1 className="text-3xl font-bold mb-6">Subcontractor & Vendor Management</h1>
+
+      {/* Dashboard Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <Card className="bg-blue-50">
+          <CardContent className="p-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Total Subcontractors</p>
+                <h3 className="text-2xl font-bold">{subcontractors.length}</h3>
+              </div>
+              <div className="rounded-full p-2 bg-blue-100">
+                <Building className="h-5 w-5 text-blue-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-green-50">
+          <CardContent className="p-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Approved Subcontractors</p>
+                <h3 className="text-2xl font-bold">{subcontractors.filter(s => s.status === 'approved').length}</h3>
+              </div>
+              <div className="rounded-full p-2 bg-green-100">
+                <Building className="h-5 w-5 text-green-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-amber-50">
+          <CardContent className="p-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Total Vendors</p>
+                <h3 className="text-2xl font-bold">{vendors.length}</h3>
+              </div>
+              <div className="rounded-full p-2 bg-amber-100">
+                <Building className="h-5 w-5 text-amber-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-purple-50">
+          <CardContent className="p-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Approved Vendors</p>
+                <h3 className="text-2xl font-bold">{vendors.filter(v => v.status === 'approved').length}</h3>
+              </div>
+              <div className="rounded-full p-2 bg-purple-100">
+                <Building className="h-5 w-5 text-purple-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       <div className="flex flex-col sm:flex-row gap-4 mb-6 items-start sm:items-center justify-between">
         <Tabs defaultValue={activeTab} className="w-full" onValueChange={setActiveTab}>
@@ -276,6 +335,7 @@ export default function SubcontractorManagement() {
                     <TableHead>Company</TableHead>
                     <TableHead>Contact</TableHead>
                     <TableHead>Services</TableHead>
+                    <TableHead>Years in Business</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Date Applied</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -283,15 +343,30 @@ export default function SubcontractorManagement() {
                 </TableHeader>
                 <TableBody>
                   {filteredSubcontractors.map((subcontractor) => (
-                    <TableRow key={subcontractor.id}>
+                    <TableRow key={subcontractor.id} className="cursor-pointer hover:bg-muted/50" onClick={() => viewSubcontractorDetails(subcontractor)}>
                       <TableCell className="font-medium">{subcontractor.companyName}</TableCell>
-                      <TableCell>{subcontractor.contactName}</TableCell>
-                      <TableCell className="max-w-[200px] truncate">{subcontractor.serviceDescription}</TableCell>
+                      <TableCell>
+                        <div>{subcontractor.contactName}</div>
+                        <div className="text-xs text-muted-foreground">{subcontractor.email}</div>
+                      </TableCell>
+                      <TableCell>
+                        {subcontractor.serviceTypes && (
+                          <div className="flex flex-wrap gap-1 max-w-[200px]">
+                            {subcontractor.serviceTypes.slice(0, 2).map((service, i) => (
+                              <Badge key={i} variant="outline" className="text-xs">{service}</Badge>
+                            ))}
+                            {subcontractor.serviceTypes.length > 2 && (
+                              <Badge variant="outline" className="text-xs">+{subcontractor.serviceTypes.length - 2} more</Badge>
+                            )}
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell>{subcontractor.yearsInBusiness || 'N/A'}</TableCell>
                       <TableCell>{getStatusBadge(subcontractor.status || 'pending')}</TableCell>
                       <TableCell>{subcontractor.createdAt ? formatDate(subcontractor.createdAt) : 'N/A'}</TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
+                          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                             <Button variant="ghost" size="sm">
                               <MoreHorizontal className="h-4 w-4" />
                               <span className="sr-only">Actions</span>
@@ -301,7 +376,13 @@ export default function SubcontractorManagement() {
                             <DropdownMenuItem onClick={() => viewSubcontractorDetails(subcontractor)}>
                               View Details
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDeleteSubcontractor(subcontractor.id)}>
+                            <DropdownMenuItem 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteSubcontractor(subcontractor.id);
+                              }} 
+                              className="text-red-600 hover:text-red-600 focus:text-red-600"
+                            >
                               Delete
                             </DropdownMenuItem>
                           </DropdownMenuContent>
@@ -338,7 +419,8 @@ export default function SubcontractorManagement() {
                   <TableRow>
                     <TableHead>Company</TableHead>
                     <TableHead>Contact</TableHead>
-                    <TableHead>Products</TableHead>
+                    <TableHead>Supply Types</TableHead>
+                    <TableHead>Years in Business</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Date Applied</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
@@ -346,15 +428,30 @@ export default function SubcontractorManagement() {
                 </TableHeader>
                 <TableBody>
                   {filteredVendors.map((vendor) => (
-                    <TableRow key={vendor.id}>
+                    <TableRow key={vendor.id} className="cursor-pointer hover:bg-muted/50" onClick={() => viewVendorDetails(vendor)}>
                       <TableCell className="font-medium">{vendor.companyName}</TableCell>
-                      <TableCell>{vendor.contactName}</TableCell>
-                      <TableCell className="max-w-[200px] truncate">{vendor.serviceDescription}</TableCell>
+                      <TableCell>
+                        <div>{vendor.contactName}</div>
+                        <div className="text-xs text-muted-foreground">{vendor.email}</div>
+                      </TableCell>
+                      <TableCell>
+                        {vendor.supplyTypes && (
+                          <div className="flex flex-wrap gap-1 max-w-[200px]">
+                            {vendor.supplyTypes.slice(0, 2).map((supply, i) => (
+                              <Badge key={i} variant="outline" className="text-xs">{supply}</Badge>
+                            ))}
+                            {vendor.supplyTypes.length > 2 && (
+                              <Badge variant="outline" className="text-xs">+{vendor.supplyTypes.length - 2} more</Badge>
+                            )}
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell>{vendor.yearsInBusiness || 'N/A'}</TableCell>
                       <TableCell>{getStatusBadge(vendor.status || 'pending')}</TableCell>
                       <TableCell>{vendor.createdAt ? formatDate(vendor.createdAt) : 'N/A'}</TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
+                          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
                             <Button variant="ghost" size="sm">
                               <MoreHorizontal className="h-4 w-4" />
                               <span className="sr-only">Actions</span>
@@ -364,7 +461,13 @@ export default function SubcontractorManagement() {
                             <DropdownMenuItem onClick={() => viewVendorDetails(vendor)}>
                               View Details
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDeleteVendor(vendor.id)}>
+                            <DropdownMenuItem 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteVendor(vendor.id);
+                              }} 
+                              className="text-red-600 hover:text-red-600 focus:text-red-600"
+                            >
                               Delete
                             </DropdownMenuItem>
                           </DropdownMenuContent>
@@ -404,7 +507,7 @@ export default function SubcontractorManagement() {
                   <div className="space-y-2 mt-2">
                     <div className="flex items-center gap-2">
                       <Building className="h-4 w-4 text-muted-foreground" />
-                      <span>{selectedSubcontractor.companyName}</span>
+                      <span className="font-medium">{selectedSubcontractor.companyName}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Mail className="h-4 w-4 text-muted-foreground" />
@@ -417,6 +520,12 @@ export default function SubcontractorManagement() {
                       <a href={`tel:${selectedSubcontractor.phone}`} className="text-blue-600 hover:underline">
                         {selectedSubcontractor.phone}
                       </a>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4 text-muted-foreground" />
+                      <span>
+                        {selectedSubcontractor.address}, {selectedSubcontractor.city}, {selectedSubcontractor.state} {selectedSubcontractor.zip}
+                      </span>
                     </div>
                     {selectedSubcontractor.website && (
                       <div className="flex items-center gap-2">
@@ -514,7 +623,7 @@ export default function SubcontractorManagement() {
                   <div className="space-y-2 mt-2">
                     <div className="flex items-center gap-2">
                       <Building className="h-4 w-4 text-muted-foreground" />
-                      <span>{selectedVendor.companyName}</span>
+                      <span className="font-medium">{selectedVendor.companyName}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Mail className="h-4 w-4 text-muted-foreground" />
@@ -527,6 +636,12 @@ export default function SubcontractorManagement() {
                       <a href={`tel:${selectedVendor.phone}`} className="text-blue-600 hover:underline">
                         {selectedVendor.phone}
                       </a>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4 text-muted-foreground" />
+                      <span>
+                        {selectedVendor.address}, {selectedVendor.city}, {selectedVendor.state} {selectedVendor.zip}
+                      </span>
                     </div>
                     {selectedVendor.website && (
                       <div className="flex items-center gap-2">
