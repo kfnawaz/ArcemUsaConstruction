@@ -16,16 +16,16 @@ const Footer = () => {
               Premier construction company delivering exceptional quality and innovative solutions for over three decades.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-[#C09E5E] transition-colors" aria-label="Facebook">
+              <a href="#" className="text-gray-400 hover:text-[#1E90DB] transition-colors" aria-label="Facebook">
                 <Facebook className="w-5 h-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-[#C09E5E] transition-colors" aria-label="GitHub">
+              <a href="#" className="text-gray-400 hover:text-[#1E90DB] transition-colors" aria-label="GitHub">
                 <Github className="w-5 h-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-[#C09E5E] transition-colors" aria-label="Instagram">
+              <a href="#" className="text-gray-400 hover:text-[#1E90DB] transition-colors" aria-label="Instagram">
                 <Instagram className="w-5 h-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-[#C09E5E] transition-colors" aria-label="LinkedIn">
+              <a href="#" className="text-gray-400 hover:text-[#1E90DB] transition-colors" aria-label="LinkedIn">
                 <Linkedin className="w-5 h-5" />
               </a>
             </div>
@@ -34,24 +34,24 @@ const Footer = () => {
           <div>
             <h5 className="text-white font-montserrat font-bold mb-6">Quick Links</h5>
             <ul className="space-y-3">
-              <li><Link href="/" className="text-gray-400 hover:text-[#C09E5E] transition-colors">Home</Link></li>
-              <li><Link href="/about" className="text-gray-400 hover:text-[#C09E5E] transition-colors">About Us</Link></li>
-              <li><Link href="/services" className="text-gray-400 hover:text-[#C09E5E] transition-colors">Services</Link></li>
-              <li><Link href="/projects" className="text-gray-400 hover:text-[#C09E5E] transition-colors">Projects</Link></li>
-              <li><Link href="/blog" className="text-gray-400 hover:text-[#C09E5E] transition-colors">Blog</Link></li>
-              <li><Link href="/contact" className="text-gray-400 hover:text-[#C09E5E] transition-colors">Contact</Link></li>
+              <li><Link href="/" className="text-gray-400 hover:text-[#1E90DB] transition-colors">Home</Link></li>
+              <li><Link href="/about" className="text-gray-400 hover:text-[#1E90DB] transition-colors">About Us</Link></li>
+              <li><Link href="/services" className="text-gray-400 hover:text-[#1E90DB] transition-colors">Services</Link></li>
+              <li><Link href="/projects" className="text-gray-400 hover:text-[#1E90DB] transition-colors">Projects</Link></li>
+              <li><Link href="/blog" className="text-gray-400 hover:text-[#1E90DB] transition-colors">Blog</Link></li>
+              <li><Link href="/contact" className="text-gray-400 hover:text-[#1E90DB] transition-colors">Contact</Link></li>
             </ul>
           </div>
           
           <div>
             <h5 className="text-white font-montserrat font-bold mb-6">Our Services</h5>
             <ul className="space-y-3">
-              <li><a href="/services" className="text-gray-400 hover:text-[#C09E5E] transition-colors">Commercial Construction</a></li>
-              <li><a href="/services" className="text-gray-400 hover:text-[#C09E5E] transition-colors">Residential Construction</a></li>
-              <li><a href="/services" className="text-gray-400 hover:text-[#C09E5E] transition-colors">Renovation & Remodeling</a></li>
-              <li><a href="/services" className="text-gray-400 hover:text-[#C09E5E] transition-colors">Project Planning & Design</a></li>
-              <li><a href="/services" className="text-gray-400 hover:text-[#C09E5E] transition-colors">Industrial Construction</a></li>
-              <li><a href="/services" className="text-gray-400 hover:text-[#C09E5E] transition-colors">Construction Management</a></li>
+              <li><a href="/services" className="text-gray-400 hover:text-[#1E90DB] transition-colors">Commercial Construction</a></li>
+              <li><a href="/services" className="text-gray-400 hover:text-[#1E90DB] transition-colors">Residential Construction</a></li>
+              <li><a href="/services" className="text-gray-400 hover:text-[#1E90DB] transition-colors">Renovation & Remodeling</a></li>
+              <li><a href="/services" className="text-gray-400 hover:text-[#1E90DB] transition-colors">Project Planning & Design</a></li>
+              <li><a href="/services" className="text-gray-400 hover:text-[#1E90DB] transition-colors">Industrial Construction</a></li>
+              <li><a href="/services" className="text-gray-400 hover:text-[#1E90DB] transition-colors">Construction Management</a></li>
             </ul>
           </div>
           
@@ -71,9 +71,9 @@ const Footer = () => {
           <div className="flex flex-col md:flex-col justify-center items-center text-gray-400 text-sm">
             <p className="text-center mb-4">&copy; {new Date().getFullYear()} ARCEMUSA Construction Company. All rights reserved.</p>
             <div className="flex space-x-6 mt-2 md:mt-2">
-              <a href="#" className="hover:text-[#C09E5E] transition-colors">Privacy Policy</a>
-              <a href="#" className="hover:text-[#C09E5E] transition-colors">Terms of Service</a>
-              <a href="#" className="hover:text-[#C09E5E] transition-colors">Sitemap</a>
+              <a href="#" className="hover:text-[#1E90DB] transition-colors">Privacy Policy</a>
+              <a href="#" className="hover:text-[#1E90DB] transition-colors">Terms of Service</a>
+              <a href="#" className="hover:text-[#1E90DB] transition-colors">Sitemap</a>
             </div>
           </div>
         </div>

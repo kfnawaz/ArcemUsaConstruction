@@ -104,11 +104,11 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
                   location === item.href ? "text-[#47A6ED]" : ""
                 )}
               >
-                <span className="relative z-10 transition-colors duration-300 group-hover:text-[#e0c080]">
+                <span className="relative z-10 transition-colors duration-300 group-hover:text-[#47A6ED]">
                   {item.label}
                 </span>
                 <span className={cn(
-                  "absolute bottom-0 left-0 w-0 h-0.5 bg-[#e0c080] transition-all duration-300 group-hover:w-full",
+                  "absolute bottom-0 left-0 w-0 h-0.5 bg-[#47A6ED] transition-all duration-300 group-hover:w-full",
                   location === item.href ? "w-full" : "w-0"
                 )}></span>
               </Link>
@@ -118,7 +118,7 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
             {/* Login/Admin Button */}
             <Link 
               href={isAuthenticated ? "/admin" : "/auth/login"} 
-              className="bg-[#C09E5E] hover:bg-[#A98D54] text-white px-4 py-2 rounded-sm flex items-center space-x-1 font-montserrat text-sm transition-colors"
+              className="bg-[#1E90DB] hover:bg-[#1670B0] text-white px-4 py-2 rounded-sm flex items-center space-x-1 font-montserrat text-sm transition-colors"
             >
               <User className="w-4 h-4 mr-1" />
               {isAuthenticated ? "ADMIN" : "LOGIN"}
@@ -159,11 +159,11 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
                 )}
                 onClick={closeMobileMenu}
               >
-                <span className="relative z-10 transition-colors duration-300 group-hover:text-[#e0c080]">
+                <span className="relative z-10 transition-colors duration-300 group-hover:text-[#47A6ED]">
                   {item.label}
                 </span>
                 <span className={cn(
-                  "absolute bottom-0 left-0 w-0 h-0.5 bg-[#e0c080] transition-all duration-300 group-hover:w-full",
+                  "absolute bottom-0 left-0 w-0 h-0.5 bg-[#47A6ED] transition-all duration-300 group-hover:w-full",
                   location === item.href ? "w-full" : "w-0"
                 )}></span>
               </Link>
@@ -173,7 +173,7 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
             {/* Mobile Login/Admin Button */}
             <Link 
               href={isAuthenticated ? "/admin" : "/auth/login"}
-              className="bg-[#C09E5E] hover:bg-[#A98D54] text-white px-4 py-2 rounded-sm flex items-center justify-center space-x-1 font-montserrat text-sm transition-colors"
+              className="bg-[#1E90DB] hover:bg-[#1670B0] text-white px-4 py-2 rounded-sm flex items-center justify-center space-x-1 font-montserrat text-sm transition-colors"
               onClick={closeMobileMenu}
             >
               <User className="w-4 h-4 mr-1" />
