@@ -25,7 +25,7 @@ const TestimonialCard = ({ name, position, company, content, rating, image }: Te
       stars.push(
         <Star 
           key={`star-${i}`} 
-          className="h-4 w-4 fill-yellow-400 text-yellow-400" 
+          className="h-4 w-4 fill-[#1E90DB] text-[#1E90DB]" 
           aria-hidden="true"
         />
       );
@@ -36,7 +36,7 @@ const TestimonialCard = ({ name, position, company, content, rating, image }: Te
       stars.push(
         <StarHalf 
           key="half-star" 
-          className="h-4 w-4 fill-yellow-400 text-yellow-400" 
+          className="h-4 w-4 fill-[#1E90DB] text-[#1E90DB]" 
           aria-hidden="true"
         />
       );
@@ -48,7 +48,7 @@ const TestimonialCard = ({ name, position, company, content, rating, image }: Te
       stars.push(
         <Star 
           key={`empty-${i}`} 
-          className="h-4 w-4 text-yellow-400" 
+          className="h-4 w-4 text-[#1E90DB]" 
           aria-hidden="true"
         />
       );

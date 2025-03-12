@@ -28,7 +28,7 @@ const BlogSection = () => {
     <section id="blog" className="py-20 md:py-32 bg-white">
       <div className="container mx-auto px-4 md:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16 reveal">
-          <h2 className="text-sm font-montserrat text-[#C09E5E] mb-4">OUR BLOG</h2>
+          <h2 className="text-sm font-montserrat text-[#1E90DB] mb-4">OUR BLOG</h2>
           <h3 className="text-3xl md:text-4xl font-montserrat font-bold mb-6">Latest Construction Insights</h3>
           <p className="text-gray-600 leading-relaxed">
             Stay updated with the latest trends, tips, and news from the construction industry.
