@@ -359,14 +359,14 @@ const ServiceDetail = () => {
                     {service.features && service.features.length > 0
                       ? service.features.map((feature, index) => (
                           <li key={index} className="flex items-start">
-                            <Check className="w-5 h-5 text-[#C09E5E] mr-2 mt-1 flex-shrink-0" />
+                            <Check className="w-5 h-5 text-[#1E90DB] mr-2 mt-1 flex-shrink-0" />
                             <span className="text-gray-600">{feature}</span>
                           </li>
                         ))
                       : // Fallback to hard-coded features if none are found in database
                         serviceDetails.features.map((feature, index) => (
                           <li key={index} className="flex items-start">
-                            <Check className="w-5 h-5 text-[#C09E5E] mr-2 mt-1 flex-shrink-0" />
+                            <Check className="w-5 h-5 text-[#1E90DB] mr-2 mt-1 flex-shrink-0" />
                             <span className="text-gray-600">{feature}</span>
                           </li>
                         ))}
@@ -380,7 +380,7 @@ const ServiceDetail = () => {
                   <ul className="space-y-2">
                     {serviceDetails.benefits.map((benefit, index) => (
                       <li key={index} className="flex items-start">
-                        <Check className="w-5 h-5 text-[#C09E5E] mr-2 mt-1 flex-shrink-0" />
+                        <Check className="w-5 h-5 text-[#1E90DB] mr-2 mt-1 flex-shrink-0" />
                         <span className="text-gray-600">{benefit}</span>
                       </li>
                     ))}
