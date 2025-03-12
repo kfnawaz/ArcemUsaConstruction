@@ -39,6 +39,7 @@ import NewsletterManagement from "@/pages/admin/NewsletterManagement";
 import QuoteRequestsManagement from "@/pages/admin/QuoteRequestsManagement";
 import SettingsPage from "@/pages/admin/Settings";
 import AccessibilityCheckerPage from "@/pages/admin/AccessibilityChecker";
+import SubcontractorManagement from "@/pages/admin/SubcontractorManagement";
 import NotFound from "@/pages/not-found";
 import RequestQuoteButton from "@/components/common/A11yFloatingButton";
 
@@ -180,6 +181,11 @@ function Router() {
           <Route path="/admin/accessibility">
             <ProtectedRoute>
               <AccessibilityCheckerPage />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/admin/subcontractors">
+            <ProtectedRoute>
+              <SubcontractorManagement />
             </ProtectedRoute>
           </Route>
           
