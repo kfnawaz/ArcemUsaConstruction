@@ -34,7 +34,14 @@ export const useSubcontractors = () => {
   // Submit subcontractor application
   const submitSubcontractorMutation = useMutation({
     mutationFn: async (data: InsertSubcontractor) => {
-      const res = await apiRequest("POST", "/api/subcontractors/apply", data);
+      console.log("Subcontractor application data in mutation:", data);
+      // Ensure serviceTypes is an array
+      const subcontractorData = {
+        ...data,
+        serviceTypes: Array.isArray(data.serviceTypes) ? data.serviceTypes : [],
+      };
+      console.log("Processed subcontractor data:", subcontractorData);
+      const res = await apiRequest("POST", "/api/subcontractors/apply", subcontractorData);
       return await res.json();
     },
     onSuccess: () => {
@@ -44,6 +51,7 @@ export const useSubcontractors = () => {
       });
     },
     onError: (error: Error) => {
+      console.error("Subcontractor application submission error:", error);
       toast({
         title: "Submission Failed",
         description: error.message || "Failed to submit subcontractor application. Please try again.",

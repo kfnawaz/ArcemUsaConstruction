@@ -18,26 +18,77 @@ import { Badge } from '@/components/ui/badge';
 import { X } from 'lucide-react';
 import { useSubcontractors } from '@/hooks/useSubcontractors';
 
-// Form schema
+// Form schema with comprehensive validations
 const formSchema = z.object({
-  companyName: z.string().min(2, { message: 'Company name is required' }),
-  contactName: z.string().min(2, { message: 'Contact name is required' }),
-  email: z.string().email({ message: 'Please enter a valid email address' }),
-  phone: z.string().min(10, { message: 'Please enter a valid phone number' }),
-  address: z.string().min(2, { message: 'Address is required' }),
-  city: z.string().min(2, { message: 'City is required' }),
-  state: z.string().min(2, { message: 'State is required' }),
-  zip: z.string().min(5, { message: 'ZIP code is required' }),
-  website: z.string().optional(),
-  serviceTypes: z.array(z.string()).min(1, { message: 'Please select at least one service type' }),
-  supplyTypes: z.array(z.string()).min(1, { message: 'Please select at least one product/supply type' }),
-  serviceDescription: z.string().min(10, { message: 'Please provide a brief description of your services' }),
-  yearsInBusiness: z.string().min(1, { message: 'Years in business is required' }),
-  insurance: z.boolean(),
-  bondable: z.boolean(),
-  licenses: z.string().optional(),
-  references: z.string().optional(),
-  howDidYouHear: z.string().optional(),
+  companyName: z.string()
+    .min(2, { message: 'Company name is required and must be at least 2 characters long' })
+    .max(100, { message: 'Company name must be less than 100 characters' }),
+  
+  contactName: z.string()
+    .min(2, { message: 'Contact name is required and must be at least 2 characters long' })
+    .max(100, { message: 'Contact name must be less than 100 characters' }),
+  
+  email: z.string()
+    .email({ message: 'Please enter a valid email address' })
+    .min(5, { message: 'Email is required' })
+    .max(100, { message: 'Email must be less than 100 characters' }),
+  
+  phone: z.string()
+    .min(10, { message: 'Phone number must be at least 10 digits' })
+    .max(20, { message: 'Phone number must be less than 20 characters' })
+    .refine(val => /^[0-9()\-\s+]+$/.test(val), { 
+      message: 'Phone number can only contain digits, spaces, and the characters ()+-' 
+    }),
+  
+  address: z.string()
+    .min(5, { message: 'Address is required and must be at least 5 characters long' })
+    .max(200, { message: 'Address must be less than 200 characters' }),
+  
+  city: z.string()
+    .min(2, { message: 'City is required and must be at least 2 characters long' })
+    .max(100, { message: 'City must be less than 100 characters' }),
+  
+  state: z.string()
+    .min(2, { message: 'State is required and must be at least 2 characters long' })
+    .max(50, { message: 'State must be less than 50 characters' }),
+  
+  zip: z.string()
+    .min(5, { message: 'ZIP code is required and must be at least 5 characters' })
+    .max(15, { message: 'ZIP code must be less than 15 characters' })
+    .refine(val => /^[0-9\-\s]+$/.test(val), { 
+      message: 'ZIP code can only contain digits, hyphens, and spaces' 
+    }),
+  
+  website: z.string().optional()
+    .transform(val => val === undefined || val === null || val === "" ? undefined : val)
+    .refine(val => !val || /^(https?:\/\/)?(www\.)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\/.*)?$/.test(val), {
+      message: 'Please enter a valid website URL (e.g., https://example.com)'
+    }),
+  
+  serviceTypes: z.array(z.string())
+    .min(1, { message: 'Please select at least one service type' }),
+  
+  supplyTypes: z.array(z.string())
+    .min(1, { message: 'Please select at least one product/supply type' }),
+  
+  serviceDescription: z.string()
+    .min(10, { message: 'Please provide a description of your services (minimum 10 characters)' })
+    .max(2000, { message: 'Description must be less than 2000 characters' }),
+  
+  yearsInBusiness: z.string()
+    .min(1, { message: 'Please select years in business' }),
+  
+  insurance: z.boolean().default(false),
+  bondable: z.boolean().default(false),
+  
+  licenses: z.string().optional()
+    .transform(val => val === undefined || val === null ? "" : val),
+  
+  references: z.string().optional()
+    .transform(val => val === undefined || val === null ? "" : val),
+  
+  howDidYouHear: z.string().optional()
+    .transform(val => val === undefined || val === null ? "" : val),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -88,76 +139,235 @@ const Subcontractors = () => {
     },
   });
 
+  // Show toast for form field errors with better guidance
+  const showFormErrors = () => {
+    // Get all error messages in a readable format
+    const errorMessages = Object.entries(form.formState.errors)
+      .map(([field, error]) => `${field}: ${error?.message}`)
+      .join('\n');
+      
+    // Log for debugging
+    console.error("Form validation errors:", form.formState.errors);
+    
+    // Show toast with error summary
+    toast({
+      title: "Please Fix Form Errors",
+      description: "There are issues with your form submission. Check highlighted fields for details.",
+      variant: "destructive",
+    });
+    
+    // Scroll to the first field with an error
+    const firstErrorField = Object.keys(form.formState.errors)[0];
+    if (firstErrorField) {
+      const errorElement = document.querySelector(`[name="${firstErrorField}"]`);
+      if (errorElement) {
+        errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+    
+    return false;
+  };
+  
+  // Enhanced form submission function
   const onSubmit = async (data: FormValues) => {
     console.log("Form submission started", { data, activeTab });
     
-    // Log form errors to help debug validation issues
-    console.log("Form state:", form.formState);
-    if (Object.keys(form.formState.errors).length > 0) {
-      console.error("Form has validation errors:", form.formState.errors);
-      return; // Don't proceed if there are validation errors
+    // Pre-validation check
+    const hasErrors = Object.keys(form.formState.errors).length > 0;
+    if (hasErrors) {
+      return showFormErrors();
     }
     
+    // Block duplicate submissions
+    if (isSubmitting) {
+      console.log("Submission already in progress, ignoring duplicate request");
+      return false;
+    }
+    
+    // Start submission process
     setIsSubmitting(true);
     
+    // User feedback - submission started
+    toast({
+      title: "Submitting Application",
+      description: `Your ${activeTab} application is being submitted...`,
+    });
+    
+    // Progress indicator for better UX
+    const progressToastId = setTimeout(() => {
+      if (isSubmitting) {
+        toast({
+          title: "Still Processing",
+          description: "Your application is still being processed. Please wait...",
+        });
+      }
+    }, 3000);
+    
     try {
-      // Convert form data to the appropriate format based on the active tab
+      // Prepare submission data based on active tab
       if (activeTab === "subcontractor") {
-        console.log("Preparing subcontractor data", { serviceTypes: data.serviceTypes });
+        // Validate service types array
+        if (!Array.isArray(data.serviceTypes) || data.serviceTypes.length === 0) {
+          form.setError("serviceTypes", { 
+            type: "manual", 
+            message: "Please select at least one service type" 
+          });
+          clearTimeout(progressToastId);
+          return showFormErrors();
+        }
+        
+        // Build subcontractor data object with proper handling of optional fields
         const subcontractorData = {
-          companyName: data.companyName,
-          contactName: data.contactName,
-          email: data.email,
-          phone: data.phone,
-          address: data.address,
-          city: data.city,
-          state: data.state,
-          zip: data.zip,
-          website: data.website || undefined,
+          companyName: data.companyName.trim(),
+          contactName: data.contactName.trim(),
+          email: data.email.trim(),
+          phone: data.phone.trim(),
+          address: data.address.trim(),
+          city: data.city.trim(),
+          state: data.state.trim(),
+          zip: data.zip.trim(),
+          website: data.website ? data.website.trim() : undefined,
           serviceTypes: data.serviceTypes,
-          serviceDescription: data.serviceDescription,
+          serviceDescription: data.serviceDescription.trim(),
           yearsInBusiness: data.yearsInBusiness,
-          insurance: data.insurance,
-          bondable: data.bondable,
-          licenses: data.licenses || "",
-          references: data.references || "",
-          howDidYouHear: data.howDidYouHear || "",
+          insurance: !!data.insurance,
+          bondable: !!data.bondable,
+          licenses: data.licenses ? data.licenses.trim() : "",
+          references: data.references ? data.references.trim() : "",
+          howDidYouHear: data.howDidYouHear ? data.howDidYouHear.trim() : "",
         };
         
         console.log("Submitting subcontractor application", subcontractorData);
-        // Submit subcontractor application
-        await submitSubcontractorApplication(subcontractorData);
+        
+        // Submit with promise handling for proper success/failure states
+        await new Promise<void>((resolve, reject) => {
+          try {
+            submitSubcontractorApplication(subcontractorData);
+            
+            // Success case
+            toast({
+              title: "Application Submitted Successfully",
+              description: "Thank you for submitting your subcontractor application. We'll review your information and contact you soon.",
+              variant: "default"
+            });
+            
+            // Reset form to initial state
+            form.reset({
+              companyName: '',
+              contactName: '',
+              email: '',
+              phone: '',
+              address: '',
+              city: '',
+              state: '',
+              zip: '',
+              website: '',
+              serviceTypes: [],
+              supplyTypes: [],
+              serviceDescription: '',
+              yearsInBusiness: '',
+              insurance: false,
+              bondable: false,
+              licenses: '',
+              references: '',
+              howDidYouHear: '',
+            });
+            
+            resolve();
+          } catch (error) {
+            reject(error);
+          }
+        });
       } else {
-        // Vendor application
-        console.log("Preparing vendor data", { supplyTypes: data.supplyTypes });
+        // Vendor tab selected
+        
+        // Validate supply types array
+        if (!Array.isArray(data.supplyTypes) || data.supplyTypes.length === 0) {
+          form.setError("supplyTypes", { 
+            type: "manual", 
+            message: "Please select at least one product/supply type" 
+          });
+          clearTimeout(progressToastId);
+          return showFormErrors();
+        }
+        
+        // Build vendor data object with proper handling of optional fields
         const vendorData = {
-          companyName: data.companyName,
-          contactName: data.contactName,
-          email: data.email,
-          phone: data.phone,
-          address: data.address,
-          city: data.city,
-          state: data.state,
-          zip: data.zip,
-          website: data.website || undefined,
-          supplyTypes: data.supplyTypes, // This must be an array
-          serviceDescription: data.serviceDescription,
+          companyName: data.companyName.trim(),
+          contactName: data.contactName.trim(),
+          email: data.email.trim(),
+          phone: data.phone.trim(),
+          address: data.address.trim(),
+          city: data.city.trim(),
+          state: data.state.trim(),
+          zip: data.zip.trim(),
+          website: data.website ? data.website.trim() : undefined,
+          supplyTypes: data.supplyTypes,
+          serviceDescription: data.serviceDescription.trim(),
           yearsInBusiness: data.yearsInBusiness,
-          references: data.references || "",
-          howDidYouHear: data.howDidYouHear || "",
+          references: data.references ? data.references.trim() : "",
+          howDidYouHear: data.howDidYouHear ? data.howDidYouHear.trim() : "",
         };
         
         console.log("Submitting vendor application", vendorData);
-        // Submit vendor application
-        await submitVendorApplication(vendorData);
+        
+        // Submit with promise handling for proper success/failure states
+        await new Promise<void>((resolve, reject) => {
+          try {
+            submitVendorApplication(vendorData);
+            
+            // Success case
+            toast({
+              title: "Application Submitted Successfully",
+              description: "Thank you for submitting your vendor application. We'll review your information and contact you soon.",
+              variant: "default"
+            });
+            
+            // Reset form to initial state
+            form.reset({
+              companyName: '',
+              contactName: '',
+              email: '',
+              phone: '',
+              address: '',
+              city: '',
+              state: '',
+              zip: '',
+              website: '',
+              serviceTypes: [],
+              supplyTypes: [],
+              serviceDescription: '',
+              yearsInBusiness: '',
+              insurance: false,
+              bondable: false,
+              licenses: '',
+              references: '',
+              howDidYouHear: '',
+            });
+            
+            resolve();
+          } catch (error) {
+            reject(error);
+          }
+        });
       }
       
-      // Reset form after successful submission
-      form.reset();
+      // Scroll to top after successful submission
+      scrollToTop();
+      
     } catch (error) {
-      // Error handling is done in the hook itself with the toast notifications
+      // Comprehensive error handling
       console.error("Error submitting application:", error);
+      toast({
+        title: "Submission Failed",
+        description: error instanceof Error 
+          ? error.message 
+          : "There was a problem submitting your application. Please try again later.",
+        variant: "destructive",
+      });
     } finally {
+      // Always clean up
+      clearTimeout(progressToastId);
       setIsSubmitting(false);
     }
   };
