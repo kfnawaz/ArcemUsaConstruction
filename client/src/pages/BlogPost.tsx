@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRoute, Link } from 'wouter';
 import { useQuery } from '@tanstack/react-query';
 import { BlogPost as BlogPostType, BlogGallery } from '@shared/schema';
 import { initializeRevealEffects, scrollToTop, formatDate } from '@/lib/utils';
-import { ArrowLeft, Calendar, Tag, User, Image as ImageIcon, X } from 'lucide-react';
+import { ArrowLeft, Calendar, Tag, User, ChevronLeft, ChevronRight, Image as ImageIcon, X } from 'lucide-react';
 import BlogPostSeo from '@/components/seo/BlogPostSeo';
 import { Button } from '@/components/ui/button';
 import { 
@@ -13,11 +13,38 @@ import {
   DialogHeader,
   DialogFooter
 } from '@/components/ui/dialog';
+import useEmblaCarousel from 'embla-carousel-react';
+import Autoplay from 'embla-carousel-autoplay';
 
 const BlogPost = () => {
   const [, params] = useRoute('/blog/:slug');
   const slug = params?.slug;
   const [selectedImage, setSelectedImage] = useState<{ url: string; caption: string | null } | null>(null);
+  
+  // Initialize carousel with autoplay plugin
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true }, [
+    Autoplay({ delay: 5000, stopOnInteraction: false })
+  ]);
+  
+  // Carousel navigation controls
+  const [prevBtnEnabled, setPrevBtnEnabled] = useState(false);
+  const [nextBtnEnabled, setNextBtnEnabled] = useState(false);
+  
+  const scrollPrev = useCallback(() => emblaApi && emblaApi.scrollPrev(), [emblaApi]);
+  const scrollNext = useCallback(() => emblaApi && emblaApi.scrollNext(), [emblaApi]);
+  
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return;
+    setPrevBtnEnabled(emblaApi.canScrollPrev());
+    setNextBtnEnabled(emblaApi.canScrollNext());
+  }, [emblaApi]);
+  
+  useEffect(() => {
+    if (!emblaApi) return;
+    onSelect();
+    emblaApi.on('select', onSelect);
+    emblaApi.on('reInit', onSelect);
+  }, [emblaApi, onSelect]);
 
   useEffect(() => {
     scrollToTop();
@@ -118,11 +145,74 @@ const BlogPost = () => {
                   </div>
                 </div>
 
-                <img 
-                  src={post.image} 
-                  alt={post.title} 
-                  className="w-full h-auto object-cover rounded shadow-lg mb-8"
-                />
+                {/* Carousel component for blog post featured image and gallery */}
+                <div className="relative rounded shadow-lg mb-8 overflow-hidden">
+                  {/* Only show carousel if gallery images exist */}
+                  {galleryImages && galleryImages.length > 0 ? (
+                    <>
+                      <div className="overflow-hidden" ref={emblaRef}>
+                        <div className="flex">
+                          {/* Add main blog image as first slide */}
+                          <div className="flex-grow-0 flex-shrink-0 relative w-full min-w-0">
+                            <img 
+                              src={post.image} 
+                              alt={post.title} 
+                              className="w-full h-96 object-cover"
+                            />
+                          </div>
+                          
+                          {/* Add gallery images as additional slides */}
+                          {galleryImages
+                            .sort((a, b) => (a.order || 0) - (b.order || 0))
+                            .map((image, index) => (
+                              <div 
+                                key={image.id} 
+                                className="flex-grow-0 flex-shrink-0 relative w-full min-w-0"
+                                onClick={() => setSelectedImage({ url: image.imageUrl, caption: image.caption })}
+                              >
+                                <img 
+                                  src={image.imageUrl} 
+                                  alt={image.caption || `Image ${index + 1}`} 
+                                  className="w-full h-96 object-cover"
+                                />
+                                {image.caption && (
+                                  <div className="absolute bottom-0 left-0 right-0 bg-black/60 p-3 text-white">
+                                    {image.caption}
+                                  </div>
+                                )}
+                              </div>
+                            ))
+                          }
+                        </div>
+                      </div>
+                      
+                      {/* Navigation buttons */}
+                      <button 
+                        className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/80 p-2 rounded-full shadow-md hover:bg-white transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={scrollPrev}
+                        disabled={!prevBtnEnabled}
+                        aria-label="Previous image"
+                      >
+                        <ChevronLeft className="h-6 w-6" />
+                      </button>
+                      <button 
+                        className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/80 p-2 rounded-full shadow-md hover:bg-white transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={scrollNext}
+                        disabled={!nextBtnEnabled}
+                        aria-label="Next image"
+                      >
+                        <ChevronRight className="h-6 w-6" />
+                      </button>
+                    </>
+                  ) : (
+                    // Fallback to static image if no gallery images
+                    <img 
+                      src={post.image} 
+                      alt={post.title} 
+                      className="w-full h-96 object-cover"
+                    />
+                  )}
+                </div>
               </header>
 
               <div className="prose max-w-none reveal">
@@ -135,38 +225,6 @@ const BlogPost = () => {
                 <p className="text-gray-700 leading-relaxed mb-6">
                   The construction industry is constantly evolving, with new technologies, methods, and materials emerging to improve efficiency, sustainability, and quality. In this article, we explore some of the latest developments in the field and how they're shaping the future of construction.
                 </p>
-                
-                {/* Gallery Images Section */}
-                {galleryImages && galleryImages.length > 0 && (
-                  <div className="not-prose my-12">
-                    <h3 className="text-xl font-montserrat font-bold mb-6 flex items-center">
-                      <ImageIcon className="w-5 h-5 mr-2" />
-                      Project Gallery
-                    </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                      {galleryImages
-                        .sort((a, b) => (a.order || 0) - (b.order || 0))
-                        .map((image, index) => (
-                          <div 
-                            key={image.id} 
-                            className="group relative rounded overflow-hidden shadow-md cursor-pointer transition-all duration-300 hover:shadow-xl"
-                            onClick={() => setSelectedImage({ url: image.imageUrl, caption: image.caption })}
-                          >
-                            <img 
-                              src={image.imageUrl} 
-                              alt={image.caption || `Image ${index + 1}`} 
-                              className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105"
-                            />
-                            {image.caption && (
-                              <div className="absolute bottom-0 left-0 right-0 bg-black/60 p-2 text-white text-sm">
-                                {image.caption}
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                    </div>
-                  </div>
-                )}
                 
                 <h2 className="text-2xl font-montserrat font-bold mt-12 mb-4">Key Innovations</h2>
                 <p className="text-gray-700 leading-relaxed mb-6">
