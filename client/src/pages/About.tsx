@@ -35,7 +35,7 @@ const About = () => {
               />
             </div>
             <div className="md:w-1/2 reveal">
-              <h2 className="text-sm font-montserrat text-[#C09E5E] mb-4">OUR STORY</h2>
+              <h2 className="text-sm font-montserrat text-[#1E90DB] mb-4">OUR STORY</h2>
               <h3 className="text-3xl md:text-4xl font-montserrat font-bold mb-6">Building Our Legacy Since 1985</h3>
               <p className="text-gray-600 mb-6 leading-relaxed">
                 ARCEMUSA was founded in 1985 with a vision to transform the construction industry through exceptional quality, innovative solutions, and a client-first approach. What began as a small team with big dreams has grown into one of the region's most respected construction companies.
@@ -55,7 +55,7 @@ const About = () => {
       <section className="py-20 md:py-32 bg-gray-100">
         <div className="container mx-auto px-4 md:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16 reveal">
-            <h2 className="text-sm font-montserrat text-[#C09E5E] mb-4">OUR VALUES</h2>
+            <h2 className="text-sm font-montserrat text-[#1E90DB] mb-4">OUR VALUES</h2>
             <h3 className="text-3xl md:text-4xl font-montserrat font-bold mb-6">What Drives Us Forward</h3>
             <p className="text-gray-600 leading-relaxed">
               Our core values guide everything we do, from how we interact with clients to how we approach each project.
@@ -64,7 +64,7 @@ const About = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="bg-white p-8 shadow-lg hover-scale reveal">
-              <div className="text-[#C09E5E] mb-6">
+              <div className="text-[#1E90DB] mb-6">
                 <svg className="w-10 h-10" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -76,7 +76,7 @@ const About = () => {
             </div>
             
             <div className="bg-white p-8 shadow-lg hover-scale reveal">
-              <div className="text-[#C09E5E] mb-6">
+              <div className="text-[#1E90DB] mb-6">
                 <svg className="w-10 h-10" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
@@ -88,7 +88,7 @@ const About = () => {
             </div>
             
             <div className="bg-white p-8 shadow-lg hover-scale reveal">
-              <div className="text-[#C09E5E] mb-6">
+              <div className="text-[#1E90DB] mb-6">
                 <svg className="w-10 h-10" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
@@ -100,7 +100,7 @@ const About = () => {
             </div>
             
             <div className="bg-white p-8 shadow-lg hover-scale reveal">
-              <div className="text-[#C09E5E] mb-6">
+              <div className="text-[#1E90DB] mb-6">
                 <svg className="w-10 h-10" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
@@ -112,7 +112,7 @@ const About = () => {
             </div>
             
             <div className="bg-white p-8 shadow-lg hover-scale reveal">
-              <div className="text-[#C09E5E] mb-6">
+              <div className="text-[#1E90DB] mb-6">
                 <svg className="w-10 h-10" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
                 </svg>
@@ -124,7 +124,7 @@ const About = () => {
             </div>
             
             <div className="bg-white p-8 shadow-lg hover-scale reveal">
-              <div className="text-[#C09E5E] mb-6">
+              <div className="text-[#1E90DB] mb-6">
                 <svg className="w-10 h-10" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
@@ -142,7 +142,7 @@ const About = () => {
       <section className="py-20 md:py-32 bg-white">
         <div className="container mx-auto px-4 md:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16 reveal">
-            <h2 className="text-sm font-montserrat text-[#C09E5E] mb-4">OUR TEAM</h2>
+            <h2 className="text-sm font-montserrat text-[#1E90DB] mb-4">OUR TEAM</h2>
             <h3 className="text-3xl md:text-4xl font-montserrat font-bold mb-6">Meet Our Leadership</h3>
             <p className="text-gray-600 leading-relaxed">
               Our experienced leadership team brings decades of industry expertise and a passion for excellence to every project.
@@ -157,7 +157,7 @@ const About = () => {
                 className="w-full h-80 object-cover object-center mb-4"
               />
               <h4 className="text-xl font-montserrat font-bold mb-1">Robert Anderson</h4>
-              <p className="text-[#C09E5E] font-montserrat mb-3">Chief Executive Officer</p>
+              <p className="text-[#1E90DB] font-montserrat mb-3">Chief Executive Officer</p>
               <p className="text-gray-600">
                 With over 25 years of experience in construction management, Robert leads our company with vision and strategic direction.
               </p>
@@ -170,7 +170,7 @@ const About = () => {
                 className="w-full h-80 object-cover object-center mb-4"
               />
               <h4 className="text-xl font-montserrat font-bold mb-1">Maria Rodriguez</h4>
-              <p className="text-[#C09E5E] font-montserrat mb-3">Operations Director</p>
+              <p className="text-[#1E90DB] font-montserrat mb-3">Operations Director</p>
               <p className="text-gray-600">
                 Maria oversees all operational aspects of our projects, ensuring efficiency, quality, and client satisfaction at every stage.
               </p>
@@ -183,7 +183,7 @@ const About = () => {
                 className="w-full h-80 object-cover object-center mb-4"
               />
               <h4 className="text-xl font-montserrat font-bold mb-1">Daniel Chen</h4>
-              <p className="text-[#C09E5E] font-montserrat mb-3">Design Director</p>
+              <p className="text-[#1E90DB] font-montserrat mb-3">Design Director</p>
               <p className="text-gray-600">
                 Daniel brings innovative design solutions to our projects, blending functionality, aesthetics, and sustainability.
               </p>

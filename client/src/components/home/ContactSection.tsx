@@ -142,7 +142,7 @@ const ContactSection = () => {
                         <FormControl>
                           <Input
                             {...field}
-                            className="px-4 py-3 bg-gray-800 border border-gray-700 focus:border-[#C09E5E] outline-none transition-colors text-white"
+                            className="px-4 py-3 bg-gray-800 border border-gray-700 focus:border-[#1E90DB] outline-none transition-colors text-white"
                             required
                           />
                         </FormControl>
@@ -161,7 +161,7 @@ const ContactSection = () => {
                           <Input
                             {...field}
                             type="email"
-                            className="px-4 py-3 bg-gray-800 border border-gray-700 focus:border-[#C09E5E] outline-none transition-colors text-white"
+                            className="px-4 py-3 bg-gray-800 border border-gray-700 focus:border-[#1E90DB] outline-none transition-colors text-white"
                             required
                           />
                         </FormControl>
@@ -181,7 +181,7 @@ const ContactSection = () => {
                         <Input
                           {...field}
                           type="tel"
-                          className="px-4 py-3 bg-gray-800 border border-gray-700 focus:border-[#C09E5E] outline-none transition-colors text-white"
+                          className="px-4 py-3 bg-gray-800 border border-gray-700 focus:border-[#1E90DB] outline-none transition-colors text-white"
                         />
                       </FormControl>
                       <FormMessage />
@@ -197,7 +197,7 @@ const ContactSection = () => {
                       <FormLabel className="text-sm font-montserrat">Service Interested In</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                          <SelectTrigger className="px-4 py-3 bg-gray-800 border border-gray-700 focus:border-[#C09E5E] outline-none transition-colors text-white">
+                          <SelectTrigger className="px-4 py-3 bg-gray-800 border border-gray-700 focus:border-[#1E90DB] outline-none transition-colors text-white">
                             <SelectValue placeholder="Select a service" />
                           </SelectTrigger>
                         </FormControl>
@@ -225,7 +225,7 @@ const ContactSection = () => {
                         <Textarea
                           {...field}
                           rows={5}
-                          className="px-4 py-3 bg-gray-800 border border-gray-700 focus:border-[#C09E5E] outline-none transition-colors text-white"
+                          className="px-4 py-3 bg-gray-800 border border-gray-700 focus:border-[#1E90DB] outline-none transition-colors text-white"
                           required
                         />
                       </FormControl>

@@ -6,7 +6,7 @@ const ContactOptions: React.FC = () => {
     <div className="contact-options p-3 rounded-md bg-gray-100 my-2">
       <div className="space-y-3">
         <div className="flex items-start gap-2">
-          <Phone className="w-4 h-4 text-[#C09E5E] mt-1" />
+          <Phone className="w-4 h-4 text-[#1E90DB] mt-1" />
           <div>
             <div className="font-semibold">Phone</div>
             <div className="text-sm text-gray-600">(713) 624-0083</div>
@@ -14,7 +14,7 @@ const ContactOptions: React.FC = () => {
         </div>
 
         <div className="flex items-start gap-2">
-          <Mail className="w-4 h-4 text-[#C09E5E] mt-1" />
+          <Mail className="w-4 h-4 text-[#1E90DB] mt-1" />
           <div>
             <div className="font-semibold">Email</div>
             <div className="text-sm text-gray-600">aj@arcemusa.com</div>
@@ -22,7 +22,7 @@ const ContactOptions: React.FC = () => {
         </div>
 
         <div className="flex items-start gap-2">
-          <MapPin className="w-4 h-4 text-[#C09E5E] mt-1" />
+          <MapPin className="w-4 h-4 text-[#1E90DB] mt-1" />
           <div>
             <div className="font-semibold">Address</div>
             <div className="text-sm text-gray-600">
@@ -34,7 +34,7 @@ const ContactOptions: React.FC = () => {
         </div>
 
         <div className="flex items-start gap-2">
-          <Clock className="w-4 h-4 text-[#C09E5E] mt-1" />
+          <Clock className="w-4 h-4 text-[#1E90DB] mt-1" />
           <div>
             <div className="font-semibold">Business Hours</div>
             <div className="text-sm text-gray-600">

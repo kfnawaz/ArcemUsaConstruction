@@ -7,7 +7,7 @@ const QuoteOptions = () => {
     <div className="quote-options-widget py-2">
       <Link 
         to="/request-quote"
-        className="flex items-center justify-between bg-[#C09E5E] hover:bg-[#A98D54] text-white p-3 rounded-md mt-2 transition-colors w-full"
+        className="flex items-center justify-between bg-[#1E90DB] hover:bg-[#A98D54] text-white p-3 rounded-md mt-2 transition-colors w-full"
         onClick={() => window.parent.location.href = '/request-quote'}
       >
         <span className="font-medium">Request a Quote</span>

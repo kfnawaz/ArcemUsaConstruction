@@ -84,7 +84,7 @@ const MessagesManagement = () => {
           <div className="flex flex-col md:flex-row gap-8">
             <AdminNav activePage="messages" />
             <div className="flex-1 flex items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-[#C09E5E]" />
+              <Loader2 className="h-8 w-8 animate-spin text-[#1E90DB]" />
             </div>
           </div>
         </div>

@@ -183,7 +183,7 @@ const Dashboard = () => {
               <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-montserrat font-bold">Recent Projects</h2>
                 <Link href="/admin/projects">
-                  <Button variant="link" className="text-[#C09E5E]">
+                  <Button variant="link" className="text-[#1E90DB]">
                     View All
                   </Button>
                 </Link>

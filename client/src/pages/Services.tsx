@@ -142,7 +142,7 @@ const Services = () => {
       <section className="py-20 md:py-32 bg-white">
         <div className="container mx-auto px-4 md:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16 reveal">
-            <h2 className="text-sm font-montserrat text-[#C09E5E] mb-4">WHAT WE OFFER</h2>
+            <h2 className="text-sm font-montserrat text-[#1E90DB] mb-4">WHAT WE OFFER</h2>
             <h3 className="text-3xl md:text-4xl font-montserrat font-bold mb-6">Comprehensive Construction Solutions</h3>
             <p className="text-gray-600 leading-relaxed">
               At ARCEMUSA, we offer a wide range of construction services tailored to meet the specific needs of each client. Our team of experienced professionals is dedicated to delivering exceptional results that exceed expectations.
@@ -230,7 +230,7 @@ const Services = () => {
                   </div>
                   <div className="md:w-2/3">
                     <div className="flex items-center mb-4">
-                      <div className="text-[#C09E5E]">
+                      <div className="text-[#1E90DB]">
                         {getIcon(service.icon, "small")}
                       </div>
                       <h4 className="text-2xl font-montserrat font-bold">{service.title}</h4>
@@ -242,7 +242,7 @@ const Services = () => {
                       {service.features && service.features.length > 0 ? (
                         service.features.map((feature, i) => (
                           <li key={i} className="flex items-start">
-                            <svg className="w-5 h-5 text-[#C09E5E] mr-2 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <svg className="w-5 h-5 text-[#1E90DB] mr-2 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                             </svg>
                             {feature}
@@ -256,7 +256,7 @@ const Services = () => {
                         'Competitive Pricing', 
                         'Attention to Detail'].map((feature, i) => (
                           <li key={i} className="flex items-start">
-                            <svg className="w-5 h-5 text-[#C09E5E] mr-2 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <svg className="w-5 h-5 text-[#1E90DB] mr-2 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                             </svg>
                             {feature}
@@ -267,7 +267,7 @@ const Services = () => {
                     
                     <Link 
                       href={`/services/${service.id}/${service.title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`}
-                      className="bg-[#C09E5E] hover:bg-[#A98D54] text-white py-2 px-6 font-montserrat font-medium text-sm tracking-wider inline-block transition-colors"
+                      className="bg-[#1E90DB] hover:bg-[#A98D54] text-white py-2 px-6 font-montserrat font-medium text-sm tracking-wider inline-block transition-colors"
                     >
                       LEARN MORE
                     </Link>
@@ -283,7 +283,7 @@ const Services = () => {
       <section className="py-20 md:py-32 bg-gray-100">
         <div className="container mx-auto px-4 md:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16 reveal">
-            <h2 className="text-sm font-montserrat text-[#C09E5E] mb-4">OUR PROCESS</h2>
+            <h2 className="text-sm font-montserrat text-[#1E90DB] mb-4">OUR PROCESS</h2>
             <h3 className="text-3xl md:text-4xl font-montserrat font-bold mb-6">How We Work</h3>
             <p className="text-gray-600 leading-relaxed">
               Our streamlined process ensures a smooth experience from initial consultation to project completion.
@@ -292,7 +292,7 @@ const Services = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             <div className="bg-white p-8 shadow-lg hover-scale reveal">
-              <div className="w-12 h-12 bg-[#C09E5E] text-white rounded-full flex items-center justify-center font-montserrat font-bold text-xl mb-6">1</div>
+              <div className="w-12 h-12 bg-[#1E90DB] text-white rounded-full flex items-center justify-center font-montserrat font-bold text-xl mb-6">1</div>
               <h4 className="text-xl font-montserrat font-bold mb-4">Consultation</h4>
               <p className="text-gray-600 leading-relaxed">
                 We begin with a thorough consultation to understand your vision, needs, and budget. This allows us to provide tailored solutions and accurate estimates.
@@ -300,7 +300,7 @@ const Services = () => {
             </div>
             
             <div className="bg-white p-8 shadow-lg hover-scale reveal">
-              <div className="w-12 h-12 bg-[#C09E5E] text-white rounded-full flex items-center justify-center font-montserrat font-bold text-xl mb-6">2</div>
+              <div className="w-12 h-12 bg-[#1E90DB] text-white rounded-full flex items-center justify-center font-montserrat font-bold text-xl mb-6">2</div>
               <h4 className="text-xl font-montserrat font-bold mb-4">Planning & Design</h4>
               <p className="text-gray-600 leading-relaxed">
                 Our team develops detailed plans and designs that bring your vision to life while addressing practical considerations and regulatory requirements.
@@ -308,7 +308,7 @@ const Services = () => {
             </div>
             
             <div className="bg-white p-8 shadow-lg hover-scale reveal">
-              <div className="w-12 h-12 bg-[#C09E5E] text-white rounded-full flex items-center justify-center font-montserrat font-bold text-xl mb-6">3</div>
+              <div className="w-12 h-12 bg-[#1E90DB] text-white rounded-full flex items-center justify-center font-montserrat font-bold text-xl mb-6">3</div>
               <h4 className="text-xl font-montserrat font-bold mb-4">Construction</h4>
               <p className="text-gray-600 leading-relaxed">
                 We execute the project with precision, adhering to the highest standards of quality and safety while keeping you informed throughout the process.
@@ -316,7 +316,7 @@ const Services = () => {
             </div>
             
             <div className="bg-white p-8 shadow-lg hover-scale reveal">
-              <div className="w-12 h-12 bg-[#C09E5E] text-white rounded-full flex items-center justify-center font-montserrat font-bold text-xl mb-6">4</div>
+              <div className="w-12 h-12 bg-[#1E90DB] text-white rounded-full flex items-center justify-center font-montserrat font-bold text-xl mb-6">4</div>
               <h4 className="text-xl font-montserrat font-bold mb-4">Completion & Support</h4>
               <p className="text-gray-600 leading-relaxed">
                 After the final walkthrough and handover, we provide ongoing support to ensure your complete satisfaction with the delivered project.

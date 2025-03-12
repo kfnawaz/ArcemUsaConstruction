@@ -171,7 +171,7 @@ const AccessibilityCheckerPage = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-[#C09E5E]" />
+        <Loader2 className="h-8 w-8 animate-spin text-[#1E90DB]" />
       </div>
     );
   }
@@ -204,7 +204,7 @@ const AccessibilityCheckerPage = () => {
                 <Button 
                   onClick={runCheck} 
                   disabled={isChecking}
-                  className="bg-[#C09E5E] hover:bg-[#9a7e48]"
+                  className="bg-[#1E90DB] hover:bg-[#9a7e48]"
                 >
                   {isChecking ? 
                     <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Running check...</> : 
@@ -265,25 +265,25 @@ const AccessibilityCheckerPage = () => {
               {/* Tab Interface */}
               <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
                 <TabsList className="mb-4 border">
-                  <TabsTrigger value="all" className="data-[state=active]:bg-[#C09E5E] data-[state=active]:text-white">
+                  <TabsTrigger value="all" className="data-[state=active]:bg-[#1E90DB] data-[state=active]:text-white">
                     All Issues ({violations.length})
                   </TabsTrigger>
-                  <TabsTrigger value="contrast" className="data-[state=active]:bg-[#C09E5E] data-[state=active]:text-white">
+                  <TabsTrigger value="contrast" className="data-[state=active]:bg-[#1E90DB] data-[state=active]:text-white">
                     Contrast ({groups.contrast.length})
                   </TabsTrigger>
-                  <TabsTrigger value="aria" className="data-[state=active]:bg-[#C09E5E] data-[state=active]:text-white">
+                  <TabsTrigger value="aria" className="data-[state=active]:bg-[#1E90DB] data-[state=active]:text-white">
                     ARIA ({groups.aria.length})
                   </TabsTrigger>
-                  <TabsTrigger value="structure" className="data-[state=active]:bg-[#C09E5E] data-[state=active]:text-white">
+                  <TabsTrigger value="structure" className="data-[state=active]:bg-[#1E90DB] data-[state=active]:text-white">
                     Structure ({groups.structure.length})
                   </TabsTrigger>
-                  <TabsTrigger value="forms" className="data-[state=active]:bg-[#C09E5E] data-[state=active]:text-white">
+                  <TabsTrigger value="forms" className="data-[state=active]:bg-[#1E90DB] data-[state=active]:text-white">
                     Forms ({groups.forms.length})
                   </TabsTrigger>
-                  <TabsTrigger value="images" className="data-[state=active]:bg-[#C09E5E] data-[state=active]:text-white">
+                  <TabsTrigger value="images" className="data-[state=active]:bg-[#1E90DB] data-[state=active]:text-white">
                     Images ({groups.images.length})
                   </TabsTrigger>
-                  <TabsTrigger value="links" className="data-[state=active]:bg-[#C09E5E] data-[state=active]:text-white">
+                  <TabsTrigger value="links" className="data-[state=active]:bg-[#1E90DB] data-[state=active]:text-white">
                     Links ({groups.links.length})
                   </TabsTrigger>
                 </TabsList>

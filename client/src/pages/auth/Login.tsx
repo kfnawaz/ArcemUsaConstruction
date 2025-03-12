@@ -100,7 +100,7 @@ const Login = () => {
 
               <Button
                 type="submit"
-                className="w-full bg-[#C09E5E] hover:bg-[#A98D54]"
+                className="w-full bg-[#1E90DB] hover:bg-[#A98D54]"
                 disabled={form.formState.isSubmitting || loading}
               >
                 {form.formState.isSubmitting || loading ? 'Logging in...' : 'Sign in'}

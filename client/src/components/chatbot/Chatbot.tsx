@@ -45,7 +45,7 @@ const Chatbot: React.FC = () => {
       ) : (
         <Button
           onClick={toggleChatbot}
-          className="rounded-full h-14 w-14 bg-[#C09E5E] hover:bg-[#ae8d54] shadow-lg flex items-center justify-center"
+          className="rounded-full h-14 w-14 bg-[#1E90DB] hover:bg-[#ae8d54] shadow-lg flex items-center justify-center"
         >
           <MessageCircle className="h-6 w-6 text-white" />
         </Button>

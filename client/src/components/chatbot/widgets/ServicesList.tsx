@@ -42,7 +42,7 @@ const ServicesList: React.FC<ServicesListProps> = ({ setState, services }) => {
               key={service.id} 
               className="p-2 hover:bg-gray-200 rounded-md cursor-pointer transition-colors"
             >
-              <div className="font-semibold text-[#C09E5E]">{service.title}</div>
+              <div className="font-semibold text-[#1E90DB]">{service.title}</div>
               <div className="text-sm text-gray-600">{service.description.substring(0, 100)}...</div>
             </li>
           ))}

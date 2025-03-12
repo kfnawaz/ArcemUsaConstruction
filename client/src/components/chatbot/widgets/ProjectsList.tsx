@@ -53,7 +53,7 @@ const ProjectsList: React.FC<ProjectsListProps> = ({ setState, projects }) => {
                 </div>
               )}
               <div className="flex-1">
-                <div className="font-semibold text-[#C09E5E] group-hover:underline">
+                <div className="font-semibold text-[#1E90DB] group-hover:underline">
                   {project.title}
                 </div>
                 <div className="text-xs text-gray-500 mb-1">{project.category}</div>

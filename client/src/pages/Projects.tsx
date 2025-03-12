@@ -55,7 +55,7 @@ const Projects = () => {
                   onClick={() => setFilter(category)}
                   className={`px-6 py-2 font-montserrat text-sm transition-colors ${
                     filter === category 
-                      ? 'bg-[#C09E5E] text-white' 
+                      ? 'bg-[#1E90DB] text-white' 
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
@@ -102,7 +102,7 @@ const Projects = () => {
             </p>
             <a 
               href="/contact" 
-              className="bg-[#C09E5E] hover:bg-[#A98D54] text-white py-3 px-8 font-montserrat font-medium text-sm tracking-wider inline-block transition-colors"
+              className="bg-[#1E90DB] hover:bg-[#A98D54] text-white py-3 px-8 font-montserrat font-medium text-sm tracking-wider inline-block transition-colors"
             >
               START YOUR PROJECT
             </a>

@@ -95,7 +95,7 @@ const AdminNav = ({ activePage }: AdminNavProps) => {
                 <div 
                   className={`flex items-center px-4 py-3 rounded-md transition-colors cursor-pointer ${
                     item.active 
-                      ? 'bg-[#C09E5E] text-white font-medium' 
+                      ? 'bg-[#1E90DB] text-white font-medium' 
                       : 'hover:bg-gray-100 text-gray-700'
                   }`}
                   onClick={() => navigate(item.href)}
@@ -111,7 +111,7 @@ const AdminNav = ({ activePage }: AdminNavProps) => {
       <div className="mt-4 bg-white rounded-lg shadow-md p-4">
         <div 
           onClick={() => navigate('/')}
-          className="text-sm text-gray-600 hover:text-[#C09E5E] transition-colors cursor-pointer"
+          className="text-sm text-gray-600 hover:text-[#1E90DB] transition-colors cursor-pointer"
         >
           ← Return to Website
         </div>
