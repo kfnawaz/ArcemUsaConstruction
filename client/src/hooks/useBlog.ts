@@ -237,6 +237,12 @@ export const useBlog = (postId?: number) => {
     isSubmitting,
     getPostCategoryIds,
     getPostTagIds,
-    uploadFile
+    uploadFile,
+    galleryImages,
+    isLoadingGallery,
+    addGalleryImage,
+    deleteGalleryImage,
+    isAddingGalleryImage,
+    isDeletingGalleryImage
   };
 };
