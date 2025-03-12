@@ -107,7 +107,7 @@ const BlogGalleryManager: React.FC<BlogGalleryManagerProps> = ({ postId }) => {
         <div className="flex justify-center py-8">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
-      ) : !galleryImages || galleryImages.length === 0 ? (
+      ) : !galleryImages || !Array.isArray(galleryImages) || galleryImages.length === 0 ? (
         <div className="text-center py-8 border border-dashed rounded-md">
           <Image className="h-12 w-12 mx-auto text-muted-foreground" />
           <p className="mt-2 text-sm text-muted-foreground">No gallery images yet</p>
@@ -121,7 +121,7 @@ const BlogGalleryManager: React.FC<BlogGalleryManagerProps> = ({ postId }) => {
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {galleryImages.map((image: BlogGallery) => (
+          {Array.isArray(galleryImages) && galleryImages.map((image: BlogGallery) => (
             <Card key={image.id} className="overflow-hidden group relative">
               <CardContent className="p-0">
                 <div className="aspect-square relative">
