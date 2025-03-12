@@ -21,7 +21,7 @@ const AboutSection = () => {
             />
           </div>
           <div className="md:w-1/2 reveal">
-            <h2 className="text-sm font-montserrat text-[#C09E5E] mb-4">ABOUT ARCEMUSA</h2>
+            <h2 className="text-sm font-montserrat text-[#1E90DB] mb-4">ABOUT ARCEMUSA</h2>
             <h3 className="text-3xl md:text-4xl font-montserrat font-bold mb-6">A Tradition of Excellence Since 1985</h3>
             <p className="text-gray-600 mb-6 leading-relaxed">
               For over three decades, ARCEMUSA has been at the forefront of the construction industry, delivering exceptional quality and innovative solutions for complex projects. Our team of highly skilled professionals brings extensive experience and unwavering commitment to every project we undertake.
@@ -31,19 +31,19 @@ const AboutSection = () => {
             </p>
             <div className="grid grid-cols-2 gap-6 mb-8">
               <div>
-                <h4 className="font-montserrat font-bold text-2xl text-[#C09E5E] mb-2">350+</h4>
+                <h4 className="font-montserrat font-bold text-2xl text-[#1E90DB] mb-2">350+</h4>
                 <p className="text-gray-600">Projects Completed</p>
               </div>
               <div>
-                <h4 className="font-montserrat font-bold text-2xl text-[#C09E5E] mb-2">45+</h4>
+                <h4 className="font-montserrat font-bold text-2xl text-[#1E90DB] mb-2">45+</h4>
                 <p className="text-gray-600">Industry Awards</p>
               </div>
               <div>
-                <h4 className="font-montserrat font-bold text-2xl text-[#C09E5E] mb-2">120+</h4>
+                <h4 className="font-montserrat font-bold text-2xl text-[#1E90DB] mb-2">120+</h4>
                 <p className="text-gray-600">Team Members</p>
               </div>
               <div>
-                <h4 className="font-montserrat font-bold text-2xl text-[#C09E5E] mb-2">38</h4>
+                <h4 className="font-montserrat font-bold text-2xl text-[#1E90DB] mb-2">38</h4>
                 <p className="text-gray-600">Years Experience</p>
               </div>
             </div>

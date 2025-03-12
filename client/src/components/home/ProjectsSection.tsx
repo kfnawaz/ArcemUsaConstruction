@@ -24,7 +24,7 @@ const ProjectsSection = () => {
     <section id="projects" className="py-20 md:py-32 bg-white">
       <div className="container mx-auto px-4 md:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16 reveal">
-          <h2 className="text-sm font-montserrat text-[#C09E5E] mb-4">OUR PROJECTS</h2>
+          <h2 className="text-sm font-montserrat text-[#1E90DB] mb-4">OUR PROJECTS</h2>
           <h3 className="text-3xl md:text-4xl font-montserrat font-bold mb-6">Featured Construction Projects</h3>
           <p className="text-gray-600 leading-relaxed">
             Browse our portfolio of completed projects showcasing our expertise and commitment to excellence.

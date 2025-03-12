@@ -76,14 +76,14 @@ const ContactSection = () => {
       <div className="container mx-auto px-4 md:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           <div className="reveal">
-            <h2 className="text-sm font-montserrat text-[#C09E5E] mb-4">CONTACT US</h2>
+            <h2 className="text-sm font-montserrat text-[#1E90DB] mb-4">CONTACT US</h2>
             <h3 className="text-3xl md:text-4xl font-montserrat font-bold mb-6">Ready to Start Your Project?</h3>
             <p className="mb-8 leading-relaxed">
               Contact us today to discuss your construction needs. Our team is ready to bring your vision to life with expertise, quality craftsmanship, and dedication to excellence.
             </p>
             
             <div className="flex items-start mb-6">
-              <div className="text-[#C09E5E] mr-4 mt-1">
+              <div className="text-[#1E90DB] mr-4 mt-1">
                 <MapPin className="w-6 h-6" />
               </div>
               <div>
@@ -94,7 +94,7 @@ const ContactSection = () => {
             </div>
             
             <div className="flex items-start mb-6">
-              <div className="text-[#C09E5E] mr-4 mt-1">
+              <div className="text-[#1E90DB] mr-4 mt-1">
                 <Phone className="w-6 h-6" />
               </div>
               <div>
@@ -104,7 +104,7 @@ const ContactSection = () => {
             </div>
             
             <div className="flex items-start mb-8">
-              <div className="text-[#C09E5E] mr-4 mt-1">
+              <div className="text-[#1E90DB] mr-4 mt-1">
                 <Mail className="w-6 h-6" />
               </div>
               <div>
@@ -114,16 +114,16 @@ const ContactSection = () => {
             </div>
             
             <div className="flex space-x-4">
-              <a href="#" className="text-white hover:text-[#C09E5E] transition-colors" aria-label="Facebook">
+              <a href="#" className="text-white hover:text-[#1E90DB] transition-colors" aria-label="Facebook">
                 <Facebook className="w-6 h-6" />
               </a>
-              <a href="#" className="text-white hover:text-[#C09E5E] transition-colors" aria-label="GitHub">
+              <a href="#" className="text-white hover:text-[#1E90DB] transition-colors" aria-label="GitHub">
                 <Github className="w-6 h-6" />
               </a>
-              <a href="#" className="text-white hover:text-[#C09E5E] transition-colors" aria-label="Instagram">
+              <a href="#" className="text-white hover:text-[#1E90DB] transition-colors" aria-label="Instagram">
                 <Instagram className="w-6 h-6" />
               </a>
-              <a href="#" className="text-white hover:text-[#C09E5E] transition-colors" aria-label="LinkedIn">
+              <a href="#" className="text-white hover:text-[#1E90DB] transition-colors" aria-label="LinkedIn">
                 <Linkedin className="w-6 h-6" />
               </a>
             </div>
