@@ -7,6 +7,7 @@ import { BlogPost } from '@shared/schema';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { motion } from 'framer-motion';
 
 const Blog = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -47,13 +48,26 @@ const Blog = () => {
   return (
     <>
       {/* Page Banner */}
-      <div className="bg-black text-white py-32 relative">
-        <div className="container mx-auto px-4 md:px-8">
+      <div 
+        className="relative min-h-[500px] flex items-center justify-center" 
+        style={{
+          backgroundImage: "url('/uploads/images/services/renovation/renovation1.jpg')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center'
+        }}
+      >
+        <div className="absolute inset-0 bg-black opacity-75"></div>
+        <motion.div 
+          className="container relative z-10 px-4 md:px-8 text-white py-32"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
           <h1 className="text-4xl md:text-5xl font-montserrat font-bold mb-6">Construction Insights</h1>
           <p className="text-lg max-w-3xl">
             Stay updated with the latest trends, tips, and news from the construction industry.
           </p>
-        </div>
+        </motion.div>
       </div>
 
       {/* Blog Content */}

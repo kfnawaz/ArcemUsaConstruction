@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { initializeRevealEffects, scrollToTop } from '@/lib/utils';
 import ProjectCard from '@/components/common/ProjectCard';
 import { Project } from '@shared/schema';
+import { motion } from 'framer-motion';
 
 const Projects = () => {
   useEffect(() => {
@@ -32,13 +33,26 @@ const Projects = () => {
   return (
     <>
       {/* Page Banner */}
-      <div className="bg-black text-white py-32 relative">
-        <div className="container mx-auto px-4 md:px-8">
+      <div 
+        className="relative min-h-[500px] flex items-center justify-center" 
+        style={{
+          backgroundImage: "url('/uploads/images/services/industrial/industrial1.jpg')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center'
+        }}
+      >
+        <div className="absolute inset-0 bg-black opacity-75"></div>
+        <motion.div 
+          className="container relative z-10 px-4 md:px-8 text-white py-32"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
           <h1 className="text-4xl md:text-5xl font-montserrat font-bold mb-6">Our Projects</h1>
           <p className="text-lg max-w-3xl">
             Browse our portfolio of completed projects showcasing our expertise across diverse sectors.
           </p>
-        </div>
+        </motion.div>
       </div>
 
       {/* Projects Gallery */}
