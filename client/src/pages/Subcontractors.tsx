@@ -130,13 +130,11 @@ const Subcontractors = () => {
           state: data.state,
           zip: data.zip,
           website: data.website || null,
-          products: data.supplyTypes.join(", "),
-          productDescription: data.serviceDescription,
+          supplyTypes: data.supplyTypes,
+          serviceDescription: data.serviceDescription,
           yearsInBusiness: data.yearsInBusiness,
           references: data.references || "",
-          howHeardAboutUs: data.howDidYouHear || "",
-          status: "pending",
-          notes: "",
+          howDidYouHear: data.howDidYouHear || "",
         };
         
         // Submit vendor application

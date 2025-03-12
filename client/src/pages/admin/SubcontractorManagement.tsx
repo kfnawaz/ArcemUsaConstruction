@@ -95,7 +95,7 @@ export default function SubcontractorManagement() {
     setSelectedSubcontractor(subcontractor);
     setSelectedVendor(null);
     setNotes(subcontractor.notes || '');
-    setStatus(subcontractor.status);
+    setStatus(subcontractor.status || 'pending');
     setIsDetailsOpen(true);
   };
 
@@ -104,7 +104,7 @@ export default function SubcontractorManagement() {
     setSelectedVendor(vendor);
     setSelectedSubcontractor(null);
     setNotes(vendor.notes || '');
-    setStatus(vendor.status);
+    setStatus(vendor.status || 'pending');
     setIsDetailsOpen(true);
   };
 
