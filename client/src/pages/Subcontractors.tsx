@@ -161,106 +161,9 @@ const Subcontractors = () => {
       setIsSubmitting(false);
     }
   };
-
-  // Debug function to test vendor form submission
-  const debugVendorSubmit = () => {
-    console.log("Debug vendor form submission");
-    const data = form.getValues();
-    console.log("Form values:", data);
-    console.log("Form errors:", form.formState.errors);
-    
-    // Check if all required fields are filled
-    const requiredFields = [
-      "companyName", "contactName", "email", "phone", 
-      "address", "city", "state", "zip",
-      "supplyTypes", "serviceDescription", "yearsInBusiness"
-    ];
-    
-    const missingFields = requiredFields.filter(field => {
-      if (field === "supplyTypes") {
-        return !data[field] || !Array.isArray(data[field]) || data[field].length === 0;
-      }
-      return !data[field];
-    });
-    
-    if (missingFields.length > 0) {
-      console.error("Missing required fields:", missingFields);
-      toast({
-        title: "Missing Required Fields",
-        description: `Please fill in all required fields: ${missingFields.join(", ")}`,
-        variant: "destructive",
-      });
-      
-      // Set errors for missing fields
-      missingFields.forEach(field => {
-        form.setError(field as any, { 
-          type: "manual", 
-          message: "This field is required" 
-        });
-      });
-      return;
-    }
-    
-    // Perform manual validation for special fields
-    if (!data.supplyTypes || !Array.isArray(data.supplyTypes) || data.supplyTypes.length === 0) {
-      console.error("supplyTypes validation failed:", data.supplyTypes);
-      form.setError("supplyTypes", { 
-        type: "manual", 
-        message: "Please select at least one product/supply type" 
-      });
-      return;
-    }
-    
-    // Attempt direct API call with timeout and error handling
-    const vendorData = {
-      companyName: data.companyName,
-      contactName: data.contactName,
-      email: data.email,
-      phone: data.phone,
-      address: data.address,
-      city: data.city,
-      state: data.state,
-      zip: data.zip,
-      website: data.website || undefined,
-      supplyTypes: data.supplyTypes,
-      serviceDescription: data.serviceDescription,
-      yearsInBusiness: data.yearsInBusiness,
-      references: data.references || "",
-      howDidYouHear: data.howDidYouHear || "",
-    };
-    
-    console.log("Submitting vendor data:", vendorData);
-    
-    setIsSubmitting(true);
-    toast({
-      title: "Submitting Form",
-      description: "Attempting to submit vendor application...",
-    });
-    
-    submitVendorApplication(vendorData);
-    
-    // Set a timeout to check if submission is taking too long
-    setTimeout(() => {
-      if (isSubmitting) {
-        console.log("Form submission taking longer than expected");
-      }
-    }, 5000);
-  };
   
   return (
     <div className="flex flex-col">
-      {/* Debug Button */}
-      {activeTab === "vendor" && (
-        <div className="fixed top-4 right-4 z-50">
-          <Button 
-            onClick={debugVendorSubmit}
-            className="bg-orange-500 hover:bg-orange-600 text-white"
-          >
-            Debug Vendor Form
-          </Button>
-        </div>
-      )}
-    
       {/* Hero Section */}
       <div className="relative h-96 flex items-center justify-center bg-gradient-to-r from-gray-900 to-black">
         <div className="absolute inset-0 bg-black opacity-60"></div>
@@ -687,13 +590,7 @@ const Subcontractors = () => {
                     
                     <Form {...form}>
                       <form 
-                        onSubmit={(e) => {
-                          console.log("Vendor form submit event triggered");
-                          return form.handleSubmit((data) => {
-                            console.log("Vendor form submission handler", data);
-                            return onSubmit(data);
-                          })(e);
-                        }} 
+                        onSubmit={form.handleSubmit(onSubmit)} 
                         className="space-y-8">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <FormField
