@@ -89,6 +89,7 @@ const Subcontractors = () => {
   });
 
   const onSubmit = async (data: FormValues) => {
+    console.log("Form submission started", { data, activeTab });
     setIsSubmitting(true);
     
     try {
