@@ -50,7 +50,7 @@ const JoinUs = () => {
       >
         <div className="absolute inset-0 bg-black opacity-70"></div>
         <motion.div 
-          className="relative z-10 text-center px-4 py-16"
+          className="relative z-10 text-center px-4 py-20"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
