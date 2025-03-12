@@ -169,7 +169,39 @@ const Subcontractors = () => {
     console.log("Form values:", data);
     console.log("Form errors:", form.formState.errors);
     
-    // Validate supplyTypes field manually
+    // Check if all required fields are filled
+    const requiredFields = [
+      "companyName", "contactName", "email", "phone", 
+      "address", "city", "state", "zip",
+      "supplyTypes", "serviceDescription", "yearsInBusiness"
+    ];
+    
+    const missingFields = requiredFields.filter(field => {
+      if (field === "supplyTypes") {
+        return !data[field] || !Array.isArray(data[field]) || data[field].length === 0;
+      }
+      return !data[field];
+    });
+    
+    if (missingFields.length > 0) {
+      console.error("Missing required fields:", missingFields);
+      toast({
+        title: "Missing Required Fields",
+        description: `Please fill in all required fields: ${missingFields.join(", ")}`,
+        variant: "destructive",
+      });
+      
+      // Set errors for missing fields
+      missingFields.forEach(field => {
+        form.setError(field as any, { 
+          type: "manual", 
+          message: "This field is required" 
+        });
+      });
+      return;
+    }
+    
+    // Perform manual validation for special fields
     if (!data.supplyTypes || !Array.isArray(data.supplyTypes) || data.supplyTypes.length === 0) {
       console.error("supplyTypes validation failed:", data.supplyTypes);
       form.setError("supplyTypes", { 
@@ -179,7 +211,7 @@ const Subcontractors = () => {
       return;
     }
     
-    // Attempt direct API call
+    // Attempt direct API call with timeout and error handling
     const vendorData = {
       companyName: data.companyName,
       contactName: data.contactName,
@@ -198,7 +230,21 @@ const Subcontractors = () => {
     };
     
     console.log("Submitting vendor data:", vendorData);
+    
+    setIsSubmitting(true);
+    toast({
+      title: "Submitting Form",
+      description: "Attempting to submit vendor application...",
+    });
+    
     submitVendorApplication(vendorData);
+    
+    // Set a timeout to check if submission is taking too long
+    setTimeout(() => {
+      if (isSubmitting) {
+        console.log("Form submission taking longer than expected");
+      }
+    }, 5000);
   };
   
   return (
@@ -640,7 +686,15 @@ const Subcontractors = () => {
                     </div>
                     
                     <Form {...form}>
-                      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                      <form 
+                        onSubmit={(e) => {
+                          console.log("Vendor form submit event triggered");
+                          return form.handleSubmit((data) => {
+                            console.log("Vendor form submission handler", data);
+                            return onSubmit(data);
+                          })(e);
+                        }} 
+                        className="space-y-8">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <FormField
                             control={form.control}
