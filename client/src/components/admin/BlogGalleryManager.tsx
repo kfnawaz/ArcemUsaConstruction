@@ -42,17 +42,20 @@ const BlogGalleryManager: React.FC<BlogGalleryManagerProps> = ({ postId }) => {
   } = useBlog(postId);
 
   const handleFileUploadComplete = async (fileUrl: string | string[]) => {
-    // If multiple files were uploaded, we take the first one for now
-    const url = typeof fileUrl === 'string' ? fileUrl : fileUrl[0];
-    
-    if (url) {
-      try {
-        await addGalleryImage(url, captionInput || null);
-        setCaptionInput('');
-        setIsAddDialogOpen(false);
-      } catch (error) {
-        console.error('Error adding gallery image:', error);
+    try {
+      if (typeof fileUrl === 'string') {
+        // Single file upload
+        await addGalleryImage(fileUrl, captionInput || null);
+      } else if (Array.isArray(fileUrl) && fileUrl.length > 0) {
+        // Multiple files upload - process each file
+        for (const url of fileUrl) {
+          await addGalleryImage(url, captionInput || null);
+        }
       }
+      setCaptionInput('');
+      setIsAddDialogOpen(false);
+    } catch (error) {
+      console.error('Error adding gallery image(s):', error);
     }
   };
 
@@ -73,9 +76,8 @@ const BlogGalleryManager: React.FC<BlogGalleryManagerProps> = ({ postId }) => {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium">Gallery Images</h3>
+    <div className="space-y-4">
+      <div className="flex justify-end items-center">
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button variant="outline" size="sm">
@@ -92,7 +94,12 @@ const BlogGalleryManager: React.FC<BlogGalleryManagerProps> = ({ postId }) => {
                 value={captionInput}
                 onChange={(e) => setCaptionInput(e.target.value)}
               />
-              <FileUpload onUploadComplete={handleFileUploadComplete} />
+              <FileUpload 
+                onUploadComplete={handleFileUploadComplete}
+                accept="image/*"
+                multiple={true}
+                maxSizeMB={5}
+              />
             </div>
             <DialogFooter className="sm:justify-end">
               <DialogClose asChild>
@@ -104,23 +111,23 @@ const BlogGalleryManager: React.FC<BlogGalleryManagerProps> = ({ postId }) => {
       </div>
 
       {isLoadingGallery ? (
-        <div className="flex justify-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="flex justify-center py-4">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" />
         </div>
       ) : !galleryImages || !Array.isArray(galleryImages) || galleryImages.length === 0 ? (
-        <div className="text-center py-8 border border-dashed rounded-md">
-          <Image className="h-12 w-12 mx-auto text-muted-foreground" />
+        <div className="text-center py-4 border border-dashed rounded-md">
+          <Image className="h-10 w-10 mx-auto text-muted-foreground" />
           <p className="mt-2 text-sm text-muted-foreground">No gallery images yet</p>
           <Button 
             variant="link" 
-            className="mt-2"
+            className="mt-1 text-sm"
             onClick={() => setIsAddDialogOpen(true)}
           >
-            Add your first image
+            Add images
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 gap-2">
           {Array.isArray(galleryImages) && galleryImages.map((image: BlogGallery) => (
             <Card key={image.id} className="overflow-hidden group relative">
               <CardContent className="p-0">
@@ -134,15 +141,15 @@ const BlogGalleryManager: React.FC<BlogGalleryManagerProps> = ({ postId }) => {
                     <Button
                       variant="destructive"
                       size="icon"
-                      className="h-9 w-9"
+                      className="h-8 w-8"
                       onClick={() => confirmDelete(image.id)}
                     >
-                      <Trash2 className="h-5 w-5" />
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
                 {image.caption && (
-                  <div className="p-2 text-sm truncate">{image.caption}</div>
+                  <div className="p-1 text-xs truncate">{image.caption}</div>
                 )}
               </CardContent>
             </Card>

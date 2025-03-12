@@ -148,20 +148,10 @@ const BlogForm = ({ postId, onClose }: BlogFormProps) => {
         </h1>
       </div>
 
-      <Tabs defaultValue="content" value={activeTab} onValueChange={setActiveTab} className="w-full mb-6">
-        <TabsList className="mb-4">
-          <TabsTrigger value="content">Content</TabsTrigger>
-          {postId && (
-            <TabsTrigger value="gallery">
-              <Images className="h-4 w-4 mr-2" />
-              Gallery
-            </TabsTrigger>
-          )}
-        </TabsList>
-        
-        <TabsContent value="content">
+      <div className="flex flex-col md:flex-row gap-6">
+        <div className="w-full md:w-2/3">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-xl">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
                 control={form.control}
                 name="title"
@@ -217,25 +207,44 @@ const BlogForm = ({ postId, onClose }: BlogFormProps) => {
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="category"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Legacy Category (Text)</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="E.g., Construction, Architecture, Renovation" 
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      This field is for backwards compatibility. Use the Categories selector below for new posts.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="category"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Legacy Category (Text)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="E.g., Construction, Architecture" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        For backwards compatibility
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="image"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Featured Image URL</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Enter image URL" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
               
               <FormField
                 control={form.control}
@@ -361,30 +370,10 @@ const BlogForm = ({ postId, onClose }: BlogFormProps) => {
                     <FormControl>
                       <Textarea 
                         placeholder="Enter the full content of your blog post" 
-                        rows={8}
+                        rows={10}
                         {...field} 
                       />
                     </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="image"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Featured Image URL</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="Enter image URL" 
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Provide a URL to an image for this blog post
-                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -413,7 +402,7 @@ const BlogForm = ({ postId, onClose }: BlogFormProps) => {
                 )}
               />
 
-              <div className="flex justify-end space-x-4">
+              <div className="flex justify-end space-x-4 pt-4">
                 <Button
                   type="button"
                   variant="outline"
@@ -435,28 +424,30 @@ const BlogForm = ({ postId, onClose }: BlogFormProps) => {
               </div>
             </form>
           </Form>
-        </TabsContent>
-        
-        <TabsContent value="gallery">
+        </div>
+
+        {/* Gallery Section (Integrated in the content page) */}
+        <div className="w-full md:w-1/3 bg-gray-50 rounded-lg p-4">
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold flex items-center">
+              <Images className="h-5 w-5 mr-2" />
+              Gallery Images
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Add additional images for this blog post
+            </p>
+          </div>
+
           {postId ? (
-            <div className="w-full max-w-4xl">
-              <BlogGalleryManager postId={postId} />
-            </div>
+            <BlogGalleryManager postId={postId} />
           ) : (
             <div className="text-center py-16 border border-dashed rounded-lg">
               <Images className="h-12 w-12 mx-auto text-muted-foreground" />
-              <p className="mt-4 text-lg text-muted-foreground">Save the blog post first to add gallery images</p>
-              <Button 
-                variant="outline" 
-                className="mt-4"
-                onClick={() => setActiveTab("content")}
-              >
-                Back to Content
-              </Button>
+              <p className="mt-4 text-muted-foreground">Save the blog post first to add gallery images</p>
             </div>
           )}
-        </TabsContent>
-      </Tabs>
+        </div>
+      </div>
     </div>
   );
 };
