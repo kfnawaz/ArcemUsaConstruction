@@ -31,59 +31,200 @@ export const useSubcontractors = () => {
     enabled: false // Only load when explicitly needed in admin pages
   });
 
-  // Submit subcontractor application
+  // Enhanced submit subcontractor application with better validation and error handling
   const submitSubcontractorMutation = useMutation({
     mutationFn: async (data: InsertSubcontractor) => {
-      console.log("Subcontractor application data in mutation:", data);
-      // Ensure serviceTypes is an array
+      // Input validation - improved safety checks
+      if (!data) {
+        throw new Error("No data provided for subcontractor application");
+      }
+      
+      // Validate required fields
+      const requiredFields = ['companyName', 'contactName', 'email', 'phone', 'address', 'city', 'state', 'zip'];
+      const missingFields = requiredFields.filter(field => !data[field as keyof InsertSubcontractor]);
+      
+      if (missingFields.length > 0) {
+        console.error("Missing required subcontractor fields:", missingFields);
+        throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
+      }
+      
+      // Array validation with proper error messaging
+      if (!Array.isArray(data.serviceTypes) || data.serviceTypes.length === 0) {
+        console.error("Invalid serviceTypes:", data.serviceTypes);
+        throw new Error("Please select at least one service type");
+      }
+      
+      // Clean and prepare data for submission
       const subcontractorData = {
         ...data,
-        serviceTypes: Array.isArray(data.serviceTypes) ? data.serviceTypes : [],
+        // Ensure all string fields are properly trimmed and all arrays are valid
+        companyName: data.companyName.trim(),
+        contactName: data.contactName.trim(),
+        email: data.email.trim(),
+        phone: data.phone.trim(),
+        address: data.address.trim(),
+        city: data.city.trim(),
+        state: data.state.trim(),
+        zip: data.zip.trim(),
+        website: data.website ? data.website.trim() : undefined,
+        serviceTypes: data.serviceTypes, // Already validated above
+        serviceDescription: data.serviceDescription.trim(),
+        yearsInBusiness: data.yearsInBusiness,
+        insurance: !!data.insurance, // Ensure boolean type
+        bondable: !!data.bondable, // Ensure boolean type
+        licenses: data.licenses ? data.licenses.trim() : "",
+        references: data.references ? data.references.trim() : "",
+        howDidYouHear: data.howDidYouHear ? data.howDidYouHear.trim() : "",
       };
-      console.log("Processed subcontractor data:", subcontractorData);
-      const res = await apiRequest("POST", "/api/subcontractors/apply", subcontractorData);
-      return await res.json();
+      
+      // Enhanced logging for easier debugging
+      console.log("Submitting subcontractor application:", {
+        companyName: subcontractorData.companyName,
+        contactName: subcontractorData.contactName,
+        email: subcontractorData.email,
+        serviceTypes: subcontractorData.serviceTypes,
+        // Log length of longer fields rather than entire content
+        serviceDescriptionLength: subcontractorData.serviceDescription.length,
+        referencesProvided: subcontractorData.references.length > 0,
+      });
+      
+      // Submit application with proper error handling
+      try {
+        const res = await apiRequest("POST", "/api/subcontractors/apply", subcontractorData);
+        // Check response status
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => null);
+          throw new Error(
+            errorData?.message || 
+            `Server error: ${res.status} ${res.statusText}`
+          );
+        }
+        return await res.json();
+      } catch (err) {
+        console.error("API request failed:", err);
+        if (err instanceof Error) {
+          throw err;
+        } else {
+          throw new Error("Failed to submit application. Please try again.");
+        }
+      }
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log("Subcontractor application submitted successfully:", data);
       toast({
-        title: "Application Submitted",
-        description: "Your subcontractor application has been submitted successfully.",
+        title: "Application Submitted Successfully",
+        description: "Thank you! Your subcontractor application has been received. We will review it and contact you soon.",
       });
     },
     onError: (error: Error) => {
       console.error("Subcontractor application submission error:", error);
+      
+      // Provide more specific error messages based on error types
+      const errorMessage = error.message.includes("Network")
+        ? "Network error: Please check your internet connection and try again."
+        : error.message || "Failed to submit subcontractor application. Please try again.";
+      
       toast({
         title: "Submission Failed",
-        description: error.message || "Failed to submit subcontractor application. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     },
   });
 
-  // Submit vendor application
+  // Enhanced submit vendor application with better validation and error handling
   const submitVendorMutation = useMutation({
     mutationFn: async (data: InsertVendor) => {
-      console.log("Vendor application data in mutation:", data);
-      // Ensure supplyTypes is an array
+      // Input validation - improved safety checks
+      if (!data) {
+        throw new Error("No data provided for vendor application");
+      }
+      
+      // Validate required fields
+      const requiredFields = ['companyName', 'contactName', 'email', 'phone', 'address', 'city', 'state', 'zip'];
+      const missingFields = requiredFields.filter(field => !data[field as keyof InsertVendor]);
+      
+      if (missingFields.length > 0) {
+        console.error("Missing required vendor fields:", missingFields);
+        throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
+      }
+      
+      // Array validation with proper error messaging
+      if (!Array.isArray(data.supplyTypes) || data.supplyTypes.length === 0) {
+        console.error("Invalid supplyTypes:", data.supplyTypes);
+        throw new Error("Please select at least one product/supply type");
+      }
+      
+      // Clean and prepare data for submission
       const vendorData = {
         ...data,
-        supplyTypes: Array.isArray(data.supplyTypes) ? data.supplyTypes : [],
+        // Ensure all string fields are properly trimmed and all arrays are valid
+        companyName: data.companyName.trim(),
+        contactName: data.contactName.trim(),
+        email: data.email.trim(),
+        phone: data.phone.trim(),
+        address: data.address.trim(),
+        city: data.city.trim(),
+        state: data.state.trim(),
+        zip: data.zip.trim(),
+        website: data.website ? data.website.trim() : undefined,
+        supplyTypes: data.supplyTypes, // Already validated above
+        serviceDescription: data.serviceDescription.trim(),
+        yearsInBusiness: data.yearsInBusiness,
+        references: data.references ? data.references.trim() : "",
+        howDidYouHear: data.howDidYouHear ? data.howDidYouHear.trim() : "",
       };
-      console.log("Processed vendor data:", vendorData);
-      const res = await apiRequest("POST", "/api/vendors/apply", vendorData);
-      return await res.json();
+      
+      // Enhanced logging for easier debugging
+      console.log("Submitting vendor application:", {
+        companyName: vendorData.companyName,
+        contactName: vendorData.contactName,
+        email: vendorData.email,
+        supplyTypes: vendorData.supplyTypes,
+        // Log length of longer fields rather than entire content
+        serviceDescriptionLength: vendorData.serviceDescription.length,
+        referencesProvided: vendorData.references.length > 0,
+      });
+      
+      // Submit application with proper error handling
+      try {
+        const res = await apiRequest("POST", "/api/vendors/apply", vendorData);
+        // Check response status
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => null);
+          throw new Error(
+            errorData?.message || 
+            `Server error: ${res.status} ${res.statusText}`
+          );
+        }
+        return await res.json();
+      } catch (err) {
+        console.error("API request failed:", err);
+        if (err instanceof Error) {
+          throw err;
+        } else {
+          throw new Error("Failed to submit application. Please try again.");
+        }
+      }
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log("Vendor application submitted successfully:", data);
       toast({
-        title: "Application Submitted",
-        description: "Your vendor application has been submitted successfully.",
+        title: "Application Submitted Successfully",
+        description: "Thank you! Your vendor application has been received. We will review it and contact you soon.",
       });
     },
     onError: (error: Error) => {
       console.error("Vendor application submission error:", error);
+      
+      // Provide more specific error messages based on error types
+      const errorMessage = error.message.includes("Network")
+        ? "Network error: Please check your internet connection and try again."
+        : error.message || "Failed to submit vendor application. Please try again.";
+      
       toast({
         title: "Submission Failed",
-        description: error.message || "Failed to submit vendor application. Please try again.",
+        description: errorMessage,
         variant: "destructive",
       });
     },
