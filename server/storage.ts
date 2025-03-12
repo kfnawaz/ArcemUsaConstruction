@@ -11,7 +11,9 @@ import {
   serviceGallery, type ServiceGallery, type InsertServiceGallery,
   messages, type Message, type InsertMessage,
   newsletterSubscribers, type NewsletterSubscriber, type InsertNewsletterSubscriber,
-  quoteRequests, type QuoteRequest, type InsertQuoteRequest
+  quoteRequests, type QuoteRequest, type InsertQuoteRequest,
+  subcontractors, type Subcontractor, type InsertSubcontractor,
+  vendors, type Vendor, type InsertVendor
 } from "@shared/schema";
 
 // modify the interface with any CRUD methods
@@ -122,6 +124,24 @@ export interface IStorage {
   markQuoteRequestAsReviewed(id: number): Promise<QuoteRequest | undefined>;
   updateQuoteRequestStatus(id: number, status: string): Promise<QuoteRequest | undefined>;
   deleteQuoteRequest(id: number): Promise<boolean>;
+
+  // Subcontractors
+  getSubcontractors(): Promise<Subcontractor[]>;
+  getSubcontractor(id: number): Promise<Subcontractor | undefined>;
+  createSubcontractor(subcontractor: InsertSubcontractor): Promise<Subcontractor>;
+  updateSubcontractor(id: number, subcontractor: Partial<InsertSubcontractor>): Promise<Subcontractor | undefined>;
+  updateSubcontractorStatus(id: number, status: string): Promise<Subcontractor | undefined>;
+  updateSubcontractorNotes(id: number, notes: string): Promise<Subcontractor | undefined>;
+  deleteSubcontractor(id: number): Promise<boolean>;
+  
+  // Vendors
+  getVendors(): Promise<Vendor[]>;
+  getVendor(id: number): Promise<Vendor | undefined>;
+  createVendor(vendor: InsertVendor): Promise<Vendor>;
+  updateVendor(id: number, vendor: Partial<InsertVendor>): Promise<Vendor | undefined>;
+  updateVendorStatus(id: number, status: string): Promise<Vendor | undefined>;
+  updateVendorNotes(id: number, notes: string): Promise<Vendor | undefined>;
+  deleteVendor(id: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -140,6 +160,8 @@ export class MemStorage implements IStorage {
   private messages: Map<number, Message>;
   private newsletterSubscribers: Map<number, NewsletterSubscriber>;
   private quoteRequests: Map<number, QuoteRequest>;
+  private subcontractors: Map<number, Subcontractor>;
+  private vendors: Map<number, Vendor>;
   
   userCurrentId: number;
   projectCurrentId: number;
@@ -153,6 +175,8 @@ export class MemStorage implements IStorage {
   messageCurrentId: number;
   newsletterSubscriberCurrentId: number;
   quoteRequestCurrentId: number;
+  subcontractorCurrentId: number;
+  vendorCurrentId: number;
 
   serviceGalleryCurrentId: number;
   
@@ -172,6 +196,8 @@ export class MemStorage implements IStorage {
     this.messages = new Map();
     this.newsletterSubscribers = new Map();
     this.quoteRequests = new Map();
+    this.subcontractors = new Map();
+    this.vendors = new Map();
     
     this.userCurrentId = 1;
     this.projectCurrentId = 1;
@@ -186,6 +212,8 @@ export class MemStorage implements IStorage {
     this.messageCurrentId = 1;
     this.newsletterSubscriberCurrentId = 1;
     this.quoteRequestCurrentId = 1;
+    this.subcontractorCurrentId = 1;
+    this.vendorCurrentId = 1;
     
     // Add initial data
     this.initializeData();
@@ -1102,6 +1130,182 @@ export class MemStorage implements IStorage {
 
   async deleteQuoteRequest(id: number): Promise<boolean> {
     return this.quoteRequests.delete(id);
+  }
+
+  // Subcontractors
+  async getSubcontractors(): Promise<Subcontractor[]> {
+    return Array.from(this.subcontractors.values());
+  }
+
+  async getSubcontractor(id: number): Promise<Subcontractor | undefined> {
+    return this.subcontractors.get(id);
+  }
+
+  async createSubcontractor(subcontractor: InsertSubcontractor): Promise<Subcontractor> {
+    const id = this.subcontractorCurrentId++;
+    const now = new Date();
+    
+    const newSubcontractor: Subcontractor = {
+      id,
+      companyName: subcontractor.companyName,
+      contactName: subcontractor.contactName,
+      email: subcontractor.email,
+      phone: subcontractor.phone,
+      address: subcontractor.address,
+      city: subcontractor.city,
+      state: subcontractor.state,
+      zip: subcontractor.zip,
+      website: subcontractor.website || null,
+      serviceTypes: subcontractor.serviceTypes || [],
+      serviceDescription: subcontractor.serviceDescription,
+      yearsInBusiness: subcontractor.yearsInBusiness,
+      insurance: subcontractor.insurance ?? false,
+      bondable: subcontractor.bondable ?? false,
+      licenses: subcontractor.licenses || null,
+      references: subcontractor.references || null,
+      howDidYouHear: subcontractor.howDidYouHear || null,
+      status: "pending",
+      notes: null,
+      createdAt: now
+    };
+    
+    this.subcontractors.set(id, newSubcontractor);
+    return newSubcontractor;
+  }
+
+  async updateSubcontractor(id: number, updates: Partial<InsertSubcontractor>): Promise<Subcontractor | undefined> {
+    const subcontractor = this.subcontractors.get(id);
+    if (!subcontractor) return undefined;
+    
+    const updatedSubcontractor: Subcontractor = {
+      ...subcontractor,
+      ...updates,
+      // Ensure we don't overwrite these fields with undefined
+      website: updates.website || subcontractor.website,
+      serviceTypes: updates.serviceTypes || subcontractor.serviceTypes,
+      licenses: updates.licenses || subcontractor.licenses,
+      references: updates.references || subcontractor.references,
+      howDidYouHear: updates.howDidYouHear || subcontractor.howDidYouHear
+    };
+    
+    this.subcontractors.set(id, updatedSubcontractor);
+    return updatedSubcontractor;
+  }
+
+  async updateSubcontractorStatus(id: number, status: string): Promise<Subcontractor | undefined> {
+    const subcontractor = this.subcontractors.get(id);
+    if (!subcontractor) return undefined;
+    
+    const updatedSubcontractor: Subcontractor = {
+      ...subcontractor,
+      status
+    };
+    
+    this.subcontractors.set(id, updatedSubcontractor);
+    return updatedSubcontractor;
+  }
+
+  async updateSubcontractorNotes(id: number, notes: string): Promise<Subcontractor | undefined> {
+    const subcontractor = this.subcontractors.get(id);
+    if (!subcontractor) return undefined;
+    
+    const updatedSubcontractor: Subcontractor = {
+      ...subcontractor,
+      notes
+    };
+    
+    this.subcontractors.set(id, updatedSubcontractor);
+    return updatedSubcontractor;
+  }
+
+  async deleteSubcontractor(id: number): Promise<boolean> {
+    return this.subcontractors.delete(id);
+  }
+
+  // Vendors
+  async getVendors(): Promise<Vendor[]> {
+    return Array.from(this.vendors.values());
+  }
+
+  async getVendor(id: number): Promise<Vendor | undefined> {
+    return this.vendors.get(id);
+  }
+
+  async createVendor(vendor: InsertVendor): Promise<Vendor> {
+    const id = this.vendorCurrentId++;
+    const now = new Date();
+    
+    const newVendor: Vendor = {
+      id,
+      companyName: vendor.companyName,
+      contactName: vendor.contactName,
+      email: vendor.email,
+      phone: vendor.phone,
+      address: vendor.address,
+      city: vendor.city,
+      state: vendor.state,
+      zip: vendor.zip,
+      website: vendor.website || null,
+      supplyTypes: vendor.supplyTypes || [],
+      serviceDescription: vendor.serviceDescription,
+      yearsInBusiness: vendor.yearsInBusiness,
+      references: vendor.references || null,
+      howDidYouHear: vendor.howDidYouHear || null,
+      status: "pending",
+      notes: null,
+      createdAt: now
+    };
+    
+    this.vendors.set(id, newVendor);
+    return newVendor;
+  }
+
+  async updateVendor(id: number, updates: Partial<InsertVendor>): Promise<Vendor | undefined> {
+    const vendor = this.vendors.get(id);
+    if (!vendor) return undefined;
+    
+    const updatedVendor: Vendor = {
+      ...vendor,
+      ...updates,
+      // Ensure we don't overwrite these fields with undefined
+      website: updates.website || vendor.website,
+      supplyTypes: updates.supplyTypes || vendor.supplyTypes,
+      references: updates.references || vendor.references,
+      howDidYouHear: updates.howDidYouHear || vendor.howDidYouHear
+    };
+    
+    this.vendors.set(id, updatedVendor);
+    return updatedVendor;
+  }
+
+  async updateVendorStatus(id: number, status: string): Promise<Vendor | undefined> {
+    const vendor = this.vendors.get(id);
+    if (!vendor) return undefined;
+    
+    const updatedVendor: Vendor = {
+      ...vendor,
+      status
+    };
+    
+    this.vendors.set(id, updatedVendor);
+    return updatedVendor;
+  }
+
+  async updateVendorNotes(id: number, notes: string): Promise<Vendor | undefined> {
+    const vendor = this.vendors.get(id);
+    if (!vendor) return undefined;
+    
+    const updatedVendor: Vendor = {
+      ...vendor,
+      notes
+    };
+    
+    this.vendors.set(id, updatedVendor);
+    return updatedVendor;
+  }
+
+  async deleteVendor(id: number): Promise<boolean> {
+    return this.vendors.delete(id);
   }
 }
 
