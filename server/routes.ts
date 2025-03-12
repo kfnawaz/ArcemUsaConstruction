@@ -15,7 +15,9 @@ import {
   insertNewsletterSubscriberSchema,
   insertQuoteRequestSchema,
   insertServiceSchema,
-  insertServiceGallerySchema
+  insertServiceGallerySchema,
+  insertSubcontractorSchema,
+  insertVendorSchema
 } from "@shared/schema";
 import { z } from "zod";
 import { setupAuth } from "./auth";
@@ -1225,6 +1227,232 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ message: "Failed to delete quote request" });
+    }
+  });
+
+  // Subcontractor Routes
+  // Public route to submit subcontractor application
+  app.post(`${apiRouter}/subcontractors/apply`, async (req: Request, res: Response) => {
+    try {
+      const subcontractorData = insertSubcontractorSchema.parse(req.body);
+      const subcontractor = await storage.createSubcontractor(subcontractorData);
+      res.status(201).json({ 
+        message: "Your application has been submitted successfully", 
+        id: subcontractor.id 
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid application data", 
+          errors: error.errors 
+        });
+      }
+      res.status(500).json({ message: "Failed to submit application" });
+    }
+  });
+
+  // Admin routes to manage subcontractor applications
+  app.get(`${apiRouter}/admin/subcontractors`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const subcontractors = await storage.getSubcontractors();
+      res.json(subcontractors);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch subcontractor applications" });
+    }
+  });
+
+  app.get(`${apiRouter}/admin/subcontractors/:id`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid subcontractor ID" });
+      }
+      
+      const subcontractor = await storage.getSubcontractor(id);
+      if (!subcontractor) {
+        return res.status(404).json({ message: "Subcontractor application not found" });
+      }
+      
+      res.json(subcontractor);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch subcontractor application" });
+    }
+  });
+
+  app.put(`${apiRouter}/admin/subcontractors/:id/status`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid subcontractor ID" });
+      }
+      
+      const { status } = req.body;
+      if (!status || !['pending', 'approved', 'rejected'].includes(status)) {
+        return res.status(400).json({ message: "Invalid status value" });
+      }
+      
+      const subcontractor = await storage.updateSubcontractorStatus(id, status);
+      if (!subcontractor) {
+        return res.status(404).json({ message: "Subcontractor application not found" });
+      }
+      
+      res.json(subcontractor);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update subcontractor status" });
+    }
+  });
+
+  app.put(`${apiRouter}/admin/subcontractors/:id/notes`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid subcontractor ID" });
+      }
+      
+      const { notes } = req.body;
+      if (typeof notes !== 'string') {
+        return res.status(400).json({ message: "Notes must be a string" });
+      }
+      
+      const subcontractor = await storage.updateSubcontractorNotes(id, notes);
+      if (!subcontractor) {
+        return res.status(404).json({ message: "Subcontractor application not found" });
+      }
+      
+      res.json(subcontractor);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update subcontractor notes" });
+    }
+  });
+
+  app.delete(`${apiRouter}/admin/subcontractors/:id`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid subcontractor ID" });
+      }
+      
+      const success = await storage.deleteSubcontractor(id);
+      if (!success) {
+        return res.status(404).json({ message: "Subcontractor application not found" });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete subcontractor application" });
+    }
+  });
+
+  // Vendor Routes
+  // Public route to submit vendor application
+  app.post(`${apiRouter}/vendors/apply`, async (req: Request, res: Response) => {
+    try {
+      const vendorData = insertVendorSchema.parse(req.body);
+      const vendor = await storage.createVendor(vendorData);
+      res.status(201).json({ 
+        message: "Your application has been submitted successfully", 
+        id: vendor.id 
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid application data", 
+          errors: error.errors 
+        });
+      }
+      res.status(500).json({ message: "Failed to submit application" });
+    }
+  });
+
+  // Admin routes to manage vendor applications
+  app.get(`${apiRouter}/admin/vendors`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const vendors = await storage.getVendors();
+      res.json(vendors);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch vendor applications" });
+    }
+  });
+
+  app.get(`${apiRouter}/admin/vendors/:id`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid vendor ID" });
+      }
+      
+      const vendor = await storage.getVendor(id);
+      if (!vendor) {
+        return res.status(404).json({ message: "Vendor application not found" });
+      }
+      
+      res.json(vendor);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to fetch vendor application" });
+    }
+  });
+
+  app.put(`${apiRouter}/admin/vendors/:id/status`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid vendor ID" });
+      }
+      
+      const { status } = req.body;
+      if (!status || !['pending', 'approved', 'rejected'].includes(status)) {
+        return res.status(400).json({ message: "Invalid status value" });
+      }
+      
+      const vendor = await storage.updateVendorStatus(id, status);
+      if (!vendor) {
+        return res.status(404).json({ message: "Vendor application not found" });
+      }
+      
+      res.json(vendor);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update vendor status" });
+    }
+  });
+
+  app.put(`${apiRouter}/admin/vendors/:id/notes`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid vendor ID" });
+      }
+      
+      const { notes } = req.body;
+      if (typeof notes !== 'string') {
+        return res.status(400).json({ message: "Notes must be a string" });
+      }
+      
+      const vendor = await storage.updateVendorNotes(id, notes);
+      if (!vendor) {
+        return res.status(404).json({ message: "Vendor application not found" });
+      }
+      
+      res.json(vendor);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update vendor notes" });
+    }
+  });
+
+  app.delete(`${apiRouter}/admin/vendors/:id`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid vendor ID" });
+      }
+      
+      const success = await storage.deleteVendor(id);
+      if (!success) {
+        return res.status(404).json({ message: "Vendor application not found" });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete vendor application" });
     }
   });
 

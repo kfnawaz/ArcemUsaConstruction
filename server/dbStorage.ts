@@ -527,4 +527,104 @@ export class DBStorage implements IStorage {
       .returning();
     return result.length > 0;
   }
+
+  // Subcontractors
+  async getSubcontractors(): Promise<Subcontractor[]> {
+    return db.select().from(subcontractors).orderBy(subcontractors.createdAt);
+  }
+
+  async getSubcontractor(id: number): Promise<Subcontractor | undefined> {
+    const [result] = await db.select()
+      .from(subcontractors)
+      .where(eq(subcontractors.id, id));
+    return result;
+  }
+
+  async createSubcontractor(subcontractor: InsertSubcontractor): Promise<Subcontractor> {
+    const [result] = await db.insert(subcontractors)
+      .values(subcontractor)
+      .returning();
+    return result;
+  }
+
+  async updateSubcontractor(id: number, updates: Partial<InsertSubcontractor>): Promise<Subcontractor | undefined> {
+    const [result] = await db.update(subcontractors)
+      .set(updates)
+      .where(eq(subcontractors.id, id))
+      .returning();
+    return result;
+  }
+
+  async updateSubcontractorStatus(id: number, status: string): Promise<Subcontractor | undefined> {
+    const [result] = await db.update(subcontractors)
+      .set({ status })
+      .where(eq(subcontractors.id, id))
+      .returning();
+    return result;
+  }
+
+  async updateSubcontractorNotes(id: number, notes: string): Promise<Subcontractor | undefined> {
+    const [result] = await db.update(subcontractors)
+      .set({ notes })
+      .where(eq(subcontractors.id, id))
+      .returning();
+    return result;
+  }
+
+  async deleteSubcontractor(id: number): Promise<boolean> {
+    const result = await db.delete(subcontractors)
+      .where(eq(subcontractors.id, id))
+      .returning();
+    return result.length > 0;
+  }
+
+  // Vendors
+  async getVendors(): Promise<Vendor[]> {
+    return db.select().from(vendors).orderBy(vendors.createdAt);
+  }
+
+  async getVendor(id: number): Promise<Vendor | undefined> {
+    const [result] = await db.select()
+      .from(vendors)
+      .where(eq(vendors.id, id));
+    return result;
+  }
+
+  async createVendor(vendor: InsertVendor): Promise<Vendor> {
+    const [result] = await db.insert(vendors)
+      .values(vendor)
+      .returning();
+    return result;
+  }
+
+  async updateVendor(id: number, updates: Partial<InsertVendor>): Promise<Vendor | undefined> {
+    const [result] = await db.update(vendors)
+      .set(updates)
+      .where(eq(vendors.id, id))
+      .returning();
+    return result;
+  }
+
+  async updateVendorStatus(id: number, status: string): Promise<Vendor | undefined> {
+    const [result] = await db.update(vendors)
+      .set({ status })
+      .where(eq(vendors.id, id))
+      .returning();
+    return result;
+  }
+
+  async updateVendorNotes(id: number, notes: string): Promise<Vendor | undefined> {
+    const [result] = await db.update(vendors)
+      .set({ notes })
+      .where(eq(vendors.id, id))
+      .returning();
+    return result;
+  }
+
+  async deleteVendor(id: number): Promise<boolean> {
+    const result = await db.delete(vendors)
+      .where(eq(vendors.id, id))
+      .returning();
+    return result.length > 0;
+  }
 }
