@@ -1,5 +1,5 @@
 import { createChatBotMessage } from 'react-chatbot-kit';
-import { IConfig, IWidget } from 'react-chatbot-kit/build/src/interfaces/IConfig';
+import type { Config as IConfig, Widget } from 'react-chatbot-kit/build/types';
 
 // Dynamically import widgets to avoid JSX in TypeScript file
 const createWidget = (Component: any) => {

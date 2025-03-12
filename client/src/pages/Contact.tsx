@@ -91,14 +91,14 @@ const Contact = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
             {/* Contact Information */}
             <div className="reveal">
-              <h2 className="text-sm font-montserrat text-[#C09E5E] mb-4">GET IN TOUCH</h2>
+              <h2 className="text-sm font-montserrat text-[#1E90DB] mb-4">GET IN TOUCH</h2>
               <h3 className="text-3xl md:text-4xl font-montserrat font-bold mb-6">Contact Information</h3>
               <p className="mb-8 leading-relaxed text-gray-600">
                 Contact us today to discuss your construction needs. Our team is ready to bring your vision to life with expertise, quality craftsmanship, and dedication to excellence.
               </p>
               
               <div className="flex items-start mb-6">
-                <div className="text-[#C09E5E] mr-4 mt-1">
+                <div className="text-[#1E90DB] mr-4 mt-1">
                   <MapPin className="w-6 h-6" />
                 </div>
                 <div>
@@ -109,7 +109,7 @@ const Contact = () => {
               </div>
               
               <div className="flex items-start mb-6">
-                <div className="text-[#C09E5E] mr-4 mt-1">
+                <div className="text-[#1E90DB] mr-4 mt-1">
                   <Phone className="w-6 h-6" />
                 </div>
                 <div>
@@ -119,7 +119,7 @@ const Contact = () => {
               </div>
               
               <div className="flex items-start mb-8">
-                <div className="text-[#C09E5E] mr-4 mt-1">
+                <div className="text-[#1E90DB] mr-4 mt-1">
                   <Mail className="w-6 h-6" />
                 </div>
                 <div>
@@ -129,16 +129,16 @@ const Contact = () => {
               </div>
               
               <div className="flex space-x-4">
-                <a href="#" className="text-gray-400 hover:text-[#C09E5E] transition-colors" aria-label="Facebook">
+                <a href="#" className="text-gray-400 hover:text-[#1E90DB] transition-colors" aria-label="Facebook">
                   <Facebook className="w-6 h-6" />
                 </a>
-                <a href="#" className="text-gray-400 hover:text-[#C09E5E] transition-colors" aria-label="GitHub">
+                <a href="#" className="text-gray-400 hover:text-[#1E90DB] transition-colors" aria-label="GitHub">
                   <Github className="w-6 h-6" />
                 </a>
-                <a href="#" className="text-gray-400 hover:text-[#C09E5E] transition-colors" aria-label="Instagram">
+                <a href="#" className="text-gray-400 hover:text-[#1E90DB] transition-colors" aria-label="Instagram">
                   <Instagram className="w-6 h-6" />
                 </a>
-                <a href="#" className="text-gray-400 hover:text-[#C09E5E] transition-colors" aria-label="LinkedIn">
+                <a href="#" className="text-gray-400 hover:text-[#1E90DB] transition-colors" aria-label="LinkedIn">
                   <Linkedin className="w-6 h-6" />
                 </a>
               </div>
@@ -182,7 +182,7 @@ const Contact = () => {
                           <FormControl>
                             <Input
                               {...field}
-                              className="px-4 py-3 border border-gray-300 focus:border-[#C09E5E] outline-none transition-colors"
+                              className="px-4 py-3 border border-gray-300 focus:border-[#1E90DB] outline-none transition-colors"
                               required
                             />
                           </FormControl>
@@ -201,7 +201,7 @@ const Contact = () => {
                             <Input
                               {...field}
                               type="email"
-                              className="px-4 py-3 border border-gray-300 focus:border-[#C09E5E] outline-none transition-colors"
+                              className="px-4 py-3 border border-gray-300 focus:border-[#1E90DB] outline-none transition-colors"
                               required
                             />
                           </FormControl>
@@ -221,7 +221,7 @@ const Contact = () => {
                           <Input
                             {...field}
                             type="tel"
-                            className="px-4 py-3 border border-gray-300 focus:border-[#C09E5E] outline-none transition-colors"
+                            className="px-4 py-3 border border-gray-300 focus:border-[#1E90DB] outline-none transition-colors"
                           />
                         </FormControl>
                         <FormMessage />
@@ -237,7 +237,7 @@ const Contact = () => {
                         <FormLabel className="font-montserrat">Service Interested In</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
-                            <SelectTrigger className="px-4 py-3 border border-gray-300 focus:border-[#C09E5E] outline-none transition-colors">
+                            <SelectTrigger className="px-4 py-3 border border-gray-300 focus:border-[#1E90DB] outline-none transition-colors">
                               <SelectValue placeholder="Select a service" />
                             </SelectTrigger>
                           </FormControl>
@@ -265,7 +265,7 @@ const Contact = () => {
                           <Textarea
                             {...field}
                             rows={5}
-                            className="px-4 py-3 border border-gray-300 focus:border-[#C09E5E] outline-none transition-colors"
+                            className="px-4 py-3 border border-gray-300 focus:border-[#1E90DB] outline-none transition-colors"
                             required
                           />
                         </FormControl>
@@ -276,7 +276,7 @@ const Contact = () => {
                   
                   <Button 
                     type="submit" 
-                    variant="gold"
+                    variant="blue"
                     disabled={contactMutation.isPending}
                   >
                     {contactMutation.isPending ? 'SENDING...' : 'SEND MESSAGE'}

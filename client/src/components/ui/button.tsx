@@ -20,7 +20,8 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
         black: "bg-black text-white hover:bg-gray-800",
         white: "border border-white text-white hover:bg-white hover:text-black",
-        gold: "bg-[#1E90DB] text-white hover:bg-[#1670B0]",
+        blue: "bg-[#1E90DB] text-white hover:bg-[#1670B0]",
+        gold: "bg-[#1E90DB] text-white hover:bg-[#1670B0]", // keeping gold for backward compatibility
       },
       size: {
         default: "px-8 py-3 tracking-wider",

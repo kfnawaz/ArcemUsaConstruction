@@ -117,7 +117,7 @@ const TestimonialCarousel = ({
       onMouseLeave={() => setIsPaused(false)}
     >
       {/* Quote icon */}
-      <div className="absolute top-6 left-6 text-[#C09E5E] opacity-20">
+      <div className="absolute top-6 left-6 text-[#1E90DB] opacity-20">
         <Quote size={60} />
       </div>
 
@@ -131,7 +131,7 @@ const TestimonialCarousel = ({
               isTransitioning ? getAnimationClasses(false) : getAnimationClasses(true)
             )}
           >
-            <Avatar className="w-24 h-24 border-4 border-[#C09E5E] mb-6 shadow-lg">
+            <Avatar className="w-24 h-24 border-4 border-[#1E90DB] mb-6 shadow-lg">
               {currentTestimonial.image ? (
                 <AvatarImage src={currentTestimonial.image} alt={currentTestimonial.name} />
               ) : (
@@ -149,7 +149,7 @@ const TestimonialCarousel = ({
                     className={cn(
                       "w-5 h-5 mx-0.5",
                       i < currentTestimonial.rating 
-                        ? "text-[#C09E5E] fill-[#C09E5E]" 
+                        ? "text-[#1E90DB] fill-[#1E90DB]" 
                         : "text-gray-300"
                     )} 
                   />
@@ -162,7 +162,7 @@ const TestimonialCarousel = ({
               
               <div>
                 <h4 className="text-xl font-bold text-white">{currentTestimonial.name}</h4>
-                <p className="text-[#C09E5E]">
+                <p className="text-[#1E90DB]">
                   {currentTestimonial.position}
                   {currentTestimonial.company && ` at ${currentTestimonial.company}`}
                 </p>
@@ -177,7 +177,7 @@ const TestimonialCarousel = ({
             <Button 
               onClick={goToPrevious} 
               disabled={isTransitioning}
-              className="bg-[#21201F]/50 hover:bg-[#C09E5E] text-white w-12 h-12 rounded-full p-0 transition-all duration-300"
+              className="bg-[#21201F]/50 hover:bg-[#1E90DB] text-white w-12 h-12 rounded-full p-0 transition-all duration-300"
               aria-label="Previous testimonial"
             >
               <ChevronLeft className="w-6 h-6" />
@@ -202,7 +202,7 @@ const TestimonialCarousel = ({
                   className={cn(
                     "w-3 h-3 rounded-full transition-all duration-300",
                     index === currentIndex 
-                      ? "bg-[#C09E5E] scale-110" 
+                      ? "bg-[#1E90DB] scale-110" 
                       : "bg-gray-400 opacity-50 hover:opacity-75"
                   )}
                   aria-label={`Go to testimonial ${index + 1}`}
@@ -213,7 +213,7 @@ const TestimonialCarousel = ({
             <Button 
               onClick={goToNext} 
               disabled={isTransitioning}
-              className="bg-[#21201F]/50 hover:bg-[#C09E5E] text-white w-12 h-12 rounded-full p-0 transition-all duration-300"
+              className="bg-[#21201F]/50 hover:bg-[#1E90DB] text-white w-12 h-12 rounded-full p-0 transition-all duration-300"
               aria-label="Next testimonial"
             >
               <ChevronRight className="w-6 h-6" />
