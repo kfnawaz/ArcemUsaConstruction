@@ -390,7 +390,7 @@ const ServiceDetail = () => {
                 <div className="mt-8">
                   <Link
                     href="/request-quote"
-                    className="bg-[#C09E5E] hover:bg-[#A98D54] text-white py-3 px-8 font-montserrat font-medium text-sm tracking-wider inline-block transition-colors"
+                    className="bg-[#1E90DB] hover:bg-[#1670B0] text-white py-3 px-8 font-montserrat font-medium text-sm tracking-wider inline-block transition-colors"
                   >
                     REQUEST A QUOTE
                   </Link>
@@ -399,7 +399,7 @@ const ServiceDetail = () => {
 
               <div className="md:w-1/3">
                 <div className="sticky top-24 bg-gray-100 p-6 rounded-lg">
-                  <div className="text-[#C09E5E] mb-4">
+                  <div className="text-[#1E90DB] mb-4">
                     {getIcon(service.icon)}
                   </div>
                   <h3 className="text-xl font-montserrat font-bold mb-4">
@@ -413,7 +413,7 @@ const ServiceDetail = () => {
                       <span className="mr-2 text-gray-700">Phone:</span>
                       <a
                         href="tel:+17136240083"
-                        className="text-[#C09E5E] hover:text-[#A98D54]"
+                        className="text-[#1E90DB] hover:text-[#1670B0]"
                       >
                         (713) 624-0083
                       </a>
@@ -422,7 +422,7 @@ const ServiceDetail = () => {
                       <span className="mr-2 text-gray-700">Email:</span>
                       <a
                         href="mailto:info@arcemusa.com"
-                        className="text-[#C09E5E] hover:text-[#A98D54]"
+                        className="text-[#1E90DB] hover:text-[#1670B0]"
                       >
                         info@arcemusa.com
                       </a>
@@ -430,7 +430,7 @@ const ServiceDetail = () => {
                     <div className="mt-4">
                       <Link
                         href="/contact"
-                        className="inline-flex items-center text-[#C09E5E] hover:text-[#A98D54] font-medium"
+                        className="inline-flex items-center text-[#1E90DB] hover:text-[#1670B0] font-medium"
                       >
                         Contact Us
                         <ArrowRight className="w-4 h-4 ml-2" />
@@ -495,7 +495,7 @@ const ServiceDetail = () => {
                         </p>
                         <Link
                           href="/projects"
-                          className="text-[#C09E5E] hover:text-[#A98D54] inline-flex items-center"
+                          className="text-[#1E90DB] hover:text-[#1670B0] inline-flex items-center"
                         >
                           View More Projects
                           <ArrowRight className="w-4 h-4 ml-2" />
@@ -527,7 +527,7 @@ const ServiceDetail = () => {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link
                   href="/contact"
-                  className="bg-[#C09E5E] hover:bg-[#A98D54] text-white py-3 px-8 font-montserrat font-medium text-sm tracking-wider inline-block transition-colors"
+                  className="bg-[#1E90DB] hover:bg-[#1670B0] text-white py-3 px-8 font-montserrat font-medium text-sm tracking-wider inline-block transition-colors"
                 >
                   CONTACT US
                 </Link>
@@ -548,7 +548,7 @@ const ServiceDetail = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-12 w-12 animate-spin text-[#C09E5E]" />
+        <Loader2 className="h-12 w-12 animate-spin text-[#1E90DB]" />
       </div>
     );
   }
@@ -565,7 +565,7 @@ const ServiceDetail = () => {
         </p>
         <Link
           href="/services"
-          className="bg-[#C09E5E] hover:bg-[#A98D54] text-white py-3 px-8 font-montserrat font-medium text-sm tracking-wider inline-block transition-colors"
+          className="bg-[#1E90DB] hover:bg-[#1670B0] text-white py-3 px-8 font-montserrat font-medium text-sm tracking-wider inline-block transition-colors"
         >
           VIEW ALL SERVICES
         </Link>
