@@ -85,7 +85,7 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
             <span 
               ref={textRef}
               className={cn(
-                "text-[#C09E5E] transition-all duration-700 delay-500 transform",
+                "text-[#1E90DB] transition-all duration-700 delay-500 transform",
                 logoAnimated ? "translate-x-0 opacity-100" : "translate-x-20 opacity-0"
               )}
             >
@@ -101,7 +101,7 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
                 href={item.href}
                 className={cn(
                   "text-white font-montserrat text-sm font-medium relative group px-2 py-1",
-                  location === item.href ? "text-[#e0c080]" : ""
+                  location === item.href ? "text-[#47A6ED]" : ""
                 )}
               >
                 <span className="relative z-10 transition-colors duration-300 group-hover:text-[#e0c080]">
@@ -155,7 +155,7 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
                 href={item.href}
                 className={cn(
                   "text-white font-montserrat text-sm font-medium relative group px-2 py-2 block",
-                  location === item.href ? "text-[#e0c080]" : ""
+                  location === item.href ? "text-[#47A6ED]" : ""
                 )}
                 onClick={closeMobileMenu}
               >
