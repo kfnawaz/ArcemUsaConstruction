@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useBlog } from '@/hooks/useBlog';
@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, Images } from 'lucide-react';
 import { generateSlug } from '@/lib/utils';
 import {
   Select,
@@ -30,6 +30,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import BlogGalleryManager from './BlogGalleryManager';
 
 interface BlogFormProps {
   postId?: number;
@@ -37,6 +39,7 @@ interface BlogFormProps {
 }
 
 const BlogForm = ({ postId, onClose }: BlogFormProps) => {
+  const [activeTab, setActiveTab] = useState("content");
   const { post, isLoading, saveBlogPost, isSubmitting, getPostCategoryIds, getPostTagIds } = useBlog(postId);
   const { 
     categories, 
@@ -131,8 +134,18 @@ const BlogForm = ({ postId, onClose }: BlogFormProps) => {
           </div>
         </div>
       ) : (
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-xl">
+        <Tabs defaultValue="content" value={activeTab} onValueChange={setActiveTab} className="w-full mb-6">
+          <TabsList className="mb-4">
+            <TabsTrigger value="content">Content</TabsTrigger>
+            {postId && <TabsTrigger value="gallery">
+              <Images className="h-4 w-4 mr-2" />
+              Gallery
+            </TabsTrigger>}
+          </TabsList>
+          
+          <TabsContent value="content">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-xl">
             <FormField
               control={form.control}
               name="title"
@@ -406,6 +419,28 @@ const BlogForm = ({ postId, onClose }: BlogFormProps) => {
             </div>
           </form>
         </Form>
+        </TabsContent>
+        
+        <TabsContent value="gallery">
+          {postId ? (
+            <div className="w-full max-w-4xl">
+              <BlogGalleryManager postId={postId} />
+            </div>
+          ) : (
+            <div className="text-center py-16 border border-dashed rounded-lg">
+              <Images className="h-12 w-12 mx-auto text-muted-foreground" />
+              <p className="mt-4 text-lg text-muted-foreground">Save the blog post first to add gallery images</p>
+              <Button 
+                variant="outline" 
+                className="mt-4"
+                onClick={() => setActiveTab("content")}
+              >
+                Back to Content
+              </Button>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
       )}
     </div>
   );
