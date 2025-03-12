@@ -1234,7 +1234,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Public route to submit subcontractor application
   app.post(`${apiRouter}/subcontractors/apply`, async (req: Request, res: Response) => {
     try {
+      console.log("Subcontractor application submitted:", JSON.stringify(req.body, null, 2));
       const subcontractorData = insertSubcontractorSchema.parse(req.body);
+      console.log("Parsed subcontractor data:", JSON.stringify(subcontractorData, null, 2));
       const subcontractor = await storage.createSubcontractor(subcontractorData);
       res.status(201).json({ 
         message: "Your application has been submitted successfully", 
@@ -1242,11 +1244,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
+        console.error("Zod validation error:", error.errors);
         return res.status(400).json({ 
           message: "Invalid application data", 
           errors: error.errors 
         });
       }
+      console.error("Subcontractor application error:", error);
       res.status(500).json({ message: "Failed to submit application" });
     }
   });
@@ -1347,7 +1351,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Public route to submit vendor application
   app.post(`${apiRouter}/vendors/apply`, async (req: Request, res: Response) => {
     try {
+      console.log("Vendor application submitted:", JSON.stringify(req.body, null, 2));
       const vendorData = insertVendorSchema.parse(req.body);
+      console.log("Parsed vendor data:", JSON.stringify(vendorData, null, 2));
       const vendor = await storage.createVendor(vendorData);
       res.status(201).json({ 
         message: "Your application has been submitted successfully", 
@@ -1355,11 +1361,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     } catch (error) {
       if (error instanceof z.ZodError) {
+        console.error("Zod validation error:", error.errors);
         return res.status(400).json({ 
           message: "Invalid application data", 
           errors: error.errors 
         });
       }
+      console.error("Vendor application error:", error);
       res.status(500).json({ message: "Failed to submit application" });
     }
   });
