@@ -41,7 +41,7 @@ const JoinUs = () => {
     <div className="flex flex-col">
       {/* Hero Section */}
       <div 
-        className="relative min-h-[500px] flex items-center justify-center" 
+        className="relative min-h-[350px] flex items-center justify-center" 
         style={{
           backgroundImage: "url('/uploads/images/services/commercial/commercial1.jpg')",
           backgroundSize: 'cover',
