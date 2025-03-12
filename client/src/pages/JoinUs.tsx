@@ -63,9 +63,11 @@ const JoinUs = () => {
                   If you are a vendor interested in working with ARCEMUSA, please visit our Vendors 
                   page to learn more about our vendor requirements and how to become a preferred vendor.
                 </p>
-                <Button className="bg-[#1E90DB] hover:bg-[#1670B0]">
-                  APPLY NOW <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
+                <Link href="/subcontractors?tab=vendor">
+                  <Button className="bg-[#1E90DB] hover:bg-[#1670B0]">
+                    APPLY NOW <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
               </div>
             </div>
 

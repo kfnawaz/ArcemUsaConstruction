@@ -13,6 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 import { scrollToTop } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useLocation } from 'wouter';
 
 // Form schema
 const formSchema = z.object({
@@ -41,11 +42,22 @@ const Subcontractors = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState("subcontractor");
   const { toast } = useToast();
+  const [location] = useLocation();
 
+  // Check for tab parameter in URL
   useEffect(() => {
+    // Parse URL query parameters
+    const params = new URLSearchParams(window.location.search);
+    const tabParam = params.get('tab');
+    
+    // Set active tab if parameter exists and is valid
+    if (tabParam === 'vendor') {
+      setActiveTab('vendor');
+    }
+    
     scrollToTop();
     document.title = 'Subcontractors & Vendors - ARCEMUSA';
-  }, []);
+  }, [location]);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -116,7 +128,7 @@ const Subcontractors = () => {
       <div className="bg-white py-16">
         <div className="container mx-auto px-4 md:px-8">
           <div className="max-w-4xl mx-auto">
-            <Tabs defaultValue="subcontractor" className="mb-12">
+            <Tabs defaultValue={activeTab} className="mb-12">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger 
                   value="subcontractor" 
