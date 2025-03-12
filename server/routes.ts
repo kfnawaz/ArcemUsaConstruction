@@ -7,6 +7,7 @@ import {
   insertBlogCategorySchema,
   insertBlogTagSchema,
   insertBlogPostSchema,
+  insertBlogGallerySchema,
   extendedInsertBlogPostSchema,
   insertMessageSchema,
   insertTestimonialSchema,
@@ -423,15 +424,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Blog post not found" });
       }
       
-      // Get post categories and tags
+      // Get post categories, tags, and gallery images
       const categories = await storage.getBlogPostCategories(post.id);
       const tags = await storage.getBlogPostTags(post.id);
+      const galleryImages = await storage.getBlogGallery(post.id);
       
-      // Merge post with its categories and tags
+      // Merge post with its categories, tags, and gallery images
       const postWithRelations = {
         ...post,
         categories,
-        tags
+        tags,
+        galleryImages
       };
       
       res.json(postWithRelations);
@@ -453,15 +456,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Blog post not found" });
       }
       
-      // Get post categories and tags
+      // Get post categories, tags, and gallery images
       const categories = await storage.getBlogPostCategories(id);
       const tags = await storage.getBlogPostTags(id);
+      const galleryImages = await storage.getBlogGallery(id);
       
-      // Merge post with its categories and tags
+      // Merge post with its categories, tags, and gallery images
       const postWithRelations = {
         ...post,
         categories,
-        tags
+        tags,
+        galleryImages
       };
       
       res.json(postWithRelations);
