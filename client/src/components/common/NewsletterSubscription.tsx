@@ -109,7 +109,7 @@ const NewsletterSubscription = ({ extendedForm = false, className = "" }: Newsle
                       type="email" 
                       {...field}
                       className={className.includes("text-white") ? 
-                        "bg-gray-800 border-gray-700 focus:border-[#C09E5E] text-white" : ""}
+                        "bg-gray-800 border-gray-700 focus:border-[#1E90DB] text-white" : ""}
                     />
                   </FormControl>
                   <FormMessage className={className.includes("text-white") ? "text-red-300" : ""} />
@@ -120,7 +120,7 @@ const NewsletterSubscription = ({ extendedForm = false, className = "" }: Newsle
             <Button 
               type="submit" 
               className={`whitespace-nowrap ${className.includes("text-white") ? 
-                "bg-[#C09E5E] hover:bg-[#A78B4E] text-sm px-4 py-2" : ""}`}
+                "bg-[#1E90DB] hover:bg-[#1670B0] text-sm px-4 py-2" : ""}`}
               disabled={subscriptionMutation.isPending}
             >
               {subscriptionMutation.isPending ? "Subscribing..." : "SUBSCRIBE"}

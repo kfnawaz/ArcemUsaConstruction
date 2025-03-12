@@ -52,7 +52,7 @@ const NewsletterOptions = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex items-center justify-center bg-[#C09E5E] hover:bg-[#A98D54] text-white p-2 rounded-md transition-colors"
+              className="flex items-center justify-center bg-[#1E90DB] hover:bg-[#1670B0] text-white p-2 rounded-md transition-colors"
             >
               {isSubmitting ? 'Subscribing...' : (
                 <>
