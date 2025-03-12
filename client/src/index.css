@@ -15,7 +15,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 41 48% 55%;
+    --primary: 201 83% 46%;
     --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
@@ -36,7 +36,7 @@
 
     --radius: 0.5rem;
 
-    --chart-1: 41 48% 55%;
+    --chart-1: 201 83% 46%;
     --chart-2: 210 40% 96.1%;
     --chart-3: 222.2 47.4% 11.2%;
     --chart-4: 215.4 16.3% 46.9%;
@@ -53,7 +53,7 @@
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 41 48% 55%;
+    --primary: 201 83% 46%;
     --primary-foreground: 222.2 47.4% 11.2%;
 
     --secondary: 217.2 32.6% 17.5%;
@@ -112,7 +112,7 @@
   
   .project-overlay {
     opacity: 0;
-    background: rgba(192, 158, 94, 0.9);
+    background: rgba(30, 144, 219, 0.9);
     transition: all 0.3s ease;
   }
   
@@ -187,8 +187,8 @@
   .slider-item {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    background-image: linear-gradient(to right, #fdfaf2, #f8efd8);
-    border: 1px solid #e8daba;
+    background-image: linear-gradient(to right, #f2f9fd, #d8eefa);
+    border: 1px solid #bae0f8;
   }
   
   .slider-item:hover {
@@ -215,7 +215,7 @@
   /* Logo styles */
   .logo-img {
     transition: all 0.3s ease;
-    filter: drop-shadow(0 0 6px rgba(224, 192, 128, 0.5));
+    filter: drop-shadow(0 0 6px rgba(30, 144, 219, 0.5));
   }
   
   .navbar-fixed .logo-img {
