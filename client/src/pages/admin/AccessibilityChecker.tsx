@@ -204,7 +204,7 @@ const AccessibilityCheckerPage = () => {
                 <Button 
                   onClick={runCheck} 
                   disabled={isChecking}
-                  className="bg-[#1E90DB] hover:bg-[#9a7e48]"
+                  className="bg-[#1E90DB] hover:bg-[#1670B0]"
                 >
                   {isChecking ? 
                     <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Running check...</> : 

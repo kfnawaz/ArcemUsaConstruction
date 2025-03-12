@@ -102,7 +102,7 @@ const Projects = () => {
             </p>
             <a 
               href="/contact" 
-              className="bg-[#1E90DB] hover:bg-[#A98D54] text-white py-3 px-8 font-montserrat font-medium text-sm tracking-wider inline-block transition-colors"
+              className="bg-[#1E90DB] hover:bg-[#1670B0] text-white py-3 px-8 font-montserrat font-medium text-sm tracking-wider inline-block transition-colors"
             >
               START YOUR PROJECT
             </a>

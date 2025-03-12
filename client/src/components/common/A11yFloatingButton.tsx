@@ -17,7 +17,7 @@ const RequestQuoteButton = () => {
       <Link href="/request-quote">
         <Button
           size="lg"
-          className="bg-[#1E90DB] hover:bg-[#9a7e48] text-white shadow-lg flex items-center gap-2 font-bold transition-all duration-300 hover:scale-105"
+          className="bg-[#1E90DB] hover:bg-[#1670B0] text-white shadow-lg flex items-center gap-2 font-bold transition-all duration-300 hover:scale-105"
         >
           <FileText className="h-5 w-5" />
           REQUEST QUOTE
