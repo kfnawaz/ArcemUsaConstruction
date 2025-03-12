@@ -162,8 +162,59 @@ const Subcontractors = () => {
     }
   };
 
+  // Debug function to test vendor form submission
+  const debugVendorSubmit = () => {
+    console.log("Debug vendor form submission");
+    const data = form.getValues();
+    console.log("Form values:", data);
+    console.log("Form errors:", form.formState.errors);
+    
+    // Validate supplyTypes field manually
+    if (!data.supplyTypes || !Array.isArray(data.supplyTypes) || data.supplyTypes.length === 0) {
+      console.error("supplyTypes validation failed:", data.supplyTypes);
+      form.setError("supplyTypes", { 
+        type: "manual", 
+        message: "Please select at least one product/supply type" 
+      });
+      return;
+    }
+    
+    // Attempt direct API call
+    const vendorData = {
+      companyName: data.companyName,
+      contactName: data.contactName,
+      email: data.email,
+      phone: data.phone,
+      address: data.address,
+      city: data.city,
+      state: data.state,
+      zip: data.zip,
+      website: data.website || undefined,
+      supplyTypes: data.supplyTypes,
+      serviceDescription: data.serviceDescription,
+      yearsInBusiness: data.yearsInBusiness,
+      references: data.references || "",
+      howDidYouHear: data.howDidYouHear || "",
+    };
+    
+    console.log("Submitting vendor data:", vendorData);
+    submitVendorApplication(vendorData);
+  };
+  
   return (
     <div className="flex flex-col">
+      {/* Debug Button */}
+      {activeTab === "vendor" && (
+        <div className="fixed top-4 right-4 z-50">
+          <Button 
+            onClick={debugVendorSubmit}
+            className="bg-orange-500 hover:bg-orange-600 text-white"
+          >
+            Debug Vendor Form
+          </Button>
+        </div>
+      )}
+    
       {/* Hero Section */}
       <div className="relative h-96 flex items-center justify-center bg-gradient-to-r from-gray-900 to-black">
         <div className="absolute inset-0 bg-black opacity-60"></div>
