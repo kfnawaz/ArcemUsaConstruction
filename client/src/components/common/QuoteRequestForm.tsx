@@ -88,7 +88,7 @@ const QuoteRequestForm = ({ className = "", onSuccess }: QuoteRequestFormProps) 
                   <FormControl>
                     <Input 
                       placeholder="John Doe" 
-                      className="border-gray-300 focus:border-[#C09E5E] focus:ring-[#C09E5E] text-gray-800"
+                      className="border-gray-300 focus:border-[#1E90DB] focus:ring-[#1E90DB] text-gray-800"
                       {...field} 
                     />
                   </FormControl>
@@ -108,7 +108,7 @@ const QuoteRequestForm = ({ className = "", onSuccess }: QuoteRequestFormProps) 
                     <Input 
                       type="email" 
                       placeholder="email@example.com"
-                      className="border-gray-300 focus:border-[#C09E5E] focus:ring-[#C09E5E] text-gray-800"
+                      className="border-gray-300 focus:border-[#1E90DB] focus:ring-[#1E90DB] text-gray-800"
                       {...field} 
                     />
                   </FormControl>
@@ -127,7 +127,7 @@ const QuoteRequestForm = ({ className = "", onSuccess }: QuoteRequestFormProps) 
                   <FormControl>
                     <Input 
                       placeholder="(123) 456-7890"
-                      className="border-gray-300 focus:border-[#C09E5E] focus:ring-[#C09E5E] text-gray-800"
+                      className="border-gray-300 focus:border-[#1E90DB] focus:ring-[#1E90DB] text-gray-800"
                       {...field} 
                     />
                   </FormControl>
@@ -146,7 +146,7 @@ const QuoteRequestForm = ({ className = "", onSuccess }: QuoteRequestFormProps) 
                   <FormControl>
                     <Input 
                       placeholder="Company Name"
-                      className="border-gray-300 focus:border-[#C09E5E] focus:ring-[#C09E5E] text-gray-800"
+                      className="border-gray-300 focus:border-[#1E90DB] focus:ring-[#1E90DB] text-gray-800"
                       {...field} 
                     />
                   </FormControl>
@@ -169,7 +169,7 @@ const QuoteRequestForm = ({ className = "", onSuccess }: QuoteRequestFormProps) 
                     defaultValue={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger className="border-gray-300 focus:border-[#C09E5E] focus:ring-[#C09E5E] text-gray-800">
+                      <SelectTrigger className="border-gray-300 focus:border-[#1E90DB] focus:ring-[#1E90DB] text-gray-800">
                         <SelectValue placeholder="Select project type" />
                       </SelectTrigger>
                     </FormControl>
@@ -199,7 +199,7 @@ const QuoteRequestForm = ({ className = "", onSuccess }: QuoteRequestFormProps) 
                     defaultValue={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger className="border-gray-300 focus:border-[#C09E5E] focus:ring-[#C09E5E] text-gray-800">
+                      <SelectTrigger className="border-gray-300 focus:border-[#1E90DB] focus:ring-[#1E90DB] text-gray-800">
                         <SelectValue placeholder="Select project size" />
                       </SelectTrigger>
                     </FormControl>
@@ -227,7 +227,7 @@ const QuoteRequestForm = ({ className = "", onSuccess }: QuoteRequestFormProps) 
                     defaultValue={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger className="border-gray-300 focus:border-[#C09E5E] focus:ring-[#C09E5E] text-gray-800">
+                      <SelectTrigger className="border-gray-300 focus:border-[#1E90DB] focus:ring-[#1E90DB] text-gray-800">
                         <SelectValue placeholder="Select budget range" />
                       </SelectTrigger>
                     </FormControl>
@@ -257,7 +257,7 @@ const QuoteRequestForm = ({ className = "", onSuccess }: QuoteRequestFormProps) 
                     defaultValue={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger className="border-gray-300 focus:border-[#C09E5E] focus:ring-[#C09E5E] text-gray-800">
+                      <SelectTrigger className="border-gray-300 focus:border-[#1E90DB] focus:ring-[#1E90DB] text-gray-800">
                         <SelectValue placeholder="Select timeframe" />
                       </SelectTrigger>
                     </FormControl>
@@ -284,7 +284,7 @@ const QuoteRequestForm = ({ className = "", onSuccess }: QuoteRequestFormProps) 
                 <FormControl>
                   <Textarea 
                     placeholder="Please provide details about your project, requirements, and any specific needs."
-                    className="min-h-[120px] border-gray-300 focus:border-[#C09E5E] focus:ring-[#C09E5E] text-gray-800"
+                    className="min-h-[120px] border-gray-300 focus:border-[#1E90DB] focus:ring-[#1E90DB] text-gray-800"
                     {...field} 
                   />
                 </FormControl>
@@ -298,7 +298,7 @@ const QuoteRequestForm = ({ className = "", onSuccess }: QuoteRequestFormProps) 
           
           <Button 
             type="submit" 
-            className="w-full md:w-auto bg-[#C09E5E] hover:bg-[#A78B4E] text-white font-semibold"
+            className="w-full md:w-auto bg-[#1E90DB] hover:bg-[#1670B0] text-white font-semibold"
             disabled={quoteRequestMutation.isPending}
           >
             {quoteRequestMutation.isPending ? (

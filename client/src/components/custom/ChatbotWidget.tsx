@@ -257,7 +257,7 @@ const ChatbotWidget: React.FC = () => {
               key={service.id}
               className="p-2 hover:bg-gray-200 rounded-md cursor-pointer transition-colors"
             >
-              <div className="font-semibold text-[#C09E5E]">
+              <div className="font-semibold text-[#1E90DB]">
                 {service.title}
               </div>
               <div className="text-sm text-gray-600">
@@ -296,7 +296,7 @@ const ChatbotWidget: React.FC = () => {
                 </div>
               )}
               <div className="flex-1">
-                <div className="font-semibold text-[#C09E5E] group-hover:underline">
+                <div className="font-semibold text-[#1E90DB] group-hover:underline">
                   {project.title}
                 </div>
                 <div className="text-xs text-gray-500 mb-1">
@@ -344,7 +344,7 @@ const ChatbotWidget: React.FC = () => {
               >
                 {msg.sender === "bot" && (
                   <div className="flex-shrink-0 mr-2">
-                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#C09E5E] text-white">
+                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-[#1E90DB] text-white">
                       <Building2 className="w-5 h-5" />
                     </div>
                   </div>
@@ -385,7 +385,7 @@ const ChatbotWidget: React.FC = () => {
               />
               <Button
                 onClick={handleSendMessage}
-                className="bg-[#C09E5E] hover:bg-[#ae8d54]"
+                className="bg-[#1E90DB] hover:bg-[#1670B0]"
               >
                 <Send className="h-4 w-4" />
               </Button>
@@ -395,7 +395,7 @@ const ChatbotWidget: React.FC = () => {
       ) : (
         <Button
           onClick={toggleChatbot}
-          className="rounded-full h-14 w-14 bg-[#C09E5E] hover:bg-[#ae8d54] shadow-lg flex items-center justify-center p-0"
+          className="rounded-full h-14 w-14 bg-[#1E90DB] hover:bg-[#1670B0] shadow-lg flex items-center justify-center p-0"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
