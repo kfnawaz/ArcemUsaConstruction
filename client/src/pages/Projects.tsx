@@ -22,7 +22,7 @@ const Projects = () => {
   
   // Get unique categories from projects
   const categories = projects ? 
-    ['all', ...new Set(projects.map(project => project.category))] : 
+    ['all', ...Array.from(new Set(projects.map(project => project.category)))] : 
     ['all'];
 
   // Filter projects based on selected category

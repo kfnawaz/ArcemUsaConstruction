@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/select';
 import { MapPin, Phone, Mail, Facebook, Github, Instagram, Linkedin } from 'lucide-react';
 import { InsertMessage, insertMessageSchema } from '@shared/schema';
+import { motion } from 'framer-motion';
 
 const Contact = () => {
   const { toast } = useToast();
@@ -76,13 +77,26 @@ const Contact = () => {
   return (
     <>
       {/* Page Banner */}
-      <div className="bg-black text-white py-32 relative">
-        <div className="container mx-auto px-4 md:px-8">
+      <div 
+        className="relative min-h-[500px] flex items-center justify-center" 
+        style={{
+          backgroundImage: "url('/uploads/images/services/design/design1.jpg')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center'
+        }}
+      >
+        <div className="absolute inset-0 bg-black opacity-75"></div>
+        <motion.div 
+          className="container relative z-10 px-4 md:px-8 text-white py-32"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
           <h1 className="text-4xl md:text-5xl font-montserrat font-bold mb-6">Contact Us</h1>
           <p className="text-lg max-w-3xl">
             Get in touch with our team to discuss your construction needs and how we can help bring your vision to life.
           </p>
-        </div>
+        </motion.div>
       </div>
 
       {/* Contact Form Section */}
@@ -221,6 +235,7 @@ const Contact = () => {
                           <Input
                             {...field}
                             type="tel"
+                            value={field.value || ''} // Ensure value is never null or undefined
                             className="px-4 py-3 border border-gray-300 focus:border-[#1E90DB] outline-none transition-colors"
                           />
                         </FormControl>
@@ -235,7 +250,7 @@ const Contact = () => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="font-montserrat">Service Interested In</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} defaultValue={field.value || ''}>
                           <FormControl>
                             <SelectTrigger className="px-4 py-3 border border-gray-300 focus:border-[#1E90DB] outline-none transition-colors">
                               <SelectValue placeholder="Select a service" />
