@@ -40,9 +40,11 @@ const JoinUs = () => {
                   who share our commitment to excellence, quality craftsmanship, and timely project delivery.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Button className="bg-[#1E90DB] hover:bg-[#1670B0]">
-                    REGISTER <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
+                  <Link href="/subcontractors">
+                    <Button className="bg-[#1E90DB] hover:bg-[#1670B0]">
+                      REGISTER <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
                   <Button variant="outline" className="border-[#1E90DB] text-[#1E90DB] hover:bg-[#1E90DB] hover:text-white">
                     RESOURCES <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
