@@ -663,34 +663,58 @@ const Subcontractors = () => {
 
                         <FormField
                           control={form.control}
-                          name="serviceType"
+                          name="supplyTypes"
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Product/Supply Type *</FormLabel>
-                              <Select 
-                                onValueChange={field.onChange} 
-                                defaultValue={field.value}
-                              >
-                                <FormControl>
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Select product/supply type" />
-                                  </SelectTrigger>
-                                </FormControl>
-                                <SelectContent>
-                                  <SelectItem value="building-materials">Building Materials</SelectItem>
-                                  <SelectItem value="lumber">Lumber</SelectItem>
-                                  <SelectItem value="electrical">Electrical Supplies</SelectItem>
-                                  <SelectItem value="plumbing">Plumbing Supplies</SelectItem>
-                                  <SelectItem value="hvac">HVAC Equipment</SelectItem>
-                                  <SelectItem value="tools">Tools & Equipment</SelectItem>
-                                  <SelectItem value="hardware">Hardware</SelectItem>
-                                  <SelectItem value="concrete">Concrete & Masonry</SelectItem>
-                                  <SelectItem value="paint">Paint & Finishes</SelectItem>
-                                  <SelectItem value="flooring">Flooring Materials</SelectItem>
-                                  <SelectItem value="safety">Safety Equipment</SelectItem>
-                                  <SelectItem value="other">Other (Please specify)</SelectItem>
-                                </SelectContent>
-                              </Select>
+                              <div className="flex flex-col space-y-4">
+                                <div className="flex flex-wrap gap-2">
+                                  {field.value.map((supply) => (
+                                    <Badge key={supply} className="py-1.5 px-2 flex items-center gap-1">
+                                      {supply.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                                      <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-4 w-4 p-0 hover:bg-transparent"
+                                        onClick={() => {
+                                          const newValue = field.value.filter((s) => s !== supply);
+                                          field.onChange(newValue);
+                                        }}
+                                      >
+                                        <X className="h-3 w-3" />
+                                      </Button>
+                                    </Badge>
+                                  ))}
+                                </div>
+                                <Select
+                                  onValueChange={(value) => {
+                                    if (!field.value.includes(value)) {
+                                      field.onChange([...field.value, value]);
+                                    }
+                                  }}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger>
+                                      <SelectValue placeholder="Select product/supply type" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="building-materials">Building Materials</SelectItem>
+                                    <SelectItem value="lumber">Lumber</SelectItem>
+                                    <SelectItem value="electrical">Electrical Supplies</SelectItem>
+                                    <SelectItem value="plumbing">Plumbing Supplies</SelectItem>
+                                    <SelectItem value="hvac">HVAC Equipment</SelectItem>
+                                    <SelectItem value="tools">Tools & Equipment</SelectItem>
+                                    <SelectItem value="hardware">Hardware</SelectItem>
+                                    <SelectItem value="concrete">Concrete & Masonry</SelectItem>
+                                    <SelectItem value="paint">Paint & Finishes</SelectItem>
+                                    <SelectItem value="flooring">Flooring Materials</SelectItem>
+                                    <SelectItem value="safety">Safety Equipment</SelectItem>
+                                    <SelectItem value="other">Other (Please specify)</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
                               <FormMessage />
                             </FormItem>
                           )}
