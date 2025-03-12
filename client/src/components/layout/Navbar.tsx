@@ -59,6 +59,7 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
     { label: 'SERVICES', href: '/services' },
     { label: 'PROJECTS', href: '/projects' },
     { label: 'BLOG', href: '/blog' },
+    { label: 'JOIN US', href: '/join-us' },
     { label: 'CONTACT', href: '/contact' },
   ];
 

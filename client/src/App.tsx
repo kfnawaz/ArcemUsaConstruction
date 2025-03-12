@@ -26,6 +26,7 @@ import RequestQuote from "@/pages/RequestQuote";
 import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfService from "@/pages/TermsOfService";
 import Sitemap from "@/pages/Sitemap";
+import JoinUs from "@/pages/JoinUs";
 import Login from "@/pages/auth/Login";
 import Dashboard from "@/pages/admin/Dashboard";
 import ProjectManagement from "@/pages/admin/ProjectManagement";
@@ -119,6 +120,7 @@ function Router() {
           <Route path="/privacy-policy" component={PrivacyPolicy} />
           <Route path="/terms-of-service" component={TermsOfService} />
           <Route path="/sitemap" component={Sitemap} />
+          <Route path="/join-us" component={JoinUs} />
           <Route path="/auth">
             <Login />
           </Route>

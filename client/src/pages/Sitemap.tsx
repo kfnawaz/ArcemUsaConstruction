@@ -54,6 +54,11 @@ const Sitemap = () => {
                 </Link>
               </li>
               <li>
+                <Link href="/join-us" className="text-gray-700 hover:text-[#1E90DB] transition-colors">
+                  Join Our Team
+                </Link>
+              </li>
+              <li>
                 <Link href="/request-quote" className="text-gray-700 hover:text-[#1E90DB] transition-colors">
                   Request a Quote
                 </Link>
