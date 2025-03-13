@@ -304,7 +304,8 @@ export default function CareersManagement() {
                           <Textarea 
                             placeholder="List the key responsibilities for this position..."
                             className="min-h-[100px]"
-                            {...field} 
+                            {...field}
+                            value={field.value || ''}
                           />
                         </FormControl>
                         <FormDescription>
