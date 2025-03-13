@@ -122,7 +122,7 @@ type="video/mp4"
               <Button variant="gold">REACH US</Button>
             </Link>
             <Link href="/projects">
-              <Button variant="white">VIEW PROJECTS</Button>
+              <Button variant="white">OUR PROJECTS</Button>
             </Link>
           </div>
         </div>
