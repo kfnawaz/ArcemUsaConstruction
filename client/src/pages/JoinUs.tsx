@@ -211,7 +211,7 @@ const JoinUs = () => {
       </div>
 
       {/* Main Content */}
-      <div className="bg-white py-24">
+      <div className="bg-white py-20">
         <div className="container mx-auto px-4 md:px-8">
           <motion.div 
             className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-16"

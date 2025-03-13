@@ -49,7 +49,7 @@ const Blog = () => {
     <>
       {/* Page Banner */}
       <div 
-        className="relative min-h-[350px] flex items-center justify-center" 
+        className="relative h-[350px] flex items-center justify-center" 
         style={{
           backgroundImage: "url('/uploads/images/blog/blueprint-desk.jpg')",
           backgroundSize: 'cover',
@@ -71,7 +71,7 @@ const Blog = () => {
       </div>
 
       {/* Blog Content */}
-      <section className="py-20 md:py-32 bg-white">
+      <section className="py-20 bg-white">
         <div className="container mx-auto px-4 md:px-8">
           {/* Filter and Search */}
           <div className="mb-12 reveal">

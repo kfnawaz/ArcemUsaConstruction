@@ -38,7 +38,7 @@ const About = () => {
       </div>
 
       {/* Our Story Section */}
-      <section className="py-20 md:py-32 bg-white">
+      <section className="py-20 bg-white">
         <div className="container mx-auto px-4 md:px-8">
           <div className="flex flex-col md:flex-row gap-12 items-center">
             <div className="md:w-1/2 reveal">
@@ -66,7 +66,7 @@ const About = () => {
       </section>
 
       {/* Our Values Section */}
-      <section className="py-20 md:py-32 bg-gray-100">
+      <section className="py-20 bg-gray-100">
         <div className="container mx-auto px-4 md:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16 reveal">
             <h2 className="text-sm font-montserrat text-[#1E90DB] mb-4">OUR VALUES</h2>
@@ -153,7 +153,7 @@ const About = () => {
       </section>
 
       {/* Team Section */}
-      <section className="py-20 md:py-32 bg-white">
+      <section className="py-20 bg-white">
         <div className="container mx-auto px-4 md:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16 reveal">
             <h2 className="text-sm font-montserrat text-[#1E90DB] mb-4">OUR TEAM</h2>
@@ -207,7 +207,7 @@ const About = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 md:py-32 bg-black text-white text-center">
+      <section className="py-20 bg-black text-white text-center">
         <div className="container mx-auto px-4 md:px-8">
           <h2 className="text-3xl md:text-4xl font-montserrat font-bold mb-6 reveal">Ready to Start Your Project?</h2>
           <p className="text-lg max-w-2xl mx-auto mb-10 reveal">
