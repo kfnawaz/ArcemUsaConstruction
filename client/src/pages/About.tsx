@@ -50,15 +50,42 @@ const About = () => {
             </div>
             <div className="md:w-1/2 reveal">
               <h2 className="text-sm font-montserrat text-[#1E90DB] mb-4">OUR STORY</h2>
-              <h3 className="text-3xl md:text-4xl font-montserrat font-bold mb-6">Building Our Legacy Since 1985</h3>
+              <h3 className="text-3xl md:text-4xl font-montserrat font-bold mb-6">The Story of A+R C.E.M LLC: Building a Legacy of Excellence</h3>
               <p className="text-gray-600 mb-6 leading-relaxed">
-                ARCEM was founded in 1985 with a vision to transform the construction industry through exceptional quality, innovative solutions, and a client-first approach. What began as a small team with big dreams has grown into one of the region's most respected construction companies.
+                In the ever-evolving world of construction and engineering, A+R C.E.M LLC stands as a beacon of innovation, reliability, and excellence. Founded on the principles of integrity, quality, and visionary leadership, our company has been shaping communities with unparalleled dedication.
               </p>
-              <p className="text-gray-600 mb-8 leading-relaxed">
-                Over the decades, we've completed hundreds of projects across commercial, residential, and industrial sectors, each one reflecting our commitment to excellence and attention to detail. Our success is built on strong relationships with clients, partners, and communities, as well as our dedication to sustainable practices and cutting-edge technology.
+              <h4 className="text-xl font-montserrat font-bold mb-2">Our Journey</h4>
+              <p className="text-gray-600 mb-6 leading-relaxed">
+                A+R C.E.M LLC was established with a singular mission: to revolutionize the construction and engineering management industry through cutting-edge pre-construction, design-build solutions, meticulous project management, and exceptional tenant improvement services. From humble beginnings, we have grown into a trusted name in mid-level construction, delivering projects that exceed expectations and set new benchmarks for quality and efficiency.
               </p>
-              <p className="text-gray-600 mb-8 leading-relaxed">
-                Today, ARCEM continues to push boundaries and set new standards in the construction industry, while staying true to our founding principles of integrity, quality, and client satisfaction.
+              <p className="text-gray-600 mb-6 leading-relaxed">
+                With 100 completed projects and 100 satisfied clients, we have built a reputation for excellence. Our presence extends across the United States with two office locations—one in Hawaii and another in Houston—allowing us to serve a diverse range of clients efficiently.
+              </p>
+              <h4 className="text-xl font-montserrat font-bold mb-2">What We Do</h4>
+              <ul className="text-gray-600 mb-6 leading-relaxed list-disc pl-6">
+                <li className="mb-2"><span className="font-semibold">Pre-Construction Services</span> – Ensuring every project begins with a solid foundation, from feasibility studies to budgeting and planning.</li>
+                <li className="mb-2"><span className="font-semibold">Design-Build Solutions</span> – Seamlessly integrating design and construction for streamlined, cost-effective, and timely project delivery.</li>
+                <li className="mb-2"><span className="font-semibold">Project Management</span> – Orchestrating every phase with precision to guarantee smooth execution and completion.</li>
+                <li className="mb-2"><span className="font-semibold">Tenant Improvement</span> – Transforming commercial and residential spaces to enhance functionality and aesthetics.</li>
+                <li className="mb-2"><span className="font-semibold">Housing Development</span> – Creating sustainable, high-quality living spaces that enrich communities.</li>
+              </ul>
+              <h4 className="text-xl font-montserrat font-bold mb-2">Our Values</h4>
+              <p className="text-gray-600 mb-4 leading-relaxed">
+                At A+R C.E.M LLC, we believe in more than just building structures—we build relationships and trust. Our values define our approach:
+              </p>
+              <ul className="text-gray-600 mb-6 leading-relaxed list-disc pl-6">
+                <li className="mb-2"><span className="font-semibold">Integrity</span> – We operate with transparency and honesty in all our dealings.</li>
+                <li className="mb-2"><span className="font-semibold">Excellence</span> – We are committed to delivering superior craftsmanship and innovative solutions.</li>
+                <li className="mb-2"><span className="font-semibold">Collaboration</span> – We work closely with clients, partners, and stakeholders to achieve shared success.</li>
+                <li className="mb-2"><span className="font-semibold">Sustainability</span> – We prioritize eco-friendly and sustainable building practices to protect our future.</li>
+              </ul>
+              <h4 className="text-xl font-montserrat font-bold mb-2">Looking Ahead</h4>
+              <p className="text-gray-600 mb-6 leading-relaxed">
+                As we continue to grow and expand, our vision remains steadfast: to lead the industry with forward-thinking solutions, unparalleled service, and a commitment to excellence. Whether it's improving commercial properties or enhancing living spaces, A+R C.E.M LLC is dedicated to turning visions into reality.
+              </p>
+              <h4 className="text-xl font-montserrat font-bold mb-2">Your Partner in Construction and Engineering</h4>
+              <p className="text-gray-600 mb-6 leading-relaxed">
+                When you choose A+R C.E.M LLC, you're choosing a partner who values your vision as much as you do. Let's build something remarkable together.
               </p>
             </div>
           </div>
