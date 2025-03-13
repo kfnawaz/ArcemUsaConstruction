@@ -78,7 +78,7 @@ const Contact = () => {
     <>
       {/* Page Banner */}
       <div 
-        className="relative h-[350px] flex items-center justify-center overflow-hidden rounded-lg my-6 mx-4 md:mx-8" 
+        className="relative h-[350px] flex items-center justify-center" 
         style={{
           backgroundImage: "url('/uploads/images/contact/firmbee-com-SpVHcbuKi6E-unsplash.jpg')",
           backgroundSize: 'cover',

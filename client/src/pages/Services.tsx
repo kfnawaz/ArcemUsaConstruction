@@ -131,7 +131,7 @@ const Services = () => {
     <>
       {/* Page Banner */}
       <div 
-        className="relative h-[350px] flex items-center justify-center overflow-hidden rounded-lg my-6 mx-4 md:mx-8" 
+        className="relative h-[350px] flex items-center justify-center" 
         style={{
           backgroundImage: "url('/uploads/images/services/silvia-brazzoduro-YSxcf6C_SEg-unsplash.jpg')",
           backgroundSize: 'cover',
