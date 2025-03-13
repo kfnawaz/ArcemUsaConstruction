@@ -37,7 +37,7 @@ const NewsletterManagement = () => {
 
   useEffect(() => {
     scrollToTop();
-    document.title = 'Newsletter Management - ARCEMUSA';
+    document.title = 'Newsletter Management - ARCEM';
   }, []);
 
   // Fetch subscribers

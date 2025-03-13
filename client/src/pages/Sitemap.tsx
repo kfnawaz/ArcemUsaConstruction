@@ -5,7 +5,7 @@ import { scrollToTop } from '@/lib/utils';
 const Sitemap = () => {
   useEffect(() => {
     scrollToTop();
-    document.title = 'Sitemap - ARCEMUSA';
+    document.title = 'Sitemap - ARCEM';
   }, []);
 
   return (

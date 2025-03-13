@@ -147,7 +147,7 @@ export default function Careers() {
   return (
     <div>
       <PageHeader 
-        title="Careers at ARCEMUSA" 
+        title="Careers at ARCEM" 
         subtitle="Join our team of talented professionals and help us build exceptional spaces. Explore current opportunities and find your perfect role."
         backgroundImage="/uploads/images/careers/silvia-brazzoduro-YSxcf6C_SEg-unsplash.jpg"
       />

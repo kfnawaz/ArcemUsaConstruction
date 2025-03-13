@@ -4,7 +4,7 @@ import { scrollToTop } from '@/lib/utils';
 const PrivacyPolicy = () => {
   useEffect(() => {
     scrollToTop();
-    document.title = 'Privacy Policy - ARCEMUSA';
+    document.title = 'Privacy Policy - ARCEM';
   }, []);
 
   return (
@@ -16,7 +16,7 @@ const PrivacyPolicy = () => {
           
           <section className="mb-10">
             <h2 className="text-2xl font-montserrat font-bold mb-4">1. Introduction</h2>
-            <p>ARCEMUSA ("we," "our," or "us") respects your privacy and is committed to protecting your personal data. This privacy policy will inform you about how we look after your personal data when you visit our website and tell you about your privacy rights and how the law protects you.</p>
+            <p>ARCEM ("we," "our," or "us") respects your privacy and is committed to protecting your personal data. This privacy policy will inform you about how we look after your personal data when you visit our website and tell you about your privacy rights and how the law protects you.</p>
           </section>
           
           <section className="mb-10">

@@ -145,7 +145,7 @@ async function seedDatabase() {
         name: "Michael Johnson",
         position: "CEO",
         company: "Johnson Enterprises",
-        content: "ARCEMUSA exceeded all our expectations with our commercial building project. Their attention to detail, transparent communication, and exceptional craftsmanship made the entire process smooth and stress-free. The project was completed on time and within budget.",
+        content: "ARCEM exceeded all our expectations with our commercial building project. Their attention to detail, transparent communication, and exceptional craftsmanship made the entire process smooth and stress-free. The project was completed on time and within budget.",
         rating: 5,
         image: "https://randomuser.me/api/portraits/men/32.jpg"
       },
@@ -153,7 +153,7 @@ async function seedDatabase() {
         name: "Sarah Thompson",
         position: "Homeowner",
         company: "",
-        content: "Working with ARCEMUSA on our custom home was a fantastic experience. They truly listened to our vision and brought it to life with exceptional craftsmanship. Their team was professional, responsive, and dedicated to quality at every step.",
+        content: "Working with ARCEM on our custom home was a fantastic experience. They truly listened to our vision and brought it to life with exceptional craftsmanship. Their team was professional, responsive, and dedicated to quality at every step.",
         rating: 5,
         image: "https://randomuser.me/api/portraits/women/44.jpg"
       },
@@ -161,7 +161,7 @@ async function seedDatabase() {
         name: "David Wilson",
         position: "Owner",
         company: "Wilson Retail Group",
-        content: "We hired ARCEMUSA for our retail space renovation, and the results were outstanding. Their innovative design solutions maximized our space and created an inviting environment for our customers. The team's expertise and professionalism were evident throughout the project.",
+        content: "We hired ARCEM for our retail space renovation, and the results were outstanding. Their innovative design solutions maximized our space and created an inviting environment for our customers. The team's expertise and professionalism were evident throughout the project.",
         rating: 5,
         image: "https://randomuser.me/api/portraits/men/55.jpg"
       }

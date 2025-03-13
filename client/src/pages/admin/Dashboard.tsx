@@ -18,7 +18,7 @@ import { Project, BlogPost, Message } from '@shared/schema';
 const Dashboard = () => {
   useEffect(() => {
     scrollToTop();
-    document.title = 'Admin Dashboard - ARCEMUSA';
+    document.title = 'Admin Dashboard - ARCEM';
   }, []);
 
   // Fetch projects

@@ -10,7 +10,7 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
           <div>
             <Link href="/" className="text-white text-2xl font-montserrat font-bold mb-6 inline-block">
-              ARCEMUSA
+              ARCEM
             </Link>
             <p className="text-gray-400 mb-6 leading-relaxed">
               Premier construction company delivering exceptional quality and innovative solutions for over three decades.
@@ -88,7 +88,7 @@ const Footer = () => {
         
         <div className="border-t border-gray-800 pt-8">
           <div className="flex flex-col md:flex-col justify-center items-center text-gray-400 text-sm">
-            <p className="text-center mb-4">&copy; {new Date().getFullYear()} ARCEMUSA Construction Company. All rights reserved.</p>
+            <p className="text-center mb-4">&copy; {new Date().getFullYear()} ARCEM Construction Company. All rights reserved.</p>
             <div className="flex space-x-6 mt-2 md:mt-2">
               <Link href="/privacy-policy" className="hover:text-[#1E90DB] transition-colors">Privacy Policy</Link>
               <Link href="/terms-of-service" className="hover:text-[#1E90DB] transition-colors">Terms of Service</Link>

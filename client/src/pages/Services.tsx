@@ -19,7 +19,7 @@ import { apiRequest } from '@/lib/queryClient';
 const Services = () => {
   useEffect(() => {
     scrollToTop();
-    document.title = 'Services - ARCEMUSA';
+    document.title = 'Services - ARCEM';
     const cleanup = initializeRevealEffects();
     return cleanup;
   }, []);
@@ -159,7 +159,7 @@ const Services = () => {
             <h2 className="text-sm font-montserrat text-[#1E90DB] mb-4">WHAT WE OFFER</h2>
             <h3 className="text-3xl md:text-4xl font-montserrat font-bold mb-6">Comprehensive Construction Solutions</h3>
             <p className="text-gray-600 leading-relaxed">
-              At ARCEMUSA, we offer a wide range of construction services tailored to meet the specific needs of each client. Our team of experienced professionals is dedicated to delivering exceptional results that exceed expectations.
+              At ARCEM, we offer a wide range of construction services tailored to meet the specific needs of each client. Our team of experienced professionals is dedicated to delivering exceptional results that exceed expectations.
             </p>
           </div>
 
@@ -352,7 +352,7 @@ const Services = () => {
               href="/contact" 
               className="bg-[#1E90DB] hover:bg-[#1670B0] text-white py-3 px-8 font-montserrat font-medium text-sm tracking-wider inline-block transition-colors"
             >
-              CONTACT US
+              REACH US
             </Link>
           </div>
         </div>

@@ -4,7 +4,7 @@ import { scrollToTop } from '@/lib/utils';
 const TermsOfService = () => {
   useEffect(() => {
     scrollToTop();
-    document.title = 'Terms of Service - ARCEMUSA';
+    document.title = 'Terms of Service - ARCEM';
   }, []);
 
   return (
@@ -16,17 +16,17 @@ const TermsOfService = () => {
           
           <section className="mb-10">
             <h2 className="text-2xl font-montserrat font-bold mb-4">1. Acceptance of Terms</h2>
-            <p>By accessing and using the ARCEMUSA website ("Site"), you accept and agree to be bound by the terms and provisions of this agreement. In addition, when using the Site's particular services, you shall be subject to any posted guidelines or rules applicable to such services.</p>
+            <p>By accessing and using the ARCEM website ("Site"), you accept and agree to be bound by the terms and provisions of this agreement. In addition, when using the Site's particular services, you shall be subject to any posted guidelines or rules applicable to such services.</p>
           </section>
           
           <section className="mb-10">
             <h2 className="text-2xl font-montserrat font-bold mb-4">2. Description of Services</h2>
-            <p>ARCEMUSA provides users with access to construction services, project information, company resources, and other content through its network of properties (the "Service"). Unless explicitly stated otherwise, any new features that augment or enhance the current Service shall be subject to these Terms of Service.</p>
+            <p>ARCEM provides users with access to construction services, project information, company resources, and other content through its network of properties (the "Service"). Unless explicitly stated otherwise, any new features that augment or enhance the current Service shall be subject to these Terms of Service.</p>
           </section>
           
           <section className="mb-10">
             <h2 className="text-2xl font-montserrat font-bold mb-4">3. Modifications to Service</h2>
-            <p>ARCEMUSA reserves the right at any time and from time to time to modify or discontinue, temporarily or permanently, the Service (or any part thereof) with or without notice. You agree that ARCEMUSA shall not be liable to you or to any third party for any modification, suspension or discontinuance of the Service.</p>
+            <p>ARCEM reserves the right at any time and from time to time to modify or discontinue, temporarily or permanently, the Service (or any part thereof) with or without notice. You agree that ARCEM shall not be liable to you or to any third party for any modification, suspension or discontinuance of the Service.</p>
           </section>
           
           <section className="mb-10">
@@ -45,7 +45,7 @@ const TermsOfService = () => {
           
           <section className="mb-10">
             <h2 className="text-2xl font-montserrat font-bold mb-4">5. Content Ownership</h2>
-            <p>ARCEMUSA does not claim ownership of the materials you provide to the Service. However, with respect to content you submit or make available for inclusion on the Service, you grant ARCEMUSA a worldwide, royalty-free and non-exclusive license to use, distribute, reproduce, modify, adapt, publicly perform and publicly display such content on the Service solely for the purpose of providing the Service.</p>
+            <p>ARCEM does not claim ownership of the materials you provide to the Service. However, with respect to content you submit or make available for inclusion on the Service, you grant ARCEM a worldwide, royalty-free and non-exclusive license to use, distribute, reproduce, modify, adapt, publicly perform and publicly display such content on the Service solely for the purpose of providing the Service.</p>
           </section>
           
           <section className="mb-10">
@@ -55,7 +55,7 @@ const TermsOfService = () => {
           
           <section className="mb-10">
             <h2 className="text-2xl font-montserrat font-bold mb-4">7. Limitation of Liability</h2>
-            <p>IN NO EVENT SHALL ARCEMUSA BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL OR CONSEQUENTIAL DAMAGES, OR DAMAGES FOR LOSS OF PROFITS, REVENUE, DATA OR USE, INCURRED BY YOU OR ANY THIRD PARTY, WHETHER IN AN ACTION IN CONTRACT OR TORT, ARISING FROM YOUR ACCESS TO, OR USE OF, THE SERVICE.</p>
+            <p>IN NO EVENT SHALL ARCEM BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL OR CONSEQUENTIAL DAMAGES, OR DAMAGES FOR LOSS OF PROFITS, REVENUE, DATA OR USE, INCURRED BY YOU OR ANY THIRD PARTY, WHETHER IN AN ACTION IN CONTRACT OR TORT, ARISING FROM YOUR ACCESS TO, OR USE OF, THE SERVICE.</p>
           </section>
           
           <section className="mb-10">

@@ -197,7 +197,7 @@ export default function CareerDetail() {
           <div className="text-center mt-12 mb-8">
             <h3 className="text-xl font-bold mb-2">Interested in Other Opportunities?</h3>
             <p className="text-muted-foreground mb-4">
-              Explore all open positions at ARCEMUSA Construction.
+              Explore all open positions at ARCEM Construction.
             </p>
             <Button asChild>
               <Link to="/careers" onClick={scrollToTop}>

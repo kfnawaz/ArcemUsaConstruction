@@ -345,7 +345,7 @@ const ProjectDetail = () => {
               <p className="mb-6">Contact us today to discuss how we can bring your vision to life.</p>
               <Link href="/contact">
                 <Button variant="gold" className="w-full">
-                  CONTACT US
+                  REACH US
                 </Button>
               </Link>
             </div>

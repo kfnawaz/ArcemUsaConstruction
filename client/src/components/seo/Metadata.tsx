@@ -19,15 +19,15 @@ interface MetadataProps {
  * Uses react-helmet to inject metadata tags into the document head
  */
 const Metadata: React.FC<MetadataProps> = ({
-  title = 'ARCEMUSA Construction Company | Excellence in Construction',
-  description = 'ARCEMUSA Construction Company offers premium construction services including commercial, residential, and renovation projects with a focus on quality and sustainability.',
-  keywords = 'construction, ARCEMUSA, commercial construction, residential construction, renovation, building contractor, sustainable construction',
+  title = 'ARCEM Construction Company | Excellence in Construction',
+  description = 'ARCEM Construction Company offers premium construction services including commercial, residential, and renovation projects with a focus on quality and sustainability.',
+  keywords = 'construction, ARCEM, commercial construction, residential construction, renovation, building contractor, sustainable construction',
   imageUrl = '/images/arcemusa-social-share.jpg',
   canonicalUrl,
   type = 'website',
   publishedTime,
   modifiedTime,
-  author = 'ARCEMUSA Construction Company',
+  author = 'ARCEM Construction Company',
   twitterHandle = '@arcemusa',
 }) => {
   // Generate the canonical URL based on the current path if not provided

@@ -69,7 +69,7 @@ const ServicesManagement = () => {
 
   useEffect(() => {
     scrollToTop();
-    document.title = 'Service Management - ARCEMUSA';
+    document.title = 'Service Management - ARCEM';
   }, []);
 
   // Handle clicking edit button

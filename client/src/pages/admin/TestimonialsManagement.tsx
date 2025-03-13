@@ -44,7 +44,7 @@ const TestimonialsManagement = () => {
   // and handle URL params for tab state
   useEffect(() => {
     scrollToTop();
-    document.title = 'Testimonials Management - ARCEMUSA';
+    document.title = 'Testimonials Management - ARCEM';
     
     // Parse URL parameters to set the active tab
     const searchParams = new URLSearchParams(location.split('?')[1] || '');

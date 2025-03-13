@@ -60,7 +60,7 @@ const ProjectManagement = () => {
 
   useEffect(() => {
     scrollToTop();
-    document.title = 'Project Management - ARCEMUSA';
+    document.title = 'Project Management - ARCEM';
   }, []);
 
   // Fetch projects

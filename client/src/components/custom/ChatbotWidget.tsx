@@ -20,7 +20,7 @@ const ChatbotWidget: React.FC = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 1,
-      text: "Hello! Welcome to ARCEMUSA Construction. How can I help you today?",
+      text: "Hello! Welcome to ARCEM Construction. How can I help you today?",
       sender: "bot",
       timestamp: new Date(),
     },
@@ -323,7 +323,7 @@ const ChatbotWidget: React.FC = () => {
           <div className="chatbot-header bg-[#080808] text-white p-3 flex justify-between items-center">
             <h3 className="font-semibold flex items-center">
               <MessageCircle className="mr-2 h-5 w-5" />
-              ARCEMUSA Support
+              ARCEM Support
             </h3>
             <Button
               variant="ghost"

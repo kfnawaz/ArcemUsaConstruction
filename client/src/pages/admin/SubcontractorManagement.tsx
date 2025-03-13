@@ -89,7 +89,7 @@ export default function SubcontractorManagement() {
 
   // Set page title
   useEffect(() => {
-    document.title = 'Subcontractor & Vendor Management - ARCEMUSA Admin';
+    document.title = 'Subcontractor & Vendor Management - ARCEM Admin';
   }, []);
 
   // Open subcontractor details dialog

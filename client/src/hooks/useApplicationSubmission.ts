@@ -92,7 +92,7 @@ export const useApplicationSubmission = () => {
       toast({
         title: 'Application Submitted Successfully',
         description:
-          'Thank you for your interest in working with ARCEMUSA. We will review your application and contact you soon.',
+          'Thank you for your interest in working with ARCEM. We will review your application and contact you soon.',
       });
 
       return {
@@ -201,7 +201,7 @@ export const useApplicationSubmission = () => {
       toast({
         title: 'Application Submitted Successfully',
         description:
-          'Thank you for your interest in working with ARCEMUSA. We will review your application and contact you soon.',
+          'Thank you for your interest in working with ARCEM. We will review your application and contact you soon.',
       });
 
       return {

@@ -35,7 +35,7 @@ interface SubcontractorDocument {
 const Resources = () => {
   useEffect(() => {
     scrollToTop();
-    document.title = 'Subcontractor Resources - ARCEMUSA';
+    document.title = 'Subcontractor Resources - ARCEM';
     initializeRevealEffects();
   }, []);
 
@@ -156,7 +156,7 @@ const Resources = () => {
             Subcontractor Resources
           </h1>
           <p className="text-white text-lg md:text-xl font-light max-w-3xl mx-auto">
-            Download the necessary forms and templates for working with ARCEMUSA
+            Download the necessary forms and templates for working with ARCEM
           </p>
         </motion.div>
       </div>

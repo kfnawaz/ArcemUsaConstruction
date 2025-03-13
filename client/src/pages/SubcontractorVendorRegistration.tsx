@@ -309,7 +309,7 @@ const SubcontractorVendorRegistration = () => {
     }
     
     scrollToTop();
-    document.title = 'Subcontractors & Vendors - ARCEMUSA';
+    document.title = 'Subcontractors & Vendors - ARCEM';
   }, [location]);
 
   // Handle service type selection for subcontractors
@@ -477,7 +477,7 @@ const SubcontractorVendorRegistration = () => {
             Join Our Network
           </h1>
           <p className="text-white text-xl md:text-2xl font-light max-w-3xl mx-auto">
-            Partner with ARCEMUSA for construction excellence
+            Partner with ARCEM for construction excellence
           </p>
         </div>
       </div>
@@ -514,7 +514,7 @@ const SubcontractorVendorRegistration = () => {
                     <div className="mb-8">
                       <h2 className="text-2xl font-bold mb-4">Subcontractor Registration</h2>
                       <p className="text-muted-foreground">
-                        Complete the form below to register as a subcontractor with ARCEMUSA. We will review your information and contact you if there are opportunities that match your services.
+                        Complete the form below to register as a subcontractor with ARCEM. We will review your information and contact you if there are opportunities that match your services.
                       </p>
                     </div>
                     
@@ -892,7 +892,7 @@ const SubcontractorVendorRegistration = () => {
                     <div className="mb-8">
                       <h2 className="text-2xl font-bold mb-4">Vendor Registration</h2>
                       <p className="text-muted-foreground">
-                        Complete the form below to register as a vendor with ARCEMUSA. We will review your information and contact you if there are opportunities to work together.
+                        Complete the form below to register as a vendor with ARCEM. We will review your information and contact you if there are opportunities to work together.
                       </p>
                     </div>
                     

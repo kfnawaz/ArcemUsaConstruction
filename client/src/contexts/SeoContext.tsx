@@ -16,11 +16,11 @@ interface SeoContextType {
 }
 
 const defaultSeoContext: SeoContextType = {
-  siteTitle: 'ARCEMUSA Construction Company | Excellence in Construction',
+  siteTitle: 'ARCEM Construction Company | Excellence in Construction',
   setSiteTitle: () => {},
-  siteDescription: 'ARCEMUSA Construction Company offers premium construction services including commercial, residential, and renovation projects with a focus on quality and sustainability.',
+  siteDescription: 'ARCEM Construction Company offers premium construction services including commercial, residential, and renovation projects with a focus on quality and sustainability.',
   setSiteDescription: () => {},
-  siteName: 'ARCEMUSA Construction',
+  siteName: 'ARCEM Construction',
   setSiteName: () => {},
   siteUrl: typeof window !== 'undefined' ? window.location.origin : 'https://arcemusa.com',
   setSiteUrl: () => {},

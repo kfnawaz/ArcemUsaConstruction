@@ -59,7 +59,7 @@ const BlogManagement = () => {
 
   useEffect(() => {
     scrollToTop();
-    document.title = 'Blog Management - ARCEMUSA';
+    document.title = 'Blog Management - ARCEM';
   }, []);
 
   // Fetch blog posts

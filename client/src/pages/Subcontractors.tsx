@@ -112,7 +112,7 @@ const Subcontractors = () => {
     }
     
     scrollToTop();
-    document.title = 'Subcontractors & Vendors - ARCEMUSA';
+    document.title = 'Subcontractors & Vendors - ARCEM';
   }, [location]);
 
   const form = useForm<FormValues>({
@@ -382,7 +382,7 @@ const Subcontractors = () => {
             Subcontractors & Vendors
           </h1>
           <p className="text-white text-xl md:text-2xl font-light max-w-3xl mx-auto">
-            Partner with ARCEMUSA for construction excellence
+            Partner with ARCEM for construction excellence
           </p>
         </div>
       </div>
@@ -428,7 +428,7 @@ const Subcontractors = () => {
                     <div className="mb-8">
                       <h2 className="text-2xl font-montserrat font-bold mb-4">Subcontractor Registration</h2>
                       <p className="text-gray-600">
-                        Thank you for your interest in working with ARCEMUSA. Please complete the form below to register as a subcontractor. We will review your information and contact you if there are opportunities that match your services.
+                        Thank you for your interest in working with ARCEM. Please complete the form below to register as a subcontractor. We will review your information and contact you if there are opportunities that match your services.
                       </p>
                     </div>
                     
@@ -794,7 +794,7 @@ const Subcontractors = () => {
                     <div className="mb-8">
                       <h2 className="text-2xl font-montserrat font-bold mb-4">Vendor Registration</h2>
                       <p className="text-gray-600">
-                        We're always looking for reliable vendors to join our network. Please complete this form to register as a vendor with ARCEMUSA. We will review your information and contact you regarding potential partnerships.
+                        We're always looking for reliable vendors to join our network. Please complete this form to register as a vendor with ARCEM. We will review your information and contact you regarding potential partnerships.
                       </p>
                     </div>
                     
@@ -1099,7 +1099,7 @@ const Subcontractors = () => {
             Join Our Network Today
           </h2>
           <p className="text-white text-lg mb-0 max-w-3xl mx-auto">
-            Become a part of ARCEMUSA's trusted network of subcontractors and vendors.
+            Become a part of ARCEM's trusted network of subcontractors and vendors.
           </p>
         </div>
       </div>

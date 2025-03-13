@@ -56,7 +56,7 @@ const QuoteRequestsManagement = () => {
 
   useEffect(() => {
     scrollToTop();
-    document.title = 'Quote Requests - ARCEMUSA';
+    document.title = 'Quote Requests - ARCEM';
   }, []);
   
   // Fetch quote requests

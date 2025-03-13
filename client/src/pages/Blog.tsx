@@ -15,7 +15,7 @@ const Blog = () => {
 
   useEffect(() => {
     scrollToTop();
-    document.title = 'Blog - ARCEMUSA';
+    document.title = 'Blog - ARCEM';
     const cleanup = initializeRevealEffects();
     return cleanup;
   }, []);

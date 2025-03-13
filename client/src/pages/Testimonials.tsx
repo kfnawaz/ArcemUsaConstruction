@@ -13,14 +13,14 @@ const Testimonials = () => {
 
   useEffect(() => {
     scrollToTop();
-    document.title = 'Testimonials - ARCEMUSA Construction';
+    document.title = 'Testimonials - ARCEM Construction';
   }, []);
 
   return (
     <div>
       <PageBanner
         title="Client Testimonials"
-        description="Hear what our clients have to say about working with ARCEMUSA Construction."
+        description="Hear what our clients have to say about working with ARCEM Construction."
         backgroundImage="/images/testimonials-banner.jpg"
       />
 
@@ -38,7 +38,7 @@ const Testimonials = () => {
                 <div className="bg-secondary/5 rounded-lg p-8 text-center">
                   <h3 className="text-xl font-medium mb-2">No Testimonials Yet</h3>
                   <p className="text-muted-foreground">
-                    Be the first to share your experience with ARCEMUSA Construction.
+                    Be the first to share your experience with ARCEM Construction.
                   </p>
                 </div>
               ) : (

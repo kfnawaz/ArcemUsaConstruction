@@ -27,7 +27,7 @@ const TestimonialsSection = () => {
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">What Our Clients Say</h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Hear from our satisfied clients about their experiences working with ARCEMUSA Construction.
+              Hear from our satisfied clients about their experiences working with ARCEM Construction.
             </p>
           </div>
 
@@ -77,7 +77,7 @@ const TestimonialsSection = () => {
         <div className="text-center mb-10">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">What Our Clients Say</h2>
           <p className="text-muted-foreground max-w-2xl mx-auto mb-4">
-            Hear from our satisfied clients about their experiences working with ARCEMUSA Construction.
+            Hear from our satisfied clients about their experiences working with ARCEM Construction.
           </p>
           
           <Button 

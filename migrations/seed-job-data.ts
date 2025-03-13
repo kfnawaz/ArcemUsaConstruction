@@ -56,7 +56,7 @@ Company vehicle or allowance',
           'Field Operations', 
           'Miami, FL', 
           'full-time',
-          'ARCEMUSA is looking for a skilled Construction Superintendent to oversee day-to-day field operations on our residential and commercial construction sites. You will be responsible for coordinating subcontractors, ensuring safety compliance, and maintaining quality control standards.',
+          'ARCEM is looking for a skilled Construction Superintendent to oversee day-to-day field operations on our residential and commercial construction sites. You will be responsible for coordinating subcontractors, ensuring safety compliance, and maintaining quality control standards.',
           'Supervise and coordinate all on-site construction activities
 Ensure projects adhere to schedules, specifications, and budgets
 Implement and enforce safety protocols and quality control measures
@@ -152,7 +152,7 @@ Collaborative work environment',
           'Safety & Compliance', 
           'Chicago, IL', 
           'full-time',
-          'ARCEMUSA is seeking a Safety Manager to develop, implement, and oversee our company-wide safety program across all project sites. The ideal candidate will have a strong background in construction safety and a passion for creating a culture of safety excellence.',
+          'ARCEM is seeking a Safety Manager to develop, implement, and oversee our company-wide safety program across all project sites. The ideal candidate will have a strong background in construction safety and a passion for creating a culture of safety excellence.',
           'Develop and maintain company safety policies and procedures
 Conduct regular safety inspections and audits of project sites
 Investigate incidents and near-misses and implement corrective actions
@@ -217,7 +217,7 @@ Clear career advancement path',
           'Administration', 
           'Denver, CO', 
           'full-time',
-          'ARCEMUSA is seeking an Administrative Assistant to provide support to our office operations. The ideal candidate will be organized, detail-oriented, and possess excellent communication skills to help maintain efficient office functions.',
+          'ARCEM is seeking an Administrative Assistant to provide support to our office operations. The ideal candidate will be organized, detail-oriented, and possess excellent communication skills to help maintain efficient office functions.',
           'Provide administrative support to executives and project teams
 Manage phone calls, correspondence, and office communication
 Coordinate meetings, travel arrangements, and office events

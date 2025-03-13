@@ -12,9 +12,9 @@ const createWidget = (Component: any) => {
 
 // Define the configuration object with TypeScript annotations
 const config: IConfig = {
-  botName: 'ARCEMUSA Support',
+  botName: 'ARCEM Support',
   initialMessages: [
-    createChatBotMessage('Hello! Welcome to ARCEMUSA Construction. How can I help you today?'),
+    createChatBotMessage('Hello! Welcome to ARCEM Construction. How can I help you today?'),
   ],
   customStyles: {
     botMessageBox: {

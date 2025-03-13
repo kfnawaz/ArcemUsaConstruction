@@ -33,7 +33,7 @@ const benefitVariants = {
 const JoinUs = () => {
   useEffect(() => {
     scrollToTop();
-    document.title = 'Join Our Team - ARCEMUSA';
+    document.title = 'Join Our Team - ARCEM';
     initializeRevealEffects();
   }, []);
 
@@ -81,10 +81,10 @@ const JoinUs = () => {
           >
             <motion.div variants={fadeIn}>
               <h2 className="text-3xl md:text-4xl font-montserrat font-bold mb-6 text-gray-800">
-                Build Your Future With ARCEMUSA
+                Build Your Future With ARCEM
               </h2>
               <p className="text-gray-600 text-lg mb-6">
-                At ARCEMUSA, we believe that our people are our greatest asset. Whether you're a skilled tradesperson, 
+                At ARCEM, we believe that our people are our greatest asset. Whether you're a skilled tradesperson, 
                 a vendor with quality materials, or a professional looking for career growth, we invite you to 
                 join our network of excellence.
               </p>
@@ -164,7 +164,7 @@ const JoinUs = () => {
               Why Partner With Us
             </h2>
             <p className="text-gray-600 text-lg max-w-3xl mx-auto">
-              Joining the ARCEMUSA network offers numerous advantages that help you grow professionally
+              Joining the ARCEM network offers numerous advantages that help you grow professionally
             </p>
           </motion.div>
 
@@ -294,10 +294,10 @@ const JoinUs = () => {
               <div className="p-8">
                 <h2 className="text-2xl font-montserrat font-bold mb-4 text-gray-800">Vendors</h2>
                 <p className="text-gray-600 mb-8">
-                  ARCEMUSA works with a variety of vendors to source the materials and equipment 
+                  ARCEM works with a variety of vendors to source the materials and equipment 
                   we need to complete our projects. We value our relationships with our vendors 
                   and are always looking for reliable and professional suppliers to work with us. 
-                  If you are a vendor interested in working with ARCEMUSA, please visit our Vendors 
+                  If you are a vendor interested in working with ARCEM, please visit our Vendors 
                   page to learn more about our vendor requirements and how to become a preferred vendor.
                 </p>
                 <div className="space-y-3 mb-8 bg-gray-50 p-4 rounded-lg">
@@ -342,7 +342,7 @@ const JoinUs = () => {
               <div className="p-8">
                 <h2 className="text-2xl font-montserrat font-bold mb-4 text-gray-800">Careers</h2>
                 <p className="text-gray-600 mb-8">
-                  At ARCEMUSA, we are always looking for talented and passionate individuals to join 
+                  At ARCEM, we are always looking for talented and passionate individuals to join 
                   our team. We offer a dynamic and challenging work environment, competitive compensation 
                   packages, and opportunities for growth and development. If you are interested in a 
                   career in construction and want to work with a company that values its employees and 
@@ -391,7 +391,7 @@ const JoinUs = () => {
                 "
               </div>
               <p className="text-gray-600 text-lg md:text-xl italic mb-6">
-                Working with ARCEMUSA has been a game-changer for our business. Their professional approach, 
+                Working with ARCEM has been a game-changer for our business. Their professional approach, 
                 clear communication, and respect for our expertise have made them our preferred construction partner.
                 Payment is always on time, and their project management is exceptional.
               </p>
@@ -416,7 +416,7 @@ const JoinUs = () => {
           transition={{ duration: 0.6 }}
         >
           <h2 className="text-white text-3xl md:text-4xl font-montserrat font-bold mb-6">
-            Ready to join the ARCEMUSA team?
+            Ready to join the ARCEM team?
           </h2>
           <p className="text-white text-lg mb-8 max-w-3xl mx-auto">
             Whether you're a subcontractor, vendor, or looking for a new career opportunity, 
@@ -424,7 +424,7 @@ const JoinUs = () => {
           </p>
           <Link href="/contact">
             <Button size="lg" className="bg-white text-[#1E90DB] hover:bg-gray-100">
-              CONTACT US TODAY
+              REACH US TODAY
             </Button>
           </Link>
         </motion.div>

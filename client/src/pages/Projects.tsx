@@ -8,7 +8,7 @@ import { motion } from 'framer-motion';
 const Projects = () => {
   useEffect(() => {
     scrollToTop();
-    document.title = 'Projects - ARCEMUSA';
+    document.title = 'Projects - ARCEM';
     const cleanup = initializeRevealEffects();
     return cleanup;
   }, []);
@@ -112,7 +112,7 @@ const Projects = () => {
           <div className="max-w-3xl mx-auto reveal">
             <h2 className="text-3xl md:text-4xl font-montserrat font-bold mb-6">Ready to Build Your Vision?</h2>
             <p className="text-lg mb-8">
-              Let's discuss how ARCEMUSA can bring your construction project to life.
+              Let's discuss how ARCEM can bring your construction project to life.
             </p>
             <a 
               href="/contact" 

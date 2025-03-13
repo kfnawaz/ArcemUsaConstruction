@@ -7,7 +7,7 @@ import { motion } from 'framer-motion';
 const About = () => {
   useEffect(() => {
     scrollToTop();
-    document.title = 'About Us - ARCEMUSA';
+    document.title = 'About Us - ARCEM';
     const cleanup = initializeRevealEffects();
     return cleanup;
   }, []);
@@ -30,7 +30,7 @@ const About = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          <h1 className="text-4xl md:text-5xl font-montserrat font-bold mb-6">About ARCEMUSA</h1>
+          <h1 className="text-4xl md:text-5xl font-montserrat font-bold mb-6">About ARCEM</h1>
           <p className="text-lg max-w-3xl">
             We've been building excellence and crafting futures for over three decades.
           </p>
@@ -52,13 +52,13 @@ const About = () => {
               <h2 className="text-sm font-montserrat text-[#1E90DB] mb-4">OUR STORY</h2>
               <h3 className="text-3xl md:text-4xl font-montserrat font-bold mb-6">Building Our Legacy Since 1985</h3>
               <p className="text-gray-600 mb-6 leading-relaxed">
-                ARCEMUSA was founded in 1985 with a vision to transform the construction industry through exceptional quality, innovative solutions, and a client-first approach. What began as a small team with big dreams has grown into one of the region's most respected construction companies.
+                ARCEM was founded in 1985 with a vision to transform the construction industry through exceptional quality, innovative solutions, and a client-first approach. What began as a small team with big dreams has grown into one of the region's most respected construction companies.
               </p>
               <p className="text-gray-600 mb-8 leading-relaxed">
                 Over the decades, we've completed hundreds of projects across commercial, residential, and industrial sectors, each one reflecting our commitment to excellence and attention to detail. Our success is built on strong relationships with clients, partners, and communities, as well as our dedication to sustainable practices and cutting-edge technology.
               </p>
               <p className="text-gray-600 mb-8 leading-relaxed">
-                Today, ARCEMUSA continues to push boundaries and set new standards in the construction industry, while staying true to our founding principles of integrity, quality, and client satisfaction.
+                Today, ARCEM continues to push boundaries and set new standards in the construction industry, while staying true to our founding principles of integrity, quality, and client satisfaction.
               </p>
             </div>
           </div>
@@ -211,12 +211,12 @@ const About = () => {
         <div className="container mx-auto px-4 md:px-8">
           <h2 className="text-3xl md:text-4xl font-montserrat font-bold mb-6 reveal">Ready to Start Your Project?</h2>
           <p className="text-lg max-w-2xl mx-auto mb-10 reveal">
-            Let's discuss how ARCEMUSA can bring your construction vision to life with our expertise and dedication to excellence.
+            Let's discuss how ARCEM can bring your construction vision to life with our expertise and dedication to excellence.
           </p>
           <div className="reveal">
             <Link href="/contact">
               <Button variant="gold" size="default">
-                CONTACT US TODAY
+                REACH US TODAY
               </Button>
             </Link>
           </div>

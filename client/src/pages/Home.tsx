@@ -17,8 +17,8 @@ const Home = () => {
   return (
     <>
       <HomeSeo 
-        title="ARCEMUSA Construction Company | Excellence in Construction" 
-        description="ARCEMUSA Construction offers premium building services with expertise in commercial, residential construction, and renovations. Build your dream with excellence."
+        title="ARCEM Construction Company | Excellence in Construction" 
+        description="ARCEM Construction offers premium building services with expertise in commercial, residential construction, and renovations. Build your dream with excellence."
       />
       <HeroSection />
       <AboutSection />

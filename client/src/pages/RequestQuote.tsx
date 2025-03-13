@@ -24,7 +24,7 @@ const RequestQuote = () => {
           <div className="lg:col-span-1 space-y-6">
             {/* Why choose us section */}
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-              <h3 className="text-xl font-bold mb-4">Why Choose ARCEMUSA</h3>
+              <h3 className="text-xl font-bold mb-4">Why Choose ARCEM</h3>
               <ul className="space-y-4">
                 <li className="flex items-start">
                   <div className="flex-shrink-0 mt-1">

@@ -76,7 +76,7 @@ const ContactSection = () => {
       <div className="container mx-auto px-4 md:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           <div className="reveal">
-            <h2 className="text-sm font-montserrat text-[#1E90DB] mb-4">CONTACT US</h2>
+            <h2 className="text-sm font-montserrat text-[#1E90DB] mb-4">REACH US</h2>
             <h3 className="text-3xl md:text-4xl font-montserrat font-bold mb-6">Ready to Start Your Project?</h3>
             <p className="mb-8 leading-relaxed">
               Contact us today to discuss your construction needs. Our team is ready to bring your vision to life with expertise, quality craftsmanship, and dedication to excellence.
