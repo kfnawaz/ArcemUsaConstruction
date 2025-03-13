@@ -264,9 +264,11 @@ const JoinUs = () => {
                       REGISTER <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </Link>
-                  <Button variant="outline" className="border-[#1E90DB] text-[#1E90DB] hover:bg-[#1E90DB] hover:text-white">
-                    RESOURCES <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
+                  <Link href="/resources">
+                    <Button variant="outline" className="border-[#1E90DB] text-[#1E90DB] hover:bg-[#1E90DB] hover:text-white">
+                      RESOURCES <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </motion.div>

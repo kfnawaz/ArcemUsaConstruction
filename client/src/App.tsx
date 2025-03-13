@@ -129,6 +129,7 @@ function Router() {
           <Route path="/join-us" component={JoinUs} />
           <Route path="/careers" component={Careers} />
           <Route path="/careers/:id" component={CareerDetail} />
+          <Route path="/resources" component={Resources} />
           <Route path="/subcontractors" component={SubcontractorVendorRegistration} />
           <Route path="/auth">
             <Login />
