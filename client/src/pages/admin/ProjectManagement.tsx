@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Search, Plus, Edit, Trash2, Star, StarOff } from 'lucide-react';
 import AdminNav from '@/components/admin/AdminNav';
 import ProjectForm from '@/components/admin/ProjectForm';
+import ExportButton from '@/components/admin/ExportButton';
 import { 
   Dialog,
   DialogContent, 
@@ -193,9 +194,18 @@ const ProjectManagement = () => {
                 <div className="bg-white rounded-lg shadow-md p-6 mb-8">
                   <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                     <h1 className="text-2xl font-montserrat font-bold">Project Management</h1>
-                    <Button variant="gold" onClick={handleAddNew}>
-                      <Plus className="mr-2 h-4 w-4" /> Add New Project
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <ExportButton
+                        data={filteredProjects || []}
+                        fileName="Projects_Export"
+                        excludeFields={['id', 'slug']}
+                        dateFields={['createdAt', 'updatedAt']}
+                        disabled={isLoading || !filteredProjects || filteredProjects.length === 0}
+                      />
+                      <Button variant="gold" onClick={handleAddNew}>
+                        <Plus className="mr-2 h-4 w-4" /> Add New Project
+                      </Button>
+                    </div>
                   </div>
                   
                   {/* Search bar */}

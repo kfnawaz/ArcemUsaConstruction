@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useLocation } from 'wouter';
 import AdminNav from '@/components/admin/AdminNav';
+import ExportButton from '@/components/admin/ExportButton';
 import {
   Tabs,
   TabsContent,
