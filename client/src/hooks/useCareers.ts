@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
+import { apiRequest, getQueryFn } from "@/lib/queryClient";
 import { JobPosting, InsertJobPosting } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 
@@ -10,40 +10,42 @@ export const useCareers = (jobId?: number) => {
   // Get all job postings (admin)
   const { data: allJobPostings, isLoading: isLoadingAll } = useQuery({
     queryKey: ["/api/admin/careers"],
+    queryFn: getQueryFn({ on401: "returnNull" }),
     enabled: !jobId,
   });
 
   // Get active job postings (public)
   const { data: activeJobPostings, isLoading: isLoadingActive } = useQuery({
     queryKey: ["/api/careers"],
+    queryFn: getQueryFn({ on401: "returnNull" }),
     enabled: !jobId,
   });
 
   // Get featured job postings (public)
   const { data: featuredJobPostings, isLoading: isLoadingFeatured } = useQuery({
     queryKey: ["/api/careers/featured"],
+    queryFn: getQueryFn({ on401: "returnNull" }),
     enabled: !jobId,
   });
 
   // Get a specific job posting
   const { data: jobPosting, isLoading: isLoadingJob } = useQuery({
     queryKey: ["/api/careers", jobId],
+    queryFn: getQueryFn({ on401: "returnNull" }),
     enabled: !!jobId,
   });
 
   // Admin: Get a specific job posting (even if inactive)
   const { data: adminJobPosting, isLoading: isLoadingAdminJob } = useQuery({
     queryKey: ["/api/admin/careers", jobId],
+    queryFn: getQueryFn({ on401: "returnNull" }),
     enabled: !!jobId,
   });
 
   // Create a new job posting
   const createJobPostingMutation = useMutation({
     mutationFn: async (data: InsertJobPosting) => {
-      return await apiRequest("/api/admin/careers", {
-        method: "POST",
-        data,
-      });
+      return await apiRequest(`/api/admin/careers`, "POST", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/careers"] });
@@ -66,10 +68,7 @@ export const useCareers = (jobId?: number) => {
   // Update a job posting
   const updateJobPostingMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<InsertJobPosting> }) => {
-      return await apiRequest(`/api/admin/careers/${id}`, {
-        method: "PUT",
-        data,
-      });
+      return await apiRequest(`/api/admin/careers/${id}`, "PUT", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/careers"] });
@@ -95,9 +94,7 @@ export const useCareers = (jobId?: number) => {
   // Toggle active status
   const toggleActiveStatusMutation = useMutation({
     mutationFn: async (id: number) => {
-      return await apiRequest(`/api/admin/careers/${id}/toggle-active`, {
-        method: "PUT",
-      });
+      return await apiRequest(`/api/admin/careers/${id}/toggle-active`, "PUT");
     },
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/careers"] });
@@ -123,9 +120,7 @@ export const useCareers = (jobId?: number) => {
   // Toggle featured status
   const toggleFeaturedStatusMutation = useMutation({
     mutationFn: async (id: number) => {
-      return await apiRequest(`/api/admin/careers/${id}/toggle-featured`, {
-        method: "PUT",
-      });
+      return await apiRequest(`/api/admin/careers/${id}/toggle-featured`, "PUT");
     },
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/careers"] });
@@ -151,9 +146,7 @@ export const useCareers = (jobId?: number) => {
   // Delete a job posting
   const deleteJobPostingMutation = useMutation({
     mutationFn: async (id: number) => {
-      return await apiRequest(`/api/admin/careers/${id}`, {
-        method: "DELETE",
-      });
+      return await apiRequest(`/api/admin/careers/${id}`, "DELETE");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/careers"] });

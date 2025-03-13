@@ -193,6 +193,11 @@ function Router() {
               <SubcontractorManagement />
             </ProtectedRoute>
           </Route>
+          <Route path="/admin/careers">
+            <ProtectedRoute>
+              <CareersManagement />
+            </ProtectedRoute>
+          </Route>
           
           <Route component={NotFound} />
         </Switch>
