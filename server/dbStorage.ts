@@ -4,7 +4,7 @@ import {
   users, projects, projectGallery, blogCategories, blogTags, blogPosts, 
   blogPostCategories, blogPostTags, blogGallery,
   testimonials, services, serviceGallery, messages, newsletterSubscribers, quoteRequests,
-  subcontractors, vendors,
+  subcontractors, vendors, jobPostings,
   type User, type InsertUser, 
   type Project, type InsertProject,
   type ProjectGallery, type InsertProjectGallery,
@@ -19,7 +19,8 @@ import {
   type NewsletterSubscriber, type InsertNewsletterSubscriber,
   type QuoteRequest, type InsertQuoteRequest,
   type Subcontractor, type InsertSubcontractor,
-  type Vendor, type InsertVendor
+  type Vendor, type InsertVendor,
+  type JobPosting, type InsertJobPosting
 } from "../shared/schema";
 import { IStorage } from "./storage";
 
