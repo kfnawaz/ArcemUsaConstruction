@@ -236,7 +236,7 @@ const Contact = () => {
                             {...field}
                             type="tel"
                             value={field.value || ''} // Ensure value is never null or undefined
-                            className="px-4 py-3 border border-gray-300 focus:border-[#1E90DB] outline-none transition-colors"
+                            className="px-4 py-3 border border-gray-300 focus:border-[#1E90DB] outline-none transition-colors rounded-md"
                           />
                         </FormControl>
                         <FormMessage />
@@ -252,7 +252,7 @@ const Contact = () => {
                         <FormLabel className="font-montserrat">Service Interested In</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value || ''}>
                           <FormControl>
-                            <SelectTrigger className="px-4 py-3 border border-gray-300 focus:border-[#1E90DB] outline-none transition-colors">
+                            <SelectTrigger className="px-4 py-3 border border-gray-300 focus:border-[#1E90DB] outline-none transition-colors rounded-md">
                               <SelectValue placeholder="Select a service" />
                             </SelectTrigger>
                           </FormControl>
@@ -280,7 +280,7 @@ const Contact = () => {
                           <Textarea
                             {...field}
                             rows={5}
-                            className="px-4 py-3 border border-gray-300 focus:border-[#1E90DB] outline-none transition-colors"
+                            className="px-4 py-3 border border-gray-300 focus:border-[#1E90DB] outline-none transition-colors rounded-md"
                             required
                           />
                         </FormControl>
@@ -292,6 +292,7 @@ const Contact = () => {
                   <Button 
                     type="submit" 
                     variant="blue"
+                    className="rounded-md"
                     disabled={contactMutation.isPending}
                   >
                     {contactMutation.isPending ? 'SENDING...' : 'SEND MESSAGE'}
