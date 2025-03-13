@@ -15,6 +15,7 @@ import {
   Card,
   CardContent,
 } from '@/components/ui/card';
+import FileUpload from '@/components/common/FileUpload';
 
 interface ServiceGalleryManagerProps {
   serviceId: number;
@@ -37,6 +38,7 @@ const ServiceGalleryManager: React.FC<ServiceGalleryManagerProps> = ({ serviceId
     isDeletingGalleryImage
   } = useService(serviceId);
 
+  // Legacy single image upload handler
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -77,6 +79,48 @@ const ServiceGalleryManager: React.FC<ServiceGalleryManagerProps> = ({ serviceId
       setIsUploading(false);
     }
   };
+  
+  // New multiple images upload handler
+  const handleMultipleImagesUpload = async (urls: string | string[]) => {
+    if (!Array.isArray(urls)) {
+      urls = [urls];
+    }
+    
+    setIsUploading(true);
+    
+    try {
+      // Calculate next display order
+      const nextOrder = serviceGallery && serviceGallery.length > 0 
+        ? Math.max(...serviceGallery.map(img => img.order !== null ? img.order : 0)) + 1 
+        : 1;
+      
+      // Add each image to the gallery with sequential display order
+      for (let i = 0; i < urls.length; i++) {
+        const galleryImage: InsertServiceGallery = {
+          serviceId,
+          imageUrl: urls[i],
+          alt: `Gallery image ${i + 1}`,
+          order: nextOrder + i,
+        };
+        
+        await addGalleryImage(serviceId, galleryImage);
+      }
+      
+      toast({
+        title: 'Images uploaded',
+        description: `${urls.length} image${urls.length > 1 ? 's' : ''} added to the gallery successfully.`,
+      });
+    } catch (error) {
+      console.error("Error adding multiple gallery images:", error);
+      toast({
+        title: "Upload failed",
+        description: "Failed to add some images to the gallery. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const handleDeleteClick = (id: number) => {
     setSelectedImageId(id);
@@ -109,27 +153,19 @@ const ServiceGalleryManager: React.FC<ServiceGalleryManagerProps> = ({ serviceId
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h3 className="text-xl font-semibold">Service Gallery Images</h3>
-        <div>
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleImageUpload}
-            className="hidden"
-            accept="image/*"
-          />
-          <Button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isUploading || isAddingGalleryImage}
-            className="flex items-center gap-2"
-          >
-            {isUploading || isAddingGalleryImage ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Upload className="h-4 w-4" />
-            )}
-            Add Image
-          </Button>
-        </div>
+      </div>
+      
+      <div className="p-4 border rounded-md bg-muted/20">
+        <h4 className="font-medium mb-3">Upload Multiple Images</h4>
+        <p className="text-sm text-muted-foreground mb-4">
+          Drag and drop multiple images or click to select files. You can upload up to 10 images at once.
+        </p>
+        <FileUpload 
+          onUploadComplete={handleMultipleImagesUpload}
+          multiple={true}
+          accept="image/*"
+          maxSizeMB={5}
+        />
       </div>
 
       {isLoadingGallery ? (
@@ -173,15 +209,8 @@ const ServiceGalleryManager: React.FC<ServiceGalleryManagerProps> = ({ serviceId
           <Image className="h-12 w-12 mx-auto text-muted-foreground" />
           <h3 className="mt-4 text-lg font-medium">No gallery images</h3>
           <p className="mt-2 text-sm text-muted-foreground">
-            Upload images to showcase this service.
+            Use the upload panel above to add images to showcase this service.
           </p>
-          <Button
-            onClick={() => fileInputRef.current?.click()}
-            variant="outline"
-            className="mt-4"
-          >
-            Upload an image
-          </Button>
         </div>
       )}
 
