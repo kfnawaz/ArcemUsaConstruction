@@ -428,12 +428,20 @@ const ServiceDetail = () => {
                     </div>
                     <div className="flex items-center">
                       <span className="mr-2 text-gray-700">Email:</span>
-                      <a
-                        href="mailto:info@arcemusa.com"
-                        className="text-[#1E90DB] hover:text-[#1670B0]"
-                      >
-                        info@arcemusa.com
-                      </a>
+                      <div className="text-[#1E90DB]">
+                        <a
+                          href="mailto:aj@arcemusa.com"
+                          className="hover:text-[#1670B0] block"
+                        >
+                          aj@arcemusa.com
+                        </a>
+                        <a
+                          href="mailto:admin@arcemusa.com"
+                          className="hover:text-[#1670B0] block"
+                        >
+                          admin@arcemusa.com
+                        </a>
+                      </div>
                     </div>
                     <div className="mt-4">
                       <Link

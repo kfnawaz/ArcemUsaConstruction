@@ -109,8 +109,9 @@ const ContactSection = () => {
                 <Mail className="w-6 h-6" />
               </div>
               <div>
-                <h4 className="font-montserrat font-bold mb-2">Email Address</h4>
+                <h4 className="font-montserrat font-bold mb-2">Email Addresses</h4>
                 <p>aj@arcemusa.com</p>
+                <p>admin@arcemusa.com</p>
               </div>
             </div>
             

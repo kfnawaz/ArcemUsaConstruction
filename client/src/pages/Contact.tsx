@@ -138,8 +138,9 @@ const Contact = () => {
                   <Mail className="w-6 h-6" />
                 </div>
                 <div>
-                  <h4 className="font-montserrat font-bold mb-2">Email Address</h4>
+                  <h4 className="font-montserrat font-bold mb-2">Email Addresses</h4>
                   <p className="text-gray-600">aj@arcemusa.com</p>
+                  <p className="text-gray-600">admin@arcemusa.com</p>
                 </div>
               </div>
               
