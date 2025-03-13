@@ -343,7 +343,8 @@ export default function CareersManagement() {
                           <Textarea 
                             placeholder="List the benefits offered with this position..."
                             className="min-h-[100px]"
-                            {...field} 
+                            {...field}
+                            value={field.value || ''}
                           />
                         </FormControl>
                         <FormDescription>
@@ -361,7 +362,7 @@ export default function CareersManagement() {
                         <FormItem>
                           <FormLabel>Salary Range (Optional)</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g. $60,000 - $80,000" {...field} />
+                            <Input placeholder="e.g. $60,000 - $80,000" {...field} value={field.value || ''} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

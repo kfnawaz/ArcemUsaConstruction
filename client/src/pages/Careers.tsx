@@ -24,11 +24,11 @@ export default function Careers() {
 
   // Extract unique departments and locations for filters
   const departments = activeJobPostings 
-    ? [...new Set(activeJobPostings.map((job: JobPosting) => job.department))]
+    ? Array.from(new Set(activeJobPostings.map((job: JobPosting) => job.department)))
     : [];
   
   const locations = activeJobPostings 
-    ? [...new Set(activeJobPostings.map((job: JobPosting) => job.location))]
+    ? Array.from(new Set(activeJobPostings.map((job: JobPosting) => job.location)))
     : [];
   
   const jobTypes = ["full-time", "part-time", "contract", "temporary", "internship"];
