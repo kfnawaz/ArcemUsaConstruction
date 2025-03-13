@@ -1464,6 +1464,149 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Job Postings - Public Routes
+  app.get(`${apiRouter}/careers`, async (req: Request, res: Response) => {
+    try {
+      const jobPostings = await storage.getActiveJobPostings();
+      return res.status(200).json(jobPostings);
+    } catch (error) {
+      console.error("Error fetching job postings:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  app.get(`${apiRouter}/careers/featured`, async (req: Request, res: Response) => {
+    try {
+      const featuredJobs = await storage.getFeaturedJobPostings();
+      return res.status(200).json(featuredJobs);
+    } catch (error) {
+      console.error("Error fetching featured job postings:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  app.get(`${apiRouter}/careers/:id`, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const jobPosting = await storage.getJobPosting(id);
+      
+      if (!jobPosting) {
+        return res.status(404).json({ message: "Job posting not found" });
+      }
+      
+      // Only return active jobs to the public
+      if (!jobPosting.active) {
+        return res.status(404).json({ message: "Job posting not found" });
+      }
+      
+      return res.status(200).json(jobPosting);
+    } catch (error) {
+      console.error("Error fetching job posting:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  // Job Postings - Admin Routes
+  app.get(`${apiRouter}/admin/careers`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const jobPostings = await storage.getJobPostings();
+      return res.status(200).json(jobPostings);
+    } catch (error) {
+      console.error("Error fetching all job postings:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  app.get(`${apiRouter}/admin/careers/:id`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const jobPosting = await storage.getJobPosting(id);
+      
+      if (!jobPosting) {
+        return res.status(404).json({ message: "Job posting not found" });
+      }
+      
+      return res.status(200).json(jobPosting);
+    } catch (error) {
+      console.error("Error fetching job posting:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  app.post(`${apiRouter}/admin/careers`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const result = await storage.createJobPosting(req.body);
+      return res.status(201).json(result);
+    } catch (error) {
+      console.error("Error creating job posting:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  app.put(`${apiRouter}/admin/careers/:id`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updatedJobPosting = await storage.updateJobPosting(id, req.body);
+      
+      if (!updatedJobPosting) {
+        return res.status(404).json({ message: "Job posting not found" });
+      }
+      
+      return res.status(200).json(updatedJobPosting);
+    } catch (error) {
+      console.error("Error updating job posting:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  app.put(`${apiRouter}/admin/careers/:id/toggle-active`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updatedJobPosting = await storage.toggleJobPostingActive(id);
+      
+      if (!updatedJobPosting) {
+        return res.status(404).json({ message: "Job posting not found" });
+      }
+      
+      return res.status(200).json(updatedJobPosting);
+    } catch (error) {
+      console.error("Error toggling job posting active status:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  app.put(`${apiRouter}/admin/careers/:id/toggle-featured`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const updatedJobPosting = await storage.toggleJobPostingFeatured(id);
+      
+      if (!updatedJobPosting) {
+        return res.status(404).json({ message: "Job posting not found" });
+      }
+      
+      return res.status(200).json(updatedJobPosting);
+    } catch (error) {
+      console.error("Error toggling job posting featured status:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+  
+  app.delete(`${apiRouter}/admin/careers/:id`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const result = await storage.deleteJobPosting(id);
+      
+      if (result) {
+        return res.status(200).json({ message: "Job posting deleted successfully" });
+      } else {
+        return res.status(404).json({ message: "Job posting not found" });
+      }
+    } catch (error) {
+      console.error("Error deleting job posting:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

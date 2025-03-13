@@ -190,6 +190,7 @@ export class MemStorage implements IStorage {
   quoteRequestCurrentId: number;
   subcontractorCurrentId: number;
   vendorCurrentId: number;
+  jobPostingCurrentId: number;
 
   serviceGalleryCurrentId: number;
   
@@ -211,6 +212,7 @@ export class MemStorage implements IStorage {
     this.quoteRequests = new Map();
     this.subcontractors = new Map();
     this.vendors = new Map();
+    this.jobPostings = new Map();
     
     this.userCurrentId = 1;
     this.projectCurrentId = 1;
@@ -227,6 +229,7 @@ export class MemStorage implements IStorage {
     this.quoteRequestCurrentId = 1;
     this.subcontractorCurrentId = 1;
     this.vendorCurrentId = 1;
+    this.jobPostingCurrentId = 1;
     
     // Add initial data
     this.initializeData();
@@ -1319,6 +1322,97 @@ export class MemStorage implements IStorage {
 
   async deleteVendor(id: number): Promise<boolean> {
     return this.vendors.delete(id);
+  }
+  
+  // Job Posting methods
+  async getJobPostings(): Promise<JobPosting[]> {
+    return Array.from(this.jobPostings.values());
+  }
+  
+  async getActiveJobPostings(): Promise<JobPosting[]> {
+    return Array.from(this.jobPostings.values())
+      .filter(job => job.active === true);
+  }
+  
+  async getFeaturedJobPostings(): Promise<JobPosting[]> {
+    return Array.from(this.jobPostings.values())
+      .filter(job => job.featured === true && job.active === true);
+  }
+  
+  async getJobPosting(id: number): Promise<JobPosting | undefined> {
+    return this.jobPostings.get(id);
+  }
+  
+  async createJobPosting(jobPosting: InsertJobPosting): Promise<JobPosting> {
+    const id = this.jobPostingCurrentId++;
+    const now = new Date();
+    
+    const newJobPosting: JobPosting = {
+      id,
+      title: jobPosting.title,
+      department: jobPosting.department,
+      location: jobPosting.location,
+      type: jobPosting.type,
+      description: jobPosting.description,
+      requirements: jobPosting.requirements,
+      responsibilities: jobPosting.responsibilities,
+      benefits: jobPosting.benefits || null,
+      salary: jobPosting.salary || null,
+      applyUrl: jobPosting.applyUrl || null,
+      active: jobPosting.active ?? true,
+      featured: jobPosting.featured ?? false,
+      createdAt: now,
+      updatedAt: now
+    };
+    
+    this.jobPostings.set(id, newJobPosting);
+    return newJobPosting;
+  }
+  
+  async updateJobPosting(id: number, jobPostingUpdate: Partial<InsertJobPosting>): Promise<JobPosting | undefined> {
+    const jobPosting = this.jobPostings.get(id);
+    if (!jobPosting) return undefined;
+    
+    const updatedJobPosting: JobPosting = {
+      ...jobPosting,
+      ...jobPostingUpdate,
+      updatedAt: new Date()
+    };
+    
+    this.jobPostings.set(id, updatedJobPosting);
+    return updatedJobPosting;
+  }
+  
+  async toggleJobPostingActive(id: number): Promise<JobPosting | undefined> {
+    const jobPosting = this.jobPostings.get(id);
+    if (!jobPosting) return undefined;
+    
+    const updatedJobPosting: JobPosting = {
+      ...jobPosting,
+      active: !jobPosting.active,
+      updatedAt: new Date()
+    };
+    
+    this.jobPostings.set(id, updatedJobPosting);
+    return updatedJobPosting;
+  }
+  
+  async toggleJobPostingFeatured(id: number): Promise<JobPosting | undefined> {
+    const jobPosting = this.jobPostings.get(id);
+    if (!jobPosting) return undefined;
+    
+    const updatedJobPosting: JobPosting = {
+      ...jobPosting,
+      featured: !jobPosting.featured,
+      updatedAt: new Date()
+    };
+    
+    this.jobPostings.set(id, updatedJobPosting);
+    return updatedJobPosting;
+  }
+  
+  async deleteJobPosting(id: number): Promise<boolean> {
+    return this.jobPostings.delete(id);
   }
 }
 
