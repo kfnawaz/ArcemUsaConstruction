@@ -329,8 +329,15 @@ export default function SubcontractorManagement() {
             {/* Subcontractors Tab Content */}
             {activeTab === 'subcontractors' && (
               <Card>
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle>Subcontractor Applications</CardTitle>
+                  <ExportButton
+                    data={filteredSubcontractors || []}
+                    fileName="Subcontractors_Export"
+                    excludeFields={['id']}
+                    dateFields={['createdAt', 'updatedAt']}
+                    disabled={isLoadingSubcontractors || !filteredSubcontractors || filteredSubcontractors.length === 0}
+                  />
                 </CardHeader>
                 <CardContent>
                   {isLoadingSubcontractors ? (
@@ -414,8 +421,15 @@ export default function SubcontractorManagement() {
             {/* Vendors Tab Content */}
             {activeTab === 'vendors' && (
               <Card>
-                <CardHeader>
+                <CardHeader className="flex flex-row items-center justify-between">
                   <CardTitle>Vendor Applications</CardTitle>
+                  <ExportButton
+                    data={filteredVendors || []}
+                    fileName="Vendors_Export"
+                    excludeFields={['id']}
+                    dateFields={['createdAt', 'updatedAt']}
+                    disabled={isLoadingVendors || !filteredVendors || filteredVendors.length === 0}
+                  />
                 </CardHeader>
                 <CardContent>
                   {isLoadingVendors ? (
