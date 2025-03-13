@@ -357,9 +357,11 @@ const JoinUs = () => {
                     <span className="text-gray-700">Career advancement paths</span>
                   </div>
                 </div>
-                <Button className="bg-[#1E90DB] hover:bg-[#1670B0]">
-                  APPLY NOW <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
+                <Link href="/careers">
+                  <Button className="bg-[#1E90DB] hover:bg-[#1670B0]">
+                    APPLY NOW <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
               </div>
             </motion.div>
           </motion.div>
