@@ -78,9 +78,9 @@ const Contact = () => {
     <>
       {/* Page Banner */}
       <div 
-        className="relative h-[350px] flex items-center justify-center" 
+        className="relative h-[350px] flex items-center justify-center overflow-hidden rounded-lg my-6 mx-4 md:mx-8" 
         style={{
-          backgroundImage: "url('/uploads/images/contact/office-desk.jpg')",
+          backgroundImage: "url('/uploads/images/contact/firmbee-com-SpVHcbuKi6E-unsplash.jpg')",
           backgroundSize: 'cover',
           backgroundPosition: 'center'
         }}
@@ -158,7 +158,7 @@ const Contact = () => {
               </div>
 
               {/* Office Hours */}
-              <div className="mt-12 p-6 bg-gray-100">
+              <div className="mt-12 p-6 bg-gray-100 rounded-lg shadow-sm">
                 <h4 className="font-montserrat font-bold mb-4">Office Hours</h4>
                 <div className="space-y-2 text-gray-600">
                   <div className="flex justify-between">
@@ -196,7 +196,7 @@ const Contact = () => {
                           <FormControl>
                             <Input
                               {...field}
-                              className="px-4 py-3 border border-gray-300 focus:border-[#1E90DB] outline-none transition-colors"
+                              className="px-4 py-3 border border-gray-300 focus:border-[#1E90DB] outline-none transition-colors rounded-md"
                               required
                             />
                           </FormControl>
@@ -215,7 +215,7 @@ const Contact = () => {
                             <Input
                               {...field}
                               type="email"
-                              className="px-4 py-3 border border-gray-300 focus:border-[#1E90DB] outline-none transition-colors"
+                              className="px-4 py-3 border border-gray-300 focus:border-[#1E90DB] outline-none transition-colors rounded-md"
                               required
                             />
                           </FormControl>
@@ -313,7 +313,7 @@ const Contact = () => {
             </p>
           </div>
           
-          <div className="reveal h-96 bg-gray-300 w-full">
+          <div className="reveal h-96 bg-gray-300 w-full rounded-lg overflow-hidden shadow-md">
             {/* In a real implementation, this would be a Google Map */}
             <div className="w-full h-full flex items-center justify-center bg-gray-200">
               <p className="text-gray-500">Map would be displayed here</p>
