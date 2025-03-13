@@ -325,7 +325,8 @@ export default function CareersManagement() {
                           <Textarea 
                             placeholder="List the requirements for this position..."
                             className="min-h-[100px]"
-                            {...field} 
+                            {...field}
+                            value={field.value || ''}
                           />
                         </FormControl>
                         <FormDescription>
@@ -596,7 +597,7 @@ export default function CareersManagement() {
                     <FormItem>
                       <FormLabel>Job Title</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g. Project Manager" {...field} />
+                        <Input placeholder="e.g. Project Manager" {...field} value={field.value || ''} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -609,7 +610,7 @@ export default function CareersManagement() {
                     <FormItem>
                       <FormLabel>Department</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g. Construction Management" {...field} />
+                        <Input placeholder="e.g. Construction Management" {...field} value={field.value || ''} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -624,7 +625,7 @@ export default function CareersManagement() {
                     <FormItem>
                       <FormLabel>Location</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g. New York, NY" {...field} />
+                        <Input placeholder="e.g. New York, NY" {...field} value={field.value || ''} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
