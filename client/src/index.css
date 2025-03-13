@@ -91,6 +91,29 @@
 }
 
 @layer components {
+  /* Global rounded corners for images and cards */
+  img {
+    @apply rounded-lg;
+  }
+  
+  .card, .shadow-lg, .shadow-xl {
+    @apply rounded-lg overflow-hidden;
+  }
+
+  /* Project and blog cards */
+  .project-card, 
+  .blog-card, 
+  .service-card {
+    @apply rounded-lg overflow-hidden;
+  }
+
+  /* Carousel items */
+  .carousel-item, 
+  .embla__slide {
+    @apply rounded-lg overflow-hidden;
+  }
+
+  /* Original styles */
   .reveal {
     opacity: 0;
     transform: translateY(30px);
