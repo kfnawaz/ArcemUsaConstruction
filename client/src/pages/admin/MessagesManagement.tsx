@@ -3,6 +3,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { Message } from '@shared/schema';
 import AdminNav from '@/components/admin/AdminNav';
+import ExportButton from '@/components/admin/ExportButton';
 import { Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -117,10 +118,24 @@ const MessagesManagement = () => {
           
           <div className="flex-1">
             <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-              <h1 className="text-2xl font-montserrat font-bold mb-2">Message Management</h1>
-              <p className="text-gray-600 mb-4">
-                View and manage incoming messages from website visitors.
-              </p>
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+                <div>
+                  <h1 className="text-2xl font-montserrat font-bold">Message Management</h1>
+                  <p className="text-gray-600 mt-1">
+                    View and manage incoming messages from website visitors.
+                  </p>
+                </div>
+                
+                {messages && messages.length > 0 && (
+                  <ExportButton
+                    data={messages}
+                    fileName="Messages_Export"
+                    excludeFields={['id']}
+                    dateFields={['createdAt', 'updatedAt']}
+                    disabled={isLoading || !messages || messages.length === 0}
+                  />
+                )}
+              </div>
             
               {messages && messages.length === 0 ? (
                 <div className="text-center py-8">

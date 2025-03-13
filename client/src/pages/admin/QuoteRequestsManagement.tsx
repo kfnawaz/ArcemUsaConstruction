@@ -38,6 +38,7 @@ import {
   Download,
   Filter
 } from "lucide-react";
+import ExportButton from "@/components/admin/ExportButton";
 import AdminNav from "@/components/admin/AdminNav";
 import { apiRequest } from "@/lib/queryClient";
 import { QuoteRequest } from "@shared/schema";
@@ -193,36 +194,7 @@ const QuoteRequestsManagement = () => {
     updateStatusMutation.mutate({ id, status });
   };
 
-  // Export quote requests as CSV
-  const exportQuoteRequests = () => {
-    const quotesToExport = statusFilter === "all" 
-      ? quoteRequests 
-      : filteredQuoteRequests;
-    
-    const csvHeader = 'Name,Email,Company,Phone,Project Type,Budget,Timeframe,Status,Date Submitted\n';
-    const csvContent = quotesToExport.map(quote => {
-      const date = quote.createdAt ? new Date(quote.createdAt).toLocaleDateString() : 'N/A';
-      return `"${quote.name}","${quote.email}","${quote.company || ''}","${quote.phone || ''}","${quote.projectType}","${quote.budget || ''}","${quote.timeframe || ''}","${quote.status}","${date}"`;
-    }).join('\n');
-    
-    const csvData = csvHeader + csvContent;
-    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', `quote-requests-${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.display = 'none';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    toast({
-      title: "Export successful",
-      description: `${quotesToExport.length} quote requests exported to CSV.`,
-      variant: "default"
-    });
-  };
+  // Removed the CSV export function as it's replaced with Excel export
 
   // Status badge color mapping
   const getStatusBadge = (status: string) => {
@@ -264,15 +236,13 @@ const QuoteRequestsManagement = () => {
                   )}
                 </h1>
                 
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="flex items-center gap-2"
-                  onClick={exportQuoteRequests}
-                >
-                  <Download className="h-4 w-4" />
-                  Export CSV
-                </Button>
+                <ExportButton
+                  data={statusFilter === "all" ? quoteRequests : filteredQuoteRequests}
+                  fileName="QuoteRequests_Export"
+                  excludeFields={['id']}
+                  dateFields={['createdAt', 'updatedAt']}
+                  disabled={isLoading || quoteRequests.length === 0}
+                />
               </div>
               
               {/* Status filter tabs */}

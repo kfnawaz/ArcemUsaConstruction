@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { useTestimonials } from "@/hooks/useTestimonials";
 import AdminNav from "@/components/admin/AdminNav";
+import ExportButton from "@/components/admin/ExportButton";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -138,32 +139,53 @@ const TestimonialsManagement = () => {
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
                 <h1 className="text-2xl font-montserrat font-bold">Testimonials Management</h1>
                 
-                <div className="flex space-x-2">
-                  <Button 
-                    variant={activeTab === 'all' ? 'default' : 'outline'} 
-                    onClick={() => {
-                      setActiveTab('all');
-                      setLocation('/admin/testimonials?tab=all');
-                    }}
-                    className="relative"
-                  >
-                    All Testimonials 
-                  </Button>
-                  <Button 
-                    variant={activeTab === 'pending' ? 'default' : 'outline'} 
-                    onClick={() => {
-                      setActiveTab('pending');
-                      setLocation('/admin/testimonials?tab=pending');
-                    }}
-                    className="relative"
-                  >
-                    Pending Approval
-                    {pendingTestimonials?.length > 0 && (
-                      <Badge className="ml-2 bg-primary text-white" variant="default">
-                        {pendingTestimonials.length}
-                      </Badge>
-                    )}
-                  </Button>
+                <div className="flex items-center space-x-2">
+                  {activeTab === 'all' && allTestimonials && allTestimonials.length > 0 && (
+                    <ExportButton
+                      data={allTestimonials}
+                      fileName="Testimonials_Export"
+                      excludeFields={['id']}
+                      dateFields={['createdAt', 'updatedAt']}
+                      disabled={isLoadingAllTestimonials || !allTestimonials || allTestimonials.length === 0}
+                    />
+                  )}
+                  {activeTab === 'pending' && pendingTestimonials && pendingTestimonials.length > 0 && (
+                    <ExportButton
+                      data={pendingTestimonials}
+                      fileName="PendingTestimonials_Export"
+                      excludeFields={['id']}
+                      dateFields={['createdAt', 'updatedAt']}
+                      disabled={isLoadingPendingTestimonials || !pendingTestimonials || pendingTestimonials.length === 0}
+                    />
+                  )}
+                  
+                  <div className="flex space-x-2">
+                    <Button 
+                      variant={activeTab === 'all' ? 'default' : 'outline'} 
+                      onClick={() => {
+                        setActiveTab('all');
+                        setLocation('/admin/testimonials?tab=all');
+                      }}
+                      className="relative"
+                    >
+                      All Testimonials 
+                    </Button>
+                    <Button 
+                      variant={activeTab === 'pending' ? 'default' : 'outline'} 
+                      onClick={() => {
+                        setActiveTab('pending');
+                        setLocation('/admin/testimonials?tab=pending');
+                      }}
+                      className="relative"
+                    >
+                      Pending Approval
+                      {pendingTestimonials?.length > 0 && (
+                        <Badge className="ml-2 bg-primary text-white" variant="default">
+                          {pendingTestimonials.length}
+                        </Badge>
+                      )}
+                    </Button>
+                  </div>
                 </div>
               </div>
               
