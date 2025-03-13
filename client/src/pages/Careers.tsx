@@ -149,7 +149,7 @@ export default function Careers() {
       <PageHeader 
         title="Careers at ARCEMUSA" 
         subtitle="Join our team of talented professionals and help us build exceptional spaces. Explore current opportunities and find your perfect role."
-        backgroundImage="/attached_assets/silvia-brazzoduro-YSxcf6C_SEg-unsplash.jpg"
+        backgroundImage="/uploads/images/careers/silvia-brazzoduro-YSxcf6C_SEg-unsplash.jpg"
       />
       
       <div className="container mx-auto px-4 py-8">

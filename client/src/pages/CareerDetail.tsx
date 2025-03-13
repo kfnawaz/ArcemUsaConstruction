@@ -81,7 +81,7 @@ export default function CareerDetail() {
     <div>
       <PageHeader 
         title={jobPosting.title}
-        backgroundImage="/attached_assets/daniel-mccullough--FPFq_trr2Y-unsplash.jpg"
+        backgroundImage="/uploads/images/careers/daniel-mccullough--FPFq_trr2Y-unsplash.jpg"
       >
         <div className="flex flex-wrap gap-4 items-center mt-4">
           <div className="flex items-center">
