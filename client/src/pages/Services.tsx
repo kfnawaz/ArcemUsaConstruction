@@ -131,7 +131,7 @@ const Services = () => {
     <>
       {/* Page Banner */}
       <div 
-        className="relative min-h-[350px] flex items-center justify-center" 
+        className="relative h-[350px] flex items-center justify-center" 
         style={{
           backgroundImage: "url('/uploads/images/services/commercial/commercial2.jpg')",
           backgroundSize: 'cover',
@@ -153,7 +153,7 @@ const Services = () => {
       </div>
 
       {/* Services Overview */}
-      <section className="py-20 md:py-32 bg-white">
+      <section className="py-20 bg-white">
         <div className="container mx-auto px-4 md:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16 reveal">
             <h2 className="text-sm font-montserrat text-[#1E90DB] mb-4">WHAT WE OFFER</h2>
@@ -294,7 +294,7 @@ const Services = () => {
       </section>
 
       {/* Our Process */}
-      <section className="py-20 md:py-32 bg-gray-100">
+      <section className="py-20 bg-gray-100">
         <div className="container mx-auto px-4 md:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16 reveal">
             <h2 className="text-sm font-montserrat text-[#1E90DB] mb-4">OUR PROCESS</h2>

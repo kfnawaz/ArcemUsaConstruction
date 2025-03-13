@@ -34,7 +34,7 @@ const Projects = () => {
     <>
       {/* Page Banner */}
       <div 
-        className="relative min-h-[350px] flex items-center justify-center" 
+        className="relative h-[350px] flex items-center justify-center" 
         style={{
           backgroundImage: "url('/uploads/images/services/industrial/industrial1.jpg')",
           backgroundSize: 'cover',
@@ -56,7 +56,7 @@ const Projects = () => {
       </div>
 
       {/* Projects Gallery */}
-      <section className="py-20 md:py-32 bg-white">
+      <section className="py-20 bg-white">
         <div className="container mx-auto px-4 md:px-8">
           <div className="mb-12 reveal">
             <h2 className="text-3xl font-montserrat font-bold mb-8 text-center">Our Featured Work</h2>
