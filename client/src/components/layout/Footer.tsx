@@ -36,9 +36,12 @@ const Footer = () => {
                 <MapPin className="w-4 h-4 text-[#1E90DB]" />
                 <span className="text-sm">215 Birch Hill Dr, Sugar Land, TX 77479</span>
               </div>
-              <div className="flex items-center space-x-3">
-                <Phone className="w-4 h-4 text-[#1E90DB]" />
-                <span className="text-sm">(713) 624-0083</span>
+              <div className="flex items-start space-x-3">
+                <Phone className="w-4 h-4 text-[#1E90DB] mt-1" />
+                <div>
+                  <div className="text-sm">Cell: (713) 624-0083</div>
+                  <div className="text-sm">Office: (713) 624-0313</div>
+                </div>
               </div>
               <div className="flex items-center space-x-3">
                 <Mail className="w-4 h-4 text-[#1E90DB]" />

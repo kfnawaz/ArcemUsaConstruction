@@ -411,12 +411,20 @@ const ServiceDetail = () => {
                     <h4 className="font-semibold text-lg">Contact Us</h4>
                     <div className="flex items-center">
                       <span className="mr-2 text-gray-700">Phone:</span>
-                      <a
-                        href="tel:+17136240083"
-                        className="text-[#1E90DB] hover:text-[#1670B0]"
-                      >
-                        (713) 624-0083
-                      </a>
+                      <div className="text-[#1E90DB]">
+                        <a
+                          href="tel:+17136240083"
+                          className="hover:text-[#1670B0] block"
+                        >
+                          Cell: (713) 624-0083
+                        </a>
+                        <a
+                          href="tel:+17136240313"
+                          className="hover:text-[#1670B0] block"
+                        >
+                          Office: (713) 624-0313
+                        </a>
+                      </div>
                     </div>
                     <div className="flex items-center">
                       <span className="mr-2 text-gray-700">Email:</span>

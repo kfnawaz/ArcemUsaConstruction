@@ -98,8 +98,9 @@ const ContactSection = () => {
                 <Phone className="w-6 h-6" />
               </div>
               <div>
-                <h4 className="font-montserrat font-bold mb-2">Phone Number</h4>
-                <p>(713) 624-0083</p>
+                <h4 className="font-montserrat font-bold mb-2">Phone Numbers</h4>
+                <p>Cell: (713) 624-0083</p>
+                <p>Office: (713) 624-0313</p>
               </div>
             </div>
             
@@ -181,6 +182,7 @@ const ContactSection = () => {
                         <Input
                           {...field}
                           type="tel"
+                          value={field.value || ''} // Ensure value is never null or undefined
                           className="px-4 py-3 bg-gray-800 border border-gray-700 focus:border-[#1E90DB] outline-none transition-colors text-white"
                         />
                       </FormControl>
@@ -195,7 +197,7 @@ const ContactSection = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-sm font-montserrat">Service Interested In</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange}>
                         <FormControl>
                           <SelectTrigger className="px-4 py-3 bg-gray-800 border border-gray-700 focus:border-[#1E90DB] outline-none transition-colors text-white">
                             <SelectValue placeholder="Select a service" />
