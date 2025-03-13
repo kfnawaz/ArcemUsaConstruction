@@ -112,8 +112,7 @@ type="video/mp4"
             className="text-white text-lg md:text-xl mb-8 reveal"
             style={{ animationDelay: "0.2s" }}
           >
-            ARCEMUSA is a premier construction company delivering exceptional
-            quality and innovative solutions for complex projects.
+            ARCEM LLC is a premier construction Engineering and Management company delivering exceptional quality and innovative solutions for complex projects.
           </p>
           <div
             className="flex flex-col sm:flex-row gap-4 reveal"

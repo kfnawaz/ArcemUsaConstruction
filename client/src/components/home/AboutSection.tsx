@@ -21,30 +21,36 @@ const AboutSection = () => {
             />
           </div>
           <div className="md:w-1/2 reveal">
-            <h2 className="text-sm font-montserrat text-[#1E90DB] mb-4">ABOUT ARCEMUSA</h2>
-            <h3 className="text-3xl md:text-4xl font-montserrat font-bold mb-6">A Tradition of Excellence Since 1985</h3>
+            <h2 className="text-sm font-montserrat text-[#1E90DB] mb-4">ABOUT ARCEM LLC</h2>
+            <h3 className="text-3xl md:text-4xl font-montserrat font-bold mb-6"> American Construction, Engineering & Management Company.
+</h3>
             <p className="text-gray-600 mb-6 leading-relaxed">
-              For over three decades, ARCEMUSA has been at the forefront of the construction industry, delivering exceptional quality and innovative solutions for complex projects. Our team of highly skilled professionals brings extensive experience and unwavering commitment to every project we undertake.
+              At A+R C.E.M, we transform ideas into reality through our expertise in Pre-Construction, Design-Build, Project Management, Tenant Improvement, and Housing. With years of hands-on experience and a passion for excellence, we bring innovation, efficiency, and superior craftsmanship to every project we undertake.
             </p>
             <p className="text-gray-600 mb-8 leading-relaxed">
-              We pride ourselves on our attention to detail, transparent communication, and the lasting relationships we build with our clients. From concept to completion, we work closely with you to realize your vision and exceed your expectations.
+              From concept to completion, our team is committed to delivering tailored solutions that meet the unique needs of our clients. We have had the privilege of working with renowned brands, solidifying our reputation as a trusted partner in the construction and engineering industry.
+                
             </p>
-            <div className="grid grid-cols-2 gap-6 mb-8">
+            <p className="text-gray-600 mb-8 leading-relaxed">
+              
+                We don’t just build structures—we build relationships, trust, and a legacy of quality. Whether you’re planning a new development, a renovation, or a large-scale commercial project, we’re here to bring your vision to life with precision and excellence.
+            </p>
+<div className="grid grid-cols-2 gap-6 mb-8">
               <div>
-                <h4 className="font-montserrat font-bold text-2xl text-[#1E90DB] mb-2">350+</h4>
+                <h4 className="font-montserrat font-bold text-2xl text-[#1E90DB] mb-2">100+</h4>
+                <p className="text-gray-600">Satisfied Clients</p>
+              </div>
+              <div>
+                <h4 className="font-montserrat font-bold text-2xl text-[#1E90DB] mb-2">12+</h4>
+                <p className="text-gray-600">Years of Experience</p>
+              </div>
+              <div>
+                <h4 className="font-montserrat font-bold text-2xl text-[#1E90DB] mb-2">02</h4>
+                <p className="text-gray-600">USA Offices</p>
+              </div>
+              <div>
+                <h4 className="font-montserrat font-bold text-2xl text-[#1E90DB] mb-2">100+</h4>
                 <p className="text-gray-600">Projects Completed</p>
-              </div>
-              <div>
-                <h4 className="font-montserrat font-bold text-2xl text-[#1E90DB] mb-2">45+</h4>
-                <p className="text-gray-600">Industry Awards</p>
-              </div>
-              <div>
-                <h4 className="font-montserrat font-bold text-2xl text-[#1E90DB] mb-2">120+</h4>
-                <p className="text-gray-600">Team Members</p>
-              </div>
-              <div>
-                <h4 className="font-montserrat font-bold text-2xl text-[#1E90DB] mb-2">38</h4>
-                <p className="text-gray-600">Years Experience</p>
               </div>
             </div>
             <Link href="/services">
