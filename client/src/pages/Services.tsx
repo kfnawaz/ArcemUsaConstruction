@@ -133,12 +133,12 @@ const Services = () => {
       <div 
         className="relative h-[350px] flex items-center justify-center" 
         style={{
-          backgroundImage: "url('/uploads/images/services/commercial/commercial2.jpg')",
+          backgroundImage: "url('/uploads/images/services/construction-helmets.jpg')",
           backgroundSize: 'cover',
           backgroundPosition: 'center'
         }}
       >
-        <div className="absolute inset-0 bg-black opacity-75"></div>
+        <div className="absolute inset-0 bg-black opacity-60"></div>
         <motion.div 
           className="container relative z-10 px-4 md:px-8 text-white py-20"
           initial={{ opacity: 0, y: 20 }}
