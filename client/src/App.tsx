@@ -27,6 +27,8 @@ import PrivacyPolicy from "@/pages/PrivacyPolicy";
 import TermsOfService from "@/pages/TermsOfService";
 import Sitemap from "@/pages/Sitemap";
 import JoinUs from "@/pages/JoinUs";
+import Careers from "@/pages/Careers";
+import CareerDetail from "@/pages/CareerDetail";
 import SubcontractorVendorRegistration from "@/pages/SubcontractorVendorRegistration";
 import Login from "@/pages/auth/Login";
 import Dashboard from "@/pages/admin/Dashboard";
@@ -37,6 +39,7 @@ import MessagesManagement from "@/pages/admin/MessagesManagement";
 import TestimonialsManagement from "@/pages/admin/TestimonialsManagement";
 import NewsletterManagement from "@/pages/admin/NewsletterManagement";
 import QuoteRequestsManagement from "@/pages/admin/QuoteRequestsManagement";
+import CareersManagement from "@/pages/admin/CareersManagement";
 import SettingsPage from "@/pages/admin/Settings";
 import AccessibilityCheckerPage from "@/pages/admin/AccessibilityChecker";
 import SubcontractorManagement from "@/pages/admin/SubcontractorManagement";
@@ -123,6 +126,8 @@ function Router() {
           <Route path="/terms-of-service" component={TermsOfService} />
           <Route path="/sitemap" component={Sitemap} />
           <Route path="/join-us" component={JoinUs} />
+          <Route path="/careers" component={Careers} />
+          <Route path="/careers/:id" component={CareerDetail} />
           <Route path="/subcontractors" component={SubcontractorVendorRegistration} />
           <Route path="/auth">
             <Login />
