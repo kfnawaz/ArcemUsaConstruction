@@ -8,11 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatDate, scrollToTop } from "@/lib/utils";
 import { JobPosting } from "@shared/schema";
-import { BriefcaseIcon, GlobeIcon, CalendarIcon, StarIcon, SearchIcon, FilterIcon, MapPinIcon } from "lucide-react";
+import { BriefcaseIcon, CalendarIcon, StarIcon, SearchIcon, FilterIcon, MapPinIcon } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useIsMobile } from "@/hooks/use-mobile";
+import PageHeader from "@/components/PageHeader";
 
 export default function Careers() {
   const { activeJobPostings, featuredJobPostings, isLoadingActive, isLoadingFeatured } = useCareers();
@@ -145,183 +145,183 @@ export default function Careers() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold mb-4">Careers at ARCEMUSA</h1>
-        <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-          Join our team of talented professionals and help us build exceptional spaces. 
-          Explore current opportunities and find your perfect role.
-        </p>
-      </div>
+    <div>
+      <PageHeader 
+        title="Careers at ARCEMUSA" 
+        subtitle="Join our team of talented professionals and help us build exceptional spaces. Explore current opportunities and find your perfect role."
+        backgroundImage="/attached_assets/silvia-brazzoduro-YSxcf6C_SEg-unsplash.jpg"
+      />
+      
+      <div className="container mx-auto px-4 py-8">
+        <FeaturedJobs />
 
-      <FeaturedJobs />
-
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold mb-6">All Open Positions</h2>
-        
-        <div className="mb-6 space-y-4">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="relative flex-grow">
-              <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Search jobs..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold mb-6">All Open Positions</h2>
+          
+          <div className="mb-6 space-y-4">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="relative flex-grow">
+                <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  type="text"
+                  placeholder="Search jobs..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <Select value={filterType} onValueChange={setFilterType}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Job Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Types</SelectItem>
+                    {jobTypes.map((type) => (
+                      <SelectItem key={type} value={type} className="capitalize">
+                        {type.replace('-', ' ')}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                
+                <Select value={filterDepartment} onValueChange={setFilterDepartment}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Department" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Departments</SelectItem>
+                    {departments.map((dept) => (
+                      <SelectItem key={dept} value={dept}>
+                        {dept}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                
+                <Select value={filterLocation} onValueChange={setFilterLocation}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Location" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Locations</SelectItem>
+                    {locations.map((loc) => (
+                      <SelectItem key={loc} value={loc}>
+                        {loc}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <Button variant="outline" onClick={resetFilters} className="whitespace-nowrap">
+                <FilterIcon className="h-4 w-4 mr-2" />
+                Reset
+              </Button>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <Select value={filterType} onValueChange={setFilterType}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Job Type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  {jobTypes.map((type) => (
-                    <SelectItem key={type} value={type} className="capitalize">
-                      {type.replace('-', ' ')}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              
-              <Select value={filterDepartment} onValueChange={setFilterDepartment}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Department" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Departments</SelectItem>
-                  {departments.map((dept) => (
-                    <SelectItem key={dept} value={dept}>
-                      {dept}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              
-              <Select value={filterLocation} onValueChange={setFilterLocation}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Location" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Locations</SelectItem>
-                  {locations.map((loc) => (
-                    <SelectItem key={loc} value={loc}>
-                      {loc}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <Button variant="outline" onClick={resetFilters} className="whitespace-nowrap">
-              <FilterIcon className="h-4 w-4 mr-2" />
-              Reset
-            </Button>
+            {/* Active filters display */}
+            {(filterType !== "all" || filterDepartment !== "all" || filterLocation !== "all" || searchQuery) && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {searchQuery && (
+                  <Badge variant="outline" className="py-1">
+                    Search: {searchQuery}
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-4 w-4 ml-1 p-0"
+                      onClick={() => setSearchQuery("")}
+                    >
+                      ×
+                    </Button>
+                  </Badge>
+                )}
+                {filterType !== "all" && (
+                  <Badge variant="outline" className="py-1 capitalize">
+                    Type: {filterType.replace('-', ' ')}
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-4 w-4 ml-1 p-0"
+                      onClick={() => setFilterType("all")}
+                    >
+                      ×
+                    </Button>
+                  </Badge>
+                )}
+                {filterDepartment !== "all" && (
+                  <Badge variant="outline" className="py-1">
+                    Department: {filterDepartment}
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-4 w-4 ml-1 p-0"
+                      onClick={() => setFilterDepartment("all")}
+                    >
+                      ×
+                    </Button>
+                  </Badge>
+                )}
+                {filterLocation !== "all" && (
+                  <Badge variant="outline" className="py-1">
+                    Location: {filterLocation}
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-4 w-4 ml-1 p-0"
+                      onClick={() => setFilterLocation("all")}
+                    >
+                      ×
+                    </Button>
+                  </Badge>
+                )}
+              </div>
+            )}
           </div>
           
-          {/* Active filters display */}
-          {(filterType !== "all" || filterDepartment !== "all" || filterLocation !== "all" || searchQuery) && (
-            <div className="flex flex-wrap gap-2 mt-2">
-              {searchQuery && (
-                <Badge variant="outline" className="py-1">
-                  Search: {searchQuery}
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-4 w-4 ml-1 p-0"
-                    onClick={() => setSearchQuery("")}
-                  >
-                    ×
-                  </Button>
-                </Badge>
-              )}
-              {filterType !== "all" && (
-                <Badge variant="outline" className="py-1 capitalize">
-                  Type: {filterType.replace('-', ' ')}
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-4 w-4 ml-1 p-0"
-                    onClick={() => setFilterType("all")}
-                  >
-                    ×
-                  </Button>
-                </Badge>
-              )}
-              {filterDepartment !== "all" && (
-                <Badge variant="outline" className="py-1">
-                  Department: {filterDepartment}
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-4 w-4 ml-1 p-0"
-                    onClick={() => setFilterDepartment("all")}
-                  >
-                    ×
-                  </Button>
-                </Badge>
-              )}
-              {filterLocation !== "all" && (
-                <Badge variant="outline" className="py-1">
-                  Location: {filterLocation}
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-4 w-4 ml-1 p-0"
-                    onClick={() => setFilterLocation("all")}
-                  >
-                    ×
-                  </Button>
-                </Badge>
-              )}
+          {isLoadingActive ? (
+            <div className="grid grid-cols-1 gap-6 mt-6">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="flex flex-col space-y-3">
+                  <Skeleton className="h-[150px] w-full rounded-lg" />
+                </div>
+              ))}
             </div>
+          ) : (
+            <>
+              {filteredJobs.length === 0 ? (
+                <Alert>
+                  <AlertTitle>No matching jobs found</AlertTitle>
+                  <AlertDescription>
+                    Try adjusting your search criteria or check back later for new opportunities.
+                  </AlertDescription>
+                </Alert>
+              ) : (
+                <div className="grid grid-cols-1 gap-6">
+                  {filteredJobs.map((job: JobPosting) => (
+                    <JobCard key={job.id} job={job} />
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </div>
         
-        {isLoadingActive ? (
-          <div className="grid grid-cols-1 gap-6 mt-6">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="flex flex-col space-y-3">
-                <Skeleton className="h-[150px] w-full rounded-lg" />
-              </div>
-            ))}
+        <div className="bg-muted/40 p-6 rounded-lg mt-12">
+          <div className="text-center mb-6">
+            <h2 className="text-2xl font-bold mb-2">Join Our Team</h2>
+            <p className="text-muted-foreground">
+              Don't see a position that matches your skills? We're always looking for talented individuals.
+            </p>
           </div>
-        ) : (
-          <>
-            {filteredJobs.length === 0 ? (
-              <Alert>
-                <AlertTitle>No matching jobs found</AlertTitle>
-                <AlertDescription>
-                  Try adjusting your search criteria or check back later for new opportunities.
-                </AlertDescription>
-              </Alert>
-            ) : (
-              <div className="grid grid-cols-1 gap-6">
-                {filteredJobs.map((job: JobPosting) => (
-                  <JobCard key={job.id} job={job} />
-                ))}
-              </div>
-            )}
-          </>
-        )}
-      </div>
-      
-      <div className="bg-muted/40 p-6 rounded-lg mt-12">
-        <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold mb-2">Join Our Team</h2>
-          <p className="text-muted-foreground">
-            Don't see a position that matches your skills? We're always looking for talented individuals.
-          </p>
-        </div>
-        <div className="flex justify-center">
-          <Button size="lg" asChild>
-            <Link href="/contact">
-              Contact Us
-            </Link>
-          </Button>
+          <div className="flex justify-center">
+            <Button size="lg" asChild>
+              <Link href="/contact">
+                Contact Us
+              </Link>
+            </Button>
+          </div>
         </div>
       </div>
     </div>
