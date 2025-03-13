@@ -222,29 +222,30 @@ const JoinUs = () => {
           >
             {/* Subcontractors Section */}
             <motion.div 
-              className="bg-white shadow-xl rounded-lg overflow-hidden"
+              className="bg-white shadow-xl rounded-lg overflow-hidden border border-gray-100 hover:border-[#1E90DB] transition-colors"
               variants={cardVariants}
               whileHover="hover"
             >
-              <div className="h-48 bg-gray-200 relative overflow-hidden">
+              <div className="h-56 bg-gray-200 relative overflow-hidden">
                 <img 
                   src="/uploads/images/services/industrial/industrial1.jpg"
                   alt="Subcontractors" 
                   className="w-full h-full object-cover transition-transform hover:scale-110 duration-700"
                 />
-                <div className="absolute top-4 left-4 bg-[#1E90DB] text-white p-3 rounded-full">
+                <div className="absolute top-4 left-4 bg-[#1E90DB] text-white p-3 rounded-full shadow-md">
                   <Building2 className="h-6 w-6" />
                 </div>
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent h-24"></div>
               </div>
               <div className="p-8">
-                <h2 className="text-2xl font-montserrat font-bold mb-4">Subcontractors</h2>
+                <h2 className="text-2xl font-montserrat font-bold mb-4 text-gray-800">Subcontractors</h2>
                 <p className="text-gray-600 mb-8">
                   As a trusted partner in the industry, we understand the value of strong 
                   subcontractor relationships in achieving project success. We offer reliable 
                   subcontractor solutions, forging collaborative partnerships with subcontractors 
                   who share our commitment to excellence, quality craftsmanship, and timely project delivery.
                 </p>
-                <div className="space-y-3 mb-8">
+                <div className="space-y-3 mb-8 bg-gray-50 p-4 rounded-lg">
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="text-[#1E90DB] h-5 w-5 flex-shrink-0" />
                     <span className="text-gray-700">Consistent work opportunities</span>
@@ -258,14 +259,14 @@ const JoinUs = () => {
                     <span className="text-gray-700">Fair contract terms</span>
                   </div>
                 </div>
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <Link href="/subcontractors">
-                    <Button className="bg-[#1E90DB] hover:bg-[#1670B0]">
+                <div className="flex flex-col gap-4">
+                  <Link href="/subcontractors" className="w-full">
+                    <Button className="bg-[#1E90DB] hover:bg-[#1670B0] w-full">
                       REGISTER <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </Link>
-                  <Link href="/resources">
-                    <Button variant="outline" className="border-[#1E90DB] text-[#1E90DB] hover:bg-[#1E90DB] hover:text-white">
+                  <Link href="/resources" className="w-full">
+                    <Button variant="outline" className="border-[#1E90DB] text-[#1E90DB] hover:bg-[#1E90DB] hover:text-white w-full">
                       RESOURCES <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </Link>
@@ -275,22 +276,23 @@ const JoinUs = () => {
 
             {/* Vendors Section */}
             <motion.div 
-              className="bg-white shadow-xl rounded-lg overflow-hidden"
+              className="bg-white shadow-xl rounded-lg overflow-hidden border border-gray-100 hover:border-[#1E90DB] transition-colors"
               variants={cardVariants}
               whileHover="hover"
             >
-              <div className="h-48 bg-gray-200 relative overflow-hidden">
+              <div className="h-56 bg-gray-200 relative overflow-hidden">
                 <img 
                   src="/uploads/images/services/commercial/commercial1.jpg"
                   alt="Vendors" 
                   className="w-full h-full object-cover transition-transform hover:scale-110 duration-700"
                 />
-                <div className="absolute top-4 left-4 bg-[#1E90DB] text-white p-3 rounded-full">
+                <div className="absolute top-4 left-4 bg-[#1E90DB] text-white p-3 rounded-full shadow-md">
                   <Truck className="h-6 w-6" />
                 </div>
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent h-24"></div>
               </div>
               <div className="p-8">
-                <h2 className="text-2xl font-montserrat font-bold mb-4">Vendors</h2>
+                <h2 className="text-2xl font-montserrat font-bold mb-4 text-gray-800">Vendors</h2>
                 <p className="text-gray-600 mb-8">
                   ARCEMUSA works with a variety of vendors to source the materials and equipment 
                   we need to complete our projects. We value our relationships with our vendors 
@@ -298,7 +300,7 @@ const JoinUs = () => {
                   If you are a vendor interested in working with ARCEMUSA, please visit our Vendors 
                   page to learn more about our vendor requirements and how to become a preferred vendor.
                 </p>
-                <div className="space-y-3 mb-8">
+                <div className="space-y-3 mb-8 bg-gray-50 p-4 rounded-lg">
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="text-[#1E90DB] h-5 w-5 flex-shrink-0" />
                     <span className="text-gray-700">High-volume material needs</span>
@@ -312,8 +314,8 @@ const JoinUs = () => {
                     <span className="text-gray-700">Prompt payment schedules</span>
                   </div>
                 </div>
-                <Link href="/subcontractors?tab=vendor">
-                  <Button className="bg-[#1E90DB] hover:bg-[#1670B0]">
+                <Link href="/subcontractors?tab=vendor" className="w-full">
+                  <Button className="bg-[#1E90DB] hover:bg-[#1670B0] w-full">
                     APPLY NOW <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
@@ -322,22 +324,23 @@ const JoinUs = () => {
 
             {/* Careers Section */}
             <motion.div 
-              className="bg-white shadow-xl rounded-lg overflow-hidden"
+              className="bg-white shadow-xl rounded-lg overflow-hidden border border-gray-100 hover:border-[#1E90DB] transition-colors"
               variants={cardVariants}
               whileHover="hover"
             >
-              <div className="h-48 bg-gray-200 relative overflow-hidden">
+              <div className="h-56 bg-gray-200 relative overflow-hidden">
                 <img 
                   src="/uploads/images/services/residential/residential1.jpg"
                   alt="Careers" 
                   className="w-full h-full object-cover transition-transform hover:scale-110 duration-700"
                 />
-                <div className="absolute top-4 left-4 bg-[#1E90DB] text-white p-3 rounded-full">
+                <div className="absolute top-4 left-4 bg-[#1E90DB] text-white p-3 rounded-full shadow-md">
                   <Users className="h-6 w-6" />
                 </div>
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent h-24"></div>
               </div>
               <div className="p-8">
-                <h2 className="text-2xl font-montserrat font-bold mb-4">Careers</h2>
+                <h2 className="text-2xl font-montserrat font-bold mb-4 text-gray-800">Careers</h2>
                 <p className="text-gray-600 mb-8">
                   At ARCEMUSA, we are always looking for talented and passionate individuals to join 
                   our team. We offer a dynamic and challenging work environment, competitive compensation 
@@ -345,7 +348,7 @@ const JoinUs = () => {
                   career in construction and want to work with a company that values its employees and 
                   supports their success, we invite you to explore our career opportunities.
                 </p>
-                <div className="space-y-3 mb-8">
+                <div className="space-y-3 mb-8 bg-gray-50 p-4 rounded-lg">
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="text-[#1E90DB] h-5 w-5 flex-shrink-0" />
                     <span className="text-gray-700">Professional development</span>
@@ -359,8 +362,8 @@ const JoinUs = () => {
                     <span className="text-gray-700">Career advancement paths</span>
                   </div>
                 </div>
-                <Link href="/careers">
-                  <Button className="bg-[#1E90DB] hover:bg-[#1670B0]">
+                <Link href="/careers" className="w-full">
+                  <Button className="bg-[#1E90DB] hover:bg-[#1670B0] w-full">
                     APPLY NOW <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>

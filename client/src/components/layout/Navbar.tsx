@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
-import { Link, useLocation } from 'wouter';
-import { cn } from '@/lib/utils';
-import { Menu, X, User } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useState, useEffect, useRef } from "react";
+import { Link, useLocation } from "wouter";
+import { cn } from "@/lib/utils";
+import { Menu, X, User } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 type NavbarProps = {
   isScrolled: boolean;
@@ -17,7 +17,7 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
   const textRef = useRef<HTMLSpanElement>(null);
 
   // Check if we're on an admin page
-  const isAdminPage = location.startsWith('/admin');
+  const isAdminPage = location.startsWith("/admin");
 
   // Logo animation on page load
   useEffect(() => {
@@ -25,7 +25,7 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
     const timer = setTimeout(() => {
       setLogoAnimated(true);
     }, 300);
-    
+
     return () => clearTimeout(timer);
   }, []);
 
@@ -41,84 +41,95 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-      if (!target.closest('#mobile-menu') && !target.closest('#mobile-menu-button')) {
+      if (
+        !target.closest("#mobile-menu") &&
+        !target.closest("#mobile-menu-button")
+      ) {
         setIsMobileMenuOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
   // Navigation items
   const navItems = [
-    { label: 'HOME', href: '/' },
-    { label: 'ABOUT', href: '/about' },
-    { label: 'SERVICES', href: '/services' },
-    { label: 'PROJECTS', href: '/projects' },
-    { label: 'BLOG', href: '/blog' },
-    { label: 'JOIN US', href: '/join-us' },
-    { label: 'CONTACT', href: '/contact' },
+    { label: "HOME", href: "/" },
+    { label: "ABOUT", href: "/about" },
+    { label: "SERVICES", href: "/services" },
+    { label: "PROJECTS", href: "/projects" },
+    { label: "BLOG", href: "/blog" },
+    { label: "JOIN US", href: "/join-us" },
+    { label: "CONTACT", href: "/contact" },
   ];
 
   return (
-    <nav 
-      id="navbar" 
+    <nav
+      id="navbar"
       className={cn(
-        'fixed w-full z-50 py-4 transition-all duration-300',
-        isAdminPage ? 'navbar-admin' : (isScrolled ? 'navbar-fixed' : '')
+        "fixed w-full z-50 py-4 transition-all duration-300",
+        isAdminPage ? "navbar-admin" : isScrolled ? "navbar-fixed" : "",
       )}
     >
       <div className="container mx-auto px-4 md:px-8">
         <div className="flex justify-between items-center">
-          <Link href="/" className="text-white text-2xl font-montserrat font-bold flex items-center overflow-hidden">
-            <img 
+          <Link
+            href="/"
+            className="text-white text-2xl font-montserrat font-bold flex items-center overflow-hidden"
+          >
+            <img
               ref={logoRef}
-              src="/uploads/images/logo.png" 
-              alt="ARCEMUSA Logo" 
+              src="/uploads/images/logo.png"
+              alt="ARCEMUSA Logo"
               className={cn(
                 "h-20 w-20 mr-2 transform transition-all duration-1000 ease-out",
-                logoAnimated ? "translate-x-0 rotate-0 opacity-100" : "-translate-x-full rotate-90 opacity-0"
+                logoAnimated
+                  ? "translate-x-0 rotate-0 opacity-100"
+                  : "-translate-x-full rotate-90 opacity-0",
               )}
             />
-            <span 
+            <span
               ref={textRef}
               className={cn(
                 "text-[#1E90DB] transition-all duration-700 delay-500 transform",
-                logoAnimated ? "translate-x-0 opacity-100" : "translate-x-20 opacity-0"
+                logoAnimated
+                  ? "translate-x-0 opacity-100"
+                  : "translate-x-20 opacity-0",
               )}
             >
-              A+R C.E.M. USA
+              A+R C.E.M
             </span>
           </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             {navItems.map((item) => (
-              <Link 
+              <Link
                 key={item.href}
                 href={item.href}
                 className={cn(
                   "text-white font-montserrat text-sm font-medium relative group px-2 py-1",
-                  location === item.href ? "text-[#47A6ED]" : ""
+                  location === item.href ? "text-[#47A6ED]" : "",
                 )}
               >
                 <span className="relative z-10 transition-colors duration-300 group-hover:text-[#47A6ED]">
                   {item.label}
                 </span>
-                <span className={cn(
-                  "absolute bottom-0 left-0 w-0 h-0.5 bg-[#47A6ED] transition-all duration-300 group-hover:w-full",
-                  location === item.href ? "w-full" : "w-0"
-                )}></span>
+                <span
+                  className={cn(
+                    "absolute bottom-0 left-0 w-0 h-0.5 bg-[#47A6ED] transition-all duration-300 group-hover:w-full",
+                    location === item.href ? "w-full" : "w-0",
+                  )}
+                ></span>
               </Link>
             ))}
 
-
             {/* Login/Admin Button */}
-            <Link 
-              href={isAuthenticated ? "/admin" : "/auth/login"} 
+            <Link
+              href={isAuthenticated ? "/admin" : "/auth/login"}
               className="bg-[#1E90DB] hover:bg-[#1670B0] text-white px-4 py-2 rounded-sm flex items-center space-x-1 font-montserrat text-sm transition-colors"
             >
               <User className="w-4 h-4 mr-1" />
@@ -127,8 +138,8 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
           </div>
 
           {/* Mobile menu button */}
-          <button 
-            id="mobile-menu-button" 
+          <button
+            id="mobile-menu-button"
             className="md:hidden text-white focus:outline-none"
             onClick={toggleMobileMenu}
             aria-label="Toggle mobile menu"
@@ -142,37 +153,38 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
         </div>
 
         {/* Mobile Navigation */}
-        <div 
-          id="mobile-menu" 
+        <div
+          id="mobile-menu"
           className={cn(
             "md:hidden bg-black bg-opacity-95 absolute left-0 right-0 mt-4 py-4 px-4 slide-in",
-            isMobileMenuOpen ? "block" : "hidden"
+            isMobileMenuOpen ? "block" : "hidden",
           )}
         >
           <div className="flex flex-col space-y-4">
             {navItems.map((item) => (
-              <Link 
+              <Link
                 key={item.href}
                 href={item.href}
                 className={cn(
                   "text-white font-montserrat text-sm font-medium relative group px-2 py-2 block",
-                  location === item.href ? "text-[#47A6ED]" : ""
+                  location === item.href ? "text-[#47A6ED]" : "",
                 )}
                 onClick={closeMobileMenu}
               >
                 <span className="relative z-10 transition-colors duration-300 group-hover:text-[#47A6ED]">
                   {item.label}
                 </span>
-                <span className={cn(
-                  "absolute bottom-0 left-0 w-0 h-0.5 bg-[#47A6ED] transition-all duration-300 group-hover:w-full",
-                  location === item.href ? "w-full" : "w-0"
-                )}></span>
+                <span
+                  className={cn(
+                    "absolute bottom-0 left-0 w-0 h-0.5 bg-[#47A6ED] transition-all duration-300 group-hover:w-full",
+                    location === item.href ? "w-full" : "w-0",
+                  )}
+                ></span>
               </Link>
             ))}
 
-
             {/* Mobile Login/Admin Button */}
-            <Link 
+            <Link
               href={isAuthenticated ? "/admin" : "/auth/login"}
               className="bg-[#1E90DB] hover:bg-[#1670B0] text-white px-4 py-2 rounded-sm flex items-center justify-center space-x-1 font-montserrat text-sm transition-colors"
               onClick={closeMobileMenu}
