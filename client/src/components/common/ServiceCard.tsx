@@ -33,7 +33,7 @@ const ServiceCard = ({ icon, title, description, id }: ServiceCardProps) => {
   const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
   return (
-    <div className="bg-white p-8 shadow-lg hover-scale reveal">
+    <div className="bg-white p-8 shadow-lg hover-scale reveal rounded-lg service-card">
       <div className="text-[#1E90DB] mb-6">
         {getIcon(icon)}
       </div>

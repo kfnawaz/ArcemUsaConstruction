@@ -49,9 +49,9 @@ const Blog = () => {
     <>
       {/* Page Banner */}
       <div 
-        className="relative h-[350px] flex items-center justify-center" 
+        className="relative h-[350px] flex items-center justify-center overflow-hidden rounded-lg my-6 mx-4 md:mx-8" 
         style={{
-          backgroundImage: "url('/uploads/images/construction-drafting.jpg')",
+          backgroundImage: "url('/uploads/images/blog/daniel-mccullough--FPFq_trr2Y-unsplash.jpg')",
           backgroundSize: 'cover',
           backgroundPosition: 'center'
         }}
