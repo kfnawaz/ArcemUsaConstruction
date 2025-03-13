@@ -1,5 +1,7 @@
 import React, { useEffect } from "react";
-import { useCareers } from "@/hooks/useCareers";
+import { useQuery } from "@tanstack/react-query";
+import { getQueryFn } from "@/lib/queryClient";
+import { JobPosting } from "@shared/schema";
 import { useParams, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,7 +15,13 @@ import PageHeader from "@/components/PageHeader";
 export default function CareerDetail() {
   const params = useParams<{ id: string }>();
   const jobId = params.id ? parseInt(params.id) : undefined;
-  const { jobPosting, isLoadingJob } = useCareers(jobId);
+  
+  // Direct API call to get job details
+  const { data: jobPosting, isLoading: isLoadingJob } = useQuery<JobPosting>({
+    queryKey: [`/api/careers/${jobId}`],
+    queryFn: getQueryFn({ on401: "returnNull" }),
+    enabled: !!jobId,
+  });
 
   useEffect(() => {
     scrollToTop();
