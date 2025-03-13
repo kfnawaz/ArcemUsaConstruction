@@ -628,4 +628,85 @@ export class DBStorage implements IStorage {
       .returning();
     return result.length > 0;
   }
+
+  // Job Postings
+  async getJobPostings(): Promise<JobPosting[]> {
+    return db.select().from(jobPostings).orderBy(jobPostings.createdAt);
+  }
+
+  async getActiveJobPostings(): Promise<JobPosting[]> {
+    return db.select()
+      .from(jobPostings)
+      .where(eq(jobPostings.active, true))
+      .orderBy(jobPostings.createdAt);
+  }
+
+  async getFeaturedJobPostings(): Promise<JobPosting[]> {
+    return db.select()
+      .from(jobPostings)
+      .where(
+        and(
+          eq(jobPostings.active, true),
+          eq(jobPostings.featured, true)
+        )
+      )
+      .orderBy(jobPostings.createdAt);
+  }
+
+  async getJobPosting(id: number): Promise<JobPosting | undefined> {
+    const results = await db.select()
+      .from(jobPostings)
+      .where(eq(jobPostings.id, id));
+    return results[0];
+  }
+
+  async createJobPosting(jobPosting: InsertJobPosting): Promise<JobPosting> {
+    const result = await db.insert(jobPostings).values(jobPosting).returning();
+    return result[0];
+  }
+
+  async updateJobPosting(id: number, jobPostingUpdate: Partial<InsertJobPosting>): Promise<JobPosting | undefined> {
+    const result = await db.update(jobPostings)
+      .set(jobPostingUpdate)
+      .where(eq(jobPostings.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async toggleJobPostingActive(id: number): Promise<JobPosting | undefined> {
+    // First get the current status
+    const currentJob = await this.getJobPosting(id);
+    if (!currentJob) {
+      return undefined;
+    }
+
+    // Then toggle the active status
+    const result = await db.update(jobPostings)
+      .set({ active: !currentJob.active })
+      .where(eq(jobPostings.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async toggleJobPostingFeatured(id: number): Promise<JobPosting | undefined> {
+    // First get the current status
+    const currentJob = await this.getJobPosting(id);
+    if (!currentJob) {
+      return undefined;
+    }
+
+    // Then toggle the featured status
+    const result = await db.update(jobPostings)
+      .set({ featured: !currentJob.featured })
+      .where(eq(jobPostings.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteJobPosting(id: number): Promise<boolean> {
+    const result = await db.delete(jobPostings)
+      .where(eq(jobPostings.id, id))
+      .returning();
+    return result.length > 0;
+  }
 }

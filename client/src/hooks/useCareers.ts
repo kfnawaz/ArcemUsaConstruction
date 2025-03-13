@@ -8,35 +8,35 @@ export const useCareers = (jobId?: number) => {
   const { toast } = useToast();
 
   // Get all job postings (admin)
-  const { data: allJobPostings, isLoading: isLoadingAll } = useQuery({
+  const { data: allJobPostings, isLoading: isLoadingAll } = useQuery<JobPosting[]>({
     queryKey: ["/api/admin/careers"],
     queryFn: getQueryFn({ on401: "returnNull" }),
     enabled: !jobId,
   });
 
   // Get active job postings (public)
-  const { data: activeJobPostings, isLoading: isLoadingActive } = useQuery({
+  const { data: activeJobPostings, isLoading: isLoadingActive } = useQuery<JobPosting[]>({
     queryKey: ["/api/careers"],
     queryFn: getQueryFn({ on401: "returnNull" }),
     enabled: !jobId,
   });
 
   // Get featured job postings (public)
-  const { data: featuredJobPostings, isLoading: isLoadingFeatured } = useQuery({
+  const { data: featuredJobPostings, isLoading: isLoadingFeatured } = useQuery<JobPosting[]>({
     queryKey: ["/api/careers/featured"],
     queryFn: getQueryFn({ on401: "returnNull" }),
     enabled: !jobId,
   });
 
   // Get a specific job posting
-  const { data: jobPosting, isLoading: isLoadingJob } = useQuery({
+  const { data: jobPosting, isLoading: isLoadingJob } = useQuery<JobPosting>({
     queryKey: ["/api/careers", jobId],
     queryFn: getQueryFn({ on401: "returnNull" }),
     enabled: !!jobId,
   });
 
   // Admin: Get a specific job posting (even if inactive)
-  const { data: adminJobPosting, isLoading: isLoadingAdminJob } = useQuery({
+  const { data: adminJobPosting, isLoading: isLoadingAdminJob } = useQuery<JobPosting>({
     queryKey: ["/api/admin/careers", jobId],
     queryFn: getQueryFn({ on401: "returnNull" }),
     enabled: !!jobId,
