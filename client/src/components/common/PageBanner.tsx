@@ -19,7 +19,7 @@ const PageBanner: React.FC<PageBannerProps> = ({
 
   return (
     <div 
-      className="bg-black text-white py-32 relative"
+      className="bg-black text-white relative h-[350px] flex items-center"
       style={bannerStyle}
     >
       <div className="container mx-auto px-4 md:px-8">

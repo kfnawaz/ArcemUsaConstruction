@@ -16,7 +16,7 @@ const About = () => {
     <>
       {/* Page Banner */}
       <div 
-        className="relative min-h-[350px] flex items-center justify-center" 
+        className="relative h-[350px] flex items-center justify-center" 
         style={{
           backgroundImage: "url('/uploads/images/services/residential/residential1.jpg')",
           backgroundSize: 'cover',

@@ -24,7 +24,7 @@ const Testimonials = () => {
         backgroundImage="/images/testimonials-banner.jpg"
       />
 
-      <section className="py-16">
+      <section className="py-20">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
