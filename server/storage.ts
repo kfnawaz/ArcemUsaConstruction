@@ -13,7 +13,8 @@ import {
   newsletterSubscribers, type NewsletterSubscriber, type InsertNewsletterSubscriber,
   quoteRequests, type QuoteRequest, type InsertQuoteRequest,
   subcontractors, type Subcontractor, type InsertSubcontractor,
-  vendors, type Vendor, type InsertVendor
+  vendors, type Vendor, type InsertVendor,
+  jobPostings, type JobPosting, type InsertJobPosting
 } from "@shared/schema";
 
 // modify the interface with any CRUD methods
@@ -142,6 +143,17 @@ export interface IStorage {
   updateVendorStatus(id: number, status: string): Promise<Vendor | undefined>;
   updateVendorNotes(id: number, notes: string): Promise<Vendor | undefined>;
   deleteVendor(id: number): Promise<boolean>;
+  
+  // Careers/Jobs
+  getJobPostings(): Promise<JobPosting[]>;
+  getActiveJobPostings(): Promise<JobPosting[]>;
+  getFeaturedJobPostings(): Promise<JobPosting[]>;
+  getJobPosting(id: number): Promise<JobPosting | undefined>;
+  createJobPosting(jobPosting: InsertJobPosting): Promise<JobPosting>;
+  updateJobPosting(id: number, jobPosting: Partial<InsertJobPosting>): Promise<JobPosting | undefined>;
+  toggleJobPostingActive(id: number): Promise<JobPosting | undefined>;
+  toggleJobPostingFeatured(id: number): Promise<JobPosting | undefined>;
+  deleteJobPosting(id: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -162,6 +174,7 @@ export class MemStorage implements IStorage {
   private quoteRequests: Map<number, QuoteRequest>;
   private subcontractors: Map<number, Subcontractor>;
   private vendors: Map<number, Vendor>;
+  private jobPostings: Map<number, JobPosting>;
   
   userCurrentId: number;
   projectCurrentId: number;

@@ -450,3 +450,31 @@ export type Subcontractor = typeof subcontractors.$inferSelect;
 export type InsertSubcontractor = z.infer<typeof insertSubcontractorSchema>;
 export type Vendor = typeof vendors.$inferSelect;
 export type InsertVendor = z.infer<typeof insertVendorSchema>;
+
+// Careers/Jobs schema
+export const jobPostings = pgTable("job_postings", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  department: text("department").notNull(),
+  location: text("location").notNull(),
+  type: text("type").notNull(), // full-time, part-time, contract, etc.
+  description: text("description").notNull(),
+  requirements: text("requirements").notNull(),
+  responsibilities: text("responsibilities").notNull(),
+  benefits: text("benefits"),
+  salary: text("salary"),
+  applyUrl: text("apply_url"),
+  active: boolean("active").default(true).notNull(),
+  featured: boolean("featured").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertJobPostingSchema = createInsertSchema(jobPostings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type JobPosting = typeof jobPostings.$inferSelect;
+export type InsertJobPosting = z.infer<typeof insertJobPostingSchema>;
