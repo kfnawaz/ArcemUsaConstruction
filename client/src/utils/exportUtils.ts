@@ -40,10 +40,10 @@ export const exportToPDF = (project: Project, includeDetails: boolean = true): v
   doc.setFontSize(12);
   doc.text(`Client: ${project.client || 'N/A'}`, 14, 40);
   doc.text(`Location: ${project.location || 'N/A'}`, 14, 50);
-  doc.text(`Status: ${project.status || 'N/A'}`, 14, 60);
-  doc.text(`Start Date: ${formatDate(project.startDate)}`, 14, 70);
-  doc.text(`Completion Date: ${formatDate(project.completionDate)}`, 14, 80);
-  doc.text(`Budget: $${project.budget?.toLocaleString() || 'N/A'}`, 14, 90);
+  doc.text(`Category: ${project.category || 'N/A'}`, 14, 60);
+  doc.text(`Created: ${formatDate(project.createdAt)}`, 14, 70);
+  doc.text(`Completion Date: ${project.completionDate || 'N/A'}`, 14, 80);
+  doc.text(`Size: ${project.size || 'N/A'}`, 14, 90);
   
   // Project description
   if (includeDetails && project.description) {
@@ -56,26 +56,39 @@ export const exportToPDF = (project: Project, includeDetails: boolean = true): v
     doc.text(splitDescription, 14, 120);
   }
   
-  // Features/Highlights table
-  if (includeDetails && project.features && project.features.length > 0) {
-    const yPos = project.description ? 140 + (project.description.length / 80) * 10 : 120;
-    
+  // Project overview if available
+  let yPos = 140;
+  if (includeDetails && project.overview) {
     doc.setFontSize(14);
-    doc.text('Project Features', 14, yPos);
+    doc.text('Project Overview', 14, yPos);
+    doc.setFontSize(12);
     
-    const tableData = project.features.map(feature => [feature]);
+    const splitOverview = doc.splitTextToSize(project.overview, 180);
+    doc.text(splitOverview, 14, yPos + 10);
     
-    autoTable(doc, {
-      startY: yPos + 10,
-      head: [['Features']],
-      body: tableData,
-      theme: 'striped',
-      headStyles: {
-        fillColor: [29, 144, 219],
-        textColor: [255, 255, 255],
-        fontStyle: 'bold'
-      }
-    });
+    yPos += 20 + (project.overview.length / 80) * 10;
+  }
+  
+  // Challenges and solutions if available
+  if (includeDetails && project.challenges) {
+    doc.setFontSize(14);
+    doc.text('Challenges & Solutions', 14, yPos);
+    doc.setFontSize(12);
+    
+    const splitChallenges = doc.splitTextToSize(project.challenges, 180);
+    doc.text(splitChallenges, 14, yPos + 10);
+    
+    yPos += 20 + (project.challenges.length / 80) * 10;
+  }
+  
+  // Results if available
+  if (includeDetails && project.results) {
+    doc.setFontSize(14);
+    doc.text('Results', 14, yPos);
+    doc.setFontSize(12);
+    
+    const splitResults = doc.splitTextToSize(project.results, 180);
+    doc.text(splitResults, 14, yPos + 10);
   }
   
   // Add footer with date
@@ -105,13 +118,15 @@ export const exportToCSV = (project: Project): void => {
     'Project Title': project.title,
     'Client': project.client || '',
     'Location': project.location || '',
-    'Status': project.status || '',
-    'Start Date': formatDate(project.startDate),
-    'Completion Date': formatDate(project.completionDate),
-    'Budget': project.budget ? `$${project.budget.toLocaleString()}` : 'N/A',
-    'Description': project.description || '',
-    'Features': project.features ? project.features.join(', ') : '',
     'Category': project.category || '',
+    'Size': project.size || '',
+    'Creation Date': formatDate(project.createdAt),
+    'Completion Date': project.completionDate || '',
+    'Services Provided': project.servicesProvided || '',
+    'Description': project.description || '',
+    'Overview': project.overview || '',
+    'Challenges & Solutions': project.challenges || '',
+    'Results': project.results || '',
     'Featured': project.featured ? 'Yes' : 'No'
   };
   
@@ -133,13 +148,15 @@ export const exportToExcel = (project: Project): void => {
     'Project Title': project.title,
     'Client': project.client || '',
     'Location': project.location || '',
-    'Status': project.status || '',
-    'Start Date': formatDate(project.startDate),
-    'Completion Date': formatDate(project.completionDate),
-    'Budget': project.budget ? `$${project.budget.toLocaleString()}` : 'N/A',
-    'Description': project.description || '',
-    'Features': project.features ? project.features.join(', ') : '',
     'Category': project.category || '',
+    'Size': project.size || '',
+    'Creation Date': formatDate(project.createdAt),
+    'Completion Date': project.completionDate || '',
+    'Services Provided': project.servicesProvided || '',
+    'Description': project.description || '',
+    'Overview': project.overview || '',
+    'Challenges & Solutions': project.challenges || '',
+    'Results': project.results || '',
     'Featured': project.featured ? 'Yes' : 'No'
   };
   
@@ -149,13 +166,6 @@ export const exportToExcel = (project: Project): void => {
   // Create a workbook
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Project Details');
-  
-  // If project has features, add them as a separate sheet
-  if (project.features && project.features.length > 0) {
-    const featuresData = project.features.map(feature => ({ 'Feature': feature }));
-    const featuresSheet = XLSX.utils.json_to_sheet(featuresData);
-    XLSX.utils.book_append_sheet(workbook, featuresSheet, 'Features');
-  }
   
   // Generate Excel file and save
   const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
@@ -238,10 +248,10 @@ const exportMultipleToPDF = (projects: Project[]): void => {
     doc.setFontSize(12);
     doc.text(`Client: ${project.client || 'N/A'}`, 14, yPos); yPos += 8;
     doc.text(`Location: ${project.location || 'N/A'}`, 14, yPos); yPos += 8;
-    doc.text(`Status: ${project.status || 'N/A'}`, 14, yPos); yPos += 8;
-    doc.text(`Start Date: ${formatDate(project.startDate)}`, 14, yPos); yPos += 8;
-    doc.text(`Completion Date: ${formatDate(project.completionDate)}`, 14, yPos); yPos += 8;
-    doc.text(`Budget: $${project.budget?.toLocaleString() || 'N/A'}`, 14, yPos); yPos += 15;
+    doc.text(`Category: ${project.category || 'N/A'}`, 14, yPos); yPos += 8;
+    doc.text(`Creation Date: ${formatDate(project.createdAt)}`, 14, yPos); yPos += 8;
+    doc.text(`Completion Date: ${project.completionDate || 'N/A'}`, 14, yPos); yPos += 8;
+    doc.text(`Size: ${project.size || 'N/A'}`, 14, yPos); yPos += 15;
     
     // Add a separator
     if (index < projects.length - 1) {
@@ -260,15 +270,15 @@ const exportMultipleToPDF = (projects: Project[]): void => {
   const tableData = projects.map(p => [
     p.title,
     p.client || 'N/A',
-    p.status || 'N/A',
-    formatDate(p.startDate),
-    formatDate(p.completionDate),
-    p.budget ? `$${p.budget.toLocaleString()}` : 'N/A'
+    p.category || 'N/A',
+    formatDate(p.createdAt),
+    p.completionDate || 'N/A',
+    p.size || 'N/A'
   ]);
   
   autoTable(doc, {
     startY: 25,
-    head: [['Project', 'Client', 'Status', 'Start Date', 'End Date', 'Budget']],
+    head: [['Project', 'Client', 'Category', 'Created', 'Completion', 'Size']],
     body: tableData,
     theme: 'striped',
     headStyles: {
@@ -305,12 +315,12 @@ const exportMultipleToCSV = (projects: Project[]): void => {
     'Project Title': project.title,
     'Client': project.client || '',
     'Location': project.location || '',
-    'Status': project.status || '',
-    'Start Date': formatDate(project.startDate),
-    'Completion Date': formatDate(project.completionDate),
-    'Budget': project.budget ? `$${project.budget.toLocaleString()}` : 'N/A',
-    'Description': project.description ? project.description.substring(0, 100) + '...' : '',
     'Category': project.category || '',
+    'Size': project.size || '',
+    'Creation Date': formatDate(project.createdAt),
+    'Completion Date': project.completionDate || '',
+    'Services Provided': project.servicesProvided || '',
+    'Description': project.description ? project.description.substring(0, 100) + '...' : '',
     'Featured': project.featured ? 'Yes' : 'No'
   }));
   
@@ -332,12 +342,12 @@ const exportMultipleToExcel = (projects: Project[]): void => {
     'Project Title': project.title,
     'Client': project.client || '',
     'Location': project.location || '',
-    'Status': project.status || '',
-    'Start Date': formatDate(project.startDate),
-    'Completion Date': formatDate(project.completionDate),
-    'Budget': project.budget ? `$${project.budget.toLocaleString()}` : 'N/A',
-    'Description': project.description ? project.description.substring(0, 100) + '...' : '',
     'Category': project.category || '',
+    'Size': project.size || '',
+    'Creation Date': formatDate(project.createdAt),
+    'Completion Date': project.completionDate || '',
+    'Services Provided': project.servicesProvided || '',
+    'Description': project.description ? project.description.substring(0, 100) + '...' : '',
     'Featured': project.featured ? 'Yes' : 'No'
   }));
   
