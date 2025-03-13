@@ -43,6 +43,7 @@ import CareersManagement from "@/pages/admin/CareersManagement";
 import SettingsPage from "@/pages/admin/Settings";
 import AccessibilityCheckerPage from "@/pages/admin/AccessibilityChecker";
 import SubcontractorManagement from "@/pages/admin/SubcontractorManagement";
+import Resources from "@/pages/Resources";
 import NotFound from "@/pages/not-found";
 import RequestQuoteButton from "@/components/common/A11yFloatingButton";
 
