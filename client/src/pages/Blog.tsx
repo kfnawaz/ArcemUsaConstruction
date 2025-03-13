@@ -51,7 +51,7 @@ const Blog = () => {
       <div 
         className="relative min-h-[350px] flex items-center justify-center" 
         style={{
-          backgroundImage: "url('/uploads/images/services/renovation/renovation1.jpg')",
+          backgroundImage: "url('/uploads/images/blog/blueprint-desk.jpg')",
           backgroundSize: 'cover',
           backgroundPosition: 'center'
         }}
