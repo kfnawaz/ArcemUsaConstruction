@@ -286,7 +286,8 @@ export default function CareersManagement() {
                           <Textarea 
                             placeholder="Provide a detailed description of the job..."
                             className="min-h-[100px]"
-                            {...field} 
+                            {...field}
+                            value={field.value || ''}
                           />
                         </FormControl>
                         <FormMessage />
@@ -375,7 +376,7 @@ export default function CareersManagement() {
                         <FormItem>
                           <FormLabel>Application URL (Optional)</FormLabel>
                           <FormControl>
-                            <Input placeholder="https://..." {...field} />
+                            <Input placeholder="https://..." {...field} value={field.value || ''} />
                           </FormControl>
                           <FormDescription>
                             External link for applications, if any
@@ -519,7 +520,7 @@ export default function CareersManagement() {
                             <TableCell className="hidden md:table-cell">{formatDate(job.createdAt)}</TableCell>
                             <TableCell>
                               {job.active ? (
-                                <Badge variant="success">Active</Badge>
+                                <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100">Active</Badge>
                               ) : (
                                 <Badge variant="outline">Inactive</Badge>
                               )}
@@ -666,7 +667,8 @@ export default function CareersManagement() {
                       <Textarea 
                         placeholder="Provide a detailed description of the job..."
                         className="min-h-[100px]"
-                        {...field} 
+                        {...field}
+                        value={field.value || ''}
                       />
                     </FormControl>
                     <FormMessage />
@@ -683,7 +685,8 @@ export default function CareersManagement() {
                       <Textarea 
                         placeholder="List the key responsibilities for this position..."
                         className="min-h-[100px]"
-                        {...field} 
+                        {...field}
+                        value={field.value || ''}
                       />
                     </FormControl>
                     <FormDescription>
@@ -703,7 +706,8 @@ export default function CareersManagement() {
                       <Textarea 
                         placeholder="List the requirements for this position..."
                         className="min-h-[100px]"
-                        {...field} 
+                        {...field}
+                        value={field.value || ''}
                       />
                     </FormControl>
                     <FormDescription>
@@ -723,7 +727,8 @@ export default function CareersManagement() {
                       <Textarea 
                         placeholder="List the benefits offered with this position..."
                         className="min-h-[100px]"
-                        {...field} 
+                        {...field}
+                        value={field.value || ''}
                       />
                     </FormControl>
                     <FormDescription>
@@ -741,7 +746,7 @@ export default function CareersManagement() {
                     <FormItem>
                       <FormLabel>Salary Range (Optional)</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g. $60,000 - $80,000" {...field} />
+                        <Input placeholder="e.g. $60,000 - $80,000" {...field} value={field.value || ''} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -754,7 +759,7 @@ export default function CareersManagement() {
                     <FormItem>
                       <FormLabel>Application URL (Optional)</FormLabel>
                       <FormControl>
-                        <Input placeholder="https://..." {...field} />
+                        <Input placeholder="https://..." {...field} value={field.value || ''} />
                       </FormControl>
                       <FormDescription>
                         External link for applications, if any
