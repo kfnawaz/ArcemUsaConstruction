@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { initializeRevealEffects, scrollToTop } from '@/lib/utils';
 import ProjectCard from '@/components/common/ProjectCard';
-import ProjectsExportOptions from '@/components/projects/ProjectsExportOptions';
 import { Project } from '@shared/schema';
 import { motion } from 'framer-motion';
 
@@ -62,34 +61,21 @@ const Projects = () => {
           <div className="mb-12 reveal">
             <h2 className="text-3xl font-montserrat font-bold mb-8 text-center">Our Featured Work</h2>
             
-            {/* Category filter and export options */}
-            <div className="flex flex-col md:flex-row justify-between items-center mb-12">
-              <div className="flex flex-wrap justify-center gap-4 mb-8 md:mb-0">
-                {categories.map(category => (
-                  <button
-                    key={category}
-                    onClick={() => setFilter(category)}
-                    className={`px-6 py-2 font-montserrat text-sm transition-colors ${
-                      filter === category 
-                        ? 'bg-[#1E90DB] text-white' 
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  >
-                    {category.toUpperCase()}
-                  </button>
-                ))}
-              </div>
-              
-              {/* Export options */}
-              {!isLoading && filteredProjects && filteredProjects.length > 0 && (
-                <div className="flex justify-center">
-                  <ProjectsExportOptions 
-                    projects={filteredProjects} 
-                    buttonText={`Export ${filter === 'all' ? 'All' : filter} Projects`}
-                    showIcon={true}
-                  />
-                </div>
-              )}
+            {/* Category filter */}
+            <div className="flex flex-wrap justify-center gap-4 mb-12">
+              {categories.map(category => (
+                <button
+                  key={category}
+                  onClick={() => setFilter(category)}
+                  className={`px-6 py-2 font-montserrat text-sm transition-colors ${
+                    filter === category 
+                      ? 'bg-[#1E90DB] text-white' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {category.toUpperCase()}
+                </button>
+              ))}
             </div>
           </div>
           

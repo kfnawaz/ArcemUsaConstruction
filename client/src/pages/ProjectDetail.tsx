@@ -6,7 +6,6 @@ import { ArrowLeft, Calendar, ChevronLeft, ChevronRight, ImageIcon, Loader2, Tag
 import ProjectSeo from '@/components/seo/ProjectSeo';
 import { Button } from '@/components/ui/button';
 import { initializeRevealEffects, scrollToTop, formatDate } from '@/lib/utils';
-import ProjectExportOptions from '@/components/projects/ProjectExportOptions';
 import {
   Dialog,
   DialogContent,
@@ -207,9 +206,6 @@ const ProjectDetail = () => {
             <div className="flex items-center text-gray-500">
               <Tag className="w-4 h-4 mr-2" />
               <span>{project.category}</span>
-            </div>
-            <div className="ml-auto">
-              <ProjectExportOptions project={project} variant="outline" buttonText="Export Report" />
             </div>
           </div>
         </div>
