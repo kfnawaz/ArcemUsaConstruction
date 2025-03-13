@@ -10,11 +10,12 @@ import {
   Mail,
   ClipboardList,
   Wrench,
-  Users
+  Users,
+  Briefcase
 } from 'lucide-react';
 
 type AdminNavProps = {
-  activePage: 'dashboard' | 'projects' | 'services' | 'blog' | 'messages' | 'testimonials' | 'settings' | 'accessibility' | 'newsletter' | 'quotes' | 'subcontractors';
+  activePage: 'dashboard' | 'projects' | 'services' | 'blog' | 'messages' | 'testimonials' | 'settings' | 'accessibility' | 'newsletter' | 'quotes' | 'subcontractors' | 'careers';
 };
 
 const AdminNav = ({ activePage }: AdminNavProps) => {
@@ -68,6 +69,12 @@ const AdminNav = ({ activePage }: AdminNavProps) => {
       label: 'Quote Requests', 
       icon: <ClipboardList className="w-5 h-5 mr-3" />,
       active: activePage === 'quotes'
+    },
+    { 
+      href: '/admin/careers', 
+      label: 'Careers', 
+      icon: <Briefcase className="w-5 h-5 mr-3" />,
+      active: activePage === 'careers'
     },
     { 
       href: '/admin/subcontractors', 

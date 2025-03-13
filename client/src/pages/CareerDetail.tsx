@@ -93,7 +93,7 @@ export default function CareerDetail() {
             <span>{jobPosting.location}</span>
           </div>
           <Badge className="capitalize bg-white/20 hover:bg-white/30 text-white">
-            {jobPosting.type.replace('-', ' ')}
+            {jobPosting.type ? jobPosting.type.replace('-', ' ') : 'Full Time'}
           </Badge>
           <div className="flex items-center text-white/80">
             <CalendarIcon className="h-4 w-4 mr-2" />
