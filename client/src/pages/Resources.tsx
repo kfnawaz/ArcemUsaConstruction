@@ -63,13 +63,6 @@ const Resources = () => {
       fileType: 'docx'
     },
     {
-      id: 4,
-      title: 'Subcontractor Payment Application',
-      fileName: 'Subcontractor Payment Application.xlsx',
-      description: 'Spreadsheet for submitting payment requests.',
-      fileType: 'xlsx'
-    },
-    {
       id: 5,
       title: 'Subcontractor Suppliers List',
       fileName: 'Subcontractor Suppliers List.xlsx',
