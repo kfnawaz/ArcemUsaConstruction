@@ -654,7 +654,11 @@ export default function TeamMembersManagement() {
                   <TableRow key={member.id}>
                     <TableCell className="font-medium flex items-center gap-2">
                       <img
-                        src={member.photo || (member.gender === "female" ? "/uploads/images/team/placeholder-female.jpg" : "/uploads/images/team/placeholder-male.jpg")}
+                        src={member.photo && !member.photo.includes("placeholder-person.jpg") 
+                          ? member.photo 
+                          : (member.gender === "female" 
+                            ? "/uploads/images/team/placeholder-female.jpg" 
+                            : "/uploads/images/team/placeholder-male.jpg")}
                         alt={member.name}
                         className="w-8 h-8 rounded-full object-cover"
                       />
@@ -836,7 +840,11 @@ export default function TeamMembersManagement() {
                   {selectedMember && (
                     <div className="mb-2 flex items-center space-x-4">
                       <img
-                        src={selectedMember.photo || (selectedMember.gender === "female" ? "/uploads/images/team/placeholder-female.jpg" : "/uploads/images/team/placeholder-male.jpg")}
+                        src={selectedMember.photo && !selectedMember.photo.includes("placeholder-person.jpg") 
+                          ? selectedMember.photo 
+                          : (selectedMember.gender === "female" 
+                            ? "/uploads/images/team/placeholder-female.jpg" 
+                            : "/uploads/images/team/placeholder-male.jpg")}
                         alt={selectedMember.name}
                         className="w-16 h-16 rounded-full object-cover"
                       />

@@ -341,7 +341,11 @@ const About = () => {
                 >
                   <div className="relative overflow-hidden group">
                     <img 
-                      src={member.photo || (member.gender === "female" ? "/uploads/images/team/placeholder-female.jpg" : "/uploads/images/team/placeholder-male.jpg")} 
+                      src={member.photo && !member.photo.includes("placeholder-person.jpg") 
+                        ? member.photo 
+                        : (member.gender === "female" 
+                          ? "/uploads/images/team/placeholder-female.jpg" 
+                          : "/uploads/images/team/placeholder-male.jpg")} 
                       alt={member.name} 
                       className="w-full h-80 object-cover object-center transition-transform duration-500 group-hover:scale-110"
                     />
