@@ -220,8 +220,8 @@ const JoinTogether = () => {
             >
               <div className="h-64 overflow-hidden">
                 <img 
-                  src="/uploads/images/services/commercial/commercial1.jpg" 
-                  alt="Vendors" 
+                  src="/uploads/images/royal-techno-india-0O-0xbvtWyw-unsplash.jpg" 
+                  alt="Construction equipment and machinery" 
                   className="w-full h-full object-cover transition-transform hover:scale-110 duration-700"
                 />
               </div>
