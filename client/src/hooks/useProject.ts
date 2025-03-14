@@ -165,8 +165,8 @@ export const useProject = (projectId?: number) => {
     }
   };
 
-  const addGalleryImage = async (data: Omit<InsertProjectGallery, 'projectId'>) => {
-    if (!projectId) {
+  const addGalleryImage = async (data: InsertProjectGallery) => {
+    if (!projectId && !data.projectId) {
       toast({
         title: "Error",
         description: "Cannot add gallery image: No project ID provided.",
@@ -175,11 +175,25 @@ export const useProject = (projectId?: number) => {
       return;
     }
     
-    await addGalleryImageMutation.mutateAsync({ projectId, data });
+    await addGalleryImageMutation.mutateAsync({ 
+      projectId: data.projectId || projectId as number, 
+      data: {
+        imageUrl: data.imageUrl,
+        caption: data.caption,
+        displayOrder: data.displayOrder
+      } 
+    });
   };
 
   const updateGalleryImage = async (id: number, data: Partial<InsertProjectGallery>) => {
-    await updateGalleryImageMutation.mutateAsync({ id, data });
+    // Make sure we're only updating properties that exist in the schema
+    const updateData: Partial<InsertProjectGallery> = {};
+    
+    if (data.caption !== undefined) updateData.caption = data.caption;
+    if (data.displayOrder !== undefined) updateData.displayOrder = data.displayOrder;
+    if (data.imageUrl !== undefined) updateData.imageUrl = data.imageUrl;
+    
+    await updateGalleryImageMutation.mutateAsync({ id, data: updateData });
   };
 
   const deleteGalleryImage = async (id: number) => {

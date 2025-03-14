@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useProject } from '@/hooks/useProject';
@@ -30,6 +30,7 @@ import FileUpload from '@/components/common/FileUpload';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
+import ProjectGalleryManager, { ProjectGalleryManagerHandle } from './ProjectGalleryManager';
 
 interface ProjectFormProps {
   projectId?: number;
@@ -39,6 +40,7 @@ interface ProjectFormProps {
 const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
   const { 
     project, 
+    projectGallery,
     galleryImages,
     isLoading, 
     saveProject, 
@@ -52,6 +54,9 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
   const { toast } = useToast(); // Provides the toast notification function
   const [isAddingImage, setIsAddingImage] = useState(false);
   const [isUpdatingGallery, setIsUpdatingGallery] = useState(false);
+  
+  // Create a ref to the ProjectGalleryManager component
+  const galleryManagerRef = useRef<ProjectGalleryManagerHandle>(null);
   
   const form = useForm<InsertProject>({
     resolver: zodResolver(insertProjectSchema),
@@ -121,6 +126,7 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
       // Add each image to the gallery with sequential display order
       for (let i = 0; i < urls.length; i++) {
         await addGalleryImage({
+          projectId: projectId as number,
           imageUrl: urls[i],
           caption: `Gallery image ${i + 1}`,
           displayOrder: nextOrder + i

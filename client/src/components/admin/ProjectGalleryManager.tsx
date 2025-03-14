@@ -30,6 +30,7 @@ export interface ProjectGalleryManagerHandle {
 
 const MAX_GALLERY_IMAGES = 10;
 
+// Type that matches our pending image structure
 type PendingImage = {
   url: string;
   caption: string;
@@ -45,8 +46,6 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
     const [showMaxImagesWarning, setShowMaxImagesWarning] = useState(false);
-    const [newImageCaption, setNewImageCaption] = useState<Record<string, string>>({});
-    const [newImageOrder, setNewImageOrder] = useState<Record<string, number>>({});
     
     const {
       projectGallery,
@@ -94,10 +93,10 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
     // Calculate the next order value for new images
     const getNextOrderValue = () => {
       if (projectGallery && projectGallery.length > 0) {
-        const existingOrders = projectGallery.map(image => image.order);
+        const existingOrders = projectGallery.map(image => image.displayOrder !== null ? image.displayOrder : 0);
         return Math.max(...existingOrders) + 1;
       } else if (pendingImages.length > 0) {
-        const pendingOrders = pendingImages.map(image => image.order);
+        const pendingOrders = pendingImages.map(image => image.displayOrder);
         return Math.max(...pendingOrders) + 1;
       }
       return 1;
@@ -124,8 +123,8 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
           const nextOrder = getNextOrderValue();
           const newPendingImages = limitedUrls.map((url, idx) => ({
             url,
-            alt: `Project image ${idx + 1}`,
-            order: nextOrder + idx
+            caption: `Project image ${idx + 1}`,
+            displayOrder: nextOrder + idx
           }));
           
           setPendingImages(prev => [...prev, ...newPendingImages]);
@@ -150,8 +149,8 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
         const nextOrder = getNextOrderValue();
         const newPendingImages = urls.map((url, idx) => ({
           url,
-          alt: `Project image ${idx + 1}`,
-          order: nextOrder + idx
+          caption: `Project image ${idx + 1}`,
+          displayOrder: nextOrder + idx
         }));
         
         setPendingImages(prev => [...prev, ...newPendingImages]);
@@ -175,11 +174,11 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
           const galleryImage: InsertProjectGallery = {
             projectId,
             imageUrl: pendingImage.url,
-            alt: pendingImage.alt,
-            order: pendingImage.order,
+            caption: pendingImage.caption,
+            displayOrder: pendingImage.displayOrder,
           };
           
-          await addProjectGalleryImage(projectId, galleryImage);
+          await addProjectGalleryImage(galleryImage);
         }
         
         toast({
@@ -243,9 +242,9 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
     };
 
     // Update caption for a saved image
-    const handleUpdateImageCaption = async (id: number, alt: string) => {
+    const handleUpdateImageCaption = async (id: number, caption: string) => {
       try {
-        await updateProjectGalleryImage(id, { alt });
+        await updateProjectGalleryImage(id, { caption });
         toast({
           title: 'Caption updated',
           description: 'Image caption has been updated successfully.',
@@ -261,9 +260,9 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
     };
 
     // Update order for a saved image
-    const handleUpdateImageOrder = async (id: number, order: number) => {
+    const handleUpdateImageOrder = async (id: number, displayOrder: number) => {
       try {
-        await updateProjectGalleryImage(id, { order });
+        await updateProjectGalleryImage(id, { displayOrder });
         toast({
           title: 'Display order updated',
           description: 'Image display order has been updated successfully.',
@@ -282,7 +281,7 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
     const handleUpdatePendingImageCaption = (index: number, caption: string) => {
       setPendingImages(prev => {
         const newPendingImages = [...prev];
-        newPendingImages[index].alt = caption;
+        newPendingImages[index].caption = caption;
         return newPendingImages;
       });
     };
@@ -294,39 +293,39 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
       
       setPendingImages(prev => {
         const newPendingImages = [...prev];
-        newPendingImages[index].order = orderValue;
+        newPendingImages[index].displayOrder = orderValue;
         return newPendingImages;
       });
     };
 
     // Move image display order up
-    const moveImageOrderUp = (id: number, currentOrder: number) => {
-      if (!projectGallery) return;
+    const moveImageOrderUp = (id: number, currentOrder: number | null) => {
+      if (!projectGallery || currentOrder === null) return;
       
       // Find if there's an image with order less than current
       const higherImages = projectGallery
-        .filter(img => img.order < currentOrder)
-        .sort((a, b) => b.order - a.order); // Sort in descending order
+        .filter(img => img.displayOrder !== null && img.displayOrder < currentOrder)
+        .sort((a, b) => (b.displayOrder || 0) - (a.displayOrder || 0)); // Sort in descending order
         
       if (higherImages.length > 0) {
         const targetImage = higherImages[0];
-        handleUpdateImageOrder(id, targetImage.order);
+        handleUpdateImageOrder(id, targetImage.displayOrder || 0);
         handleUpdateImageOrder(targetImage.id, currentOrder);
       }
     };
 
     // Move image display order down
-    const moveImageOrderDown = (id: number, currentOrder: number) => {
-      if (!projectGallery) return;
+    const moveImageOrderDown = (id: number, currentOrder: number | null) => {
+      if (!projectGallery || currentOrder === null) return;
       
       // Find if there's an image with order more than current
       const lowerImages = projectGallery
-        .filter(img => img.order > currentOrder)
-        .sort((a, b) => a.order - b.order); // Sort in ascending order
+        .filter(img => img.displayOrder !== null && img.displayOrder > currentOrder)
+        .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0)); // Sort in ascending order
         
       if (lowerImages.length > 0) {
         const targetImage = lowerImages[0];
-        handleUpdateImageOrder(id, targetImage.order);
+        handleUpdateImageOrder(id, targetImage.displayOrder || 0);
         handleUpdateImageOrder(targetImage.id, currentOrder);
       }
     };
@@ -371,14 +370,14 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
                   
                   <div className="grid grid-cols-1 gap-4">
                     {projectGallery
-                      .sort((a, b) => a.order - b.order)
+                      .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0))
                       .map((image) => (
                       <Card key={`saved-${image.id}`} className="overflow-hidden">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
                           <div className="aspect-video relative group">
                             <img
                               src={image.imageUrl}
-                              alt={image.alt || `Project image ${image.id}`}
+                              alt={image.caption || `Project image ${image.id}`}
                               className="w-full h-full object-cover rounded-md"
                               onError={(e) => {
                                 e.currentTarget.src = "https://placehold.co/600x400/e2e8f0/1e293b?text=Image+Error";
@@ -403,7 +402,7 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
                               <Label htmlFor={`caption-${image.id}`}>Image Caption</Label>
                               <Input 
                                 id={`caption-${image.id}`}
-                                defaultValue={image.alt || ''}
+                                defaultValue={image.caption || ''}
                                 placeholder="Enter image caption"
                                 onBlur={(e) => handleUpdateImageCaption(image.id, e.target.value)}
                               />
@@ -417,7 +416,7 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
                                 <Input 
                                   id={`order-${image.id}`}
                                   type="number"
-                                  defaultValue={image.order}
+                                  defaultValue={image.displayOrder || 0}
                                   className="w-20"
                                   onBlur={(e) => {
                                     const value = parseInt(e.target.value, 10);
@@ -431,7 +430,7 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
                                     variant="outline"
                                     size="icon"
                                     className="h-8 w-8"
-                                    onClick={() => moveImageOrderUp(image.id, image.order)}
+                                    onClick={() => moveImageOrderUp(image.id, image.displayOrder)}
                                   >
                                     <ArrowUp className="h-4 w-4" />
                                   </Button>
@@ -439,7 +438,7 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
                                     variant="outline"
                                     size="icon"
                                     className="h-8 w-8 mt-1"
-                                    onClick={() => moveImageOrderDown(image.id, image.order)}
+                                    onClick={() => moveImageOrderDown(image.id, image.displayOrder)}
                                   >
                                     <ArrowDown className="h-4 w-4" />
                                   </Button>
@@ -467,7 +466,7 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
                           <div className="aspect-video relative group">
                             <img 
                               src={image.url} 
-                              alt={image.alt || `New image ${index + 1}`}
+                              alt={image.caption || `New image ${index + 1}`}
                               className="w-full h-full object-cover rounded-md"
                             />
                             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -488,7 +487,7 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
                               <Label htmlFor={`pending-caption-${index}`}>Image Caption</Label>
                               <Input 
                                 id={`pending-caption-${index}`}
-                                value={image.alt || ''}
+                                value={image.caption || ''}
                                 placeholder="Enter image caption"
                                 onChange={(e) => handleUpdatePendingImageCaption(index, e.target.value)}
                               />
@@ -501,7 +500,7 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
                               <Input 
                                 id={`pending-order-${index}`}
                                 type="number"
-                                value={image.order}
+                                value={image.displayOrder}
                                 className="w-20"
                                 onChange={(e) => handleUpdatePendingImageOrder(index, e.target.value)}
                               />
