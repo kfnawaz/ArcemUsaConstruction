@@ -16,7 +16,7 @@ export const useProject = (projectId?: number) => {
   });
   
   // Fetch project gallery images if ID is provided
-  const { data: galleryImages = [] } = useQuery<ProjectGallery[]>({
+  const { data: projectGallery = [], isLoading: isLoadingGallery } = useQuery<ProjectGallery[]>({
     queryKey: [`/api/projects/${projectId}/gallery`],
     enabled: !!projectId,
   });
@@ -215,16 +215,35 @@ export const useProject = (projectId?: number) => {
     }
   };
 
+  // Add properties for Gallery state
+  const isAddingGalleryImage = addGalleryImageMutation.isPending;
+  const isDeletingGalleryImage = deleteGalleryImageMutation.isPending;
+  const isUpdatingGalleryImage = updateGalleryImageMutation.isPending;
+
+  // Add functions that are specifically named for project gallery management
+  const addProjectGalleryImage = addGalleryImage;
+  const deleteProjectGalleryImage = deleteGalleryImage;
+  const updateProjectGalleryImage = updateGalleryImage;
+
   return {
     project,
-    galleryImages,
+    projectGallery,
+    galleryImages: projectGallery, // Keep for backward compatibility
     isLoading,
+    isLoadingGallery,
     error,
     saveProject,
     isSubmitting,
     addGalleryImage,
     updateGalleryImage,
     deleteGalleryImage,
-    uploadFile
+    uploadFile,
+    // Add new exports for ProjectGalleryManager
+    addProjectGalleryImage,
+    deleteProjectGalleryImage,
+    updateProjectGalleryImage,
+    isAddingGalleryImage,
+    isDeletingGalleryImage,
+    isUpdatingGalleryImage
   };
 };
