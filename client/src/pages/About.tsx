@@ -321,7 +321,7 @@ const About = () => {
             <div className="flex justify-center items-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-[#1E90DB]" />
             </div>
-          ) : teamMembers && teamMembers.length > 0 ? (
+          ) : teamMembers && Array.isArray(teamMembers) && teamMembers.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
               {teamMembers.map((member: TeamMember) => (
                 <div key={member.id} className="reveal">

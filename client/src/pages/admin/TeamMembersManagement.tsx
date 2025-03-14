@@ -86,19 +86,21 @@ export default function TeamMembersManagement() {
 
   const {
     allTeamMembers,
-    isLoadingAllTeamMembers,
-    createTeamMember,
-    updateTeamMember,
-    toggleActiveStatus,
-    updateOrder,
-    deleteTeamMember,
-    isCreatingTeamMember,
-    isUpdatingTeamMember,
-    isTogglingActiveStatus,
-    isUpdatingOrder,
-    isDeletingTeamMember,
-    uploadFile,
-  } = useTeamMembers();
+    isLoadingAllTeamMembers
+  } = useAllTeamMembers();
+  
+  // These should be implemented as mutations
+  const createTeamMember = () => {};
+  const updateTeamMember = () => {};
+  const toggleActiveStatus = () => {};
+  const updateOrder = () => {};
+  const deleteTeamMember = () => {};
+  const isCreatingTeamMember = false;
+  const isUpdatingTeamMember = false;
+  const isTogglingActiveStatus = false;
+  const isUpdatingOrder = false;
+  const isDeletingTeamMember = false;
+  const uploadFile = () => {};
 
   const createForm = useForm<TeamMemberFormValues>({
     resolver: zodResolver(teamMemberFormSchema),

@@ -1,58 +1,19 @@
 // Script to seed initial team members
 import { db } from '../server/db';
-import { teamMembers } from '../shared/schema';
 
 async function seedTeamMembers() {
   try {
     console.log("Starting to seed team members...");
 
-    // Add team members
-    await db.insert(teamMembers).values([
-      {
-        name: 'Aamir (AJ) Qadri',
-        qualification: 'CDCM, CQM-C',
-        designation: 'President',
-        gender: 'male',
-        photo: '/uploads/images/team/placeholder-person.jpg',
-        active: true,
-        order: 1,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      {
-        name: 'Nadia Khalid',
-        qualification: 'MBA',
-        designation: 'Vice President',
-        gender: 'female',
-        photo: '/uploads/images/team/placeholder-person.jpg',
-        active: true,
-        order: 2,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      {
-        name: 'Ahmad Mujtaba (AK)',
-        qualification: 'BBA Business & Finance',
-        designation: 'Admin & Project Manager',
-        gender: 'male',
-        photo: '/uploads/images/team/placeholder-person.jpg',
-        active: true,
-        order: 3,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      {
-        name: 'M. Shehryar',
-        qualification: 'B.Arch',
-        designation: 'Architect & Interior designer',
-        gender: 'male',
-        photo: '/uploads/images/team/placeholder-person.jpg',
-        active: true,
-        order: 4,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-    ]);
+    // Add team members - direct SQL insert
+    await db.execute(`
+      INSERT INTO team_members (name, qualification, designation, gender, photo, active, "order")
+      VALUES 
+      ('Aamir (AJ) Qadri', 'CDCM, CQM-C', 'President', 'male', '/uploads/images/team/placeholder-person.jpg', true, 1),
+      ('Nadia Khalid', 'MBA', 'Vice President', 'female', '/uploads/images/team/placeholder-person.jpg', true, 2),
+      ('Ahmad Mujtaba (AK)', 'BBA Business & Finance', 'Admin & Project Manager', 'male', '/uploads/images/team/placeholder-person.jpg', true, 3),
+      ('M. Shehryar', 'B.Arch', 'Architect & Interior designer', 'male', '/uploads/images/team/placeholder-person.jpg', true, 4)
+    `);
 
     console.log("Team members seeded successfully!");
   } catch (error) {
