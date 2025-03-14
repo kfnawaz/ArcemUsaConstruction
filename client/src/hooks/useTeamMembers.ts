@@ -88,9 +88,10 @@ export const useTeamMembers = (teamMemberId?: number) => {
   // Toggle active status
   const toggleActiveStatusMutation = useMutation({
     mutationFn: async (id: number) => {
-      return await apiRequest(`/api/admin/team-members/${id}/toggle-active`, {
-        method: 'PUT',
-      });
+      return await apiRequest(
+        'PUT',
+        `/api/admin/team-members/${id}/toggle-active`
+      );
     },
     onSuccess: () => {
       toast({
@@ -116,10 +117,11 @@ export const useTeamMembers = (teamMemberId?: number) => {
   // Update order
   const updateOrderMutation = useMutation({
     mutationFn: async ({ id, order }: { id: number; order: number }) => {
-      return await apiRequest(`/api/admin/team-members/${id}/order`, {
-        method: 'PUT',
-        body: JSON.stringify({ order }),
-      });
+      return await apiRequest(
+        'PUT',
+        `/api/admin/team-members/${id}/order`,
+        { order }
+      );
     },
     onSuccess: () => {
       toast({
@@ -142,9 +144,10 @@ export const useTeamMembers = (teamMemberId?: number) => {
   // Delete team member
   const deleteTeamMemberMutation = useMutation({
     mutationFn: async (id: number) => {
-      return await apiRequest(`/api/admin/team-members/${id}`, {
-        method: 'DELETE',
-      });
+      return await apiRequest(
+        'DELETE',
+        `/api/admin/team-members/${id}`
+      );
     },
     onSuccess: () => {
       toast({

@@ -126,18 +126,14 @@ export default function TeamMembersManagement() {
     },
   });
 
-  const filteredTeamMembers = allTeamMembers
-    ? allTeamMembers.filter((member: TeamMember) =>
-        member.name.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : [];
+  const teamMemberArray = Array.isArray(allTeamMembers) ? allTeamMembers : [];
+  
+  const filteredTeamMembers = teamMemberArray.filter((member) =>
+    member.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-  const activeCount = allTeamMembers
-    ? allTeamMembers.filter((member: TeamMember) => member.active === true).length
-    : 0;
-  const inactiveCount = allTeamMembers
-    ? allTeamMembers.filter((member: TeamMember) => member.active === false).length
-    : 0;
+  const activeCount = teamMemberArray.filter((member) => member.active === true).length;
+  const inactiveCount = teamMemberArray.filter((member) => member.active === false).length;
 
   const onCreateSubmit = async (values: TeamMemberFormValues) => {
     try {
@@ -197,8 +193,8 @@ export default function TeamMembersManagement() {
       gender: member.gender,
       bio: member.bio || "",
       photo: member.photo || "",
-      order: member.order,
-      active: member.active,
+      order: member.order || 0,
+      active: member.active || false,
     });
     setIsEditDialogOpen(true);
   };
@@ -436,7 +432,7 @@ export default function TeamMembersManagement() {
                 {isLoadingAllTeamMembers ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  allTeamMembers.length
+                  teamMemberArray.length
                 )}
               </div>
             </CardContent>
