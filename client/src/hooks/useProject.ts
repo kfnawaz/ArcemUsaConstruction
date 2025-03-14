@@ -225,12 +225,18 @@ export const useProject = (projectId?: number) => {
     project,
     galleryImages,
     isLoading,
+    isLoadingGallery: isLoading,  // Reuse the same loading state for gallery
     error,
     saveProject,
     isSubmitting,
     addGalleryImage,
     updateGalleryImage,
     deleteGalleryImage,
-    uploadFile
+    uploadFile,
+    isDeletingGalleryImage,
+    // Alias functions for ProjectGalleryManager compatibility
+    projectGallery: galleryImages,
+    addProjectGalleryImage: addGalleryImage,
+    deleteProjectGalleryImage: deleteGalleryImage
   };
 };

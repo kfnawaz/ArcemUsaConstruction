@@ -54,6 +54,9 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
   const [isAddingImage, setIsAddingImage] = useState(false);
   const [isUpdatingGallery, setIsUpdatingGallery] = useState(false);
   
+  // Reference to the gallery manager component for controlling image saving
+  const galleryManagerRef = useRef<{saveGalleryImages: () => Promise<void>}>(null);
+  
   const form = useForm<InsertProject>({
     resolver: zodResolver(insertProjectSchema),
     defaultValues: {
