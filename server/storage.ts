@@ -1429,6 +1429,98 @@ export class MemStorage implements IStorage {
   async deleteJobPosting(id: number): Promise<boolean> {
     return this.jobPostings.delete(id);
   }
+
+  // Team Members
+  async getTeamMembers(): Promise<TeamMember[]> {
+    return Array.from(this.teamMembers.values())
+      .sort((a, b) => {
+        const orderA = a.order !== null ? a.order : 0;
+        const orderB = b.order !== null ? b.order : 0;
+        return orderA - orderB;
+      });
+  }
+
+  async getActiveTeamMembers(): Promise<TeamMember[]> {
+    return Array.from(this.teamMembers.values())
+      .filter(member => member.active === true)
+      .sort((a, b) => {
+        const orderA = a.order !== null ? a.order : 0;
+        const orderB = b.order !== null ? b.order : 0;
+        return orderA - orderB;
+      });
+  }
+
+  async getTeamMember(id: number): Promise<TeamMember | undefined> {
+    return this.teamMembers.get(id);
+  }
+
+  async createTeamMember(teamMember: InsertTeamMember): Promise<TeamMember> {
+    const id = this.teamMemberCurrentId++;
+    const now = new Date();
+    
+    const newTeamMember: TeamMember = {
+      id,
+      name: teamMember.name,
+      designation: teamMember.designation,
+      qualification: teamMember.qualification,
+      gender: teamMember.gender,
+      photo: teamMember.photo || null,
+      bio: teamMember.bio || null,
+      order: teamMember.order || 0,
+      active: teamMember.active ?? true,
+      createdAt: now,
+      updatedAt: now
+    };
+    
+    this.teamMembers.set(id, newTeamMember);
+    return newTeamMember;
+  }
+
+  async updateTeamMember(id: number, teamMemberUpdate: Partial<InsertTeamMember>): Promise<TeamMember | undefined> {
+    const teamMember = this.teamMembers.get(id);
+    if (!teamMember) return undefined;
+    
+    const updatedTeamMember: TeamMember = {
+      ...teamMember,
+      ...teamMemberUpdate,
+      updatedAt: new Date()
+    };
+    
+    this.teamMembers.set(id, updatedTeamMember);
+    return updatedTeamMember;
+  }
+
+  async toggleTeamMemberActive(id: number): Promise<TeamMember | undefined> {
+    const teamMember = this.teamMembers.get(id);
+    if (!teamMember) return undefined;
+    
+    const updatedTeamMember: TeamMember = {
+      ...teamMember,
+      active: !teamMember.active,
+      updatedAt: new Date()
+    };
+    
+    this.teamMembers.set(id, updatedTeamMember);
+    return updatedTeamMember;
+  }
+
+  async updateTeamMemberOrder(id: number, order: number): Promise<TeamMember | undefined> {
+    const teamMember = this.teamMembers.get(id);
+    if (!teamMember) return undefined;
+    
+    const updatedTeamMember: TeamMember = {
+      ...teamMember,
+      order,
+      updatedAt: new Date()
+    };
+    
+    this.teamMembers.set(id, updatedTeamMember);
+    return updatedTeamMember;
+  }
+
+  async deleteTeamMember(id: number): Promise<boolean> {
+    return this.teamMembers.delete(id);
+  }
 }
 
 // Import DBStorage

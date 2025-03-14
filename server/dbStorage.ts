@@ -4,7 +4,7 @@ import {
   users, projects, projectGallery, blogCategories, blogTags, blogPosts, 
   blogPostCategories, blogPostTags, blogGallery,
   testimonials, services, serviceGallery, messages, newsletterSubscribers, quoteRequests,
-  subcontractors, vendors, jobPostings,
+  subcontractors, vendors, jobPostings, teamMembers,
   type User, type InsertUser, 
   type Project, type InsertProject,
   type ProjectGallery, type InsertProjectGallery,
@@ -20,7 +20,8 @@ import {
   type QuoteRequest, type InsertQuoteRequest,
   type Subcontractor, type InsertSubcontractor,
   type Vendor, type InsertVendor,
-  type JobPosting, type InsertJobPosting
+  type JobPosting, type InsertJobPosting,
+  type TeamMember, type InsertTeamMember
 } from "../shared/schema";
 import { IStorage } from "./storage";
 
@@ -707,6 +708,69 @@ export class DBStorage implements IStorage {
     const result = await db.delete(jobPostings)
       .where(eq(jobPostings.id, id))
       .returning();
+    return result.length > 0;
+  }
+
+  // Team Members
+  async getTeamMembers(): Promise<TeamMember[]> {
+    return await db.query.teamMembers.findMany({
+      orderBy: (teamMembers, { asc }) => [asc(teamMembers.order)]
+    });
+  }
+
+  async getActiveTeamMembers(): Promise<TeamMember[]> {
+    return await db.query.teamMembers.findMany({
+      where: eq(teamMembers.active, true),
+      orderBy: (teamMembers, { asc }) => [asc(teamMembers.order)]
+    });
+  }
+
+  async getTeamMember(id: number): Promise<TeamMember | undefined> {
+    return await db.query.teamMembers.findFirst({
+      where: eq(teamMembers.id, id)
+    });
+  }
+
+  async createTeamMember(teamMember: InsertTeamMember): Promise<TeamMember> {
+    const result = await db.insert(teamMembers).values(teamMember).returning();
+    return result[0];
+  }
+
+  async updateTeamMember(id: number, teamMemberUpdate: Partial<InsertTeamMember>): Promise<TeamMember | undefined> {
+    const result = await db.update(teamMembers)
+      .set({ ...teamMemberUpdate, updatedAt: new Date() })
+      .where(eq(teamMembers.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async toggleTeamMemberActive(id: number): Promise<TeamMember | undefined> {
+    const member = await this.getTeamMember(id);
+    if (!member) return undefined;
+
+    const result = await db.update(teamMembers)
+      .set({ 
+        active: !member.active,
+        updatedAt: new Date()
+      })
+      .where(eq(teamMembers.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async updateTeamMemberOrder(id: number, order: number): Promise<TeamMember | undefined> {
+    const result = await db.update(teamMembers)
+      .set({ 
+        order: order,
+        updatedAt: new Date()
+      })
+      .where(eq(teamMembers.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteTeamMember(id: number): Promise<boolean> {
+    const result = await db.delete(teamMembers).where(eq(teamMembers.id, id)).returning();
     return result.length > 0;
   }
 }
