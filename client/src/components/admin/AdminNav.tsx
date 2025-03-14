@@ -11,11 +11,12 @@ import {
   ClipboardList,
   Wrench,
   Users,
-  Briefcase
+  Briefcase,
+  UserRound
 } from 'lucide-react';
 
 type AdminNavProps = {
-  activePage: 'dashboard' | 'projects' | 'services' | 'blog' | 'messages' | 'testimonials' | 'settings' | 'accessibility' | 'newsletter' | 'quotes' | 'subcontractors' | 'careers';
+  activePage: 'dashboard' | 'projects' | 'services' | 'blog' | 'messages' | 'testimonials' | 'settings' | 'accessibility' | 'newsletter' | 'quotes' | 'subcontractors' | 'careers' | 'team-members';
 };
 
 const AdminNav = ({ activePage }: AdminNavProps) => {
@@ -75,6 +76,12 @@ const AdminNav = ({ activePage }: AdminNavProps) => {
       label: 'Careers', 
       icon: <Briefcase className="w-5 h-5 mr-3" />,
       active: activePage === 'careers'
+    },
+    { 
+      href: '/admin/team-members', 
+      label: 'Team Members', 
+      icon: <UserRound className="w-5 h-5 mr-3" />,
+      active: activePage === 'team-members'
     },
     { 
       href: '/admin/subcontractors', 

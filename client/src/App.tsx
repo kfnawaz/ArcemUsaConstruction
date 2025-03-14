@@ -40,6 +40,7 @@ import TestimonialsManagement from "@/pages/admin/TestimonialsManagement";
 import NewsletterManagement from "@/pages/admin/NewsletterManagement";
 import QuoteRequestsManagement from "@/pages/admin/QuoteRequestsManagement";
 import CareersManagement from "@/pages/admin/CareersManagement";
+import TeamMembersManagement from "@/pages/admin/TeamMembersManagement";
 import SettingsPage from "@/pages/admin/Settings";
 import AccessibilityCheckerPage from "@/pages/admin/AccessibilityChecker";
 import SubcontractorManagement from "@/pages/admin/SubcontractorManagement";
@@ -200,6 +201,11 @@ function Router() {
           <Route path="/admin/careers">
             <ProtectedRoute>
               <CareersManagement />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/admin/team-members">
+            <ProtectedRoute>
+              <TeamMembersManagement />
             </ProtectedRoute>
           </Route>
           
