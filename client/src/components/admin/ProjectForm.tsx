@@ -114,7 +114,28 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
     }
   }, [form, project]);
 
-  const onSubmit = async (data: InsertProject) => {
+  // Check if there are unsaved gallery changes
+  const checkUnsavedGalleryChanges = (): boolean => {
+    if (projectId && galleryManagerRef.current) {
+      return galleryManagerRef.current.hasUnsavedChanges();
+    }
+    return false;
+  };
+
+  // Handle form pre-submit to check for unsaved gallery changes
+  const handleFormSubmit = (data: InsertProject) => {
+    if (checkUnsavedGalleryChanges()) {
+      // Store form data and show confirmation dialog
+      setPendingFormData(data);
+      setShowUnsavedDialog(true);
+    } else {
+      // No unsaved gallery changes, proceed with form submission
+      submitForm(data);
+    }
+  };
+
+  // Actual form submission logic
+  const submitForm = async (data: InsertProject) => {
     try {
       await saveProject(data);
       
@@ -149,6 +170,17 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
       });
     }
   };
+  
+  // Continue with form submission and save gallery changes
+  const confirmSubmitWithChanges = () => {
+    if (pendingFormData) {
+      submitForm(pendingFormData);
+      setShowUnsavedDialog(false);
+    }
+  };
+  
+  // Original form onSubmit handler
+  const onSubmit = handleFormSubmit;
   
   const handleMultipleImagesUpload = async (urls: string | string[]) => {
     if (!Array.isArray(urls)) {
@@ -641,6 +673,36 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
           </Form>
         </div>
       )}
+      {/* Unsaved Gallery Changes Confirmation Dialog */}
+      <Dialog open={showUnsavedDialog} onOpenChange={setShowUnsavedDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Unsaved Gallery Changes</DialogTitle>
+            <DialogDescription>
+              You have unsaved changes in the project gallery. What would you like to do?
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex items-center border rounded-md p-3 bg-amber-50 text-amber-800 mt-2">
+            <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0" />
+            <p className="text-sm">
+              If you continue without saving, your gallery changes (new images, updated captions or display orders) will be lost.
+            </p>
+          </div>
+          
+          <DialogFooter className="flex justify-end gap-2 mt-4">
+            <Button variant="outline" onClick={() => setShowUnsavedDialog(false)}>
+              Go Back and Save Gallery Changes
+            </Button>
+            <Button 
+              variant="default" 
+              onClick={confirmSubmitWithChanges}
+            >
+              Continue and Save Everything
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

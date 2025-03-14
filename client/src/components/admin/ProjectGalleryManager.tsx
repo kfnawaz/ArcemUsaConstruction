@@ -445,7 +445,9 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
                     {projectGallery
                       .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0))
                       .map((image) => (
-                      <Card key={`saved-${image.id}`} className="overflow-hidden">
+                      <Card 
+                        key={`saved-${image.id}`} 
+                        className={`overflow-hidden ${modifiedCaptions.has(image.id) || modifiedOrders.has(image.id) ? 'border-amber-400 border-2 shadow-md' : ''}`}>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
                           <div className="aspect-video relative group">
                             <img
@@ -571,7 +573,7 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
                   
                   <div className="grid grid-cols-1 gap-4">
                     {pendingImages.map((image, index) => (
-                      <Card key={`pending-${index}`} className="overflow-hidden border-dashed border-2">
+                      <Card key={`pending-${index}`} className="overflow-hidden border-dashed border-2 border-amber-400 shadow-md">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
                           <div className="aspect-video relative group">
                             <img 
