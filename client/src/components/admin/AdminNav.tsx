@@ -14,6 +14,8 @@ import {
   Briefcase,
   UserRound
 } from 'lucide-react';
+import { useNotifications } from '@/hooks/useNotifications';
+import NotificationIndicator from '@/components/common/NotificationIndicator';
 
 type AdminNavProps = {
   activePage: 'dashboard' | 'projects' | 'services' | 'blog' | 'messages' | 'testimonials' | 'settings' | 'accessibility' | 'newsletter' | 'quotes' | 'subcontractors' | 'careers' | 'team-members';
@@ -21,6 +23,7 @@ type AdminNavProps = {
 
 const AdminNav = ({ activePage }: AdminNavProps) => {
   const [location, navigate] = useLocation();
+  const { counts, isLoading } = useNotifications();
   
   const navItems = [
     { 
@@ -114,15 +117,32 @@ const AdminNav = ({ activePage }: AdminNavProps) => {
             {navItems.map((item) => (
               <li key={item.href}>
                 <div 
-                  className={`flex items-center px-4 py-3 rounded-md transition-colors cursor-pointer ${
+                  className={`flex items-center justify-between px-4 py-3 rounded-md transition-colors cursor-pointer ${
                     item.active 
                       ? 'bg-[#1E90DB] text-white font-medium' 
                       : 'hover:bg-gray-100 text-gray-700'
                   }`}
                   onClick={() => navigate(item.href)}
                 >
-                  {item.icon}
-                  {item.label}
+                  <div className="flex items-center">
+                    {item.icon}
+                    {item.label}
+                  </div>
+                  
+                  {/* Show notification count for specific items */}
+                  {!isLoading && (
+                    <>
+                      {item.label === 'Messages' && counts.unreadMessages > 0 && (
+                        <NotificationIndicator count={counts.unreadMessages} size="sm" />
+                      )}
+                      {item.label === 'Testimonials' && counts.pendingTestimonials > 0 && (
+                        <NotificationIndicator count={counts.pendingTestimonials} size="sm" />
+                      )}
+                      {item.label === 'Quote Requests' && counts.pendingQuoteRequests > 0 && (
+                        <NotificationIndicator count={counts.pendingQuoteRequests} size="sm" />
+                      )}
+                    </>
+                  )}
                 </div>
               </li>
             ))}

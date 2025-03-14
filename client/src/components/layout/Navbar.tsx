@@ -191,6 +191,14 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
               </Link>
             ))}
 
+            {/* Mobile Notification Badge */}
+            {isAuthenticated && (
+              <div className="flex items-center justify-start py-2">
+                <NotificationBadge />
+                <span className="ml-2 text-white font-montserrat text-sm">Notifications</span>
+              </div>
+            )}
+            
             {/* Mobile Login/Admin Button */}
             <Link
               href={isAuthenticated ? "/admin" : "/auth/login"}
