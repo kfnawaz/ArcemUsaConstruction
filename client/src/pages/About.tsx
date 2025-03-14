@@ -5,8 +5,11 @@ import { Link } from 'wouter';
 import { motion } from 'framer-motion';
 import { useTeamMembers } from '@/hooks/useTeamMembers';
 import { Loader2 } from 'lucide-react';
+import { TeamMember } from '@shared/schema';
 
 const About = () => {
+  const { teamMembers, isLoadingTeamMembers } = useTeamMembers();
+  
   useEffect(() => {
     scrollToTop();
     document.title = 'About Us - ARCEM';
@@ -314,46 +317,33 @@ const About = () => {
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="reveal">
-              <img 
-                src="https://images.unsplash.com/photo-1569779213435-ba3167ecf3f4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=687&q=80" 
-                alt="CEO" 
-                className="w-full h-80 object-cover object-center mb-4"
-              />
-              <h4 className="text-xl font-montserrat font-bold mb-1">Robert Anderson</h4>
-              <p className="text-[#1E90DB] font-montserrat mb-3">Chief Executive Officer</p>
-              <p className="text-gray-600">
-                With over 25 years of experience in construction management, Robert leads our company with vision and strategic direction.
-              </p>
+          {isLoadingTeamMembers ? (
+            <div className="flex justify-center items-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-[#1E90DB]" />
             </div>
-            
-            <div className="reveal">
-              <img 
-                src="https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" 
-                alt="Operations Director" 
-                className="w-full h-80 object-cover object-center mb-4"
-              />
-              <h4 className="text-xl font-montserrat font-bold mb-1">Maria Rodriguez</h4>
-              <p className="text-[#1E90DB] font-montserrat mb-3">Operations Director</p>
-              <p className="text-gray-600">
-                Maria oversees all operational aspects of our projects, ensuring efficiency, quality, and client satisfaction at every stage.
-              </p>
+          ) : teamMembers && teamMembers.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {teamMembers.map((member: TeamMember) => (
+                <div key={member.id} className="reveal">
+                  <img 
+                    src={member.photo || "/uploads/images/team/placeholder-person.jpg"} 
+                    alt={member.name} 
+                    className="w-full h-80 object-cover object-center mb-4 rounded-md shadow-lg"
+                  />
+                  <h4 className="text-xl font-montserrat font-bold mb-1">{member.name}</h4>
+                  <p className="text-[#1E90DB] font-montserrat mb-1">{member.designation}</p>
+                  <p className="text-gray-500 text-sm font-montserrat mb-3">{member.qualification}</p>
+                  {member.bio && (
+                    <p className="text-gray-600">{member.bio}</p>
+                  )}
+                </div>
+              ))}
             </div>
-            
-            <div className="reveal">
-              <img 
-                src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" 
-                alt="Design Director" 
-                className="w-full h-80 object-cover object-center mb-4"
-              />
-              <h4 className="text-xl font-montserrat font-bold mb-1">Daniel Chen</h4>
-              <p className="text-[#1E90DB] font-montserrat mb-3">Design Director</p>
-              <p className="text-gray-600">
-                Daniel brings innovative design solutions to our projects, blending functionality, aesthetics, and sustainability.
-              </p>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-500">No team members found. Please check back later.</p>
             </div>
-          </div>
+          )}
         </div>
       </section>
 
