@@ -31,10 +31,11 @@ export const useTeamMembers = (teamMemberId?: number) => {
   // Create team member
   const createTeamMemberMutation = useMutation({
     mutationFn: async (data: InsertTeamMember) => {
-      return await apiRequest<TeamMember>('/api/admin/team-members', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+      return await apiRequest(
+        'POST',
+        '/api/admin/team-members',
+        data
+      );
     },
     onSuccess: () => {
       toast({
@@ -57,10 +58,11 @@ export const useTeamMembers = (teamMemberId?: number) => {
   // Update team member
   const updateTeamMemberMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<InsertTeamMember> }) => {
-      return await apiRequest<TeamMember>(`/api/admin/team-members/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(data),
-      });
+      return await apiRequest(
+        'PUT',
+        `/api/admin/team-members/${id}`,
+        data
+      );
     },
     onSuccess: () => {
       toast({
@@ -86,7 +88,7 @@ export const useTeamMembers = (teamMemberId?: number) => {
   // Toggle active status
   const toggleActiveStatusMutation = useMutation({
     mutationFn: async (id: number) => {
-      return await apiRequest<TeamMember>(`/api/admin/team-members/${id}/toggle-active`, {
+      return await apiRequest(`/api/admin/team-members/${id}/toggle-active`, {
         method: 'PUT',
       });
     },
@@ -114,7 +116,7 @@ export const useTeamMembers = (teamMemberId?: number) => {
   // Update order
   const updateOrderMutation = useMutation({
     mutationFn: async ({ id, order }: { id: number; order: number }) => {
-      return await apiRequest<TeamMember>(`/api/admin/team-members/${id}/order`, {
+      return await apiRequest(`/api/admin/team-members/${id}/order`, {
         method: 'PUT',
         body: JSON.stringify({ order }),
       });
@@ -140,7 +142,7 @@ export const useTeamMembers = (teamMemberId?: number) => {
   // Delete team member
   const deleteTeamMemberMutation = useMutation({
     mutationFn: async (id: number) => {
-      return await apiRequest<{ message: string }>(`/api/admin/team-members/${id}`, {
+      return await apiRequest(`/api/admin/team-members/${id}`, {
         method: 'DELETE',
       });
     },
