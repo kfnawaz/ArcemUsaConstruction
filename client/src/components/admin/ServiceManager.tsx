@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -57,6 +57,7 @@ const ServiceManager: React.FC<ServiceManagerProps> = ({ service, onSuccess }) =
   const [featuresList, setFeaturesList] = useState<string[]>(
     service?.features || []
   );
+  const galleryManagerRef = useRef<{saveGalleryImages: () => Promise<void>}>(null);
 
   const {
     createService,
@@ -95,7 +96,7 @@ const ServiceManager: React.FC<ServiceManagerProps> = ({ service, onSuccess }) =
   };
 
   // Handle form submission
-  const onSubmit = (data: ServiceFormValues) => {
+  const onSubmit = async (data: ServiceFormValues) => {
     const serviceData: InsertService = {
       title: data.title,
       description: data.description,
@@ -103,16 +104,39 @@ const ServiceManager: React.FC<ServiceManagerProps> = ({ service, onSuccess }) =
       features: data.features,
     };
 
-    if (service) {
-      // Update existing service
-      updateService(service.id, serviceData);
-    } else {
-      // Create new service
-      createService(serviceData);
-    }
-
-    if (onSuccess) {
-      onSuccess();
+    try {
+      let savedServiceId: number;
+      
+      if (service) {
+        // Update existing service
+        const updatedService = await updateService(service.id, serviceData);
+        savedServiceId = service.id;
+      } else {
+        // Create new service
+        const newService = await createService(serviceData);
+        savedServiceId = newService.id;
+      }
+      
+      // Save gallery images if there are any pending
+      if (service && galleryManagerRef.current) {
+        await galleryManagerRef.current.saveGalleryImages();
+      }
+      
+      toast({
+        title: `Service ${service ? 'updated' : 'created'} successfully`,
+        description: "All changes have been saved.",
+      });
+      
+      if (onSuccess) {
+        onSuccess();
+      }
+    } catch (error) {
+      console.error('Error saving service:', error);
+      toast({
+        title: 'Error saving service',
+        description: 'An error occurred while saving the service. Please try again.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -306,32 +330,40 @@ const ServiceManager: React.FC<ServiceManagerProps> = ({ service, onSuccess }) =
                 )}
               />
 
-              <Button
-                type="submit"
-                className="flex items-center gap-2"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Save className="h-4 w-4" />
-                    Save Service
-                  </>
-                )}
-              </Button>
             </form>
           </Form>
         </div>
 
         {service && (
           <div className="gallery-section mt-8 pt-6 border-t">
-            <ServiceGalleryManager serviceId={service.id} />
+            <ServiceGalleryManager 
+              serviceId={service.id} 
+              ref={galleryManagerRef}
+            />
           </div>
         )}
+        
+        <div className="pt-6 border-t mt-8">
+          <Button
+            type="button"
+            onClick={form.handleSubmit(onSubmit)}
+            className="flex items-center gap-2 w-full md:w-auto"
+            disabled={isSubmitting}
+            size="lg"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="h-5 w-5 animate-spin" />
+                Saving Service...
+              </>
+            ) : (
+              <>
+                <Save className="h-5 w-5" />
+                Save Service
+              </>
+            )}
+          </Button>
+        </div>
       </div>
     </div>
   );
