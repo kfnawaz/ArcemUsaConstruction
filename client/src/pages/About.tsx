@@ -323,20 +323,42 @@ const About = () => {
             </div>
           ) : teamMembers && Array.isArray(teamMembers) && teamMembers.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {teamMembers.map((member: TeamMember) => (
-                <div key={member.id} className="reveal">
-                  <img 
-                    src={member.photo || "/uploads/images/team/placeholder-person.jpg"} 
-                    alt={member.name} 
-                    className="w-full h-80 object-cover object-center mb-4 rounded-md shadow-lg"
-                  />
-                  <h4 className="text-xl font-montserrat font-bold mb-1">{member.name}</h4>
-                  <p className="text-[#1E90DB] font-montserrat mb-1">{member.designation}</p>
-                  <p className="text-gray-500 text-sm font-montserrat mb-3">{member.qualification}</p>
-                  {member.bio && (
-                    <p className="text-gray-600">{member.bio}</p>
-                  )}
-                </div>
+              {teamMembers.map((member: TeamMember, index: number) => (
+                <motion.div
+                  key={member.id}
+                  initial={{ opacity: 0, y: 50 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ 
+                    duration: 0.5, 
+                    delay: index * 0.1,
+                    ease: "easeOut"
+                  }}
+                  whileHover={{ 
+                    y: -10,
+                    boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+                  }}
+                  className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300"
+                >
+                  <div className="relative overflow-hidden group">
+                    <img 
+                      src={member.photo || "/uploads/images/team/placeholder-person.jpg"} 
+                      alt={member.name} 
+                      className="w-full h-80 object-cover object-center transition-transform duration-500 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
+                      <div className="p-4 text-white">
+                        {member.bio && (
+                          <p className="line-clamp-3">{member.bio}</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-6">
+                    <h4 className="text-xl font-montserrat font-bold mb-1">{member.name}</h4>
+                    <p className="text-[#1E90DB] font-montserrat mb-1">{member.designation}</p>
+                    <p className="text-gray-500 text-sm font-montserrat">{member.qualification}</p>
+                  </div>
+                </motion.div>
               ))}
             </div>
           ) : (
