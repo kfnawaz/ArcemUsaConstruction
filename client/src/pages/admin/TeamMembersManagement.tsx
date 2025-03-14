@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Helmet } from "react-helmet";
 import { Check, Loader2, Plus, Search, X } from "lucide-react";
-import { useTeamMembers } from "@/hooks/useTeamMembers";
+import { useAllTeamMembers, useTeamMember } from "@/hooks/useTeamMembers";
 import { TeamMember, InsertTeamMember } from "@shared/schema";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 
 import {
@@ -84,23 +86,174 @@ export default function TeamMembersManagement() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
-  const {
-    allTeamMembers,
-    isLoadingAllTeamMembers
-  } = useAllTeamMembers();
+  const { toast } = useToast();
+  const { data, isLoading } = useAllTeamMembers();
   
-  // These should be implemented as mutations
-  const createTeamMember = () => {};
-  const updateTeamMember = () => {};
-  const toggleActiveStatus = () => {};
-  const updateOrder = () => {};
-  const deleteTeamMember = () => {};
-  const isCreatingTeamMember = false;
-  const isUpdatingTeamMember = false;
-  const isTogglingActiveStatus = false;
-  const isUpdatingOrder = false;
-  const isDeletingTeamMember = false;
-  const uploadFile = () => {};
+  const [isCreatingTeamMember, setIsCreatingTeamMember] = useState(false);
+  const [isUpdatingTeamMember, setIsUpdatingTeamMember] = useState(false);
+  const [isTogglingActiveStatus, setIsTogglingActiveStatus] = useState(false);
+  const [isUpdatingOrder, setIsUpdatingOrder] = useState(false);
+  const [isDeletingTeamMember, setIsDeletingTeamMember] = useState(false);
+  
+  const createTeamMember = async (data: InsertTeamMember) => {
+    setIsCreatingTeamMember(true);
+    try {
+      await apiRequest('/api/admin/team-members', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/team-members'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/team-members'] });
+      
+      toast({
+        title: "Success",
+        description: "Team member created successfully.",
+      });
+    } catch (error) {
+      console.error("Error creating team member:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create team member. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCreatingTeamMember(false);
+    }
+  };
+  
+  const updateTeamMember = async (id: number, data: Partial<InsertTeamMember>) => {
+    setIsUpdatingTeamMember(true);
+    try {
+      await apiRequest(`/api/admin/team-members/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/team-members'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/team-members'] });
+      
+      toast({
+        title: "Success",
+        description: "Team member updated successfully.",
+      });
+    } catch (error) {
+      console.error("Error updating team member:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update team member. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdatingTeamMember(false);
+    }
+  };
+  
+  const toggleActiveStatus = async (id: number) => {
+    setIsTogglingActiveStatus(true);
+    try {
+      await apiRequest(`/api/admin/team-members/${id}/toggle-active`, {
+        method: 'PUT',
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/team-members'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/team-members'] });
+      
+      toast({
+        title: "Success",
+        description: "Team member status updated.",
+      });
+    } catch (error) {
+      console.error("Error toggling active status:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update status. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsTogglingActiveStatus(false);
+    }
+  };
+  
+  const updateOrder = async (id: number, order: number) => {
+    setIsUpdatingOrder(true);
+    try {
+      await apiRequest(`/api/admin/team-members/${id}/order`, {
+        method: 'PUT',
+        body: JSON.stringify({ order }),
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/team-members'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/team-members'] });
+      
+      toast({
+        title: "Success",
+        description: "Display order updated.",
+      });
+    } catch (error) {
+      console.error("Error updating order:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update display order. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdatingOrder(false);
+    }
+  };
+  
+  const deleteTeamMember = async (id: number) => {
+    setIsDeletingTeamMember(true);
+    try {
+      await apiRequest(`/api/admin/team-members/${id}`, {
+        method: 'DELETE',
+      });
+      
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/team-members'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/team-members'] });
+      
+      toast({
+        title: "Success",
+        description: "Team member deleted successfully.",
+      });
+    } catch (error) {
+      console.error("Error deleting team member:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete team member. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeletingTeamMember(false);
+    }
+  };
+  
+  const uploadFile = async (file: File): Promise<string | undefined> => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to upload file');
+      }
+      
+      const data = await response.json();
+      return data.url;
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      toast({
+        title: "Error",
+        description: "Failed to upload file. Please try again.",
+        variant: "destructive",
+      });
+      return undefined;
+    }
+  };
 
   const createForm = useForm<TeamMemberFormValues>({
     resolver: zodResolver(teamMemberFormSchema),
@@ -128,7 +281,7 @@ export default function TeamMembersManagement() {
     },
   });
 
-  const teamMemberArray = Array.isArray(allTeamMembers) ? allTeamMembers : [];
+  const teamMemberArray = Array.isArray(data) ? data : [];
   
   const filteredTeamMembers = teamMemberArray.filter((member) =>
     member.name.toLowerCase().includes(searchQuery.toLowerCase())
