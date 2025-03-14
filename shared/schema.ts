@@ -478,3 +478,27 @@ export const insertJobPostingSchema = createInsertSchema(jobPostings).omit({
 
 export type JobPosting = typeof jobPostings.$inferSelect;
 export type InsertJobPosting = z.infer<typeof insertJobPostingSchema>;
+
+// Team Members schema
+export const teamMembers = pgTable("team_members", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  designation: text("designation").notNull(),
+  qualification: text("qualification").notNull(),
+  gender: text("gender").notNull(), // 'male' or 'female'
+  photo: text("photo"),
+  bio: text("bio"),
+  order: integer("order").default(0),
+  active: boolean("active").default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertTeamMemberSchema = createInsertSchema(teamMembers).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type TeamMember = typeof teamMembers.$inferSelect;
+export type InsertTeamMember = z.infer<typeof insertTeamMemberSchema>;

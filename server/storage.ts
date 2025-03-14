@@ -154,6 +154,16 @@ export interface IStorage {
   toggleJobPostingActive(id: number): Promise<JobPosting | undefined>;
   toggleJobPostingFeatured(id: number): Promise<JobPosting | undefined>;
   deleteJobPosting(id: number): Promise<boolean>;
+  
+  // Team Members
+  getTeamMembers(): Promise<TeamMember[]>;
+  getActiveTeamMembers(): Promise<TeamMember[]>;
+  getTeamMember(id: number): Promise<TeamMember | undefined>;
+  createTeamMember(teamMember: InsertTeamMember): Promise<TeamMember>;
+  updateTeamMember(id: number, teamMember: Partial<InsertTeamMember>): Promise<TeamMember | undefined>;
+  toggleTeamMemberActive(id: number): Promise<TeamMember | undefined>;
+  updateTeamMemberOrder(id: number, order: number): Promise<TeamMember | undefined>;
+  deleteTeamMember(id: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
