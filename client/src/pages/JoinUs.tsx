@@ -142,8 +142,8 @@ const JoinUs = () => {
                 transition={{ duration: 0.3 }}
               >
                 <img 
-                  src="/uploads/images/services/renovation/renovation1.jpg" 
-                  alt="Renovation project" 
+                  src="/uploads/images/sol-tZw3fcjUIpM-unsplash.jpg" 
+                  alt="Career Development" 
                   className="w-full h-full object-cover"
                 />
               </motion.div>
