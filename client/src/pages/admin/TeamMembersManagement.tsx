@@ -653,13 +653,11 @@ export default function TeamMembersManagement() {
                 {filteredTeamMembers.map((member: TeamMember) => (
                   <TableRow key={member.id}>
                     <TableCell className="font-medium flex items-center gap-2">
-                      {member.photo && (
-                        <img
-                          src={member.photo}
-                          alt={member.name}
-                          className="w-8 h-8 rounded-full object-cover"
-                        />
-                      )}
+                      <img
+                        src={member.photo || (member.gender === "female" ? "/uploads/images/team/placeholder-female.jpg" : "/uploads/images/team/placeholder-male.jpg")}
+                        alt={member.name}
+                        className="w-8 h-8 rounded-full object-cover"
+                      />
                       {member.name}
                     </TableCell>
                     <TableCell>{member.designation}</TableCell>
@@ -835,10 +833,10 @@ export default function TeamMembersManagement() {
 
                 <FormItem>
                   <FormLabel>Profile Photo</FormLabel>
-                  {selectedMember?.photo && (
+                  {selectedMember && (
                     <div className="mb-2 flex items-center space-x-4">
                       <img
-                        src={selectedMember.photo}
+                        src={selectedMember.photo || (selectedMember.gender === "female" ? "/uploads/images/team/placeholder-female.jpg" : "/uploads/images/team/placeholder-male.jpg")}
                         alt={selectedMember.name}
                         className="w-16 h-16 rounded-full object-cover"
                       />
