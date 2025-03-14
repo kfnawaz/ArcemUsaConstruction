@@ -206,7 +206,7 @@ const Resources = () => {
                     <h3 className="text-lg font-semibold mb-2">{doc.title}</h3>
                     <p className="text-gray-600 text-sm mb-4">{doc.description}</p>
                     <a 
-                      href={`/uploads/documents/${doc.fileName}`} 
+                      href={`/documents/${doc.fileName}`} 
                       download
                       className="inline-flex items-center text-[#1E90DB] hover:text-[#1670B0] font-medium"
                     >
@@ -236,7 +236,7 @@ const Resources = () => {
               If you have reviewed our forms and are ready to apply as a subcontractor,
               we'd love to have you as part of our network.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
               <Link href="/subcontractors">
                 <Button size="lg" className="bg-[#1E90DB] hover:bg-[#1670B0]">
                   Apply Now <ArrowRight className="ml-2 h-4 w-4" />
@@ -247,6 +247,22 @@ const Resources = () => {
                   Learn More
                 </Button>
               </Link>
+            </div>
+            
+            <div className="mt-12 pt-6 border-t border-gray-200">
+              <h3 className="text-xl font-semibold mb-4">Contact Information</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-gray-700">
+                <div>
+                  <p className="font-medium">Phone Numbers:</p>
+                  <p>Cell: (713) 624-0083</p>
+                  <p>Office: (713) 624-0313</p>
+                </div>
+                <div>
+                  <p className="font-medium">Email Addresses:</p>
+                  <p><a href="mailto:aj@arcemusa.com" className="text-[#1E90DB] hover:underline">aj@arcemusa.com</a></p>
+                  <p><a href="mailto:admin@arcemusa.com" className="text-[#1E90DB] hover:underline">admin@arcemusa.com</a></p>
+                </div>
+              </div>
             </div>
           </motion.div>
         </div>

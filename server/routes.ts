@@ -1006,6 +1006,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.setHeader('Cache-Control', 'public, max-age=86400'); // 24 hours
     next();
   }, express.static(path.join(process.cwd(), 'public/uploads')));
+  
+  // Serve subcontractor documents from attached_assets directory
+  app.use('/documents', (req, res, next) => {
+    // Set cache headers
+    res.setHeader('Cache-Control', 'public, max-age=86400'); // 24 hours
+    next();
+  }, express.static(path.join(process.cwd(), 'attached_assets')));
 
   // Newsletter Subscriber Routes
   app.post(`${apiRouter}/newsletter/subscribe`, async (req: Request, res: Response) => {
