@@ -171,14 +171,16 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
       
       try {
         for (const pendingImage of pendingImages) {
+          // Add gallery image and store the result
           const newImage = await addProjectGalleryImage({
-            projectId,
             imageUrl: pendingImage.preview,
             caption: pendingImage.caption,
             displayOrder: pendingImage.displayOrder
           });
           
-          savedImages.push(newImage);
+          if (newImage) {
+            savedImages.push(newImage);
+          }
         }
         
         // Clear the pending images
@@ -330,9 +332,14 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
           <h4 className="font-medium mb-2">Upload Images</h4>
           <FileUpload 
             onUploadComplete={handleFileUpload} 
-            disabled={!canAddMoreImages || isUploading}
             multiple={true}
           />
+          {(isUploading) && (
+            <div className="flex items-center mt-2">
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              <span className="text-sm">Uploading...</span>
+            </div>
+          )}
           {!canAddMoreImages && (
             <p className="text-sm text-amber-600 mt-2">
               Maximum number of images reached ({MAX_GALLERY_IMAGES}). Please delete some images before uploading more.
