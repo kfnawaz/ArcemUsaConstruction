@@ -407,7 +407,15 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
         )}
         
         <div className="p-4 border rounded-md bg-muted/20">
-          <h4 className="font-medium mb-3">Project Images ({currentImageCount}/{MAX_GALLERY_IMAGES})</h4>
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="font-medium">Project Images ({currentImageCount}/{MAX_GALLERY_IMAGES})</h4>
+            {(pendingImages.length > 0 || modifiedCaptions.size > 0 || modifiedOrders.size > 0) && (
+              <div className="flex items-center text-amber-600 text-sm">
+                <AlertCircle className="h-4 w-4 mr-1" />
+                <span>Unsaved gallery changes</span>
+              </div>
+            )}
+          </div>
           
           {canAddMoreImages ? (
             <div className="mb-4">
@@ -477,7 +485,15 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
                           
                           <div className="space-y-3">
                             <div>
-                              <Label htmlFor={`caption-${image.id}`}>Image Caption</Label>
+                              <div className="flex items-center justify-between">
+                                <Label htmlFor={`caption-${image.id}`}>Image Caption</Label>
+                                {modifiedCaptions.has(image.id) && (
+                                  <span className="text-xs text-amber-600 flex items-center">
+                                    <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                                    Saving...
+                                  </span>
+                                )}
+                              </div>
                               <Input 
                                 id={`caption-${image.id}`}
                                 defaultValue={image.caption || ''}
@@ -489,7 +505,15 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
                           
                           <div className="flex flex-col space-y-3">
                             <div>
-                              <Label htmlFor={`order-${image.id}`}>Display Order</Label>
+                              <div className="flex items-center justify-between">
+                                <Label htmlFor={`order-${image.id}`}>Display Order</Label>
+                                {modifiedOrders.has(image.id) && (
+                                  <span className="text-xs text-amber-600 flex items-center">
+                                    <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                                    Saving...
+                                  </span>
+                                )}
+                              </div>
                               <div className="flex items-center space-x-2">
                                 <Input 
                                   id={`order-${image.id}`}

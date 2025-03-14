@@ -17,6 +17,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { 
+  AlertCircle,
   ArrowLeft, 
   CheckCircle2, 
   ImageIcon, 
@@ -31,6 +32,14 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import ProjectGalleryManager, { ProjectGalleryManagerHandle } from './ProjectGalleryManager';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface ProjectFormProps {
   projectId?: number;
@@ -54,6 +63,8 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
   const { toast } = useToast(); // Provides the toast notification function
   const [isAddingImage, setIsAddingImage] = useState(false);
   const [isUpdatingGallery, setIsUpdatingGallery] = useState(false);
+  const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
+  const [pendingFormData, setPendingFormData] = useState<InsertProject | null>(null);
   
   // Create a ref to the ProjectGalleryManager component
   const galleryManagerRef = useRef<ProjectGalleryManagerHandle>(null);
