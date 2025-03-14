@@ -3,6 +3,8 @@ import { initializeRevealEffects, scrollToTop } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Link } from 'wouter';
 import { motion } from 'framer-motion';
+import { useTeamMembers } from '@/hooks/useTeamMembers';
+import { Loader2 } from 'lucide-react';
 
 const About = () => {
   useEffect(() => {

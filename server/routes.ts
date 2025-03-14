@@ -1614,6 +1614,123 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Team Members API Routes
+  app.get(`${apiRouter}/team-members`, async (req: Request, res: Response) => {
+    try {
+      const teamMembers = await storage.getActiveTeamMembers();
+      return res.status(200).json(teamMembers);
+    } catch (error) {
+      console.error("Error fetching team members:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get(`${apiRouter}/admin/team-members`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const teamMembers = await storage.getTeamMembers();
+      return res.status(200).json(teamMembers);
+    } catch (error) {
+      console.error("Error fetching team members:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get(`${apiRouter}/admin/team-members/:id`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const teamMember = await storage.getTeamMember(id);
+      
+      if (teamMember) {
+        return res.status(200).json(teamMember);
+      } else {
+        return res.status(404).json({ message: "Team member not found" });
+      }
+    } catch (error) {
+      console.error("Error fetching team member:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.post(`${apiRouter}/admin/team-members`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const teamMember = await storage.createTeamMember(req.body);
+      return res.status(201).json(teamMember);
+    } catch (error) {
+      console.error("Error creating team member:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.put(`${apiRouter}/admin/team-members/:id`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const teamMember = await storage.updateTeamMember(id, req.body);
+      
+      if (teamMember) {
+        return res.status(200).json(teamMember);
+      } else {
+        return res.status(404).json({ message: "Team member not found" });
+      }
+    } catch (error) {
+      console.error("Error updating team member:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.put(`${apiRouter}/admin/team-members/:id/toggle-active`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const teamMember = await storage.toggleTeamMemberActive(id);
+      
+      if (teamMember) {
+        return res.status(200).json(teamMember);
+      } else {
+        return res.status(404).json({ message: "Team member not found" });
+      }
+    } catch (error) {
+      console.error("Error toggling team member active status:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.put(`${apiRouter}/admin/team-members/:id/order`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const { order } = req.body;
+      
+      if (typeof order !== 'number') {
+        return res.status(400).json({ message: "Order must be a number" });
+      }
+      
+      const teamMember = await storage.updateTeamMemberOrder(id, order);
+      
+      if (teamMember) {
+        return res.status(200).json(teamMember);
+      } else {
+        return res.status(404).json({ message: "Team member not found" });
+      }
+    } catch (error) {
+      console.error("Error updating team member order:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.delete(`${apiRouter}/admin/team-members/:id`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      const result = await storage.deleteTeamMember(id);
+      
+      if (result) {
+        return res.status(200).json({ message: "Team member deleted successfully" });
+      } else {
+        return res.status(404).json({ message: "Team member not found" });
+      }
+    } catch (error) {
+      console.error("Error deleting team member:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
