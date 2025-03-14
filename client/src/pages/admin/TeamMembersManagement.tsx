@@ -98,10 +98,7 @@ export default function TeamMembersManagement() {
   const createTeamMember = async (data: InsertTeamMember) => {
     setIsCreatingTeamMember(true);
     try {
-      await apiRequest('/api/admin/team-members', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      });
+      await apiRequest('POST', '/api/admin/team-members', data);
       
       queryClient.invalidateQueries({ queryKey: ['/api/admin/team-members'] });
       queryClient.invalidateQueries({ queryKey: ['/api/team-members'] });
@@ -125,10 +122,7 @@ export default function TeamMembersManagement() {
   const updateTeamMember = async (id: number, data: Partial<InsertTeamMember>) => {
     setIsUpdatingTeamMember(true);
     try {
-      await apiRequest(`/api/admin/team-members/${id}`, {
-        method: 'PUT',
-        body: JSON.stringify(data),
-      });
+      await apiRequest('PUT', `/api/admin/team-members/${id}`, data);
       
       queryClient.invalidateQueries({ queryKey: ['/api/admin/team-members'] });
       queryClient.invalidateQueries({ queryKey: ['/api/team-members'] });
@@ -152,9 +146,7 @@ export default function TeamMembersManagement() {
   const toggleActiveStatus = async (id: number) => {
     setIsTogglingActiveStatus(true);
     try {
-      await apiRequest(`/api/admin/team-members/${id}/toggle-active`, {
-        method: 'PUT',
-      });
+      await apiRequest('PUT', `/api/admin/team-members/${id}/toggle-active`);
       
       queryClient.invalidateQueries({ queryKey: ['/api/admin/team-members'] });
       queryClient.invalidateQueries({ queryKey: ['/api/team-members'] });
@@ -178,10 +170,7 @@ export default function TeamMembersManagement() {
   const updateOrder = async (id: number, order: number) => {
     setIsUpdatingOrder(true);
     try {
-      await apiRequest(`/api/admin/team-members/${id}/order`, {
-        method: 'PUT',
-        body: JSON.stringify({ order }),
-      });
+      await apiRequest('PUT', `/api/admin/team-members/${id}/order`, { order });
       
       queryClient.invalidateQueries({ queryKey: ['/api/admin/team-members'] });
       queryClient.invalidateQueries({ queryKey: ['/api/team-members'] });
@@ -205,9 +194,7 @@ export default function TeamMembersManagement() {
   const deleteTeamMember = async (id: number) => {
     setIsDeletingTeamMember(true);
     try {
-      await apiRequest(`/api/admin/team-members/${id}`, {
-        method: 'DELETE',
-      });
+      await apiRequest('DELETE', `/api/admin/team-members/${id}`);
       
       queryClient.invalidateQueries({ queryKey: ['/api/admin/team-members'] });
       queryClient.invalidateQueries({ queryKey: ['/api/team-members'] });
@@ -638,7 +625,7 @@ export default function TeamMembersManagement() {
           </div>
         </div>
 
-        {isLoadingAllTeamMembers ? (
+        {isLoading ? (
           <div className="flex justify-center items-center h-32">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
