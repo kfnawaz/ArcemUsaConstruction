@@ -26,6 +26,10 @@ interface ProjectGalleryManagerProps {
 
 export interface ProjectGalleryManagerHandle {
   saveGalleryImages: () => Promise<void>;
+  hasPendingImages: () => boolean;
+  hasUnsavedChanges: () => boolean;
+  hasRecentlyModified: () => boolean;
+  getUnsavedChangesCount: () => number;
 }
 
 const MAX_GALLERY_IMAGES = 10;
@@ -61,10 +65,37 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
     const currentImageCount = (projectGallery?.length || 0) + pendingImages.length;
     const canAddMoreImages = currentImageCount < MAX_GALLERY_IMAGES;
 
-    // Expose the saveGalleryImages method via ref
+    // Track if captions or orders have been modified
+    const [modifiedCaptions, setModifiedCaptions] = useState<Set<number>>(new Set());
+    const [modifiedOrders, setModifiedOrders] = useState<Set<number>>(new Set());
+    const [lastModifiedTimestamp, setLastModifiedTimestamp] = useState<number>(0);
+    
+    // Flag an edit has occurred in the last 3 seconds
+    const hasRecentEdit = () => {
+      return Date.now() - lastModifiedTimestamp < 3000; // 3 seconds
+    };
+    
+    // Mark an edit as happening now
+    const markEdited = () => {
+      setLastModifiedTimestamp(Date.now());
+    };
+    
+    // Expose methods via ref
     useImperativeHandle(ref, () => ({
       saveGalleryImages: async () => {
         return saveGalleryImages();
+      },
+      hasPendingImages: () => {
+        return pendingImages.length > 0;
+      },
+      hasUnsavedChanges: () => {
+        return pendingImages.length > 0 || modifiedCaptions.size > 0 || modifiedOrders.size > 0;
+      },
+      hasRecentlyModified: () => {
+        return hasRecentEdit();
+      },
+      getUnsavedChangesCount: () => {
+        return pendingImages.length + modifiedCaptions.size + modifiedOrders.size;
       }
     }));
 
@@ -244,7 +275,23 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
     // Update caption for a saved image
     const handleUpdateImageCaption = async (id: number, caption: string) => {
       try {
+        // Track this caption as being modified
+        setModifiedCaptions(prev => {
+          const updated = new Set(prev);
+          updated.add(id);
+          return updated;
+        });
+        markEdited();
+        
         await updateProjectGalleryImage(id, { caption });
+        
+        // Caption was successfully saved, remove from modified set
+        setModifiedCaptions(prev => {
+          const updated = new Set(prev);
+          updated.delete(id);
+          return updated;
+        });
+        
         toast({
           title: 'Caption updated',
           description: 'Image caption has been updated successfully.',
@@ -262,7 +309,23 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
     // Update order for a saved image
     const handleUpdateImageOrder = async (id: number, displayOrder: number) => {
       try {
+        // Track this order as being modified
+        setModifiedOrders(prev => {
+          const updated = new Set(prev);
+          updated.add(id);
+          return updated;
+        });
+        markEdited();
+        
         await updateProjectGalleryImage(id, { displayOrder });
+        
+        // Order was successfully saved, remove from modified set
+        setModifiedOrders(prev => {
+          const updated = new Set(prev);
+          updated.delete(id);
+          return updated;
+        });
+        
         toast({
           title: 'Display order updated',
           description: 'Image display order has been updated successfully.',
@@ -284,6 +347,7 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
         newPendingImages[index].caption = caption;
         return newPendingImages;
       });
+      markEdited();
     };
 
     // Update order for a pending image
@@ -296,6 +360,7 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
         newPendingImages[index].displayOrder = orderValue;
         return newPendingImages;
       });
+      markEdited();
     };
 
     // Move image display order up
