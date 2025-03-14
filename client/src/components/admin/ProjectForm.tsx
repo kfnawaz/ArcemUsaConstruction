@@ -16,6 +16,13 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { 
   AlertCircle,
   ArrowLeft, 
@@ -65,6 +72,30 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
   const [isUpdatingGallery, setIsUpdatingGallery] = useState(false);
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
   const [pendingFormData, setPendingFormData] = useState<InsertProject | null>(null);
+  
+  // List of construction industry project categories
+  const projectCategories = [
+    "Commercial Construction",
+    "Residential Construction",
+    "Industrial Construction",
+    "Infrastructure",
+    "Healthcare Facilities",
+    "Educational Facilities",
+    "Hospitality",
+    "Retail Construction",
+    "Office Buildings",
+    "Mixed-Use Development",
+    "Tenant Improvements",
+    "Renovation/Remodeling",
+    "Historic Restoration",
+    "Green Building/Sustainable",
+    "High-Rise Construction",
+    "Multi-Family Housing",
+    "Government/Public Works",
+    "Warehouse/Distribution",
+    "Religious Facilities",
+    "Sports & Recreation"
+  ];
   
   // Create a ref to the ProjectGalleryManager component
   const galleryManagerRef = useRef<ProjectGalleryManagerHandle>(null);
@@ -311,14 +342,26 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Category</FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder="E.g., Commercial, Residential, Industrial" 
-                            {...field} 
-                          />
-                        </FormControl>
+                        <Select 
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          value={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a project category" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {projectCategories.map((category) => (
+                              <SelectItem key={category} value={category}>
+                                {category}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <FormDescription>
-                          Specify the project category or type
+                          Select the construction industry category that best fits this project
                         </FormDescription>
                         <FormMessage />
                       </FormItem>
