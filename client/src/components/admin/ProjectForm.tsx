@@ -615,32 +615,7 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                   </div>
                 )}
                 
-                {/* Current preview image indicator */}
-                {projectId && form.getValues('image') && (
-                  <div className="mt-4 p-4 border rounded-md bg-muted/10">
-                    <div className="flex items-center gap-3">
-                      <div className="relative w-16 h-16 rounded-md overflow-hidden border">
-                        <img 
-                          src={form.getValues('image')} 
-                          alt="Current preview image" 
-                          className="object-cover w-full h-full"
-                          onError={(e) => {
-                            e.currentTarget.src = "https://placehold.co/400x400?text=Error";
-                          }}
-                        />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium flex items-center gap-1">
-                          <Star className="h-4 w-4 text-primary fill-primary" /> 
-                          Current Preview Image
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          This image will be shown in project listings
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
+
               </div>
 
               <div className="flex justify-end space-x-4 mt-8">
