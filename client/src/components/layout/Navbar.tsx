@@ -3,6 +3,7 @@ import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
 import { Menu, X, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import NotificationBadge from "@/components/common/NotificationBadge";
 
 type NavbarProps = {
   isScrolled: boolean;
@@ -127,6 +128,13 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
               </Link>
             ))}
 
+            {/* Notification Badge - only show for authenticated users */}
+            {isAuthenticated && (
+              <div className="flex items-center">
+                <NotificationBadge />
+              </div>
+            )}
+            
             {/* Login/Admin Button */}
             <Link
               href={isAuthenticated ? "/admin" : "/auth/login"}
