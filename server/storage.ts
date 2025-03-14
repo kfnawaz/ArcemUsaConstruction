@@ -14,7 +14,8 @@ import {
   quoteRequests, type QuoteRequest, type InsertQuoteRequest,
   subcontractors, type Subcontractor, type InsertSubcontractor,
   vendors, type Vendor, type InsertVendor,
-  jobPostings, type JobPosting, type InsertJobPosting
+  jobPostings, type JobPosting, type InsertJobPosting,
+  teamMembers, type TeamMember, type InsertTeamMember
 } from "@shared/schema";
 
 // modify the interface with any CRUD methods
@@ -185,6 +186,7 @@ export class MemStorage implements IStorage {
   private subcontractors: Map<number, Subcontractor>;
   private vendors: Map<number, Vendor>;
   private jobPostings: Map<number, JobPosting>;
+  private teamMembers: Map<number, TeamMember>;
   
   userCurrentId: number;
   projectCurrentId: number;
@@ -201,6 +203,7 @@ export class MemStorage implements IStorage {
   subcontractorCurrentId: number;
   vendorCurrentId: number;
   jobPostingCurrentId: number;
+  teamMemberCurrentId: number;
 
   serviceGalleryCurrentId: number;
   
@@ -223,6 +226,7 @@ export class MemStorage implements IStorage {
     this.subcontractors = new Map();
     this.vendors = new Map();
     this.jobPostings = new Map();
+    this.teamMembers = new Map();
     
     this.userCurrentId = 1;
     this.projectCurrentId = 1;
@@ -240,6 +244,7 @@ export class MemStorage implements IStorage {
     this.subcontractorCurrentId = 1;
     this.vendorCurrentId = 1;
     this.jobPostingCurrentId = 1;
+    this.teamMemberCurrentId = 1;
     
     // Add initial data
     this.initializeData();
