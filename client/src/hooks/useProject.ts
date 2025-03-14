@@ -8,7 +8,6 @@ export const useProject = (projectId?: number) => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isDeletingGalleryImage, setIsDeletingGalleryImage] = useState(false);
 
   // Fetch single project if ID is provided
   const { data: project, isLoading, error } = useQuery<Project>({
@@ -30,9 +29,9 @@ export const useProject = (projectId?: number) => {
   }, [project]);
 
   // Create project mutation
-  const createMutation = useMutation<Project, Error, InsertProject>({
+  const createMutation = useMutation({
     mutationFn: async (data: InsertProject) => {
-      return apiRequest<Project>('POST', '/api/projects', data);
+      return apiRequest('POST', '/api/projects', data);
     },
     onSuccess: () => {
       setIsSubmitting(false);
@@ -55,9 +54,9 @@ export const useProject = (projectId?: number) => {
   });
 
   // Update project mutation
-  const updateMutation = useMutation<Project, Error, { id: number; data: Partial<InsertProject> }>({
-    mutationFn: async ({ id, data }) => {
-      return apiRequest<Project>('PUT', `/api/projects/${id}`, data);
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: Partial<InsertProject> }) => {
+      return apiRequest('PUT', `/api/projects/${id}`, data);
     },
     onSuccess: () => {
       setIsSubmitting(false);
@@ -83,9 +82,9 @@ export const useProject = (projectId?: number) => {
   });
 
   // Add gallery image mutation
-  const addGalleryImageMutation = useMutation<ProjectGallery, Error, { projectId: number; data: Omit<InsertProjectGallery, 'projectId'> }>({
-    mutationFn: async ({ projectId, data }) => {
-      return apiRequest<ProjectGallery>('POST', `/api/projects/${projectId}/gallery`, data);
+  const addGalleryImageMutation = useMutation({
+    mutationFn: async ({ projectId, data }: { projectId: number; data: Omit<InsertProjectGallery, 'projectId'> }) => {
+      return apiRequest('POST', `/api/projects/${projectId}/gallery`, data);
     },
     onSuccess: () => {
       if (projectId) {
@@ -108,9 +107,9 @@ export const useProject = (projectId?: number) => {
   });
 
   // Update gallery image mutation
-  const updateGalleryImageMutation = useMutation<ProjectGallery, Error, { id: number; data: Partial<InsertProjectGallery> }>({
-    mutationFn: async ({ id, data }) => {
-      return apiRequest<ProjectGallery>('PUT', `/api/projects/gallery/${id}`, data);
+  const updateGalleryImageMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: Partial<InsertProjectGallery> }) => {
+      return apiRequest('PUT', `/api/projects/gallery/${id}`, data);
     },
     onSuccess: () => {
       if (projectId) {
@@ -133,9 +132,9 @@ export const useProject = (projectId?: number) => {
   });
 
   // Delete gallery image mutation
-  const deleteGalleryImageMutation = useMutation<any, Error, number>({
+  const deleteGalleryImageMutation = useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest<any>('DELETE', `/api/projects/gallery/${id}`);
+      return apiRequest('DELETE', `/api/projects/gallery/${id}`);
     },
     onSuccess: () => {
       if (projectId) {
@@ -166,18 +165,17 @@ export const useProject = (projectId?: number) => {
     }
   };
 
-  const addGalleryImage = async (data: Omit<InsertProjectGallery, 'projectId'>): Promise<ProjectGallery | undefined> => {
+  const addGalleryImage = async (data: Omit<InsertProjectGallery, 'projectId'>) => {
     if (!projectId) {
       toast({
         title: "Error",
         description: "Cannot add gallery image: No project ID provided.",
         variant: "destructive"
       });
-      return undefined;
+      return;
     }
     
-    // Return the created gallery image for proper tracking
-    return await addGalleryImageMutation.mutateAsync({ projectId, data });
+    await addGalleryImageMutation.mutateAsync({ projectId, data });
   };
 
   const updateGalleryImage = async (id: number, data: Partial<InsertProjectGallery>) => {
@@ -185,12 +183,7 @@ export const useProject = (projectId?: number) => {
   };
 
   const deleteGalleryImage = async (id: number) => {
-    try {
-      setIsDeletingGalleryImage(true);
-      await deleteGalleryImageMutation.mutateAsync(id);
-    } finally {
-      setIsDeletingGalleryImage(false);
-    }
+    await deleteGalleryImageMutation.mutateAsync(id);
   };
 
   // Upload file and return URL
@@ -226,18 +219,12 @@ export const useProject = (projectId?: number) => {
     project,
     galleryImages,
     isLoading,
-    isLoadingGallery: isLoading,  // Reuse the same loading state for gallery
     error,
     saveProject,
     isSubmitting,
     addGalleryImage,
     updateGalleryImage,
     deleteGalleryImage,
-    uploadFile,
-    isDeletingGalleryImage,
-    // Alias functions for ProjectGalleryManager compatibility
-    projectGallery: galleryImages,
-    addProjectGalleryImage: addGalleryImage,
-    deleteProjectGalleryImage: deleteGalleryImage
+    uploadFile
   };
 };

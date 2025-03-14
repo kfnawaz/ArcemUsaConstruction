@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useProject } from '@/hooks/useProject';
@@ -30,7 +30,6 @@ import FileUpload from '@/components/common/FileUpload';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import ProjectGalleryManager from './ProjectGalleryManager';
 
 interface ProjectFormProps {
   projectId?: number;
@@ -53,9 +52,6 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
   const { toast } = useToast(); // Provides the toast notification function
   const [isAddingImage, setIsAddingImage] = useState(false);
   const [isUpdatingGallery, setIsUpdatingGallery] = useState(false);
-  
-  // Reference to the gallery manager component for controlling image saving
-  const galleryManagerRef = useRef<{saveGalleryImages: () => Promise<void>}>(null);
   
   const form = useForm<InsertProject>({
     resolver: zodResolver(insertProjectSchema),
@@ -103,23 +99,7 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
   }, [form, project]);
 
   const onSubmit = async (data: InsertProject) => {
-    // First save the project
     await saveProject(data);
-    
-    // If project is saved successfully and there's a galleryManager with pending images, save them
-    if (!isSubmitting && galleryManagerRef.current && projectId) {
-      try {
-        await galleryManagerRef.current.saveGalleryImages();
-      } catch (error) {
-        console.error("Error saving gallery images:", error);
-        toast({
-          title: "Warning",
-          description: "Project was saved, but there was an error saving some gallery images.",
-          variant: "destructive"
-        });
-      }
-    }
-    
     if (!isSubmitting) {
       onClose();
     }
@@ -192,15 +172,6 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
       isDirty: form.formState.isDirty,
       isSubmitting: form.formState.isSubmitting,
       isSubmitted: form.formState.isSubmitted
-    });
-  };
-  
-  // Function to handle setting the main preview image from the gallery manager
-  const handleSetMainImage = (imageUrl: string) => {
-    form.setValue('image', imageUrl, { 
-      shouldDirty: true,
-      shouldTouch: true,
-      shouldValidate: false
     });
   };
 
@@ -349,15 +320,20 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                     )}
                   />
                   
-                  {/* We'll use the new ProjectGalleryManager component here */}
-                  {projectId && (
-                    <ProjectGalleryManager
-                      projectId={projectId}
-                      onSetMainImage={handleSetMainImage}
-                      mainImageUrl={form.getValues('image')}
-                      ref={galleryManagerRef}
-                    />
-                  )}
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold">Project Gallery Images</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Add, edit, or remove gallery images for this project. Select one image as the preview.
+                    </p>
+                    
+                    <div className="p-4 border rounded-md bg-muted/20">
+                      <h4 className="font-medium mb-2">Upload Images</h4>
+                      <FileUpload 
+                        onUploadComplete={handleMultipleImagesUpload}
+                        multiple={true}
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -525,7 +501,85 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                 </div>
               </div>
 
-{/* Gallery section has been replaced by ProjectGalleryManager above */}
+              {/* Gallery images list */}
+              <div>
+                <Separator className="my-6" />
+                <h3 className="text-lg font-semibold mb-4">Project Gallery</h3>
+                {galleryImages.length === 0 ? (
+                  <div className="text-center py-8 border rounded-md bg-muted/20">
+                    <ImageIcon className="h-12 w-12 mx-auto text-muted-foreground" />
+                    <p className="mt-2 text-muted-foreground">No gallery images added yet. Upload images above.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {galleryImages
+                      .sort((a, b) => {
+                        // Sort by display order, default to 0 if null
+                        const orderA = a.displayOrder !== null ? a.displayOrder : 0;
+                        const orderB = b.displayOrder !== null ? b.displayOrder : 0;
+                        return orderA - orderB;
+                      })
+                      .map((image) => (
+                        <Card key={image.id} className={`overflow-hidden transition-all ${form.getValues('image') === image.imageUrl ? 'ring-2 ring-primary' : ''}`}>
+                          <div className="relative aspect-video bg-muted">
+                            <img 
+                              src={image.imageUrl} 
+                              alt={image.caption || "Gallery image"} 
+                              className="object-cover w-full h-full"
+                              onError={(e) => {
+                                e.currentTarget.src = "https://placehold.co/600x400?text=Image+Not+Found";
+                              }}
+                            />
+                            <div className="absolute top-2 right-2 flex space-x-1">
+                              <Button
+                                variant={form.getValues('image') === image.imageUrl ? "default" : "outline"}
+                                size="icon"
+                                className="h-8 w-8 rounded-full bg-white/90 hover:bg-white"
+                                onClick={(e) => handleSetAsPreview(e, image.imageUrl)}
+                                title={form.getValues('image') === image.imageUrl ? "Selected as preview (click Update Project to save)" : "Set as preview image"}
+                              >
+                                <Star className={`h-4 w-4 ${form.getValues('image') === image.imageUrl ? 'text-yellow-500 fill-yellow-500' : 'text-gray-700'}`} />
+                              </Button>
+                              <Button
+                                variant="destructive"
+                                size="icon"
+                                className="h-8 w-8 rounded-full opacity-90 hover:opacity-100"
+                                onClick={() => handleDeleteGalleryImage(image.id)}
+                                title="Delete image"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                          <CardContent className="p-3">
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between">
+                                <Input
+                                  value={image.caption || ""}
+                                  onChange={(e) => handleUpdateGalleryImage(image.id, { caption: e.target.value })}
+                                  placeholder="Enter image caption"
+                                  className="text-sm"
+                                  disabled={isUpdatingGallery}
+                                />
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <label className="text-xs text-muted-foreground mr-2">Display Order:</label>
+                                <Input
+                                  type="number"
+                                  min="0"
+                                  value={image.displayOrder !== null ? image.displayOrder : 0}
+                                  onChange={(e) => handleUpdateGalleryImage(image.id, { displayOrder: parseInt(e.target.value) || 0 })}
+                                  className="w-20 h-7 text-xs"
+                                  disabled={isUpdatingGallery}
+                                />
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                  </div>
+                )}
+              </div>
 
               <div className="flex justify-end space-x-4 mt-8">
                 <Button
