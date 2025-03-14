@@ -169,38 +169,28 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
         </div>
         
         {pendingImages.length > 0 && (
-          <Alert className="bg-amber-50 border-amber-300">
-            <div className="flex items-center gap-2 mb-2">
-              <Info className="h-4 w-4 text-amber-500" />
-              <h4 className="text-sm font-medium text-amber-800">Pending Images</h4>
-            </div>
-            <AlertDescription className="text-sm text-amber-700">
-              You have {pendingImages.length} image{pendingImages.length !== 1 ? 's' : ''} pending to be saved. Click the "Save Service" button at the bottom of the form to save these images to the gallery.
-            </AlertDescription>
-            
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-4">
-              {pendingImages.map((imageUrl, index) => (
-                <div key={`pending-${index}`} className="relative border rounded overflow-hidden">
-                  <div className="aspect-video bg-muted/30">
-                    <img 
-                      src={imageUrl} 
-                      alt={`Pending image ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="absolute top-0 right-0 bg-amber-500 text-white text-xs px-2 py-1">
-                    Pending
-                  </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            {pendingImages.map((imageUrl, index) => (
+              <Card key={`pending-${index}`} className="overflow-hidden">
+                <div className="aspect-video relative">
+                  <img 
+                    src={imageUrl} 
+                    alt={`New image ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
-              ))}
-            </div>
-          </Alert>
+                <CardContent className="p-3">
+                  <p className="text-sm truncate">New image (not saved yet)</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         )}
         
         <div className="p-4 border rounded-md bg-muted/20">
           <h4 className="font-medium mb-3">Upload Images</h4>
           <p className="text-sm text-muted-foreground mb-4">
-            Drag and drop multiple images or click to select files. Images will be saved when you click "Save Service" button.
+            Drag and drop images or click to select files. Click "Save Service" when done.
           </p>
           <FileUpload 
             onUploadComplete={handleFileUpload}
@@ -216,7 +206,7 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
           </div>
         ) : serviceGallery && serviceGallery.length > 0 ? (
           <div>
-            <h4 className="font-medium mb-3 text-muted-foreground">Current Gallery Images</h4>
+            <h4 className="font-medium mb-3 text-muted-foreground">Gallery Images</h4>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {serviceGallery.map((image) => (
                 <Card key={image.id} className="overflow-hidden">
@@ -254,7 +244,7 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
             <Image className="h-12 w-12 mx-auto text-muted-foreground" />
             <h3 className="mt-4 text-lg font-medium">No gallery images</h3>
             <p className="mt-2 text-sm text-muted-foreground">
-              Upload images above and click "Save Service" to add them to the gallery.
+              Upload images and click "Save Service" to create a gallery.
             </p>
           </div>
         )}
