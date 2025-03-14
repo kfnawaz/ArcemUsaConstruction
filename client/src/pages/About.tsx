@@ -8,7 +8,7 @@ import { Loader2 } from 'lucide-react';
 import { TeamMember } from '@shared/schema';
 
 const About = () => {
-  const { teamMembers, isLoadingTeamMembers } = useTeamMembers();
+  const { data: teamMembers, isLoading: isLoadingTeamMembers } = useTeamMembers();
   
   useEffect(() => {
     scrollToTop();
