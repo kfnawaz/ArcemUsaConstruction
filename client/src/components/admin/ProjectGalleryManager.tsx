@@ -378,37 +378,31 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
                             <img
                               src={image.imageUrl}
                               alt={image.caption || `Project image ${image.id}`}
-                              className="w-full h-full object-cover rounded-md"
+                              className="w-full h-full object-cover rounded-md cursor-pointer"
+                              data-preview-url={image.imageUrl}
+                              data-preview-action="true"
+                              title="Click to set as preview image"
                               onError={(e) => {
                                 e.currentTarget.src = "https://placehold.co/600x400/e2e8f0/1e293b?text=Image+Error";
                               }}
                             />
-                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                              <Button
-                                variant="secondary"
-                                size="sm"
-                                onClick={(e) => {
-                                  // We'll use a simpler approach - set a data attribute with the URL
-                                  // that the parent can read when clicked
-                                  e.currentTarget.setAttribute('data-preview-url', image.imageUrl);
-                                }}
-                                className="flex items-center gap-1"
-                                title="Use as preview image"
-                                data-preview-action="true"
-                              >
-                                <Star className="h-4 w-4" />
-                                Preview
-                              </Button>
+                            <div className="absolute top-2 right-2 z-10">
                               <Button
                                 variant="destructive"
-                                size="sm"
+                                size="icon"
+                                className="rounded-full h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
                                 onClick={() => handleDeleteClick(image.id)}
                                 disabled={isDeletingGalleryImage}
-                                className="flex items-center gap-1"
+                                title="Delete image"
                               >
                                 <Trash2 className="h-4 w-4" />
-                                Delete
                               </Button>
+                            </div>
+                            <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                              <div className="bg-white/90 rounded-md px-3 py-2 flex items-center gap-1 shadow-sm cursor-pointer">
+                                <Star className="h-4 w-4 text-primary fill-primary" />
+                                <span className="text-sm font-medium">Set as preview image</span>
+                              </div>
                             </div>
                           </div>
                           

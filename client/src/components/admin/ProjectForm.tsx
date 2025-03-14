@@ -538,19 +538,19 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                 <p className="text-sm text-muted-foreground mb-4">
                   Add, edit, or remove gallery images for this project. You can add up to 10 images per project.
                   {projectId && projectGallery && projectGallery.length > 0 && 
-                    " Hover over any image and click the 'Preview' button to set it as the project preview image."}
+                    " Simply click on any image to set it as the project preview image."}
                 </p>
                 
                 {projectId && (
                   <div
                     onClick={(e) => {
-                      // Find if the clicked element or its parent is our preview button
+                      // Find if the clicked element is our image with data-preview-action
                       const targetElem = e.target as HTMLElement;
-                      const previewButton = targetElem.closest('button[data-preview-action="true"]');
+                      const previewImage = targetElem.closest('[data-preview-action="true"]');
                       
-                      if (previewButton) {
+                      if (previewImage) {
                         // Get the image URL from the data attribute
-                        const imageUrl = previewButton.getAttribute('data-preview-url');
+                        const imageUrl = previewImage.getAttribute('data-preview-url');
                         if (imageUrl) {
                           handleSetAsPreview(null, imageUrl);
                         }
