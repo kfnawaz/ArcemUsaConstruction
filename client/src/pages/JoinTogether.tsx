@@ -42,7 +42,7 @@ const JoinTogether = () => {
       <div 
         className="relative h-[500px] flex items-center justify-center" 
         style={{
-          backgroundImage: "url('/attached_assets/daniel-mccullough--FPFq_trr2Y-unsplash.jpg')",
+          backgroundImage: "url('/attached_assets/ian-schneider-TamMbr4okv4-unsplash.jpg')",
           backgroundSize: 'cover',
           backgroundPosition: 'center'
         }}
@@ -321,7 +321,7 @@ const JoinTogether = () => {
             variants={staggerContainer}
           >
             <motion.div variants={fadeInUp} className="p-6">
-              <div className="text-[#1E90DB] text-4xl font-bold mb-2">150+</div>
+              <div className="text-[#1E90DB] text-4xl font-bold mb-2">100+</div>
               <div className="text-gray-600">Completed Projects</div>
             </motion.div>
             <motion.div variants={fadeInUp} className="p-6">
@@ -333,7 +333,7 @@ const JoinTogether = () => {
               <div className="text-gray-600">Vendor Relationships</div>
             </motion.div>
             <motion.div variants={fadeInUp} className="p-6">
-              <div className="text-[#1E90DB] text-4xl font-bold mb-2">15+</div>
+              <div className="text-[#1E90DB] text-4xl font-bold mb-2">12+</div>
               <div className="text-gray-600">Years of Excellence</div>
             </motion.div>
           </motion.div>
