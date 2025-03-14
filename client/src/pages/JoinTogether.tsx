@@ -40,9 +40,9 @@ const JoinTogether = () => {
     <div className="flex flex-col">
       {/* Hero Section */}
       <div 
-        className="relative h-[500px] flex items-center justify-center" 
+        className="relative h-[350px] flex items-center justify-center" 
         style={{
-          backgroundImage: "url('/attached_assets/ian-schneider-TamMbr4okv4-unsplash.jpg')",
+          backgroundImage: "url('/uploads/images/ian-schneider-TamMbr4okv4-unsplash.jpg')",
           backgroundSize: 'cover',
           backgroundPosition: 'center'
         }}
@@ -55,10 +55,10 @@ const JoinTogether = () => {
           transition={{ duration: 0.8 }}
         >
           <h1 className="text-white text-5xl md:text-6xl font-montserrat font-bold mb-6">
-            Grow With ARCEM
+            Passion Led Us Here
           </h1>
           <p className="text-white text-xl md:text-2xl font-light mx-auto mb-10 max-w-3xl">
-            Join our network of excellence and become part of a community dedicated to building a better future through quality construction.
+            Join a team driven by passion and purpose. We're building more than structures - we're building a future together.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Link href="#opportunities" onClick={() => document.getElementById('opportunities')?.scrollIntoView({ behavior: 'smooth' })}>
@@ -138,7 +138,7 @@ const JoinTogether = () => {
       </div>
 
       {/* Image Banner */}
-      <div className="h-[400px] overflow-hidden relative bg-fixed" style={{ backgroundImage: "url('/attached_assets/silvia-brazzoduro-YSxcf6C_SEg-unsplash.jpg')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
+      <div className="h-[400px] overflow-hidden relative bg-fixed" style={{ backgroundImage: "url('/uploads/images/silvia-brazzoduro-YSxcf6C_SEg-unsplash.jpg')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
         <div className="absolute inset-0 bg-black opacity-40"></div>
         <div className="container mx-auto px-4 h-full flex items-center justify-center relative z-10">
           <motion.div 
