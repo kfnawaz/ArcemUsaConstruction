@@ -490,8 +490,8 @@ export const teamMembers = pgTable("team_members", {
   bio: text("bio"),
   order: integer("order").default(0),
   active: boolean("active").default(true),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
 
 export const insertTeamMemberSchema = createInsertSchema(teamMembers).omit({
