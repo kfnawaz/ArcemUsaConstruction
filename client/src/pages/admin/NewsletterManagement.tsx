@@ -22,6 +22,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Trash2, Search, Mail, Download, Filter } from "lucide-react";
 import AdminNav from "@/components/admin/AdminNav";
+import ExportButton from "@/components/admin/ExportButton";
 import { apiRequest } from "@/lib/queryClient";
 import { NewsletterSubscriber } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
@@ -104,36 +105,7 @@ const NewsletterManagement = () => {
     }
   };
 
-  // Export subscribers as CSV
-  const exportSubscribers = () => {
-    const subscribersToExport = activeFilter === "all" 
-      ? subscribers 
-      : filteredSubscribers;
-    
-    const csvHeader = 'Email,First Name,Last Name,Subscribed,Date Joined\n';
-    const csvContent = subscribersToExport.map(sub => {
-      const date = sub.createdAt ? new Date(sub.createdAt).toLocaleDateString() : 'N/A';
-      return `"${sub.email}","${sub.firstName || ''}","${sub.lastName || ''}","${sub.subscribed ? 'Yes' : 'No'}","${date}"`;
-    }).join('\n');
-    
-    const csvData = csvHeader + csvContent;
-    const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    
-    const link = document.createElement('a');
-    link.setAttribute('href', url);
-    link.setAttribute('download', `newsletter-subscribers-${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.display = 'none';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    toast({
-      title: "Export successful",
-      description: `${subscribersToExport.length} subscribers exported to CSV.`,
-      variant: "default"
-    });
-  };
+
 
   return (
     <div className="min-h-screen pt-32 pb-20 bg-gray-50">
@@ -151,15 +123,12 @@ const NewsletterManagement = () => {
                   Newsletter Subscribers
                 </h1>
                 <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="flex items-center gap-2"
-                    onClick={exportSubscribers}
-                  >
-                    <Download className="h-4 w-4" />
-                    Export CSV
-                  </Button>
+                  <ExportButton
+                    data={activeFilter === "all" ? subscribers : filteredSubscribers}
+                    fileName={`newsletter-subscribers-${new Date().toISOString().split('T')[0]}`}
+                    excludeFields={["id"]}
+                    dateFields={["createdAt"]}
+                  />
                   <div className="flex items-center gap-1">
                     <Button 
                       variant={activeFilter === "all" ? "default" : "outline"} 
