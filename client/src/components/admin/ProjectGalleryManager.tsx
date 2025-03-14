@@ -390,8 +390,12 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
                               <Button
                                 variant="destructive"
                                 size="icon"
+                                type="button"
                                 className="rounded-full h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-                                onClick={() => handleDeleteClick(image.id)}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  handleDeleteClick(image.id);
+                                }}
                                 disabled={isDeletingGalleryImage}
                                 title="Delete image"
                               >
@@ -399,7 +403,7 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
                               </Button>
                             </div>
                             <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                              <div className="bg-white/90 rounded-md px-3 py-2 flex items-center gap-1 shadow-sm cursor-pointer">
+                              <div className="bg-white/90 rounded-md px-3 py-2 flex items-center gap-1 shadow-sm cursor-pointer" data-preview-action="true" data-preview-url={image.imageUrl}>
                                 <Star className="h-4 w-4 text-primary fill-primary" />
                                 <span className="text-sm font-medium">Set as preview image</span>
                               </div>
@@ -439,7 +443,11 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
                                     variant="outline"
                                     size="icon"
                                     className="h-8 w-8"
-                                    onClick={() => moveImageOrderUp(image.id, image.displayOrder)}
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      moveImageOrderUp(image.id, image.displayOrder);
+                                    }}
                                   >
                                     <ArrowUp className="h-4 w-4" />
                                   </Button>
@@ -447,7 +455,11 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
                                     variant="outline"
                                     size="icon"
                                     className="h-8 w-8 mt-1"
-                                    onClick={() => moveImageOrderDown(image.id, image.displayOrder)}
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      moveImageOrderDown(image.id, image.displayOrder);
+                                    }}
                                   >
                                     <ArrowDown className="h-4 w-4" />
                                   </Button>
@@ -482,7 +494,11 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
                               <Button
                                 variant="destructive"
                                 size="sm"
-                                onClick={() => handleDeletePendingImage(index)}
+                                type="button"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  handleDeletePendingImage(index);
+                                }}
                                 className="flex items-center gap-2"
                               >
                                 <Trash2 className="h-4 w-4" />
