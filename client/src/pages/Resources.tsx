@@ -63,6 +63,13 @@ const Resources = () => {
       fileType: 'docx'
     },
     {
+      id: 4,
+      title: 'Subcontractor Payment Application',
+      fileName: 'Subcontractor Payment Application.xlsx',
+      description: 'Form for submitting payment requests for completed work.',
+      fileType: 'xlsx'
+    },
+    {
       id: 5,
       title: 'Subcontractor Suppliers List',
       fileName: 'Subcontractor Suppliers List.xlsx',
@@ -138,9 +145,9 @@ const Resources = () => {
     <div className="flex flex-col">
       {/* Hero Section */}
       <div 
-        className="relative h-[300px] flex items-center justify-center" 
+        className="relative h-[350px] flex items-center justify-center" 
         style={{
-          backgroundImage: "url('/uploads/images/services/commercial/commercial1.jpg')",
+          backgroundImage: "url('/uploads/images/silvia-brazzoduro-YSxcf6C_SEg-unsplash.jpg')",
           backgroundSize: 'cover',
           backgroundPosition: 'center'
         }}

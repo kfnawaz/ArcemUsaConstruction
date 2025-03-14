@@ -131,8 +131,8 @@ const JoinUs = () => {
                 transition={{ duration: 0.3 }}
               >
                 <img 
-                  src="/uploads/images/services/residential/residential1.jpg" 
-                  alt="Residential project" 
+                  src="/uploads/images/daniel-mccullough--FPFq_trr2Y-unsplash.jpg" 
+                  alt="Architect working on plans" 
                   className="w-full h-full object-cover"
                 />
               </motion.div>
@@ -332,8 +332,8 @@ const JoinUs = () => {
             >
               <div className="h-56 bg-gray-200 relative overflow-hidden">
                 <img 
-                  src="/uploads/images/services/residential/residential1.jpg"
-                  alt="Careers" 
+                  src="/uploads/images/daniel-mccullough--FPFq_trr2Y-unsplash.jpg"
+                  alt="Architect working on plans" 
                   className="w-full h-full object-cover transition-transform hover:scale-110 duration-700"
                 />
                 <div className="absolute top-4 left-4 bg-[#1E90DB] text-white p-3 rounded-full shadow-md">
