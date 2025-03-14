@@ -344,10 +344,14 @@ const About = () => {
                       src={member.photo && !member.photo.includes("placeholder-person.jpg") 
                         ? member.photo 
                         : (member.gender === "female" 
-                          ? "data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 24 24' fill='%231E90DB' stroke='white' stroke-width='0.5' stroke-linecap='round' stroke-linejoin='round'%3e%3crect width='24' height='24' fill='%23e6f3ff' rx='12' ry='12'/%3e%3ccircle cx='12' cy='8' r='4' fill='%231E90DB'/%3e%3cpath d='M7 21v-2a4 4 0 0 1 4-4h2a4 4 0 0 1 4 4v2' fill='%231E90DB'/%3e%3c/svg%3e" 
-                          : "data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 24 24' fill='%231E90DB' stroke='white' stroke-width='0.5' stroke-linecap='round' stroke-linejoin='round'%3e%3crect width='24' height='24' fill='%23e6f3ff' rx='12' ry='12'/%3e%3ccircle cx='12' cy='8' r='4' fill='%231E90DB'/%3e%3cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2' fill='%231E90DB'/%3e%3c/svg%3e")} 
+                          ? "data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='450' height='450' viewBox='0 0 24 24' fill='%231E90DB' stroke='white' stroke-width='0.3' stroke-linecap='round' stroke-linejoin='round'%3e%3crect width='24' height='24' fill='%23e6f3ff' rx='12' ry='12'/%3e%3ccircle cx='12' cy='8' r='4.5' fill='%231E90DB'/%3e%3cpath d='M7 21v-2a4 4 0 0 1 4-4h2a4 4 0 0 1 4 4v2' fill='%231E90DB'/%3e%3c/svg%3e" 
+                          : "data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='450' height='450' viewBox='0 0 24 24' fill='%231E90DB' stroke='white' stroke-width='0.3' stroke-linecap='round' stroke-linejoin='round'%3e%3crect width='24' height='24' fill='%23e6f3ff' rx='12' ry='12'/%3e%3ccircle cx='12' cy='8' r='4.5' fill='%231E90DB'/%3e%3cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2' fill='%231E90DB'/%3e%3c/svg%3e")} 
                       alt={member.name} 
-                      className="w-full h-80 object-cover object-center transition-transform duration-500 group-hover:scale-110"
+                      className={`w-full h-80 transition-transform duration-500 group-hover:scale-110 ${
+                        !member.photo || member.photo.includes("placeholder-person.jpg") 
+                          ? "object-contain p-6 md:p-10 bg-gray-50" 
+                          : "object-cover object-center"
+                      }`}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
                       <div className="p-4 text-white">
