@@ -109,8 +109,8 @@ const JoinUs = () => {
                 transition={{ duration: 0.3 }}
               >
                 <img 
-                  src="/uploads/images/services/industrial/industrial1.jpg" 
-                  alt="Construction site" 
+                  src="/uploads/images/greyson-joralemon-A1g0oeX29ec-unsplash.jpg" 
+                  alt="Subcontractor working with power tool" 
                   className="w-full h-full object-cover"
                 />
               </motion.div>
@@ -230,8 +230,8 @@ const JoinUs = () => {
             >
               <div className="h-56 bg-gray-200 relative overflow-hidden">
                 <img 
-                  src="/uploads/images/services/industrial/industrial1.jpg"
-                  alt="Subcontractors" 
+                  src="/uploads/images/greyson-joralemon-A1g0oeX29ec-unsplash.jpg"
+                  alt="Subcontractor working with power tool" 
                   className="w-full h-full object-cover transition-transform hover:scale-110 duration-700"
                 />
                 <div className="absolute top-4 left-4 bg-[#1E90DB] text-white p-3 rounded-full shadow-md">
