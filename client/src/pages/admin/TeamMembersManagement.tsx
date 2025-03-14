@@ -85,9 +85,10 @@ export default function TeamMembersManagement() {
   const [selectedMember, setSelectedMember] = useState<TeamMember | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const { toast } = useToast();
-  const { data, isLoading } = useAllTeamMembers();
+  const { data: teamMembers, isLoading } = useAllTeamMembers();
   
   const [isCreatingTeamMember, setIsCreatingTeamMember] = useState(false);
   const [isUpdatingTeamMember, setIsUpdatingTeamMember] = useState(false);
@@ -268,7 +269,7 @@ export default function TeamMembersManagement() {
     },
   });
 
-  const teamMemberArray = Array.isArray(data) ? data : [];
+  const teamMemberArray = Array.isArray(teamMembers) ? teamMembers : [];
   
   const filteredTeamMembers = teamMemberArray.filter((member) =>
     member.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -343,12 +344,14 @@ export default function TeamMembersManagement() {
 
   const handleDeleteClick = (member: TeamMember) => {
     setSelectedMember(member);
+    setIsDeleteDialogOpen(true);
   };
 
   const confirmDelete = () => {
     if (selectedMember) {
       deleteTeamMember(selectedMember.id);
       setSelectedMember(null);
+      setIsDeleteDialogOpen(false);
     }
   };
 
@@ -691,38 +694,14 @@ export default function TeamMembersManagement() {
                       >
                         Edit
                       </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                            onClick={() => handleDeleteClick(member)}
-                          >
-                            Delete
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to delete {selectedMember?.name}? This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={confirmDelete}
-                              className="bg-red-500 hover:bg-red-700"
-                            >
-                              {isDeletingTeamMember && (
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                              )}
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                        onClick={() => handleDeleteClick(member)}
+                      >
+                        Delete
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -924,6 +903,30 @@ export default function TeamMembersManagement() {
             </Form>
           </DialogContent>
         </Dialog>
+        
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete {selectedMember?.name}? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setIsDeleteDialogOpen(false)}>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmDelete}
+                className="bg-red-500 hover:bg-red-700"
+              >
+                {isDeletingTeamMember && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </section>
     </>
   );
