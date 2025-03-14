@@ -584,7 +584,7 @@ export default function TeamMembersManagement() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {isLoadingAllTeamMembers ? (
+                {isLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   teamMemberArray.length
@@ -600,7 +600,7 @@ export default function TeamMembersManagement() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {isLoadingAllTeamMembers ? (
+                {isLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   activeCount
@@ -616,7 +616,7 @@ export default function TeamMembersManagement() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {isLoadingAllTeamMembers ? (
+                {isLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   inactiveCount
