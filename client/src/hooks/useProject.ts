@@ -8,6 +8,7 @@ export const useProject = (projectId?: number) => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeletingGalleryImage, setIsDeletingGalleryImage] = useState(false);
 
   // Fetch single project if ID is provided
   const { data: project, isLoading, error } = useQuery<Project>({
@@ -183,7 +184,12 @@ export const useProject = (projectId?: number) => {
   };
 
   const deleteGalleryImage = async (id: number) => {
-    await deleteGalleryImageMutation.mutateAsync(id);
+    try {
+      setIsDeletingGalleryImage(true);
+      await deleteGalleryImageMutation.mutateAsync(id);
+    } finally {
+      setIsDeletingGalleryImage(false);
+    }
   };
 
   // Upload file and return URL
