@@ -11,13 +11,17 @@ interface FileUploadProps {
   accept?: string;
   maxSizeMB?: number;
   multiple?: boolean;
+  buttonText?: string;
+  helpText?: string;
 }
 
 const FileUpload = ({ 
   onUploadComplete, 
   accept = "image/*", 
   maxSizeMB = 5,
-  multiple = false
+  multiple = false,
+  buttonText,
+  helpText
 }: FileUploadProps) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -292,10 +296,10 @@ const FileUpload = ({
           <div className="flex flex-col items-center justify-center py-4">
             <UploadCloud className="h-8 w-8 text-muted-foreground mb-2" />
             <p className="text-sm font-medium">
-              {multiple ? 'Drag and drop multiple files or click to upload' : 'Drag and drop or click to upload'}
+              {buttonText || (multiple ? 'Drag and drop multiple files or click to upload' : 'Drag and drop or click to upload')}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
-              Support for images up to {maxSizeMB}MB
+              {helpText || `Support for images up to ${maxSizeMB}MB`}
             </p>
           </div>
         )}

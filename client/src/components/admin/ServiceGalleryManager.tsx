@@ -1,9 +1,9 @@
-import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useService } from '@/hooks/useService';
 import { ServiceGallery, InsertServiceGallery } from '@shared/schema';
-import { Trash2, Image, Loader2, Info } from 'lucide-react';
+import { Trash2, Image, Loader2, AlertCircle } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -26,15 +26,17 @@ export interface ServiceGalleryManagerHandle {
   saveGalleryImages: () => Promise<void>;
 }
 
+const MAX_GALLERY_IMAGES = 3;
+
 const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGalleryManagerProps>(
   function ServiceGalleryManager(props, ref) {
     const { serviceId, isNewService = false } = props;
     const { toast } = useToast();
-    const fileInputRef = useRef<HTMLInputElement>(null);
     const [isUploading, setIsUploading] = useState(false);
     const [selectedImageId, setSelectedImageId] = useState<number | null>(null);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [pendingImages, setPendingImages] = useState<string[]>([]);
+    const [showMaxImagesWarning, setShowMaxImagesWarning] = useState(false);
 
     const {
       serviceGallery,
@@ -42,9 +44,12 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
       uploadFile,
       addGalleryImage,
       deleteGalleryImage,
-      isAddingGalleryImage,
       isDeletingGalleryImage
     } = useService(serviceId);
+
+    // Check if we've reached the maximum image limit
+    const currentImageCount = (serviceGallery?.length || 0) + pendingImages.length;
+    const canAddMoreImages = currentImageCount < MAX_GALLERY_IMAGES;
 
     // Expose the saveGalleryImages method via ref
     useImperativeHandle(ref, () => ({
@@ -81,13 +86,42 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
         urls = [urls];
       }
       
-      // Store the uploaded image URLs in the pending state
-      setPendingImages(prev => [...prev, ...urls]);
+      // Check if adding these images would exceed the limit
+      const totalAfterAdd = (serviceGallery?.length || 0) + pendingImages.length + urls.length;
       
-      toast({
-        title: 'Images prepared',
-        description: `${urls.length} image${urls.length > 1 ? 's' : ''} ready to be saved when you click "Save Service".`,
-      });
+      if (totalAfterAdd > MAX_GALLERY_IMAGES) {
+        // Calculate how many we can actually add
+        const allowedToAdd = Math.max(0, MAX_GALLERY_IMAGES - (serviceGallery?.length || 0) - pendingImages.length);
+        
+        if (allowedToAdd > 0) {
+          // Only add the allowed number of images
+          const limitedUrls = urls.slice(0, allowedToAdd);
+          setPendingImages(prev => [...prev, ...limitedUrls]);
+          
+          toast({
+            title: 'Maximum images reached',
+            description: `Added ${allowedToAdd} image(s). Services can have a maximum of ${MAX_GALLERY_IMAGES} images.`,
+            variant: 'default'
+          });
+        } else {
+          // Can't add any more images
+          setShowMaxImagesWarning(true);
+          
+          toast({
+            title: 'Maximum images reached',
+            description: `Services can have a maximum of ${MAX_GALLERY_IMAGES} images. Delete some images to add more.`,
+            variant: 'destructive'
+          });
+        }
+      } else {
+        // We can add all the images
+        setPendingImages(prev => [...prev, ...urls]);
+        
+        toast({
+          title: 'Images added',
+          description: `${urls.length} image${urls.length > 1 ? 's' : ''} ready to be saved.`,
+        });
+      }
     };
     
     // This function will be called by the ServiceManager when the service is saved
@@ -122,11 +156,12 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
         // Clear pending images after successful save
         setPendingImages([]);
         localStorage.removeItem(`pendingImages_service_${serviceId}`);
+        setShowMaxImagesWarning(false);
       } catch (error) {
         console.error("Error adding gallery images:", error);
         toast({
           title: "Save failed",
-          description: "Failed to add some images to the gallery. The images will remain pending for the next save attempt.",
+          description: "Failed to add some images to the gallery. Please try again.",
           variant: "destructive"
         });
         throw error;
@@ -144,6 +179,7 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
       if (selectedImageId !== null) {
         try {
           await deleteGalleryImage(selectedImageId);
+          setShowMaxImagesWarning(false);
           toast({
             title: 'Image deleted',
             description: 'The image has been removed from the gallery.',
@@ -161,55 +197,53 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
         }
       }
     };
+    
+    // Delete a pending image (not yet saved to database)
+    const handleDeletePendingImage = (index: number) => {
+      setPendingImages(prev => {
+        const newPendingImages = [...prev];
+        newPendingImages.splice(index, 1);
+        return newPendingImages;
+      });
+      setShowMaxImagesWarning(false);
+    };
 
     return (
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h3 className="text-xl font-semibold">Service Gallery Images</h3>
-        </div>
-        
-        {pendingImages.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-            {pendingImages.map((imageUrl, index) => (
-              <Card key={`pending-${index}`} className="overflow-hidden">
-                <div className="aspect-video relative">
-                  <img 
-                    src={imageUrl} 
-                    alt={`New image ${index + 1}`}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <CardContent className="p-3">
-                  <p className="text-sm truncate">New image (not saved yet)</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+      <div className="space-y-4">
+        {showMaxImagesWarning && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Maximum of {MAX_GALLERY_IMAGES} images allowed per service. Please delete some images to add more.
+            </AlertDescription>
+          </Alert>
         )}
         
         <div className="p-4 border rounded-md bg-muted/20">
-          <h4 className="font-medium mb-3">Upload Images</h4>
-          <p className="text-sm text-muted-foreground mb-4">
-            Drag and drop images or click to select files. Click "Save Service" when done.
-          </p>
-          <FileUpload 
-            onUploadComplete={handleFileUpload}
-            multiple={true}
-            accept="image/*"
-            maxSizeMB={5}
-          />
-        </div>
+          <h4 className="font-medium mb-3">Service Images ({currentImageCount}/{MAX_GALLERY_IMAGES})</h4>
+          
+          {canAddMoreImages ? (
+            <div className="mb-4">
+              <FileUpload 
+                onUploadComplete={handleFileUpload}
+                multiple={true}
+                accept="image/*"
+                maxSizeMB={5}
+                buttonText="Add Images"
+                helpText={`Add up to ${MAX_GALLERY_IMAGES - currentImageCount} more image${MAX_GALLERY_IMAGES - currentImageCount !== 1 ? 's' : ''}`}
+              />
+            </div>
+          ) : null}
 
-        {isLoadingGallery ? (
-          <div className="flex justify-center py-8">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-          </div>
-        ) : serviceGallery && serviceGallery.length > 0 ? (
-          <div>
-            <h4 className="font-medium mb-3 text-muted-foreground">Gallery Images</h4>
+          {isLoadingGallery ? (
+            <div className="flex justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {serviceGallery.map((image) => (
-                <Card key={image.id} className="overflow-hidden">
+              {/* Existing saved images */}
+              {serviceGallery && serviceGallery.map((image) => (
+                <Card key={`saved-${image.id}`} className="overflow-hidden">
                   <div className="aspect-video relative group">
                     <img
                       src={image.imageUrl}
@@ -232,22 +266,48 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
                       </Button>
                     </div>
                   </div>
-                  <CardContent className="p-3">
-                    <p className="text-sm truncate">{image.alt || `Image ${image.id}`}</p>
+                </Card>
+              ))}
+              
+              {/* Newly added (pending) images */}
+              {pendingImages.map((imageUrl, index) => (
+                <Card key={`pending-${index}`} className="overflow-hidden border-dashed border-2">
+                  <div className="aspect-video relative group">
+                    <img 
+                      src={imageUrl} 
+                      alt={`New image ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDeletePendingImage(index)}
+                        className="flex items-center gap-2"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        Remove
+                      </Button>
+                    </div>
+                  </div>
+                  <CardContent className="p-3 bg-muted/20">
+                    <p className="text-sm truncate text-muted-foreground">New image (not saved yet)</p>
                   </CardContent>
                 </Card>
               ))}
+              
+              {/* Empty state */}
+              {currentImageCount === 0 && (
+                <div className="col-span-full border rounded-md p-6 text-center bg-muted/30">
+                  <Image className="h-10 w-10 mx-auto text-muted-foreground" />
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Add up to {MAX_GALLERY_IMAGES} images to showcase this service.
+                  </p>
+                </div>
+              )}
             </div>
-          </div>
-        ) : pendingImages.length === 0 && (
-          <div className="border rounded-md p-8 text-center bg-muted/30">
-            <Image className="h-12 w-12 mx-auto text-muted-foreground" />
-            <h3 className="mt-4 text-lg font-medium">No gallery images</h3>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Upload images and click "Save Service" to create a gallery.
-            </p>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Delete Confirmation Dialog */}
         <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

@@ -335,7 +335,7 @@ const ServiceManager: React.FC<ServiceManagerProps> = ({ service, onSuccess }) =
         </div>
 
         {service && (
-          <div className="gallery-section mt-8 pt-6 border-t">
+          <div className="pt-6 border-t mt-8">
             <ServiceGalleryManager 
               serviceId={service.id} 
               ref={galleryManagerRef}
