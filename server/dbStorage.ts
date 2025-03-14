@@ -713,22 +713,39 @@ export class DBStorage implements IStorage {
 
   // Team Members
   async getTeamMembers(): Promise<TeamMember[]> {
-    return await db.query.teamMembers.findMany({
-      orderBy: (teamMembers, { asc }) => [asc(teamMembers.order)]
-    });
+    try {
+      const result = await db.select().from(teamMembers).orderBy(teamMembers.order);
+      return result;
+    } catch (error) {
+      console.error("Error in getTeamMembers:", error);
+      return [];
+    }
   }
 
   async getActiveTeamMembers(): Promise<TeamMember[]> {
-    return await db.query.teamMembers.findMany({
-      where: eq(teamMembers.active, true),
-      orderBy: (teamMembers, { asc }) => [asc(teamMembers.order)]
-    });
+    try {
+      const result = await db.select()
+        .from(teamMembers)
+        .where(eq(teamMembers.active, true))
+        .orderBy(teamMembers.order);
+      return result;
+    } catch (error) {
+      console.error("Error in getActiveTeamMembers:", error);
+      return [];
+    }
   }
 
   async getTeamMember(id: number): Promise<TeamMember | undefined> {
-    return await db.query.teamMembers.findFirst({
-      where: eq(teamMembers.id, id)
-    });
+    try {
+      const result = await db.select()
+        .from(teamMembers)
+        .where(eq(teamMembers.id, id))
+        .limit(1);
+      return result[0];
+    } catch (error) {
+      console.error("Error in getTeamMember:", error);
+      return undefined;
+    }
   }
 
   async createTeamMember(teamMember: InsertTeamMember): Promise<TeamMember> {
