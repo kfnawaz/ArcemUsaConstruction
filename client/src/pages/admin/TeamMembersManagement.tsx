@@ -657,8 +657,8 @@ export default function TeamMembersManagement() {
                         src={member.photo && !member.photo.includes("placeholder-person.jpg") 
                           ? member.photo 
                           : (member.gender === "female" 
-                            ? "/uploads/images/team/placeholder-female.jpg" 
-                            : "/uploads/images/team/placeholder-male.jpg")}
+                            ? "https://randomuser.me/api/portraits/women/8.jpg" 
+                            : "https://randomuser.me/api/portraits/men/32.jpg")}
                         alt={member.name}
                         className="w-8 h-8 rounded-full object-cover"
                       />
@@ -843,8 +843,8 @@ export default function TeamMembersManagement() {
                         src={selectedMember.photo && !selectedMember.photo.includes("placeholder-person.jpg") 
                           ? selectedMember.photo 
                           : (selectedMember.gender === "female" 
-                            ? "/uploads/images/team/placeholder-female.jpg" 
-                            : "/uploads/images/team/placeholder-male.jpg")}
+                            ? "https://randomuser.me/api/portraits/women/8.jpg" 
+                            : "https://randomuser.me/api/portraits/men/32.jpg")}
                         alt={selectedMember.name}
                         className="w-16 h-16 rounded-full object-cover"
                       />

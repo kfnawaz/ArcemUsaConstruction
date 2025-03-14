@@ -344,8 +344,8 @@ const About = () => {
                       src={member.photo && !member.photo.includes("placeholder-person.jpg") 
                         ? member.photo 
                         : (member.gender === "female" 
-                          ? "/uploads/images/team/placeholder-female.jpg" 
-                          : "/uploads/images/team/placeholder-male.jpg")} 
+                          ? "https://randomuser.me/api/portraits/women/8.jpg" 
+                          : "https://randomuser.me/api/portraits/men/32.jpg")} 
                       alt={member.name} 
                       className="w-full h-80 object-cover object-center transition-transform duration-500 group-hover:scale-110"
                     />
