@@ -5,7 +5,6 @@ import { z } from 'zod';
 import { Service, InsertService } from '@shared/schema';
 import { useService } from '@/hooks/useService';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Form,
   FormControl,
@@ -54,7 +53,6 @@ interface ServiceManagerProps {
 
 const ServiceManager: React.FC<ServiceManagerProps> = ({ service, onSuccess }) => {
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState('details');
   const [featureInput, setFeatureInput] = useState('');
   const [featuresList, setFeaturesList] = useState<string[]>(
     service?.features || []
@@ -137,15 +135,9 @@ const ServiceManager: React.FC<ServiceManagerProps> = ({ service, onSuccess }) =
         </div>
       </div>
       
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="details">Service Details</TabsTrigger>
-          <TabsTrigger value="gallery" disabled={!service}>
-            Gallery Images
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="details" className="mt-6">
+      <div className="space-y-8">
+        <div className="service-details-section">
+          <h3 className="text-xl font-semibold mb-4">Service Details</h3>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
@@ -333,18 +325,14 @@ const ServiceManager: React.FC<ServiceManagerProps> = ({ service, onSuccess }) =
               </Button>
             </form>
           </Form>
-        </TabsContent>
+        </div>
 
-        <TabsContent value="gallery" className="mt-6">
-          {service ? (
+        {service && (
+          <div className="gallery-section mt-8 pt-6 border-t">
             <ServiceGalleryManager serviceId={service.id} />
-          ) : (
-            <div className="text-center py-8">
-              <p>Save the service details first to manage gallery images.</p>
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
