@@ -355,26 +355,7 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                     )}
                   />
                   
-                  <div className="space-y-4">
-                    <h3 className="text-lg font-semibold">Project Gallery Images</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Add, edit, or remove gallery images for this project. Select one image as the preview.
-                    </p>
-                    
-                    {projectId && (
-                      <ProjectGalleryManager 
-                        ref={galleryManagerRef}
-                        projectId={projectId} 
-                      />
-                    )}
-                    
-                    {!projectId && (
-                      <div className="text-center py-8 border rounded-md bg-muted/20">
-                        <ImageIcon className="h-12 w-12 mx-auto text-muted-foreground" />
-                        <p className="mt-2 text-muted-foreground">Save the project first to add gallery images.</p>
-                      </div>
-                    )}
-                  </div>
+
                 </div>
               </div>
 
@@ -540,6 +521,29 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                     )}
                   />
                 </div>
+              </div>
+
+              {/* Project Gallery Images Section */}
+              <div className="mt-8">
+                <Separator className="my-6" />
+                <h3 className="text-lg font-semibold mb-4">Project Gallery Images</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Add, edit, or remove gallery images for this project. You can add up to 10 images per project.
+                </p>
+                
+                {projectId && (
+                  <ProjectGalleryManager 
+                    ref={galleryManagerRef}
+                    projectId={projectId} 
+                  />
+                )}
+                
+                {!projectId && (
+                  <div className="text-center py-8 border rounded-md bg-muted/20">
+                    <ImageIcon className="h-12 w-12 mx-auto text-muted-foreground" />
+                    <p className="mt-2 text-muted-foreground">Save the project first to add gallery images.</p>
+                  </div>
+                )}
               </div>
 
               {/* Select Gallery Image Buttons */}
