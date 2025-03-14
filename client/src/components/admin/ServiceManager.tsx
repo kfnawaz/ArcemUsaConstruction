@@ -109,12 +109,12 @@ const ServiceManager: React.FC<ServiceManagerProps> = ({ service, onSuccess }) =
       
       if (service) {
         // Update existing service
-        const updatedService = await updateService(service.id, serviceData);
+        await updateService(service.id, serviceData);
         savedServiceId = service.id;
       } else {
         // Create new service
         const newService = await createService(serviceData);
-        savedServiceId = newService.id;
+        savedServiceId = newService?.id || 0;
       }
       
       // Save gallery images if there are any pending

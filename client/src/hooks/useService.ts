@@ -215,17 +215,20 @@ export const useService = (serviceId?: number) => {
     galleryError,
     
     // Mutations
-    createService: (data: InsertService) => createServiceMutation.mutate(data),
+    createService: (data: InsertService) => 
+      createServiceMutation.mutateAsync(data),
     updateService: (id: number, data: Partial<InsertService>) => 
-      updateServiceMutation.mutate({ id, data }),
-    deleteService: (id: number) => deleteServiceMutation.mutate(id),
+      updateServiceMutation.mutateAsync({ id, data }),
+    deleteService: (id: number) => 
+      deleteServiceMutation.mutateAsync(id),
     
     // Gallery mutations
     addGalleryImage: (serviceId: number, data: InsertServiceGallery) => 
-      addGalleryImageMutation.mutate({ serviceId, data }),
+      addGalleryImageMutation.mutateAsync({ serviceId, data }),
     updateGalleryImage: (id: number, data: Partial<InsertServiceGallery>) => 
-      updateGalleryImageMutation.mutate({ id, data }),
-    deleteGalleryImage: (id: number) => deleteGalleryImageMutation.mutate(id),
+      updateGalleryImageMutation.mutateAsync({ id, data }),
+    deleteGalleryImage: (id: number) => 
+      deleteGalleryImageMutation.mutateAsync(id),
     
     // File upload helper
     uploadFile,
