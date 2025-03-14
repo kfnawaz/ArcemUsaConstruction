@@ -171,15 +171,20 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
       
       try {
         for (const pendingImage of pendingImages) {
-          // Add gallery image and store the result
-          const newImage = await addProjectGalleryImage({
-            imageUrl: pendingImage.preview,
-            caption: pendingImage.caption,
-            displayOrder: pendingImage.displayOrder
-          });
-          
-          if (newImage) {
-            savedImages.push(newImage);
+          try {
+            // Add gallery image and store the result
+            const newImage = await addProjectGalleryImage({
+              imageUrl: pendingImage.preview,
+              caption: pendingImage.caption,
+              displayOrder: pendingImage.displayOrder
+            });
+            
+            // Track successfully saved images
+            if (newImage) {
+              savedImages.push(newImage);
+            }
+          } catch (err) {
+            console.error("Error adding image:", err);
           }
         }
         

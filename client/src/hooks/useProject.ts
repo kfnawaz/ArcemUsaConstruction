@@ -166,17 +166,18 @@ export const useProject = (projectId?: number) => {
     }
   };
 
-  const addGalleryImage = async (data: Omit<InsertProjectGallery, 'projectId'>) => {
+  const addGalleryImage = async (data: Omit<InsertProjectGallery, 'projectId'>): Promise<ProjectGallery | undefined> => {
     if (!projectId) {
       toast({
         title: "Error",
         description: "Cannot add gallery image: No project ID provided.",
         variant: "destructive"
       });
-      return;
+      return undefined;
     }
     
-    await addGalleryImageMutation.mutateAsync({ projectId, data });
+    // Return the created gallery image for proper tracking
+    return await addGalleryImageMutation.mutateAsync({ projectId, data });
   };
 
   const updateGalleryImage = async (id: number, data: Partial<InsertProjectGallery>) => {
