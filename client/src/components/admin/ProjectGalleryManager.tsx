@@ -388,15 +388,13 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
                                 variant="secondary"
                                 size="sm"
                                 onClick={(e) => {
-                                  // Add a custom event that the parent component can listen for
-                                  const selectEvent = new CustomEvent('select-preview', { 
-                                    detail: { imageUrl: image.imageUrl },
-                                    bubbles: true 
-                                  });
-                                  e.currentTarget.dispatchEvent(selectEvent);
+                                  // We'll use a simpler approach - set a data attribute with the URL
+                                  // that the parent can read when clicked
+                                  e.currentTarget.setAttribute('data-preview-url', image.imageUrl);
                                 }}
                                 className="flex items-center gap-1"
                                 title="Use as preview image"
+                                data-preview-action="true"
                               >
                                 <Star className="h-4 w-4" />
                                 Preview

@@ -188,10 +188,12 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
   };
   
   // This function only updates the form state without submitting
-  const handleSetAsPreview = (e: React.MouseEvent<HTMLButtonElement, MouseEvent>, imageUrl: string) => {
-    // Prevent the event from bubbling up to any parent elements
-    e.preventDefault();
-    e.stopPropagation();
+  const handleSetAsPreview = (e: React.MouseEvent<HTMLButtonElement, MouseEvent> | null, imageUrl: string) => {
+    // Prevent the event from bubbling up to any parent elements if event is provided
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     
     console.log("Setting preview image to:", imageUrl);
     
@@ -200,6 +202,12 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
       shouldDirty: true,      // Mark the form as dirty since we changed a value
       shouldTouch: true,      // Mark the field as touched
       shouldValidate: false   // Don't trigger validation
+    });
+    
+    // Show toast to confirm the action
+    toast({
+      title: "Preview image updated",
+      description: "This image will be used as the project thumbnail"
     });
     
     // Explicitly log the form state to verify it's not submitting
@@ -536,13 +544,15 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                 {projectId && (
                   <div
                     onClick={(e) => {
-                      // Check if this is our custom event from the gallery manager
-                      if (e.target && (e.target as HTMLElement).closest('button[title="Use as preview image"]')) {
-                        // Find the custom event data
-                        const customEvent = e.nativeEvent as unknown as CustomEvent;
-                        if (customEvent.detail && customEvent.detail.imageUrl) {
-                          // Pass null for the first argument since we just need the imageUrl
-                          handleSetAsPreview(null, customEvent.detail.imageUrl);
+                      // Find if the clicked element or its parent is our preview button
+                      const targetElem = e.target as HTMLElement;
+                      const previewButton = targetElem.closest('button[data-preview-action="true"]');
+                      
+                      if (previewButton) {
+                        // Get the image URL from the data attribute
+                        const imageUrl = previewButton.getAttribute('data-preview-url');
+                        if (imageUrl) {
+                          handleSetAsPreview(null, imageUrl);
                         }
                       }
                     }}
