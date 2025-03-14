@@ -529,13 +529,29 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                 <h3 className="text-lg font-semibold mb-4">Project Gallery Images</h3>
                 <p className="text-sm text-muted-foreground mb-4">
                   Add, edit, or remove gallery images for this project. You can add up to 10 images per project.
+                  {projectId && projectGallery && projectGallery.length > 0 && 
+                    " Hover over any image and click the 'Preview' button to set it as the project preview image."}
                 </p>
                 
                 {projectId && (
-                  <ProjectGalleryManager 
-                    ref={galleryManagerRef}
-                    projectId={projectId} 
-                  />
+                  <div
+                    onClick={(e) => {
+                      // Check if this is our custom event from the gallery manager
+                      if (e.target && (e.target as HTMLElement).closest('button[title="Use as preview image"]')) {
+                        // Find the custom event data
+                        const customEvent = e.nativeEvent as unknown as CustomEvent;
+                        if (customEvent.detail && customEvent.detail.imageUrl) {
+                          // Pass null for the first argument since we just need the imageUrl
+                          handleSetAsPreview(null, customEvent.detail.imageUrl);
+                        }
+                      }
+                    }}
+                  >
+                    <ProjectGalleryManager 
+                      ref={galleryManagerRef}
+                      projectId={projectId} 
+                    />
+                  </div>
                 )}
                 
                 {!projectId && (
@@ -544,46 +560,34 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                     <p className="mt-2 text-muted-foreground">Save the project first to add gallery images.</p>
                   </div>
                 )}
-              </div>
-
-              {/* Select Gallery Image Buttons */}
-              {projectId && projectGallery && projectGallery.length > 0 && (
-                <div className="mt-6">
-                  <Separator className="my-4" />
-                  <h4 className="text-sm font-medium mb-2">Select preview image from gallery</h4>
-                  <div className="grid grid-cols-3 md:grid-cols-5 gap-2">
-                    {projectGallery
-                      .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0))
-                      .map((image) => (
-                        <div 
-                          key={`preview-${image.id}`}
-                          className={`relative aspect-square cursor-pointer border rounded-md overflow-hidden transition-all ${
-                            form.getValues('image') === image.imageUrl ? 'ring-2 ring-primary' : 'hover:opacity-90'
-                          }`}
-                          onClick={(e) => handleSetAsPreview(e as any, image.imageUrl)}
-                          title={image.caption || 'Select as preview image'}
-                        >
-                          <img 
-                            src={image.imageUrl} 
-                            alt={image.caption || "Gallery image"} 
-                            className="object-cover w-full h-full"
-                            onError={(e) => {
-                              e.currentTarget.src = "https://placehold.co/400x400?text=Error";
-                            }}
-                          />
-                          {form.getValues('image') === image.imageUrl && (
-                            <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
-                              <Star className="h-6 w-6 text-primary fill-primary" />
-                            </div>
-                          )}
-                        </div>
-                      ))}
+                
+                {/* Current preview image indicator */}
+                {projectId && form.getValues('image') && (
+                  <div className="mt-4 p-4 border rounded-md bg-muted/10">
+                    <div className="flex items-center gap-3">
+                      <div className="relative w-16 h-16 rounded-md overflow-hidden border">
+                        <img 
+                          src={form.getValues('image')} 
+                          alt="Current preview image" 
+                          className="object-cover w-full h-full"
+                          onError={(e) => {
+                            e.currentTarget.src = "https://placehold.co/400x400?text=Error";
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium flex items-center gap-1">
+                          <Star className="h-4 w-4 text-primary fill-primary" /> 
+                          Current Preview Image
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          This image will be shown in project listings
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-2">
-                    Click an image to set it as the project preview image
-                  </p>
-                </div>
-              )}
+                )}
+              </div>
 
               <div className="flex justify-end space-x-4 mt-8">
                 <Button

@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useProject } from '@/hooks/useProject';
 import { ProjectGallery, InsertProjectGallery } from '@shared/schema';
-import { Trash2, Image, Loader2, AlertCircle, ArrowUp, ArrowDown, GripVertical } from 'lucide-react';
+import { Trash2, Image, Loader2, AlertCircle, ArrowUp, ArrowDown, GripVertical, Star } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -383,13 +383,30 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
                                 e.currentTarget.src = "https://placehold.co/600x400/e2e8f0/1e293b?text=Image+Error";
                               }}
                             />
-                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={(e) => {
+                                  // Add a custom event that the parent component can listen for
+                                  const selectEvent = new CustomEvent('select-preview', { 
+                                    detail: { imageUrl: image.imageUrl },
+                                    bubbles: true 
+                                  });
+                                  e.currentTarget.dispatchEvent(selectEvent);
+                                }}
+                                className="flex items-center gap-1"
+                                title="Use as preview image"
+                              >
+                                <Star className="h-4 w-4" />
+                                Preview
+                              </Button>
                               <Button
                                 variant="destructive"
                                 size="sm"
                                 onClick={() => handleDeleteClick(image.id)}
                                 disabled={isDeletingGalleryImage}
-                                className="flex items-center gap-2"
+                                className="flex items-center gap-1"
                               >
                                 <Trash2 className="h-4 w-4" />
                                 Delete
