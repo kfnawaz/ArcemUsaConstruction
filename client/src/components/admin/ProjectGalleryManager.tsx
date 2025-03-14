@@ -22,6 +22,7 @@ import FileUpload from '@/components/common/FileUpload';
 interface ProjectGalleryManagerProps {
   projectId: number;
   isNewProject?: boolean;
+  previewImageUrl?: string;
 }
 
 export interface ProjectGalleryManagerHandle {
@@ -43,7 +44,7 @@ type PendingImage = {
 
 const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGalleryManagerProps>(
   function ProjectGalleryManager(props, ref) {
-    const { projectId, isNewProject = false } = props;
+    const { projectId, isNewProject = false, previewImageUrl } = props;
     const { toast } = useToast();
     const [isUploading, setIsUploading] = useState(false);
     const [selectedImageId, setSelectedImageId] = useState<number | null>(null);
@@ -461,6 +462,12 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
                                 e.currentTarget.src = "https://placehold.co/600x400/e2e8f0/1e293b?text=Image+Error";
                               }}
                             />
+                            {previewImageUrl === image.imageUrl && (
+                              <div className="absolute top-2 left-2 z-10 bg-primary text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md">
+                                <Star className="h-3 w-3 mr-1 fill-white" />
+                                Preview Image
+                              </div>
+                            )}
                             <div className="absolute top-2 right-2 z-10">
                               <Button
                                 variant="destructive"
@@ -581,6 +588,12 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
                               alt={image.caption || `New image ${index + 1}`}
                               className="w-full h-full object-cover rounded-md"
                             />
+                            {previewImageUrl === image.url && (
+                              <div className="absolute top-2 left-2 z-10 bg-primary text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md">
+                                <Star className="h-3 w-3 mr-1 fill-white" />
+                                Preview Image
+                              </div>
+                            )}
                             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                               <Button
                                 variant="destructive"

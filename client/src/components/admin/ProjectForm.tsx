@@ -603,6 +603,7 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                     <ProjectGalleryManager 
                       ref={galleryManagerRef}
                       projectId={projectId} 
+                      previewImageUrl={form.getValues('image')}
                     />
                   </div>
                 )}
