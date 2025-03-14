@@ -92,10 +92,12 @@ const JoinUs = () => {
                 Our collaborative approach to construction has helped us build landmark projects across the region 
                 while fostering long-term relationships with our partners, subcontractors, and team members.
               </p>
-              <div className="flex gap-3 items-center text-[#1E90DB] font-semibold">
-                <span>Discover how we can grow together</span>
-                <ArrowRight className="h-5 w-5 animate-bounce-x" />
-              </div>
+              <Link href="/join-together">
+                <div className="flex gap-3 items-center text-[#1E90DB] font-semibold cursor-pointer hover:underline">
+                  <span>Discover how we can grow together</span>
+                  <ArrowRight className="h-5 w-5 animate-bounce-x" />
+                </div>
+              </Link>
             </motion.div>
             <motion.div 
               className="grid grid-cols-2 gap-4"

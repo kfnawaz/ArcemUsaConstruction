@@ -44,6 +44,7 @@ import SettingsPage from "@/pages/admin/Settings";
 import AccessibilityCheckerPage from "@/pages/admin/AccessibilityChecker";
 import SubcontractorManagement from "@/pages/admin/SubcontractorManagement";
 import Resources from "@/pages/Resources";
+import JoinTogether from "@/pages/JoinTogether";
 import NotFound from "@/pages/not-found";
 import RequestQuoteButton from "@/components/common/A11yFloatingButton";
 
@@ -127,6 +128,7 @@ function Router() {
           <Route path="/terms-of-service" component={TermsOfService} />
           <Route path="/sitemap" component={Sitemap} />
           <Route path="/join-us" component={JoinUs} />
+          <Route path="/join-together" component={JoinTogether} />
           <Route path="/careers" component={Careers} />
           <Route path="/careers/:id" component={CareerDetail} />
           <Route path="/resources" component={Resources} />
