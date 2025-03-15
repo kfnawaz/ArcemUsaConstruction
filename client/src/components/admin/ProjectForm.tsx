@@ -417,14 +417,6 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Preview Image</FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder="Selected preview image URL" 
-                            {...field} 
-                            disabled
-                            className="bg-muted"
-                          />
-                        </FormControl>
                         <FormDescription>
                           Select a preview image from the gallery below or upload a new one.
                           {form.formState.isDirty && <span className="text-blue-600 font-medium ml-1">Click "Update Project" to save changes</span>}
