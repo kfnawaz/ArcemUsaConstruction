@@ -86,6 +86,7 @@ export default function TeamMembersManagement() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [photoRemoved, setPhotoRemoved] = useState(false);
 
   const { toast } = useToast();
   const { data: teamMembers, isLoading } = useAllTeamMembers();
@@ -307,6 +308,7 @@ export default function TeamMembersManagement() {
     try {
       let photoUrl = values.photo;
       
+      // If file is selected, upload it and use the new URL
       if (selectedFile) {
         setIsUploading(true);
         photoUrl = await uploadFile(selectedFile);
@@ -315,13 +317,15 @@ export default function TeamMembersManagement() {
       
       await updateTeamMember(selectedMember.id, {
         ...values,
-        photo: photoUrl,
+        // Convert empty string to null for the database
+        photo: photoUrl === "" ? null : photoUrl,
       });
       
       setIsEditDialogOpen(false);
       editForm.reset();
       setSelectedMember(null);
       setSelectedFile(null);
+      setPhotoRemoved(false);
     } catch (error) {
       console.error("Error updating team member:", error);
     }
@@ -329,6 +333,7 @@ export default function TeamMembersManagement() {
 
   const handleEditClick = (member: TeamMember) => {
     setSelectedMember(member);
+    setPhotoRemoved(false);
     editForm.reset({
       name: member.name,
       designation: member.designation,
@@ -362,6 +367,7 @@ export default function TeamMembersManagement() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setSelectedFile(e.target.files[0]);
+      setPhotoRemoved(false);
     }
   };
 
@@ -717,7 +723,15 @@ export default function TeamMembersManagement() {
         )}
 
         {/* Edit Dialog */}
-        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <Dialog 
+          open={isEditDialogOpen} 
+          onOpenChange={(open) => {
+            setIsEditDialogOpen(open);
+            if (!open) {
+              setPhotoRemoved(false);
+            }
+          }}
+        >
           <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>
               <DialogTitle>Edit Team Member</DialogTitle>
@@ -842,23 +856,41 @@ export default function TeamMembersManagement() {
                 <FormItem>
                   <FormLabel>Profile Photo</FormLabel>
                   {selectedMember && (
-                    <div className="mb-2 flex items-center space-x-4">
-                      <img
-                        src={selectedMember.photo && !selectedMember.photo.includes("placeholder-person.jpg") 
-                          ? selectedMember.photo 
-                          : (selectedMember.gender === "female" 
-                            ? "data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='450' height='450' viewBox='0 0 24 24' fill='%231E90DB' stroke='white' stroke-width='0.3' stroke-linecap='round' stroke-linejoin='round'%3e%3crect width='24' height='24' fill='%23e6f3ff' rx='12' ry='12'/%3e%3ccircle cx='12' cy='8' r='4.5' fill='%231E90DB'/%3e%3cpath d='M7 21v-2a4 4 0 0 1 4-4h2a4 4 0 0 1 4 4v2' fill='%231E90DB'/%3e%3c/svg%3e" 
-                            : "data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='450' height='450' viewBox='0 0 24 24' fill='%231E90DB' stroke='white' stroke-width='0.3' stroke-linecap='round' stroke-linejoin='round'%3e%3crect width='24' height='24' fill='%23e6f3ff' rx='12' ry='12'/%3e%3ccircle cx='12' cy='8' r='4.5' fill='%231E90DB'/%3e%3cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2' fill='%231E90DB'/%3e%3c/svg%3e")}
-                        alt={selectedMember.name}
-                        className={`w-16 h-16 rounded-full ${
-                          !selectedMember.photo || selectedMember.photo.includes("placeholder-person.jpg") 
-                            ? "bg-gray-50 object-contain p-1" 
-                            : "object-cover"
-                        }`}
-                      />
-                      <p className="text-sm text-muted-foreground">
-                        Current photo
-                      </p>
+                    <div className="mb-2 space-y-2">
+                      <div className="flex items-center space-x-4">
+                        <img
+                          src={photoRemoved || !selectedMember.photo || selectedMember.photo.includes("placeholder-person.jpg") 
+                            ? (selectedMember.gender === "female" 
+                              ? "data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='450' height='450' viewBox='0 0 24 24' fill='%231E90DB' stroke='white' stroke-width='0.3' stroke-linecap='round' stroke-linejoin='round'%3e%3crect width='24' height='24' fill='%23e6f3ff' rx='12' ry='12'/%3e%3ccircle cx='12' cy='8' r='4.5' fill='%231E90DB'/%3e%3cpath d='M7 21v-2a4 4 0 0 1 4-4h2a4 4 0 0 1 4 4v2' fill='%231E90DB'/%3e%3c/svg%3e" 
+                              : "data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='450' height='450' viewBox='0 0 24 24' fill='%231E90DB' stroke='white' stroke-width='0.3' stroke-linecap='round' stroke-linejoin='round'%3e%3crect width='24' height='24' fill='%23e6f3ff' rx='12' ry='12'/%3e%3ccircle cx='12' cy='8' r='4.5' fill='%231E90DB'/%3e%3cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2' fill='%231E90DB'/%3e%3c/svg%3e")
+                            : selectedMember.photo
+                          }
+                          alt={selectedMember.name}
+                          className={`w-16 h-16 rounded-full ${
+                            photoRemoved || !selectedMember.photo || selectedMember.photo.includes("placeholder-person.jpg") 
+                              ? "bg-gray-50 object-contain p-1" 
+                              : "object-cover"
+                          }`}
+                        />
+                        <p className="text-sm text-muted-foreground">
+                          {photoRemoved ? "Using placeholder image" : "Current photo"}
+                        </p>
+                      </div>
+                      {!photoRemoved && selectedMember.photo && !selectedMember.photo.includes("placeholder-person.jpg") && (
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          size="sm"
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                          onClick={() => {
+                            editForm.setValue("photo", "");
+                            setSelectedFile(null);
+                            setPhotoRemoved(true);
+                          }}
+                        >
+                          Remove Photo
+                        </Button>
+                      )}
                     </div>
                   )}
                   <FormControl>

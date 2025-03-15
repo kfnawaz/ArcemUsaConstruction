@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Loader2, CheckCircle, Trash2, Star, Search, ShieldX } from "lucide-react";
+import { Loader2, CheckCircle, Trash2, Star, Search, ShieldX, Eye } from "lucide-react";
 import { Testimonial } from "@shared/schema";
 import { scrollToTop } from '@/lib/utils';
 import { formatDate } from "@/lib/utils";
@@ -77,7 +77,9 @@ const TestimonialsManagement = () => {
   // State variables
   const [searchQuery, setSearchQuery] = useState('');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showDetailDialog, setShowDetailDialog] = useState(false);
   const [testimonialToDelete, setTestimonialToDelete] = useState<Testimonial | null>(null);
+  const [selectedTestimonial, setSelectedTestimonial] = useState<Testimonial | null>(null);
   const [activeTab, setActiveTab] = useState<'pending' | 'all'>('pending');
 
   // Filter testimonials based on search query
@@ -124,6 +126,39 @@ const TestimonialsManagement = () => {
       title: "Revoking approval",
       description: "The testimonial approval is being revoked...",
     });
+  };
+
+  const handleViewClick = (testimonial: Testimonial) => {
+    setSelectedTestimonial(testimonial);
+    setShowDetailDialog(true);
+  };
+  
+  const handleDetailApprove = () => {
+    if (selectedTestimonial) {
+      approveTestimonial(selectedTestimonial.id);
+      toast({
+        title: "Processing approval",
+        description: "The testimonial is being approved...",
+      });
+    }
+  };
+  
+  const handleDetailRevokeApproval = () => {
+    if (selectedTestimonial) {
+      revokeApproval(selectedTestimonial.id);
+      toast({
+        title: "Revoking approval",
+        description: "The testimonial approval is being revoked...",
+      });
+    }
+  };
+  
+  const handleDetailDelete = () => {
+    if (selectedTestimonial) {
+      setTestimonialToDelete(selectedTestimonial);
+      setShowDetailDialog(false);
+      setShowDeleteDialog(true);
+    }
   };
 
   return (
@@ -300,7 +335,8 @@ const TestimonialsManagement = () => {
                             </div>
                           </td>
                           <td className="px-6 py-4">
-                            <p className="text-sm text-gray-500 line-clamp-2 max-w-xs">
+                            <p className="text-sm text-gray-500 line-clamp-2 max-w-xs cursor-pointer hover:text-blue-600 hover:underline" 
+                               onClick={() => handleViewClick(testimonial)}>
                               "{testimonial.content}"
                             </p>
                             <div className="text-xs text-gray-400 mt-1">
@@ -319,6 +355,15 @@ const TestimonialsManagement = () => {
                             )}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleViewClick(testimonial)}
+                              className="text-blue-600 hover:text-blue-900 mr-2"
+                              title="View testimonial details"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
                             {!testimonial.approved ? (
                               <Button
                                 variant="ghost"
@@ -384,6 +429,143 @@ const TestimonialsManagement = () => {
             >
               {isDeleting ? "Deleting..." : "Delete"}
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Testimonial Detail Dialog */}
+      <Dialog open={showDetailDialog} onOpenChange={setShowDetailDialog}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">Testimonial Details</DialogTitle>
+          </DialogHeader>
+          
+          {selectedTestimonial && (
+            <div className="overflow-y-auto max-h-[70vh]">
+              <div className="flex items-center mb-6">
+                <Avatar className="h-16 w-16 mr-4">
+                  <AvatarImage 
+                    src={selectedTestimonial.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedTestimonial.name)}&background=random`} 
+                    alt={selectedTestimonial.name} 
+                  />
+                  <AvatarFallback className="text-lg">
+                    {selectedTestimonial.name.split(" ").map(n => n[0]).join("")}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <h3 className="text-xl font-bold">{selectedTestimonial.name}</h3>
+                  <p className="text-gray-600">
+                    {selectedTestimonial.position}{selectedTestimonial.company ? ` at ${selectedTestimonial.company}` : ''}
+                  </p>
+                  {selectedTestimonial.email && (
+                    <p className="text-sm text-gray-500">{selectedTestimonial.email}</p>
+                  )}
+                </div>
+              </div>
+              
+              <div className="mb-6">
+                <div className="flex items-center mb-2">
+                  <h4 className="text-sm font-medium text-gray-700 mr-2">Rating:</h4>
+                  <div className="flex items-center">
+                    {[...Array(5)].map((_, i) => (
+                      <Star 
+                        key={i} 
+                        className={`h-5 w-5 ${i < selectedTestimonial.rating 
+                          ? "text-yellow-400 fill-yellow-400" 
+                          : "text-gray-300"}`} 
+                      />
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="mb-4">
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">Status:</h4>
+                  {selectedTestimonial.approved ? (
+                    <Badge className="bg-green-50 text-green-700 border-green-200">
+                      Approved
+                    </Badge>
+                  ) : (
+                    <Badge className="bg-orange-50 text-orange-700 border-orange-200">
+                      Pending Approval
+                    </Badge>
+                  )}
+                </div>
+                
+                <div className="mb-4">
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">Submitted on:</h4>
+                  <p className="text-gray-600">
+                    {selectedTestimonial.createdAt 
+                      ? formatDate(selectedTestimonial.createdAt) 
+                      : 'Date not available'}
+                  </p>
+                </div>
+                
+                <div>
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">Testimonial:</h4>
+                  <div className="bg-gray-50 p-4 rounded-md border border-gray-200 mb-4">
+                    <p className="text-gray-800 whitespace-pre-wrap">"{selectedTestimonial.content}"</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter className="flex justify-between">
+            <div>
+              {selectedTestimonial && !selectedTestimonial.approved ? (
+                <Button
+                  variant="outline"
+                  className="bg-green-50 text-green-700 border-green-200 hover:bg-green-100"
+                  onClick={handleDetailApprove}
+                  disabled={isApproving}
+                >
+                  {isApproving ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Approving...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="mr-2 h-4 w-4" />
+                      Approve Testimonial
+                    </>
+                  )}
+                </Button>
+              ) : selectedTestimonial && selectedTestimonial.approved ? (
+                <Button
+                  variant="outline"
+                  className="bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100"
+                  onClick={handleDetailRevokeApproval}
+                  disabled={isRevoking}
+                >
+                  {isRevoking ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Revoking...
+                    </>
+                  ) : (
+                    <>
+                      <ShieldX className="mr-2 h-4 w-4" />
+                      Revoke Approval
+                    </>
+                  )}
+                </Button>
+              ) : null}
+            </div>
+            
+            <div className="flex gap-2">
+              <Button
+                variant="destructive"
+                onClick={handleDetailDelete}
+                disabled={isDeleting}
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </Button>
+              <DialogClose asChild>
+                <Button variant="outline">Close</Button>
+              </DialogClose>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
