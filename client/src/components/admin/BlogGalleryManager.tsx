@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -30,6 +30,9 @@ const BlogGalleryManager: React.FC<BlogGalleryManagerProps> = ({ postId }) => {
   const [selectedImageId, setSelectedImageId] = useState<number | null>(null);
   const [captionInput, setCaptionInput] = useState<string>('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [uploadSession, setUploadSession] = useState<string>('');
+  const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
+  const [isCommitted, setIsCommitted] = useState(false);
 
   const {
     galleryImages,
@@ -41,21 +44,79 @@ const BlogGalleryManager: React.FC<BlogGalleryManagerProps> = ({ postId }) => {
     uploadFile,
   } = useBlog(postId);
 
-  const handleFileUploadComplete = async (fileUrl: string | string[]) => {
+  // Handle component unmount - clean up any uncommitted files
+  useEffect(() => {
+    return () => {
+      cleanupUncommittedFiles();
+    };
+  }, [uploadSession, isCommitted, uploadedFiles]);
+
+  // Clean up uncommitted files when dialog is closed without saving
+  useEffect(() => {
+    if (!isAddDialogOpen && uploadSession && !isCommitted && uploadedFiles.length > 0) {
+      cleanupUncommittedFiles();
+    }
+  }, [isAddDialogOpen, uploadSession, isCommitted, uploadedFiles]);
+
+  const cleanupUncommittedFiles = async () => {
+    if (uploadSession && !isCommitted && uploadedFiles.length > 0) {
+      try {
+        console.log('Cleaning up uncommitted files for session:', uploadSession);
+        const response = await fetch('/api/files/cleanup', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ sessionId: uploadSession }),
+          credentials: 'include'
+        });
+        
+        if (response.ok) {
+          console.log('Successfully cleaned up uncommitted files');
+          setUploadedFiles([]);
+        }
+      } catch (err) {
+        console.error('Error cleaning up files:', err);
+      }
+    }
+  };
+
+  const handleFileUploadComplete = async (fileUrl: string | string[], sessionId?: string) => {
     try {
+      if (sessionId) {
+        setUploadSession(sessionId);
+      }
+      
+      setIsCommitted(false);
+      
       if (typeof fileUrl === 'string') {
+        // Track for potential cleanup
+        setUploadedFiles([fileUrl]);
+        
         // Single file upload
         await addGalleryImage(fileUrl, captionInput || null);
+        
+        // Mark as committed
+        setIsCommitted(true);
       } else if (Array.isArray(fileUrl) && fileUrl.length > 0) {
+        // Track for potential cleanup
+        setUploadedFiles(fileUrl);
+        
         // Multiple files upload - process each file
         for (const url of fileUrl) {
           await addGalleryImage(url, captionInput || null);
         }
+        
+        // Mark as committed
+        setIsCommitted(true);
       }
+      
       setCaptionInput('');
       setIsAddDialogOpen(false);
     } catch (error) {
       console.error('Error adding gallery image(s):', error);
+      // Clean up files on error
+      cleanupUncommittedFiles();
     }
   };
 

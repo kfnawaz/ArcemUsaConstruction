@@ -1088,26 +1088,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { sessionId, fileUrl } = req.body;
       
-      // If specific file URL is provided, delete just that file
-      if (fileUrl) {
-        const deleted = await FileManager.deleteFile(fileUrl);
-        return res.status(200).json({
-          success: deleted,
-          message: deleted ? `Deleted file: ${fileUrl}` : `Failed to delete file: ${fileUrl}`,
-          files: deleted ? [fileUrl] : []
-        });
-      }
-      
-      // Otherwise require sessionId for cleaning up sessions
-      if (!sessionId) {
+      // If no sessionId or fileUrl is provided, return an error
+      if (!sessionId && !fileUrl) {
         return res.status(400).json({ message: "Session ID or fileUrl is required" });
       }
       
-      const deletedFiles = await FileManager.cleanupSession(sessionId);
+      let deletedFiles: string[] = [];
+      
+      if (fileUrl) {
+        // Handle individual file deletion with updated cleanupSession method
+        // Use wildcard session ID '*' when deleting a specific file with no session context
+        deletedFiles = await FileManager.cleanupSession(sessionId || '*', fileUrl);
+      } else {
+        // Clean up the entire session
+        deletedFiles = await FileManager.cleanupSession(sessionId);
+      }
       
       res.status(200).json({ 
-        success: true,
-        message: `Cleaned up ${deletedFiles.length} files`,
+        success: deletedFiles.length > 0,
+        message: fileUrl 
+          ? (deletedFiles.length > 0 ? `Deleted file: ${fileUrl}` : `Failed to delete file: ${fileUrl}`)
+          : `Cleaned up ${deletedFiles.length} files`,
         files: deletedFiles
       });
     } catch (error) {

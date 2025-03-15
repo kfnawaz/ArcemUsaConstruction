@@ -78,17 +78,37 @@ export class FileManager {
   /**
    * Deletes all pending files for a session (when form is cancelled)
    * @param sessionId The session ID to cleanup
+   * @param specificFileUrl Optional specific file URL to delete from the session
    * @returns Array of deleted file URLs
    */
-  static async cleanupSession(sessionId: string): Promise<string[]> {
+  static async cleanupSession(sessionId: string, specificFileUrl?: string): Promise<string[]> {
     const filesToDelete: string[] = [];
     
-    // Find all files for this session
-    this.pendingFiles.forEach((file, url) => {
-      if (file.sessionId === sessionId) {
-        filesToDelete.push(url);
+    // If a specific file URL was provided, only delete that one
+    if (specificFileUrl) {
+      // Check if this file exists in our tracking
+      const pendingFile = this.pendingFiles.get(specificFileUrl);
+      
+      if (pendingFile) {
+        // Only delete if it matches the session or no session was specified
+        if (sessionId === '*' || pendingFile.sessionId === sessionId) {
+          filesToDelete.push(specificFileUrl);
+        }
+      } else {
+        // File not tracked, but attempt to delete anyway if it appears 
+        // to be a local upload (for backwards compatibility)
+        if (specificFileUrl.startsWith('/uploads/')) {
+          filesToDelete.push(specificFileUrl);
+        }
       }
-    });
+    } else {
+      // Find all files for this session
+      this.pendingFiles.forEach((file, url) => {
+        if (file.sessionId === sessionId) {
+          filesToDelete.push(url);
+        }
+      });
+    }
     
     // Delete each file
     const deletedFiles: string[] = [];
@@ -100,7 +120,11 @@ export class FileManager {
       }
     }
     
-    log(`Cleaned up ${deletedFiles.length} files for session ${sessionId}`, 'file-manager');
+    const logMessage = specificFileUrl 
+      ? `Deleted file ${specificFileUrl}` 
+      : `Cleaned up ${deletedFiles.length} files for session ${sessionId}`;
+    
+    log(logMessage, 'file-manager');
     return deletedFiles;
   }
   
