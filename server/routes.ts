@@ -1,6 +1,7 @@
 import express, { type Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { FileManager } from "./utils/fileManager";
 import { 
   insertProjectSchema,
   insertProjectGallerySchema,
@@ -1664,6 +1665,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put(`${apiRouter}/admin/team-members/:id`, isAdmin, async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
+      
+      // Check if photo has been removed to delete the file
+      if (req.body.photo === null || req.body.photo === '') {
+        const existingTeamMember = await storage.getTeamMember(id);
+        if (existingTeamMember && existingTeamMember.photo) {
+          // Delete the photo file from the filesystem
+          await FileManager.safeDeleteFile(existingTeamMember.photo);
+        }
+      }
+      
       const teamMember = await storage.updateTeamMember(id, req.body);
       
       if (teamMember) {
