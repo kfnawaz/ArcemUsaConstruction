@@ -78,6 +78,18 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
   const [currentUploadSession, setCurrentUploadSession] = useState<string>(`session_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`);
   const [featureImageSession, setFeatureImageSession] = useState<string | null>(null);
   
+  // Helper function to generate a random session ID for uploads
+  const generateSessionId = () => {
+    return `proj_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  };
+  
+  // Helper function to add a session ID to the tracked sessions
+  const addUploadSession = (sessionId: string) => {
+    // Add to uploadSessions for tracking
+    uploadSessions.add(sessionId);
+    console.log(`Added session ${sessionId} to tracked sessions`);
+  };
+  
   // List of construction industry project categories
   const projectCategories = [
     "Commercial Construction",
@@ -477,11 +489,19 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                             {/* Direct file upload for feature image */}
                             {!field.value && (
                               <FileUpload
-                                onUploadComplete={(url) => {
+                                onUploadComplete={(url, sessionId) => {
                                   if (typeof url === 'string') {
                                     field.onChange(url);
+                                    
+                                    // Store the session ID for this feature image
+                                    if (sessionId) {
+                                      setFeatureImageSession(sessionId);
+                                      addUploadSession(sessionId);
+                                      console.log("Tracking feature image session:", sessionId);
+                                    }
                                   }
                                 }}
+                                sessionId={featureImageSession || generateSessionId()}
                                 accept="image/*"
                                 maxSizeMB={5}
                                 buttonText="Upload Feature Image"
@@ -755,7 +775,7 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={onClose}
+                  onClick={handleClose}
                 >
                   Cancel
                 </Button>
