@@ -108,7 +108,7 @@ const FileUpload = ({
     
     setIsUploading(true);
     const urls: string[] = [];
-    const newUploadedFiles: {name: string, url: string}[] = [...uploadedFiles];
+    const newUploadedFiles: {name: string, url: string, sessionId?: string}[] = [...uploadedFiles];
     
     for (let i = 0; i < validFiles.length; i++) {
       const file = validFiles[i];
@@ -119,7 +119,11 @@ const FileUpload = ({
         const formData = new FormData();
         formData.append('file', file);
         
-        const response = await fetch('/api/upload', {
+        // Add sessionId to the request
+        const url = new URL('/api/upload', window.location.origin);
+        url.searchParams.append('sessionId', sessionId);
+        
+        const response = await fetch(url.toString(), {
           method: 'POST',
           body: formData,
           credentials: 'include'
@@ -131,7 +135,11 @@ const FileUpload = ({
         
         const data = await response.json();
         urls.push(data.url);
-        newUploadedFiles.push({ name: file.name, url: data.url });
+        newUploadedFiles.push({ 
+          name: file.name, 
+          url: data.url,
+          sessionId: data.sessionId || sessionId
+        });
         
       } catch (error) {
         console.error('Upload error:', error);
@@ -148,7 +156,7 @@ const FileUpload = ({
     
     // Only call onUploadComplete if files were successfully uploaded
     if (urls.length > 0) {
-      onUploadComplete(multiple ? urls : urls[0]);
+      onUploadComplete(multiple ? urls : urls[0], sessionId);
       
       toast({
         title: "Upload successful",
@@ -208,9 +216,13 @@ const FileUpload = ({
       setUploadProgress(100);
       
       const data = await response.json();
-      const newFile = { name: file.name, url: data.url };
+      const newFile = { 
+        name: file.name, 
+        url: data.url,
+        sessionId: data.sessionId || sessionId 
+      };
       setUploadedFiles([...uploadedFiles, newFile]);
-      onUploadComplete(data.url);
+      onUploadComplete(data.url, sessionId);
       
       toast({
         title: "Upload successful",
@@ -268,7 +280,7 @@ const FileUpload = ({
     
     // If we're in multiple mode, update the parent component with the new list of URLs
     if (multiple) {
-      onUploadComplete(newFiles.map(f => f.url));
+      onUploadComplete(newFiles.map(f => f.url), sessionId);
     }
   };
   
