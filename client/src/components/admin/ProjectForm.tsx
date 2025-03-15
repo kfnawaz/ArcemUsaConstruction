@@ -64,7 +64,10 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
     addGalleryImage,
     updateGalleryImage,
     deleteGalleryImage,
-    uploadFile
+    uploadFile,
+    commitUploads,
+    cleanupUploads,
+    uploadSessions
   } = useProject(projectId);
   
   const { toast } = useToast(); // Provides the toast notification function
@@ -72,6 +75,8 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
   const [isUpdatingGallery, setIsUpdatingGallery] = useState(false);
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
   const [pendingFormData, setPendingFormData] = useState<InsertProject | null>(null);
+  const [currentUploadSession, setCurrentUploadSession] = useState<string>(`session_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`);
+  const [featureImageSession, setFeatureImageSession] = useState<string | null>(null);
   
   // List of construction industry project categories
   const projectCategories = [
@@ -190,6 +195,14 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
       });
       
       if (!isSubmitting) {
+        // If the form was successfully saved, commit the uploads instead of cleaning them up
+        if (currentUploadSession) {
+          await commitUploads(currentUploadSession);
+        }
+        if (featureImageSession) {
+          await commitUploads(featureImageSession);
+        }
+        
         onClose();
       }
     } catch (error) {
@@ -212,6 +225,44 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
   
   // Original form onSubmit handler
   const onSubmit = handleFormSubmit;
+  
+  // Custom close handler that cleans up pending uploads
+  const handleClose = async () => {
+    console.log("Handling form close with cleanup");
+    
+    // Clean up any pending uploads
+    if (uploadSessions.size > 0) {
+      console.log("Cleaning up upload sessions:", uploadSessions);
+      
+      const promises: Promise<boolean>[] = [];
+      
+      // Clean up the current upload session if it exists
+      if (currentUploadSession) {
+        console.log("Cleaning up current upload session:", currentUploadSession);
+        promises.push(cleanupUploads(currentUploadSession));
+      }
+      
+      // Clean up the feature image session if it exists
+      if (featureImageSession) {
+        console.log("Cleaning up feature image session:", featureImageSession);
+        promises.push(cleanupUploads(featureImageSession));
+      }
+      
+      // Clean up any other tracked sessions
+      uploadSessions.forEach(session => {
+        if (session !== currentUploadSession && session !== featureImageSession) {
+          console.log("Cleaning up additional session:", session);
+          promises.push(cleanupUploads(session));
+        }
+      });
+      
+      // Wait for all cleanup operations to complete
+      await Promise.allSettled(promises);
+    }
+    
+    // Call the original onClose function provided by the parent
+    onClose();
+  };
   
   const handleMultipleImagesUpload = async (urls: string | string[]) => {
     if (!Array.isArray(urls)) {
@@ -295,7 +346,7 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-8">
       <div className="flex items-center mb-6">
-        <Button variant="ghost" onClick={onClose} className="mr-4">
+        <Button variant="ghost" onClick={handleClose} className="mr-4">
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back
         </Button>
