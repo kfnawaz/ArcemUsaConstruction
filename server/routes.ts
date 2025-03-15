@@ -217,6 +217,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid gallery image ID" });
       }
       
+      // Get the gallery image to retrieve its URL before deletion
+      const projectGalleryImages = await storage.getProjectGallery(-1); // This will return all gallery images
+      const imageToDelete = projectGalleryImages.find(img => img.id === id);
+      
+      if (imageToDelete && imageToDelete.imageUrl) {
+        // Delete the physical file
+        await FileManager.safeDeleteFile(imageToDelete.imageUrl);
+      }
+      
       const result = await storage.deleteProjectGalleryImage(id);
       if (!result) {
         return res.status(404).json({ message: "Gallery image not found" });
@@ -224,6 +233,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.status(204).send();
     } catch (error) {
+      console.error("Error deleting project gallery image:", error);
       res.status(500).json({ message: "Failed to delete gallery image" });
     }
   });
@@ -407,6 +417,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid gallery image ID" });
       }
       
+      // Get all blog gallery images to find the one to delete
+      const blogGalleryImages = await storage.getBlogGallery(-1); // This will return all gallery images
+      const imageToDelete = blogGalleryImages.find(img => img.id === id);
+      
+      if (imageToDelete && imageToDelete.imageUrl) {
+        // Delete the physical file
+        await FileManager.safeDeleteFile(imageToDelete.imageUrl);
+      }
+      
       const deleted = await storage.deleteBlogGalleryImage(id);
       if (!deleted) {
         return res.status(404).json({ message: "Gallery image not found" });
@@ -414,6 +433,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.status(204).end();
     } catch (error) {
+      console.error("Error deleting blog gallery image:", error);
       res.status(500).json({ message: "Failed to delete gallery image" });
     }
   });
@@ -778,6 +798,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid gallery image ID" });
       }
       
+      // Get all service gallery images to find the one to delete
+      const serviceGalleryImages = await storage.getServiceGallery(-1); // This will return all gallery images
+      const imageToDelete = serviceGalleryImages.find(img => img.id === id);
+      
+      if (imageToDelete && imageToDelete.imageUrl) {
+        // Delete the physical file
+        await FileManager.safeDeleteFile(imageToDelete.imageUrl);
+      }
+      
       const deleted = await storage.deleteServiceGalleryImage(id);
       if (!deleted) {
         return res.status(404).json({ message: "Gallery image not found" });
@@ -785,6 +814,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.status(204).end();
     } catch (error) {
+      console.error("Error deleting service gallery image:", error);
       res.status(500).json({ message: "Failed to delete gallery image" });
     }
   });
@@ -859,6 +889,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const id = parseInt(req.params.id);
       const testimonialData = insertTestimonialSchema.partial().parse(req.body);
       
+      // Check if image has been removed
+      if (testimonialData.image === null || testimonialData.image === '') {
+        const existingTestimonial = await storage.getTestimonial(id);
+        if (existingTestimonial && existingTestimonial.image && 
+            !existingTestimonial.image.startsWith('https://randomuser.me/')) {
+          // Delete the physical file if it's not from randomuser.me
+          await FileManager.safeDeleteFile(existingTestimonial.image);
+        }
+      }
+      
       const updatedTestimonial = await storage.updateTestimonial(id, testimonialData);
       
       if (!updatedTestimonial) {
@@ -870,6 +910,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid testimonial data", errors: error.errors });
       }
+      console.error("Error updating testimonial:", error);
       res.status(500).json({ message: "Failed to update testimonial" });
     }
   });
@@ -909,6 +950,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete(`${apiRouter}/admin/testimonials/:id`, isAdmin, async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
+      
+      // Get the testimonial to retrieve its image URL before deletion
+      const testimonial = await storage.getTestimonial(id);
+      
+      if (testimonial && testimonial.image && 
+          !testimonial.image.startsWith('https://randomuser.me/')) {
+        // Delete the physical file if it's not from randomuser.me
+        await FileManager.safeDeleteFile(testimonial.image);
+      }
+      
       const success = await storage.deleteTestimonial(id);
       
       if (!success) {
@@ -917,6 +968,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json({ message: "Testimonial deleted successfully" });
     } catch (error) {
+      console.error("Error deleting testimonial:", error);
       res.status(500).json({ message: "Failed to delete testimonial" });
     }
   });
