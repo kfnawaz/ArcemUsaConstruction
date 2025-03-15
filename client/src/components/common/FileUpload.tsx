@@ -1,4 +1,4 @@
-import { useState, useRef, ChangeEvent } from 'react';
+import { useState, useRef, ChangeEvent, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -7,12 +7,14 @@ import { useToast } from '@/hooks/use-toast';
 import { Progress } from '@/components/ui/progress';
 
 interface FileUploadProps {
-  onUploadComplete: (fileUrl: string | string[]) => void;
+  onUploadComplete: (fileUrl: string | string[], sessionId?: string) => void;
   accept?: string;
   maxSizeMB?: number;
   multiple?: boolean;
   buttonText?: string;
   helpText?: string;
+  sessionId?: string;
+  onSessionIdCreated?: (sessionId: string) => void;
 }
 
 const FileUpload = ({ 
@@ -21,15 +23,25 @@ const FileUpload = ({
   maxSizeMB = 5,
   multiple = false,
   buttonText,
-  helpText
+  helpText,
+  sessionId: externalSessionId,
+  onSessionIdCreated
 }: FileUploadProps) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [uploadedFiles, setUploadedFiles] = useState<{name: string, url: string}[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<{name: string, url: string, sessionId?: string}[]>([]);
   const [currentFileName, setCurrentFileName] = useState<string | null>(null);
+  const [sessionId, setSessionId] = useState<string>(externalSessionId || `session_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  
+  // Notify parent component of sessionId if it wasn't provided
+  useEffect(() => {
+    if (!externalSessionId && onSessionIdCreated) {
+      onSessionIdCreated(sessionId);
+    }
+  }, [sessionId, externalSessionId, onSessionIdCreated]);
   
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -177,7 +189,11 @@ const FileUpload = ({
         });
       }, 300);
       
-      const response = await fetch('/api/upload', {
+      // Add sessionId to the request
+      const url = new URL('/api/upload', window.location.origin);
+      url.searchParams.append('sessionId', sessionId);
+      
+      const response = await fetch(url.toString(), {
         method: 'POST',
         body: formData,
         credentials: 'include'

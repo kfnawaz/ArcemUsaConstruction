@@ -2,10 +2,141 @@ import fs from 'fs';
 import path from 'path';
 import { log } from '../vite';
 
+interface PendingFile {
+  url: string;
+  timestamp: number;
+  sessionId: string;
+}
+
 /**
  * Manages file operations for the application, including deletion and tracking
  */
 export class FileManager {
+  // In-memory store of pending files that haven't been committed to database records
+  private static pendingFiles: Map<string, PendingFile> = new Map();
+  
+  /**
+   * Tracks a newly uploaded file that hasn't been saved to the database yet
+   * @param fileUrl The URL of the uploaded file
+   * @param sessionId A unique identifier for the upload session (form instance)
+   * @returns The tracked file URL
+   */
+  static trackPendingFile(fileUrl: string, sessionId: string): string {
+    if (!fileUrl) return fileUrl;
+    
+    // Skip external URLs
+    if (fileUrl.startsWith('http://') || fileUrl.startsWith('https://')) {
+      return fileUrl;
+    }
+    
+    // Add to pending files map
+    this.pendingFiles.set(fileUrl, {
+      url: fileUrl,
+      timestamp: Date.now(),
+      sessionId
+    });
+    
+    log(`Tracking pending file: ${fileUrl} for session ${sessionId}`, 'file-manager');
+    
+    return fileUrl;
+  }
+  
+  /**
+   * Marks files from a session as permanent (committed to database)
+   * @param sessionId The session ID to commit
+   * @param fileUrls Optional array of specific file URLs to commit
+   * @returns Array of committed file URLs
+   */
+  static commitFiles(sessionId: string, fileUrls?: string[]): string[] {
+    const committedFiles: string[] = [];
+    
+    if (fileUrls && fileUrls.length > 0) {
+      // Commit specific files
+      fileUrls.forEach(url => {
+        if (this.pendingFiles.has(url)) {
+          const file = this.pendingFiles.get(url)!;
+          if (file.sessionId === sessionId) {
+            this.pendingFiles.delete(url);
+            committedFiles.push(url);
+          }
+        }
+      });
+    } else {
+      // Commit all files for this session
+      this.pendingFiles.forEach((file, url) => {
+        if (file.sessionId === sessionId) {
+          this.pendingFiles.delete(url);
+          committedFiles.push(url);
+        }
+      });
+    }
+    
+    log(`Committed ${committedFiles.length} files for session ${sessionId}`, 'file-manager');
+    return committedFiles;
+  }
+  
+  /**
+   * Deletes all pending files for a session (when form is cancelled)
+   * @param sessionId The session ID to cleanup
+   * @returns Array of deleted file URLs
+   */
+  static async cleanupSession(sessionId: string): Promise<string[]> {
+    const filesToDelete: string[] = [];
+    
+    // Find all files for this session
+    this.pendingFiles.forEach((file, url) => {
+      if (file.sessionId === sessionId) {
+        filesToDelete.push(url);
+      }
+    });
+    
+    // Delete each file
+    const deletedFiles: string[] = [];
+    for (const url of filesToDelete) {
+      const deleted = await this.deleteFile(url);
+      if (deleted) {
+        this.pendingFiles.delete(url);
+        deletedFiles.push(url);
+      }
+    }
+    
+    log(`Cleaned up ${deletedFiles.length} files for session ${sessionId}`, 'file-manager');
+    return deletedFiles;
+  }
+  
+  /**
+   * Cleans up old pending files that are older than the specified age
+   * @param maxAgeMs Maximum age in milliseconds (default: 1 hour)
+   * @returns Number of files cleaned up
+   */
+  static async cleanupOldPendingFiles(maxAgeMs: number = 3600000): Promise<number> {
+    const now = Date.now();
+    const filesToDelete: string[] = [];
+    
+    // Find old files
+    this.pendingFiles.forEach((file, url) => {
+      if (now - file.timestamp > maxAgeMs) {
+        filesToDelete.push(url);
+      }
+    });
+    
+    // Delete each file
+    let deletedCount = 0;
+    for (const url of filesToDelete) {
+      const deleted = await this.deleteFile(url);
+      if (deleted) {
+        this.pendingFiles.delete(url);
+        deletedCount++;
+      }
+    }
+    
+    if (deletedCount > 0) {
+      log(`Cleaned up ${deletedCount} old pending files`, 'file-manager');
+    }
+    
+    return deletedCount;
+  }
+
   /**
    * Deletes a file from the uploads directory
    * @param fileUrl The URL of the file to delete (e.g., '/uploads/filename.jpg')
@@ -15,9 +146,6 @@ export class FileManager {
     if (!fileUrl) return false;
     
     try {
-      // Extract the filename from the URL
-      // URLs are typically in the format /uploads/filename.jpg
-      
       // Skip deletion for external URLs (starting with http or https)
       if (fileUrl.startsWith('http://') || fileUrl.startsWith('https://')) {
         log(`Skipping deletion of external file: ${fileUrl}`, 'file-manager');
@@ -42,6 +170,12 @@ export class FileManager {
       
       // Delete the file
       fs.unlinkSync(filePath);
+      
+      // If the file was in our pending files map, remove it
+      if (this.pendingFiles.has(fileUrl)) {
+        this.pendingFiles.delete(fileUrl);
+      }
+      
       log(`Successfully deleted file: ${filePath}`, 'file-manager');
       return true;
     } catch (error) {

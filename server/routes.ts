@@ -1039,17 +1039,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "No file uploaded" });
       }
       
+      // Get the original file URL
       const fileUrl = getFileUrl(req.file.filename);
+      
+      // Get session ID from query parameter or generate a random one
+      const sessionId = req.query.sessionId as string || `session_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+      
+      // Track this file as a pending upload (will be cleaned up if not committed)
+      const trackedUrl = FileManager.trackPendingFile(fileUrl, sessionId);
+      
       res.status(201).json({ 
-        url: fileUrl,
+        url: trackedUrl,
         filename: req.file.filename,
         originalname: req.file.originalname,
         mimetype: req.file.mimetype,
-        size: req.file.size
+        size: req.file.size,
+        sessionId: sessionId
       });
     } catch (error) {
       console.error("File upload error:", error);
       res.status(500).json({ message: "Failed to upload file" });
+    }
+  });
+  
+  // File management endpoints
+  app.post(`${apiRouter}/files/commit`, isAdmin, (req: Request, res: Response) => {
+    try {
+      const { sessionId, fileUrls } = req.body;
+      
+      if (!sessionId) {
+        return res.status(400).json({ message: "Session ID is required" });
+      }
+      
+      const committedFiles = FileManager.commitFiles(sessionId, fileUrls);
+      
+      res.status(200).json({ 
+        success: true,
+        message: `Committed ${committedFiles.length} files`,
+        files: committedFiles
+      });
+    } catch (error) {
+      console.error("File commit error:", error);
+      res.status(500).json({ message: "Failed to commit files" });
+    }
+  });
+  
+  app.post(`${apiRouter}/files/cleanup`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const { sessionId } = req.body;
+      
+      if (!sessionId) {
+        return res.status(400).json({ message: "Session ID is required" });
+      }
+      
+      const deletedFiles = await FileManager.cleanupSession(sessionId);
+      
+      res.status(200).json({ 
+        success: true,
+        message: `Cleaned up ${deletedFiles.length} files`,
+        files: deletedFiles
+      });
+    } catch (error) {
+      console.error("File cleanup error:", error);
+      res.status(500).json({ message: "Failed to cleanup files" });
     }
   });
 
