@@ -160,6 +160,8 @@ const BlogGalleryManager: React.FC<BlogGalleryManagerProps> = ({ postId }) => {
                 accept="image/*"
                 multiple={true}
                 maxSizeMB={5}
+                sessionId={uploadSession || undefined}
+                onSessionIdCreated={(newSessionId) => setUploadSession(newSessionId)}
               />
             </div>
             <DialogFooter className="sm:justify-end">

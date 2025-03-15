@@ -185,13 +185,23 @@ export const useBlog = (postId?: number) => {
     }
   });
 
-  // Helper function to upload a file
-  const uploadFile = async (file: File): Promise<string> => {
+  // Track upload sessions for cleanup
+  const [uploadSessions, setUploadSessions] = useState<Set<string>>(new Set());
+  
+  // Helper function to upload a file with session tracking
+  const uploadFile = async (file: File, sessionId?: string): Promise<{ url: string; sessionId: string }> => {
     const formData = new FormData();
     formData.append('file', file);
     
+    // Generate a session ID if not provided
+    const fileSessionId = sessionId || `blog_session_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    
     try {
-      const response = await fetch('/api/upload', {
+      // Add sessionId to the request
+      const url = new URL('/api/upload', window.location.origin);
+      url.searchParams.append('sessionId', fileSessionId);
+      
+      const response = await fetch(url.toString(), {
         method: 'POST',
         body: formData,
         credentials: 'include'
@@ -202,10 +212,89 @@ export const useBlog = (postId?: number) => {
       }
       
       const data = await response.json();
-      return data.url;
+      
+      // Add to tracked sessions
+      setUploadSessions(prev => {
+        const updated = new Set(prev);
+        updated.add(fileSessionId);
+        return updated;
+      });
+      
+      return { 
+        url: data.url,
+        sessionId: data.sessionId || fileSessionId
+      };
     } catch (error) {
       console.error('Error uploading file:', error);
       throw error;
+    }
+  };
+  
+  // Commit the uploads associated with a session
+  const commitUploads = async (sessionId: string, fileUrls?: string[]): Promise<boolean> => {
+    try {
+      const response = await fetch('/api/files/commit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ sessionId, fileUrls }),
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to commit uploads');
+      }
+      
+      const data = await response.json();
+      
+      // Remove this session from tracked sessions on success
+      if (data.success) {
+        setUploadSessions(prev => {
+          const updated = new Set(prev);
+          updated.delete(sessionId);
+          return updated;
+        });
+      }
+      
+      return data.success;
+    } catch (error) {
+      console.error('Error committing uploads:', error);
+      return false;
+    }
+  };
+  
+  // Clean up unused files from a session
+  const cleanupUploads = async (sessionId: string): Promise<boolean> => {
+    try {
+      const response = await fetch('/api/files/cleanup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ sessionId }),
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to cleanup uploads');
+      }
+      
+      const data = await response.json();
+      
+      // Remove this session from tracked sessions on success
+      if (data.success) {
+        setUploadSessions(prev => {
+          const updated = new Set(prev);
+          updated.delete(sessionId);
+          return updated;
+        });
+      }
+      
+      return data.success;
+    } catch (error) {
+      console.error('Error cleaning up uploads:', error);
+      return false;
     }
   };
   
@@ -243,6 +332,10 @@ export const useBlog = (postId?: number) => {
     addGalleryImage,
     deleteGalleryImage,
     isAddingGalleryImage,
-    isDeletingGalleryImage
+    isDeletingGalleryImage,
+    // Add new file management functions
+    uploadSessions,
+    commitUploads,
+    cleanupUploads
   };
 };
