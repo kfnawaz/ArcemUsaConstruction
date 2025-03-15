@@ -1781,6 +1781,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete(`${apiRouter}/admin/team-members/:id`, isAdmin, async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
+      
+      // Get the team member to retrieve their photo URL before deletion
+      const teamMember = await storage.getTeamMember(id);
+      
+      if (teamMember && teamMember.photo) {
+        // Delete the physical file
+        await FileManager.safeDeleteFile(teamMember.photo);
+      }
+      
       const result = await storage.deleteTeamMember(id);
       
       if (result) {
