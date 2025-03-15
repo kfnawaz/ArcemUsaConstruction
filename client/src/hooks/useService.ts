@@ -2,9 +2,11 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { Service, InsertService, ServiceGallery, InsertServiceGallery } from '@shared/schema';
 import { apiRequest, queryClient } from '../lib/queryClient';
 import { useToast } from './use-toast';
+import { useState } from 'react';
 
 export const useService = (serviceId?: number) => {
   const { toast } = useToast();
+  const [uploadSessions, setUploadSessions] = useState<Set<string>>(new Set());
 
   // Query to fetch all services
   const {
@@ -201,6 +203,92 @@ export const useService = (serviceId?: number) => {
       throw error;
     }
   };
+  
+  // Function to track a new upload session ID
+  const trackUploadSession = (sessionId: string) => {
+    if (!sessionId) return;
+    
+    setUploadSessions(prev => {
+      const updated = new Set(prev);
+      updated.add(sessionId);
+      return updated;
+    });
+    console.log("Tracking service gallery upload session:", sessionId);
+  };
+  
+  // Commit uploads - mark files as permanent (used in database)
+  const commitUploads = async (sessionId: string, fileUrls?: string[]): Promise<string[]> => {
+    try {
+      const response = await fetch('/api/files/commit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          sessionId,
+          fileUrls
+        }),
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to commit uploaded files');
+      }
+      
+      const data = await response.json();
+      console.log("Committed files for session:", sessionId, data.committedFiles);
+      
+      // Remove this session from our tracking
+      setUploadSessions(prev => {
+        const updated = new Set(prev);
+        updated.delete(sessionId);
+        return updated;
+      });
+      
+      return data.committedFiles;
+    } catch (error) {
+      console.error('Error committing uploads:', error);
+      throw error;
+    }
+  };
+  
+  // Cleanup uploads - delete temporary files that weren't committed
+  const cleanupUploads = async (sessionId: string, specificFileUrl?: string): Promise<string[]> => {
+    try {
+      const response = await fetch('/api/files/cleanup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          sessionId,
+          fileUrl: specificFileUrl
+        }),
+        credentials: 'include'
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to cleanup uploaded files');
+      }
+      
+      const data = await response.json();
+      console.log("Cleaned up files for session:", sessionId, data.deletedFiles);
+      
+      // Remove this session from our tracking if not specifying a single file
+      if (!specificFileUrl) {
+        setUploadSessions(prev => {
+          const updated = new Set(prev);
+          updated.delete(sessionId);
+          return updated;
+        });
+      }
+      
+      return data.deletedFiles;
+    } catch (error) {
+      console.error('Error cleaning uploads:', error);
+      throw error;
+    }
+  };
 
   return {
     // Service data
@@ -232,6 +320,12 @@ export const useService = (serviceId?: number) => {
     
     // File upload helper
     uploadFile,
+    
+    // File upload session tracking
+    uploadSessions,
+    trackUploadSession,
+    commitUploads,
+    cleanupUploads,
     
     // Mutation states
     isCreatingService: createServiceMutation.isPending,
