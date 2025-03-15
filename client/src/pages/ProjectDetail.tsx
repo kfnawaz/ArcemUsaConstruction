@@ -68,7 +68,16 @@ const RelatedProjects = ({ currentProjectId, category }: { currentProjectId: num
               alt={project.title} 
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               onError={(e) => {
-                e.currentTarget.src = "https://placehold.co/600x400?text=Image+Not+Found";
+                console.error(`Failed to load related project image: ${project.image}`);
+                e.currentTarget.src = '';
+                e.currentTarget.parentElement?.classList.add('related-image-error');
+                e.currentTarget.parentElement?.insertAdjacentHTML(
+                  'afterbegin',
+                  `<div class="w-full h-full bg-gray-200 flex flex-col items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400 mb-2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                    <p class="text-gray-500 text-xs">Image unavailable</p>
+                  </div>`
+                );
               }}
             />
             <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
@@ -216,6 +225,18 @@ const ProjectDetail = () => {
               src={project.image} 
               alt={project.title} 
               className="w-full h-auto object-cover mb-8 shadow-lg"
+              onError={(e) => {
+                console.error(`Failed to load project main image: ${project.image}`);
+                e.currentTarget.src = '';
+                e.currentTarget.parentElement?.classList.add('image-error');
+                e.currentTarget.parentElement?.insertAdjacentHTML(
+                  'afterbegin',
+                  `<div class="w-full aspect-video bg-gray-200 flex flex-col items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400 mb-2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                    <p class="text-gray-500 text-sm">Project image unavailable</p>
+                  </div>`
+                );
+              }}
             />
             
             {/* Project Gallery */}
@@ -234,7 +255,16 @@ const ProjectDetail = () => {
                         alt={image.caption || `Gallery image ${index + 1}`}
                         className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                         onError={(e) => {
-                          e.currentTarget.src = "https://placehold.co/600x600?text=Image+Not+Found";
+                          console.error(`Failed to load gallery image: ${image.imageUrl}`);
+                          e.currentTarget.src = '';
+                          e.currentTarget.parentElement?.classList.add('gallery-image-error');
+                          e.currentTarget.parentElement?.insertAdjacentHTML(
+                            'afterbegin',
+                            `<div class="w-full h-full bg-gray-200 flex flex-col items-center justify-center">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400 mb-2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                              <p class="text-gray-500 text-xs">Image unavailable</p>
+                            </div>`
+                          );
                         }}
                       />
                       <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-opacity duration-300 flex items-center justify-center">
@@ -363,7 +393,17 @@ const ProjectDetail = () => {
                     alt={sortedGalleryImages[currentImageIndex]?.caption || "Gallery image"}
                     className="max-h-full max-w-full object-contain"
                     onError={(e) => {
-                      e.currentTarget.src = "https://placehold.co/800x600?text=Image+Not+Found";
+                      const currentImage = sortedGalleryImages[currentImageIndex];
+                      console.error(`Failed to load lightbox image: ${currentImage?.imageUrl}`);
+                      e.currentTarget.src = '';
+                      e.currentTarget.parentElement?.classList.add('lightbox-image-error');
+                      e.currentTarget.parentElement?.insertAdjacentHTML(
+                        'afterbegin',
+                        `<div class="bg-gray-200 flex flex-col items-center justify-center p-10 rounded-lg">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400 mb-4"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                          <p class="text-gray-500 text-base">Image is not available</p>
+                        </div>`
+                      );
                     }}
                   />
                   
