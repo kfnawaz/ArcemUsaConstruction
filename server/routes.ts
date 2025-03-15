@@ -1086,10 +1086,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.post(`${apiRouter}/files/cleanup`, isAdmin, async (req: Request, res: Response) => {
     try {
-      const { sessionId } = req.body;
+      const { sessionId, fileUrl } = req.body;
       
+      // If specific file URL is provided, delete just that file
+      if (fileUrl) {
+        const deleted = await FileManager.deleteFile(fileUrl);
+        return res.status(200).json({
+          success: deleted,
+          message: deleted ? `Deleted file: ${fileUrl}` : `Failed to delete file: ${fileUrl}`,
+          files: deleted ? [fileUrl] : []
+        });
+      }
+      
+      // Otherwise require sessionId for cleaning up sessions
       if (!sessionId) {
-        return res.status(400).json({ message: "Session ID is required" });
+        return res.status(400).json({ message: "Session ID or fileUrl is required" });
       }
       
       const deletedFiles = await FileManager.cleanupSession(sessionId);

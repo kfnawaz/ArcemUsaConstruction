@@ -132,8 +132,11 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
         // Check if we need to clean up (only if we have sessions and not all were committed)
         if (uploadSessions.size > 0 && cleanupUploads) {
           console.log("Cleaning up uncommitted gallery uploads on unmount");
-          cleanupUploads().catch(err => {
-            console.error("Error cleaning up gallery uploads:", err);
+          // Clean up each session individually
+          uploadSessions.forEach(sessionId => {
+            cleanupUploads(sessionId).catch(err => {
+              console.error(`Error cleaning up gallery upload session ${sessionId}:`, err);
+            });
           });
         }
       };
@@ -231,9 +234,15 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
         }
         
         // Commit the uploads to prevent cleanup of saved files
-        if (commitUploads) {
-          await commitUploads();
-          console.log("Committed gallery uploads");
+        if (commitUploads && uploadSessions.size > 0) {
+          // Get all file URLs to commit
+          const fileUrls = pendingImages.map(img => img.url);
+          
+          // Commit each session
+          for (const sessionId of Array.from(uploadSessions)) {
+            await commitUploads(sessionId, fileUrls);
+            console.log(`Committed gallery upload session: ${sessionId}`);
+          }
         }
         
         toast({
@@ -287,12 +296,40 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
     };
     
     // Delete a pending image (not yet saved to database)
-    const handleDeletePendingImage = (index: number) => {
+    const handleDeletePendingImage = async (index: number) => {
+      const pendingImage = pendingImages[index];
+      
+      // First remove from state
       setPendingImages(prev => {
         const newPendingImages = [...prev];
         newPendingImages.splice(index, 1);
         return newPendingImages;
       });
+      
+      // If we're tracking this file via sessions, also try to clean it up server-side
+      if (pendingImage && pendingImage.url) {
+        // We don't have the specific session ID for this file, so try cleaning up all sessions
+        // This is not ideal but for now, individual files can't be deleted this way
+        // In a future update, we should track which file belongs to which session
+        try {
+          // Make direct API call to cleanup the specific file
+          const response = await fetch('/api/files/cleanup', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ fileUrl: pendingImage.url }),
+            credentials: 'include'
+          });
+          
+          if (response.ok) {
+            console.log(`Successfully removed unused file: ${pendingImage.url}`);
+          }
+        } catch (err) {
+          console.error('Error cleaning up deleted pending image:', err);
+        }
+      }
+      
       setShowMaxImagesWarning(false);
     };
 
