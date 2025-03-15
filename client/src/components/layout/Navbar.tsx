@@ -19,6 +19,9 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
 
   // Check if we're on an admin page
   const isAdminPage = location.startsWith("/admin");
+  
+  // Check if we're on a project detail page
+  const isProjectDetailPage = location.match(/^\/projects\/\d+$/) !== null;
 
   // Logo animation on page load
   useEffect(() => {
@@ -72,7 +75,7 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
       id="navbar"
       className={cn(
         "fixed w-full z-50 py-4 transition-all duration-300",
-        isAdminPage ? "navbar-admin" : isScrolled ? "navbar-fixed" : "",
+        isAdminPage ? "navbar-admin" : isProjectDetailPage || isScrolled ? "navbar-fixed" : "",
       )}
     >
       <div className="container mx-auto px-4 md:px-8">
