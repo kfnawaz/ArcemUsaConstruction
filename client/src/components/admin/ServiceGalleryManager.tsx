@@ -37,6 +37,8 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [pendingImages, setPendingImages] = useState<string[]>([]);
     const [showMaxImagesWarning, setShowMaxImagesWarning] = useState(false);
+    const [uploadSession, setUploadSession] = useState<string>('');
+    const [isCommitted, setIsCommitted] = useState(false);
 
     const {
       serviceGallery,
@@ -80,10 +82,46 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
       }
     }, [serviceId]);
     
+    // Function to clean up uncommitted files
+    const cleanupUncommittedFiles = async () => {
+      if (uploadSession && !isCommitted && pendingImages.length > 0) {
+        try {
+          console.log('Cleaning up uncommitted files for session:', uploadSession);
+          const response = await fetch('/api/files/cleanup', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ sessionId: uploadSession }),
+            credentials: 'include'
+          });
+          
+          if (response.ok) {
+            console.log('Successfully cleaned up uncommitted files');
+          }
+        } catch (err) {
+          console.error('Error cleaning up files:', err);
+        }
+      }
+    };
+    
+    // Handle component unmount - clean up any uncommitted files
+    useEffect(() => {
+      return () => {
+        cleanupUncommittedFiles();
+      };
+    }, [uploadSession, isCommitted, pendingImages]);
+    
     // This function handles the file upload but doesn't save to database
-    const handleFileUpload = async (urls: string | string[]) => {
+    const handleFileUpload = async (urls: string | string[], sessionId?: string) => {
       if (!Array.isArray(urls)) {
         urls = [urls];
+      }
+      
+      // If we received a session ID, track it for cleanup
+      if (sessionId) {
+        setUploadSession(sessionId);
+        setIsCommitted(false);
       }
       
       // Check if adding these images would exceed the limit
@@ -131,6 +169,29 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
       setIsUploading(true);
       
       try {
+        // Mark files as committed so they don't get cleaned up
+        setIsCommitted(true);
+        
+        // If we have a session ID, mark the files as committed on the server
+        if (uploadSession) {
+          try {
+            await fetch('/api/files/commit', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                sessionId: uploadSession,
+                fileUrls: pendingImages
+              }),
+              credentials: 'include'
+            });
+          } catch (err) {
+            console.error('Error committing files:', err);
+            // Continue anyway since we've already marked them as committed client-side
+          }
+        }
+        
         // Calculate next display order
         const nextOrder = serviceGallery && serviceGallery.length > 0 
           ? Math.max(...serviceGallery.map(img => img.order !== null ? img.order : 0)) + 1 
@@ -199,13 +260,38 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
     };
     
     // Delete a pending image (not yet saved to database)
-    const handleDeletePendingImage = (index: number) => {
+    const handleDeletePendingImage = async (index: number) => {
+      // Get the URL of the image to delete
+      const imageUrl = pendingImages[index];
+      
+      // Update state first for responsive UI
       setPendingImages(prev => {
         const newPendingImages = [...prev];
         newPendingImages.splice(index, 1);
         return newPendingImages;
       });
       setShowMaxImagesWarning(false);
+      
+      // If there's a valid URL, try to delete the file from the server
+      if (imageUrl) {
+        try {
+          console.log('Deleting file:', imageUrl);
+          const response = await fetch('/api/files/cleanup', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ fileUrl: imageUrl }),
+            credentials: 'include'
+          });
+          
+          if (response.ok) {
+            console.log('Successfully deleted file:', imageUrl);
+          }
+        } catch (err) {
+          console.error('Error deleting file:', err);
+        }
+      }
     };
 
     return (
@@ -231,6 +317,8 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
                 maxSizeMB={5}
                 buttonText="Add Images"
                 helpText={`Add up to ${MAX_GALLERY_IMAGES - currentImageCount} more image${MAX_GALLERY_IMAGES - currentImageCount !== 1 ? 's' : ''}`}
+                sessionId={uploadSession || undefined}
+                onSessionIdCreated={(newSessionId) => setUploadSession(newSessionId)}
               />
             </div>
           ) : null}
