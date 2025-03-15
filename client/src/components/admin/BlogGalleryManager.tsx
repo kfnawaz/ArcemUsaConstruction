@@ -42,6 +42,8 @@ const BlogGalleryManager: React.FC<BlogGalleryManagerProps> = ({ postId }) => {
     isAddingGalleryImage,
     isDeletingGalleryImage,
     uploadFile,
+    commitUploads,
+    cleanupUploads,
   } = useBlog(postId);
 
   // Handle component unmount - clean up any uncommitted files
@@ -49,29 +51,22 @@ const BlogGalleryManager: React.FC<BlogGalleryManagerProps> = ({ postId }) => {
     return () => {
       cleanupUncommittedFiles();
     };
-  }, [uploadSession, isCommitted, uploadedFiles]);
+  }, [uploadSession, isCommitted, uploadedFiles, cleanupUploads]);
 
   // Clean up uncommitted files when dialog is closed without saving
   useEffect(() => {
     if (!isAddDialogOpen && uploadSession && !isCommitted && uploadedFiles.length > 0) {
       cleanupUncommittedFiles();
     }
-  }, [isAddDialogOpen, uploadSession, isCommitted, uploadedFiles]);
+  }, [isAddDialogOpen, uploadSession, isCommitted, uploadedFiles, cleanupUploads]);
 
   const cleanupUncommittedFiles = async () => {
     if (uploadSession && !isCommitted && uploadedFiles.length > 0) {
       try {
         console.log('Cleaning up uncommitted files for session:', uploadSession);
-        const response = await fetch('/api/files/cleanup', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ sessionId: uploadSession }),
-          credentials: 'include'
-        });
+        const success = await cleanupUploads(uploadSession);
         
-        if (response.ok) {
+        if (success) {
           console.log('Successfully cleaned up uncommitted files');
           setUploadedFiles([]);
         }
@@ -96,6 +91,9 @@ const BlogGalleryManager: React.FC<BlogGalleryManagerProps> = ({ postId }) => {
         // Single file upload
         await addGalleryImage(fileUrl, captionInput || null);
         
+        // Commit the file
+        await commitUploads(uploadSession, [fileUrl]);
+        
         // Mark as committed
         setIsCommitted(true);
       } else if (Array.isArray(fileUrl) && fileUrl.length > 0) {
@@ -106,6 +104,9 @@ const BlogGalleryManager: React.FC<BlogGalleryManagerProps> = ({ postId }) => {
         for (const url of fileUrl) {
           await addGalleryImage(url, captionInput || null);
         }
+        
+        // Commit all files
+        await commitUploads(uploadSession, fileUrl);
         
         // Mark as committed
         setIsCommitted(true);
