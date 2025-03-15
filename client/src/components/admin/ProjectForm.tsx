@@ -269,7 +269,7 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
       e.stopPropagation();
     }
     
-    console.log("Setting preview image to:", imageUrl);
+    console.log("Setting feature image to:", imageUrl);
     
     // Only set the value in the form without triggering a save
     form.setValue('image', imageUrl, { 
@@ -280,12 +280,12 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
     
     // Show toast to confirm the action
     toast({
-      title: "Preview image updated",
-      description: "This image will be used as the project thumbnail"
+      title: "Feature image updated",
+      description: "This image will be used as the project thumbnail and hero image"
     });
     
     // Explicitly log the form state to verify it's not submitting
-    console.log("Form state after setting preview:", {
+    console.log("Form state after setting feature image:", {
       isDirty: form.formState.isDirty,
       isSubmitting: form.formState.isSubmitting,
       isSubmitted: form.formState.isSubmitted
@@ -416,32 +416,79 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                     name="image"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Preview Image</FormLabel>
+                        <FormLabel>Feature Image</FormLabel>
                         <FormDescription>
-                          Select a preview image from the gallery below or upload a new one.
+                          This image will be used as the project thumbnail on listings and cards.
                           {form.formState.isDirty && <span className="text-blue-600 font-medium ml-1">Click "Update Project" to save changes</span>}
                         </FormDescription>
-                        <FormMessage />
-                        {field.value && (
-                          <div className="mt-2 border rounded p-2">
-                            <div className="relative">
-                              <Badge className="absolute top-2 left-2 bg-primary text-white">Preview Image</Badge>
-                              <img 
-                                src={field.value} 
-                                alt="Project preview image" 
-                                className="w-full h-64 object-cover rounded"
-                                onError={(e) => {
-                                  e.currentTarget.src = "https://placehold.co/600x400?text=Image+Not+Found";
+                        <FormControl>
+                          <div className="space-y-4">
+                            {/* Direct file upload for feature image */}
+                            {!field.value && (
+                              <FileUpload
+                                onUploadComplete={(url) => {
+                                  if (typeof url === 'string') {
+                                    field.onChange(url);
+                                  }
                                 }}
+                                accept="image/*"
+                                maxSizeMB={5}
+                                buttonText="Upload Feature Image"
+                                helpText="This will be the main project image"
                               />
-                            </div>
+                            )}
+                            
+                            {/* Preview of selected feature image */}
+                            {field.value && (
+                              <div className="mt-2 border rounded p-2">
+                                <div className="relative">
+                                  <Badge className="absolute top-2 left-2 bg-primary text-white">Feature Image</Badge>
+                                  <img 
+                                    src={field.value} 
+                                    alt="Project feature image" 
+                                    className="w-full h-64 object-cover rounded"
+                                    onError={(e) => {
+                                      e.currentTarget.src = "https://placehold.co/600x400?text=Image+Not+Found";
+                                    }}
+                                  />
+                                  <div className="absolute bottom-2 right-2 flex space-x-2">
+                                    <Button 
+                                      type="button"
+                                      size="sm" 
+                                      variant="destructive"
+                                      onClick={() => field.onChange('')}
+                                    >
+                                      <Trash2 className="h-4 w-4 mr-1" /> Remove
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
                           </div>
-                        )}
+                        </FormControl>
+                        <FormMessage />
                       </FormItem>
                     )}
                   />
                   
-
+                  {/* Project Gallery Preview Section - shown even when creating a new project */}
+                  <div className="mt-6">
+                    <h3 className="text-lg font-semibold mb-2">Project Gallery</h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      {projectId 
+                        ? "Upload additional images to showcase this project." 
+                        : "You'll be able to add more images after creating the project."}
+                    </p>
+                    
+                    {!projectId ? (
+                      <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg bg-muted/10">
+                        <ImageIcon className="h-12 w-12 text-muted-foreground mb-2" />
+                        <p className="text-sm text-muted-foreground">
+                          Save the project first to add gallery images
+                        </p>
+                      </div>
+                    ) : null}
+                  </div>
                 </div>
               </div>
 
