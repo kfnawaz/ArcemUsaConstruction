@@ -62,7 +62,8 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
       isDeletingGalleryImage,
       uploadSessions,
       commitUploads,
-      cleanupUploads
+      cleanupUploads,
+      trackUploadSession
     } = useProject(projectId);
 
     // Check if we've reached the maximum image limit
@@ -482,10 +483,9 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
             <div className="mb-4">
               <FileUpload 
                 onUploadComplete={(urls, sessionId) => {
-                  if (sessionId) {
-                    // Track this session ID to ensure files are cleaned up if not saved
-                    uploadSessions.add(sessionId);
-                    console.log("Tracking gallery upload session:", sessionId);
+                  if (sessionId && trackUploadSession) {
+                    // Use the proper function from the hook to track the session
+                    trackUploadSession(sessionId);
                   }
                   handleFileUpload(urls);
                 }}

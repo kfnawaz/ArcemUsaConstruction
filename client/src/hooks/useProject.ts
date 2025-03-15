@@ -327,6 +327,18 @@ export const useProject = (projectId?: number) => {
   const addProjectGalleryImage = addGalleryImage;
   const deleteProjectGalleryImage = deleteGalleryImage;
   const updateProjectGalleryImage = updateGalleryImage;
+  
+  // Function to track a new upload session ID
+  const trackUploadSession = (sessionId: string) => {
+    if (!sessionId) return;
+    
+    setUploadSessions(prev => {
+      const updated = new Set(prev);
+      updated.add(sessionId);
+      return updated;
+    });
+    console.log("Tracking gallery upload session:", sessionId);
+  };
 
   return {
     project,
@@ -350,6 +362,7 @@ export const useProject = (projectId?: number) => {
     updateProjectGalleryImage,
     isAddingGalleryImage,
     isDeletingGalleryImage,
-    isUpdatingGalleryImage
+    isUpdatingGalleryImage,
+    trackUploadSession
   };
 };
