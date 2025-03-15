@@ -59,7 +59,10 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
       addProjectGalleryImage,
       deleteProjectGalleryImage,
       updateProjectGalleryImage,
-      isDeletingGalleryImage
+      isDeletingGalleryImage,
+      uploadSessions,
+      commitUploads,
+      cleanupUploads
     } = useProject(projectId);
 
     // Check if we've reached the maximum image limit
@@ -121,6 +124,20 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
         }
       }
     }, [projectId]);
+    
+    // Clean up uploads on unmount if they haven't been saved
+    useEffect(() => {
+      // Return cleanup function that will run when component unmounts
+      return () => {
+        // Check if we need to clean up (only if we have sessions and not all were committed)
+        if (uploadSessions.size > 0 && cleanupUploads) {
+          console.log("Cleaning up uncommitted gallery uploads on unmount");
+          cleanupUploads().catch(err => {
+            console.error("Error cleaning up gallery uploads:", err);
+          });
+        }
+      };
+    }, [cleanupUploads, uploadSessions]);
 
     // Calculate the next order value for new images
     const getNextOrderValue = () => {
@@ -211,6 +228,12 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
           };
           
           await addProjectGalleryImage(galleryImage);
+        }
+        
+        // Commit the uploads to prevent cleanup of saved files
+        if (commitUploads) {
+          await commitUploads();
+          console.log("Committed gallery uploads");
         }
         
         toast({
@@ -421,7 +444,15 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
           {canAddMoreImages ? (
             <div className="mb-4">
               <FileUpload 
-                onUploadComplete={handleFileUpload}
+                onUploadComplete={(urls, sessionId) => {
+                  if (sessionId) {
+                    // Track this session ID to ensure files are cleaned up if not saved
+                    uploadSessions.add(sessionId);
+                    console.log("Tracking gallery upload session:", sessionId);
+                  }
+                  handleFileUpload(urls);
+                }}
+                sessionId={`project_gallery_${projectId}_${Date.now()}`}
                 multiple={true}
                 accept="image/*"
                 maxSizeMB={5}
