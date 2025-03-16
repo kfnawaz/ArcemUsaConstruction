@@ -1,4 +1,4 @@
-import type { FileRouter } from "uploadthing/next";
+import type { FileRouter } from "uploadthing/server";
 
 export type OurFileRouter = FileRouter & {
   imageUploader: {
@@ -7,8 +7,7 @@ export type OurFileRouter = FileRouter & {
       maxFileCount: number;
     };
     metadata?: {
-      type: "post" | "project" | "service" | "team" | "testimonial";
-      id?: number;
+      userId?: number;
     };
     output: {
       url: string;

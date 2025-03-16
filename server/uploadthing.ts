@@ -11,24 +11,32 @@ declare module "express-session" {
 
 const f = createUploadthing();
 
-// FileRouter for your app, can contain multiple FileRoutes
 export const uploadRouter = {
-  // Define as many FileRoutes as you like, each with a unique routeSlug
-  imageUploader: f({ image: { maxFileSize: "4MB", maxFileCount: 1 } })
-    // Set permissions and file types for this FileRoute
+  imageUploader: f({ image: { maxFileSize: "4MB", maxFileCount: 10 } })
     .middleware(async ({ req }) => {
-      // This code runs on your server before upload
+      // Check if the user is authenticated and has admin role
       const isAdmin = req.session?.role === 'admin';
+      if (!isAdmin) throw new Error("Unauthorized: Admin access required");
 
-      // If you throw, the user will not be able to upload
-      if (!isAdmin) throw new Error("Unauthorized");
-
-      // Whatever is returned here is accessible in onUploadComplete as `metadata`
-      return { userId: req.session?.userId };
+      // Return metadata needed for file processing
+      return { 
+        userId: req.session?.userId 
+      };
     })
     .onUploadComplete(async ({ metadata, file }) => {
-      // This code RUNS ON YOUR SERVER after upload
-      console.log("Upload complete for userId:", metadata.userId);
-      console.log("File URL:", file.url);
+      // Log successful upload
+      console.log("Upload completed:", {
+        userId: metadata.userId,
+        fileUrl: file.url,
+        fileName: file.name,
+        fileSize: file.size,
+        fileKey: file.key
+      });
+
+      // Return file details
+      return { 
+        url: file.url,
+        key: file.key 
+      };
     }),
 } satisfies FileRouter;

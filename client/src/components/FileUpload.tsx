@@ -1,116 +1,153 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { UploadCloud, X } from 'lucide-react';
+import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useUploadThing } from '@/lib/uploadthing';
 import { cn } from '@/lib/utils';
-import type { OurFileRouter } from '../../../shared/uploadthing';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
+import { Icon } from '@/components/ui/icons';
+import { X, File, Image, Upload, Loader2 } from 'lucide-react';
 
 interface FileUploadProps {
-  accept?: string;
-  maxSize?: number;
-  value?: string;
-  onChange: (url: string) => void;
-  onError?: (error: string) => void;
+  onUploadComplete?: (urls: string[]) => void;
+  onUploadError?: (error: Error) => void;
   className?: string;
+  maxFiles?: number;
 }
 
 export function FileUpload({
-  accept = 'image/*',
-  maxSize = 5 * 1024 * 1024, // 5MB
-  value,
-  onChange,
-  onError,
-  className
+  onUploadComplete,
+  onUploadError,
+  className,
+  maxFiles = 10,
 }: FileUploadProps) {
-  const [isUploading, setIsUploading] = useState(false);
-  const { startUpload } = useUploadThing("imageUploader");
+  const [files, setFiles] = useState<File[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const { toast } = useToast();
+  const { startUpload } = useUploadThing('imageUploader');
+
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    // Check if adding new files would exceed the limit
+    if (files.length + acceptedFiles.length > maxFiles) {
+      toast({
+        title: 'Upload limit exceeded',
+        description: `You can only upload up to ${maxFiles} files at a time.`,
+        variant: 'destructive',
+      });
+      return;
+    }
+    setFiles(prev => [...prev, ...acceptedFiles]);
+  }, [files.length, maxFiles, toast]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    accept: { 'image/*': [] },
-    maxSize,
-    multiple: false,
-    disabled: isUploading,
-    onDrop: async (acceptedFiles) => {
-      if (acceptedFiles.length === 0) return;
-
-      const file = acceptedFiles[0];
-      if (!file.type.startsWith('image/')) {
-        onError?.('Please upload an image file.');
-        return;
-      }
-
-      setIsUploading(true);
-      try {
-        const res = await startUpload([file]);
-        if (res && res[0]?.url) {
-          onChange(res[0].url);
-        }
-      } catch (error) {
-        console.error('Upload error:', error);
-        onError?.('Failed to upload file. Please try again.');
-      } finally {
-        setIsUploading(false);
-      }
-    },
-    onDropRejected: (fileRejections) => {
-      const error = fileRejections[0]?.errors[0];
-      if (error?.code === 'file-too-large') {
-        onError?.(`File is too large. Maximum size is ${maxSize / 1024 / 1024}MB.`);
-      } else {
-        onError?.('Invalid file. Please try again.');
-      }
+    onDrop,
+    accept: {
+      'image/*': ['.png', '.jpg', '.jpeg', '.gif'],
     },
   });
 
-  const handleRemove = () => {
-    onChange('');
+  const removeFile = (index: number) => {
+    setFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleUpload = async () => {
+    try {
+      setUploading(true);
+      const uploadedFiles = await startUpload(files);
+      
+      if (!uploadedFiles) {
+        throw new Error('Upload failed');
+      }
+
+      const urls = uploadedFiles.map(f => f.url);
+      onUploadComplete?.(urls);
+      
+      // Clear files and show success message
+      setFiles([]);
+      toast({
+        title: 'Upload complete',
+        description: `Successfully uploaded ${urls.length} file${urls.length === 1 ? '' : 's'}.`,
+      });
+    } catch (error) {
+      console.error('Upload error:', error);
+      onUploadError?.(error as Error);
+      toast({
+        title: 'Upload failed',
+        description: (error as Error)?.message || 'Something went wrong during upload.',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
-    <div className={cn("space-y-4", className)}>
-      {!value ? (
-        <div
-          {...getRootProps()}
-          className={cn(
-            "flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-lg transition-colors",
-            isDragActive ? "border-primary bg-primary/5" : "border-border",
-            isUploading && "opacity-50 cursor-not-allowed"
-          )}
-        >
-          <input {...getInputProps()} />
-          <UploadCloud className="w-10 h-10 mb-2 text-muted-foreground" />
-          <div className="text-center space-y-1">
-            <p className="text-sm font-medium">
-              {isDragActive ? "Drop the file here" : "Drag & drop a file here"}
+    <div className={cn('space-y-4', className)}>
+      <div
+        {...getRootProps()}
+        className={cn(
+          'border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors',
+          isDragActive ? 'border-primary bg-primary/5' : 'border-border',
+        )}
+      >
+        <input {...getInputProps()} />
+        <div className="flex flex-col items-center justify-center gap-2">
+          <Icons.upload className="h-8 w-8 text-muted-foreground" />
+          {isDragActive ? (
+            <p>Drop the files here...</p>
+          ) : (
+            <p>
+              Drag &apos;n&apos; drop files here, or click to select files
+              <br />
+              <span className="text-sm text-muted-foreground">
+                Supported formats: PNG, JPG, GIF (max {maxFiles} files)
+              </span>
             </p>
-            <p className="text-xs text-muted-foreground">
-              or click to select a file
-            </p>
-          </div>
-          {isUploading && (
-            <div className="mt-2 text-sm text-muted-foreground animate-pulse">
-              Uploading...
-            </div>
           )}
         </div>
-      ) : (
-        <div className="relative group">
-          <img
-            src={value}
-            alt="Uploaded file"
-            className="w-full h-40 object-cover rounded-lg"
-          />
-          <Button
-            type="button"
-            variant="destructive"
-            size="icon"
-            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-            onClick={handleRemove}
+      </div>
+
+      {files.length > 0 && (
+        <div className="space-y-2">
+          {files.map((file, index) => (
+            <div
+              key={`${file.name}-${index}`}
+              className="flex items-center justify-between p-2 border rounded"
+            >
+              <div className="flex items-center gap-2">
+                {file.type.startsWith('image/') ? (
+                  <Image className="h-4 w-4" />
+                ) : (
+                  <File className="h-4 w-4" />
+                )}
+                <span className="text-sm truncate max-w-[200px]">
+                  {file.name}
+                </span>
+                <span className="text-sm text-muted-foreground">
+                  ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                </span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => removeFile(index)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          ))}
+          <Button 
+            onClick={handleUpload} 
+            disabled={uploading}
+            className="w-full"
           >
-            <X className="h-4 w-4" />
+            {uploading ? (
+              <>
+                <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+                Uploading...
+              </>
+            ) : (
+              <>Upload {files.length} file{files.length === 1 ? '' : 's'}</>
+            )}
           </Button>
         </div>
       )}
