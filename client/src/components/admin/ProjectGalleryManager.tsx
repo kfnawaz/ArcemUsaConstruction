@@ -24,6 +24,7 @@ import { Progress } from '@/components/ui/progress';
 import FileUpload from '@/components/common/FileUpload';
 import SortableGalleryGrid from './SortableGalleryGrid';
 import ImageCropper from '../common/ImageCropper';
+import UploadThingFileUpload from '@/components/common/UploadThingFileUpload';
 
 interface ProjectGalleryManagerProps {
   projectId: number;

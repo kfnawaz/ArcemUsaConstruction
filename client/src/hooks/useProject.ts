@@ -177,10 +177,17 @@ export const useProject = (projectId?: number) => {
 
   const saveProject = async (data: InsertProject) => {
     setIsSubmitting(true);
-    if (projectId) {
-      await updateMutation.mutateAsync({ id: projectId, data });
-    } else {
-      await createMutation.mutateAsync(data);
+    try {
+      if (projectId) {
+        const result = await updateMutation.mutateAsync({ id: projectId, data });
+        return result;
+      } else {
+        const result = await createMutation.mutateAsync(data);
+        return result;
+      }
+    } catch (error) {
+      console.error("Error in saveProject:", error);
+      throw error;
     }
   };
 
