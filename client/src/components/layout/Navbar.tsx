@@ -95,17 +95,18 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
                   : "-translate-x-full rotate-90 opacity-0",
               )}
             />
-            <span
+            <div
               ref={textRef}
               className={cn(
-                "text-[#1E90DB] transition-all duration-700 delay-500 transform",
+                "flex flex-col text-[#1E90DB] transition-all duration-700 delay-500 transform",
                 logoAnimated
                   ? "translate-x-0 opacity-100"
                   : "translate-x-20 opacity-0",
               )}
             >
-              A+R C.E.M
-            </span>
+              <span className="text-2xl font-bold">A+R C.E.M</span>
+              <span className="text-xs font-medium -mt-1">Construction Engineering Management</span>
+            </div>
           </Link>
 
           {/* Desktop Navigation */}
