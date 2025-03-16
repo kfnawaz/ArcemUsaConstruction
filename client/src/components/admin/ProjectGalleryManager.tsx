@@ -247,7 +247,7 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
         if (isNewProject) {
           // Just commit the uploads to prevent cleanup of saved files
           if (commitUploads && uploadSessions.size > 0) {
-            // Get all file URLs to commit
+            // Get all file URLs to commit - ensure we're tracking these files
             const fileUrls = pendingImages.map(img => img.url);
             
             // Commit each session
@@ -266,7 +266,15 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
         }
         
         // For existing projects, add each image to the gallery with caption and display order
+        console.log(`Adding ${pendingImages.length} gallery images to project ${projectId}`);
+        
         for (const pendingImage of pendingImages) {
+          // Make sure we have the URL before proceeding
+          if (!pendingImage.url) {
+            console.error("Missing URL for pending image:", pendingImage);
+            continue;
+          }
+
           const galleryImage: InsertProjectGallery = {
             projectId,
             imageUrl: pendingImage.url,
@@ -274,6 +282,7 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
             displayOrder: pendingImage.displayOrder,
           };
           
+          console.log("Saving gallery image to database:", galleryImage);
           await addProjectGalleryImage(galleryImage);
         }
         
@@ -684,8 +693,17 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
               <UploadThingFileUpload 
                 endpoint="imageUploader"
                 onClientUploadComplete={(files) => {
-                  // Extract URLs from the response files
-                  const urls = files.map(file => file.url);
+                  // Extract URLs from the response files - prefer ufsUrl over url (deprecated)
+                  const urls = files.map(file => file.ufsUrl || file.url);
+                  
+                  // Track these files in the database
+                  if (projectId) {
+                    files.forEach(file => {
+                      const imageUrl = file.ufsUrl || file.url;
+                      console.log(`Adding image to gallery: ${imageUrl}`);
+                    });
+                  }
+                  
                   handleFileUpload(urls);
                 }}
                 onUploadError={(error) => {

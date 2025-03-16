@@ -11,6 +11,7 @@ export type OurFileRouter = FileRouter & {
     };
     output: {
       url: string;
+      ufsUrl?: string; // New URL format from UploadThing
       key: string;
       name: string;
       size: number;

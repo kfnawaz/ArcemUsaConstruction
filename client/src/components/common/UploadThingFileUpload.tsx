@@ -10,6 +10,7 @@ import type { OurFileRouter } from "@shared/uploadthing";
 // Define the types required for the component
 interface UploadFileResponse {
   url: string;
+  ufsUrl?: string; // New URL format from UploadThing
   key: string;
   name: string;
   size: number;
@@ -22,12 +23,7 @@ interface UploadThingError extends Error {
 
 interface UploadThingFileUploadProps {
   endpoint: "imageUploader";
-  onClientUploadComplete?: (files: {
-    url: string;
-    key: string;
-    name: string;
-    size: number;
-  }[]) => void;
+  onClientUploadComplete?: (files: UploadFileResponse[]) => void;
   onUploadError?: (error: UploadThingError) => void;
   onUploadBegin?: () => void;
   buttonText?: string;
