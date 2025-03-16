@@ -9,6 +9,7 @@ import { Progress } from "@/components/ui/progress";
 // Define interface for UploadThing file response
 interface UploadFileResponse {
   url: string;
+  ufsUrl?: string; // New URL format from UploadThing
   key: string;
   name: string;
   size: number;
@@ -40,7 +41,11 @@ export default function UploadThingUploader({
       });
       
       // Extract URLs and pass them to the parent component
-      const urls = files.map(file => file.url);
+      // Prefer the new ufsUrl format if available, fall back to url if not
+      const urls = files.map(file => file.ufsUrl || file.url);
+      
+      console.log('Extracted uploaded file URLs:', urls);
+      
       if (onComplete) {
         onComplete(urls);
       }

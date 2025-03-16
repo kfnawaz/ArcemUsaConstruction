@@ -56,9 +56,21 @@ export default function UploadThingFileUpload({
   // Use the UploadThing hook
   const { startUpload, isUploading } = useUploadThing(endpoint, {
     onClientUploadComplete: (files) => {
+      if (!files || files.length === 0) return;
+      
+      // Add logging to debug
+      console.log('UploadThing complete, files:', files);
+      
+      // Process files to ensure they use ufsUrl when available
+      const processedFiles = files.map(file => ({
+        ...file,
+        url: file.ufsUrl || file.url // Ensure we're using the new URL format
+      }));
+      
       if (onClientUploadComplete) {
-        onClientUploadComplete(files);
+        onClientUploadComplete(processedFiles);
       }
+      
       setSelectedFiles([]);
       setErrorMessage(null);
       toast({
