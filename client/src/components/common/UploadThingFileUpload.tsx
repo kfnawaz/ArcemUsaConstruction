@@ -6,7 +6,6 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, UploadCloud, XCircle, CheckCircle, AlertTriangle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import type { OurFileRouter } from "@shared/uploadthing";
-import type { FileWithPath } from "@uploadthing/react";
 
 // Define the types required for the component
 interface UploadFileResponse {
@@ -59,7 +58,7 @@ export default function UploadThingFileUpload({
   const maxSizeBytes = maxSizeMB * 1024 * 1024;
 
   // Use the UploadThing hook
-  const { startUpload, permittedFileInfo, isUploading } = useUploadThing(endpoint, {
+  const { startUpload, isUploading } = useUploadThing(endpoint, {
     onClientUploadComplete: (files) => {
       if (onClientUploadComplete) {
         onClientUploadComplete(files);
@@ -74,7 +73,8 @@ export default function UploadThingFileUpload({
     onUploadError: (error) => {
       setErrorMessage(error.message);
       if (onUploadError) {
-        onUploadError(error);
+        // Type assertion to make TypeScript happy
+        onUploadError(error as UploadThingError);
       }
       toast({
         title: "Upload failed",
@@ -198,9 +198,12 @@ export default function UploadThingFileUpload({
     startUpload(selectedFiles);
   }, [selectedFiles, startUpload]);
 
-  // Get permitted types from UploadThing
-  const { fileTypes } = permittedFileInfo ?? { fileTypes: [] };
-  const formattedFileTypes = fileTypes.join(", ");
+  // Define allowed file types for display
+  const allowedFileTypes = accept.split(',').map(type => type.trim());
+  const formattedFileTypes = allowedFileTypes.join(", ");
+
+  // Fixed fileTypes that we support
+  const supportedFileTypes = ['image/jpeg', 'image/png', 'image/webp'];
 
   return (
     <div className="w-full">
@@ -225,7 +228,7 @@ export default function UploadThingFileUpload({
             </h3>
             <p className="text-sm text-muted-foreground">
               {helpText} <br />
-              {permittedFileInfo && `Allowed types: ${formattedFileTypes}`}
+              Allowed types: {formattedFileTypes}
             </p>
           </div>
           
