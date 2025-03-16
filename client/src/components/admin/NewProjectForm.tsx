@@ -4,6 +4,12 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useProject } from '@/hooks/useProject';
 import { InsertProject, insertProjectSchema, ExtendedInsertProject, ProjectGallery } from '@shared/schema';
+import { useQueryClient } from '@tanstack/react-query';
+
+// Helper function to safely handle string or null values
+function safeString(value: string | null | undefined): string {
+  return value || '';
+}
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -50,7 +56,6 @@ import { generateId } from '@/lib/utils';
 
 // Import file upload hooks and utilities
 import { useFileUpload } from '@/hooks/useUploadThing';
-import { useQueryClient } from '@tanstack/react-query';
 
 // Define an interface for our locally tracked gallery image
 interface TempGalleryImage {
@@ -110,7 +115,7 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
     maxFileSize,
     formatFileSize,
   } = useFileUpload({
-    onClientUploadComplete: (urls) => {
+    onClientUploadComplete: (urls: string[]) => {
       // When files are uploaded, update the temporary gallery images
       if (urls.length > 0) {
         setGalleryImages(prev => {
@@ -138,7 +143,7 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
         }
       }
     },
-    onUploadError: (error) => {
+    onUploadError: (error: Error) => {
       toast({
         title: "Upload Error",
         description: error.message || "Failed to upload images. Please try again.",
@@ -146,7 +151,7 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
       });
       setIsSubmitting(false);
     },
-    onUploadProgress: (progress) => {
+    onUploadProgress: (progress: number) => {
       // Update progress for all uploading images
       setGalleryImages(prev => {
         return prev.map(img => {
