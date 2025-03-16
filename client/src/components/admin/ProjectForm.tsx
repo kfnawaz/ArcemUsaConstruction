@@ -82,9 +82,9 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
   const [currentUploadSession, setCurrentUploadSession] = useState<string>(`session_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`);
   const [featureImageSession, setFeatureImageSession] = useState<string | null>(null);
   
-  // New state for two-step approach
-  const [currentStep, setCurrentStep] = useState<'details' | 'images'>('details');
+  // State for tracking the project creation process
   const [createdProjectId, setCreatedProjectId] = useState<number | null>(null);
+  // No step tracking needed for simplified approach
   
   // Helper function to generate a random session ID for uploads
   const generateSessionId = () => {
@@ -227,38 +227,55 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
     }
   };
   
-  // Modified form submission for two-step approach (Step 1: Project Details)
-  const handleDetailsSubmit = async (data: InsertProject) => {
+  // Form submission for creating new projects - unified approach
+  const handleNewProjectSubmit = async (data: InsertProject) => {
     try {
       console.log("Creating new project with data:", data);
       
-      // When creating a new project, we only save the details on first step
+      // Create the project
       const result = await saveProject(data);
       
       console.log("Project creation result:", result);
       
-      // Save the ID of the newly created project and move to the image step
+      // Save the ID of the newly created project
       if (result && typeof result === 'object' && 'id' in result) {
-        console.log("Moving to image step with project ID:", result.id);
+        console.log("Project created successfully with ID:", result.id);
         setCreatedProjectId(result.id);
-        setCurrentStep('images');
+        
+        // Handle gallery images if any have been uploaded
+        if (galleryManagerRef.current) {
+          try {
+            await galleryManagerRef.current.saveGalleryImages();
+          } catch (error) {
+            console.error("Error saving gallery images:", error);
+          }
+        }
+        
         toast({
-          title: "Project created",
-          description: "Now you can add images to showcase your project",
+          title: "Success",
+          description: "Project created successfully",
         });
+        
+        // Commit uploads instead of cleaning them up
+        if (featureImageSession) {
+          await commitUploads(featureImageSession);
+        }
+        
+        // Close the form after successful creation
+        onClose();
       } else {
         console.error("Project was created but couldn't extract ID:", result);
         toast({
           title: "Warning",
-          description: "Project was created but there was an issue preparing image upload. Please continue or refresh the page.",
+          description: "Project was created but there was an issue with the response. Please check if it was saved correctly.",
           variant: "destructive"
         });
       }
     } catch (error) {
-      console.error("Error saving project details:", error);
+      console.error("Error saving project:", error);
       toast({
         title: "Error",
-        description: "Failed to save project details. Please try again.",
+        description: "Failed to create project. Please try again.",
         variant: "destructive"
       });
     }
