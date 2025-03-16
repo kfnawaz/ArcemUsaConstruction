@@ -187,8 +187,8 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
     try {
       await saveProject(data);
       
-      // If we have a gallery manager and a project ID, save the gallery images
-      if (projectId && galleryManagerRef.current) {
+      // If we have a gallery manager (either new or existing project), save the gallery images
+      if (galleryManagerRef.current) {
         try {
           await galleryManagerRef.current.saveGalleryImages();
         } catch (error) {
@@ -542,23 +542,23 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                     )}
                   />
                   
-                  {/* Project Gallery Preview Section - shown even when creating a new project */}
+                  {/* Project Gallery Section - shown for both new and existing projects */}
                   <div className="mt-6">
                     <h3 className="text-lg font-semibold mb-2">Project Gallery</h3>
                     <p className="text-sm text-muted-foreground mb-4">
                       {projectId 
                         ? "Upload additional images to showcase this project." 
-                        : "You'll be able to add more images after creating the project."}
+                        : "Upload images to showcase this project. Images will be saved after project creation."}
                     </p>
                     
-                    {!projectId ? (
-                      <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed rounded-lg bg-muted/10">
-                        <ImageIcon className="h-12 w-12 text-muted-foreground mb-2" />
-                        <p className="text-sm text-muted-foreground">
-                          Save the project first to add gallery images
-                        </p>
-                      </div>
-                    ) : null}
+                    {/* Display gallery manager for both new and existing projects */}
+                    <ProjectGalleryManager
+                      ref={galleryManagerRef}
+                      projectId={projectId || 0}
+                      isNewProject={!projectId}
+                      commitUploads={fileUtils.commitFiles}
+                      trackUploadSession={addUploadSession}
+                    />
                   </div>
                 </div>
               </div>
@@ -727,41 +727,7 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                 </div>
               </div>
 
-              {/* Project Gallery Images Section */}
-              <div className="mt-8">
-                <Separator className="my-6" />
-                <h3 className="text-lg font-semibold mb-4">Project Gallery Images</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  Add, edit, or remove gallery images for this project. You can add up to 10 images per project.
-                  {projectId && projectGallery && projectGallery.length > 0 && 
-                    " Simply click on any image to set it as the project preview image."}
-                </p>
-                
-                <div
-                  onClick={(e) => {
-                    // Find if the clicked element is our image with data-preview-action
-                    const targetElem = e.target as HTMLElement;
-                    const previewImage = targetElem.closest('[data-preview-action="true"]');
-                    
-                    if (previewImage) {
-                      // Get the image URL from the data attribute
-                      const imageUrl = previewImage.getAttribute('data-preview-url');
-                      if (imageUrl) {
-                        handleSetAsPreview(null, imageUrl);
-                      }
-                    }
-                  }}
-                >
-                  <ProjectGalleryManager 
-                    ref={galleryManagerRef}
-                    projectId={projectId || 0} 
-                    isNewProject={!projectId}
-                    previewImageUrl={form.getValues('image')}
-                  />
-                </div>
-                
-
-              </div>
+              {/* Not needed - we already have the gallery manager above */}
 
               <div className="flex justify-end space-x-4 mt-8">
                 <Button

@@ -222,7 +222,29 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
       setIsUploading(true);
       
       try {
-        // Add each image to the gallery with caption and display order
+        // For new projects, we don't save the gallery images yet - we'll do it after project creation
+        if (isNewProject) {
+          // Just commit the uploads to prevent cleanup of saved files
+          if (commitUploads && uploadSessions.size > 0) {
+            // Get all file URLs to commit
+            const fileUrls = pendingImages.map(img => img.url);
+            
+            // Commit each session
+            for (const sessionId of Array.from(uploadSessions)) {
+              await commitUploads(sessionId, fileUrls);
+              console.log(`Committed gallery upload session for new project: ${sessionId}`);
+            }
+          }
+          
+          toast({
+            title: 'Images saved',
+            description: `${pendingImages.length} image${pendingImages.length > 1 ? 's' : ''} will be added after project creation.`,
+          });
+          
+          return;
+        }
+        
+        // For existing projects, add each image to the gallery with caption and display order
         for (const pendingImage of pendingImages) {
           const galleryImage: InsertProjectGallery = {
             projectId,
