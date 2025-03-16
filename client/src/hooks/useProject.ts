@@ -370,6 +370,16 @@ export const useProject = (projectId?: number) => {
     console.log("Tracking gallery upload session:", sessionId);
   };
 
+  // Create a separate function for createProject
+  const createProject = async (data: InsertProject): Promise<any> => {
+    return createMutation.mutateAsync(data);
+  };
+
+  // Create a separate function for updateProject
+  const updateProject = async (id: number, data: Partial<InsertProject>): Promise<any> => {
+    return updateMutation.mutateAsync({ id, data });
+  };
+
   return {
     project,
     projectGallery,
@@ -378,6 +388,8 @@ export const useProject = (projectId?: number) => {
     isLoadingGallery,
     error,
     saveProject,
+    createProject,
+    updateProject,
     isSubmitting,
     addGalleryImage,
     updateGalleryImage,

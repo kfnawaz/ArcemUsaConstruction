@@ -32,6 +32,8 @@ interface ProjectGalleryManagerProps {
   previewImageUrl?: string;
   commitUploads?: (sessionId: string, fileUrls?: string[]) => Promise<string[]>;
   trackUploadSession?: (sessionId: string) => void;
+  onSetAsPreview?: (e: React.MouseEvent<HTMLButtonElement, MouseEvent> | null, imageUrl: string) => void;
+  allowReordering?: boolean;
 }
 
 export interface ProjectGalleryManagerHandle {
