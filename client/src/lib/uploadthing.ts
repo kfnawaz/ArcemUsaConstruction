@@ -12,7 +12,8 @@ export type OurFileRouter = FileRouter & {
       userId?: number;
     };
     output: {
-      url: string;
+      url: string; // Deprecated
+      ufsUrl: string; // New URL property
       key: string;
       name: string;
       size: number;

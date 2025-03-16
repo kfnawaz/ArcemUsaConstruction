@@ -8,7 +8,7 @@ export const useFileUpload = () => {
     try {
       const response = await startImageUpload([file]);
       if (response && response[0]) {
-        return response[0].url;
+        return response[0].ufsUrl || response[0].url; // Prefer ufsUrl, fallback to url
       }
       return undefined;
     } catch (error) {
@@ -21,7 +21,7 @@ export const useFileUpload = () => {
     try {
       const response = await startDocUpload([file]);
       if (response && response[0]) {
-        return response[0].url;
+        return response[0].ufsUrl || response[0].url; // Prefer ufsUrl, fallback to url
       }
       return undefined;
     } catch (error) {

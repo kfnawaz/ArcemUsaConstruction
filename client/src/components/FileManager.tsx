@@ -87,7 +87,7 @@ export default function FileManager({
   const { startUpload, isUploading } = useUploadThing("imageUploader", {
     onClientUploadComplete: (results) => {
       // Process upload results
-      const uploadedUrls = results.map((result) => result.url);
+      const uploadedUrls = results.map((result) => result.ufsUrl || result.url); // Prefer ufsUrl, fallback to url for compatibility
       
       // Track uploaded files for cleanup if needed
       uploadedUrls.forEach(url => {

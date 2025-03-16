@@ -94,7 +94,7 @@ export default function FileUpload({
   const { startUpload, isUploading } = useUploadThing("imageUploader", {
     onClientUploadComplete: (results) => {
       // Results is an array of returned file URLs from UploadThing
-      const uploadedUrls = results.map((result) => result.url);
+      const uploadedUrls = results.map((result) => result.ufsUrl || result.url); // Prefer ufsUrl, fallback to url for backward compatibility
       setFileUrls((prev) => [...prev, ...uploadedUrls]);
       setFiles([]);
       setUploadProgress(null);
