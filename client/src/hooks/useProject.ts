@@ -380,6 +380,51 @@ export const useProject = (projectId?: number) => {
     return updateMutation.mutateAsync({ id, data });
   };
 
+  // Set a gallery image as the feature image
+  const setFeatureImageMutation = useMutation({
+    mutationFn: async ({ projectId, imageId }: { projectId: number; imageId: number }) => {
+      return apiRequest({
+        url: `/api/projects/${projectId}/gallery/${imageId}/set-feature`,
+        method: 'PUT',
+        body: {}
+      });
+    },
+    onSuccess: () => {
+      if (projectId) {
+        // Invalidate both the project and its gallery to refresh the data
+        queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}`] });
+        queryClient.invalidateQueries({ queryKey: [`/api/projects/${projectId}/gallery`] });
+      }
+      toast({
+        title: "Feature image set",
+        description: "The feature image has been successfully updated.",
+        variant: "default"
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to set feature image. Please try again.",
+        variant: "destructive"
+      });
+      console.error("Error setting feature image:", error);
+    }
+  });
+
+  // Function to set a gallery image as the feature image
+  const setProjectFeatureImage = async (imageId: number): Promise<any> => {
+    if (!projectId) {
+      toast({
+        title: "Error",
+        description: "Cannot set feature image: No project ID provided.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    return setFeatureImageMutation.mutateAsync({ projectId, imageId });
+  };
+
   return {
     project,
     projectGallery,
@@ -405,6 +450,9 @@ export const useProject = (projectId?: number) => {
     isAddingGalleryImage,
     isDeletingGalleryImage,
     isUpdatingGalleryImage,
-    trackUploadSession
+    trackUploadSession,
+    // New feature image functionality
+    setProjectFeatureImage,
+    isSettingFeatureImage: setFeatureImageMutation.isPending
   };
 };

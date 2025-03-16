@@ -97,11 +97,8 @@ const logErrorsHandler = (err: Error) => {
 
 // Export route handlers for Express integration
 export function createUploadthingExpressHandler(router: FileRouter) {
-  // Create the route handler which returns an Express Router with custom error handling
-  const uploadRouter = createRouteHandler({
-    router,
-    errorHandler: logErrorsHandler
-  });
+  // Create the route handler which returns an Express Router
+  const uploadRouter = createRouteHandler({ router });
   
   // Add a healthcheck endpoint to the router for debugging
   const originalRouter = uploadRouter;

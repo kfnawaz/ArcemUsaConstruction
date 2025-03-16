@@ -115,6 +115,37 @@ export class DBStorage implements IStorage {
       .returning();
     return result.length > 0;
   }
+  
+  async setProjectFeatureImage(projectId: number, galleryImageId: number): Promise<ProjectGallery | undefined> {
+    // First, reset all feature flags for this project's gallery images
+    await db.update(projectGallery)
+      .set({ isFeature: false })
+      .where(eq(projectGallery.projectId, projectId))
+      .execute();
+    
+    // Then, set the selected image as the feature image
+    const updatedImages = await db.update(projectGallery)
+      .set({ isFeature: true })
+      .where(and(
+        eq(projectGallery.id, galleryImageId),
+        eq(projectGallery.projectId, projectId)
+      ))
+      .returning();
+    
+    if (updatedImages.length === 0) {
+      return undefined;
+    }
+    
+    const featureImage = updatedImages[0];
+    
+    // Update the project's main image field to use this feature image
+    await db.update(projects)
+      .set({ image: featureImage.imageUrl })
+      .where(eq(projects.id, projectId))
+      .execute();
+    
+    return featureImage;
+  }
 
   // Blog Posts
   async getBlogPosts(): Promise<BlogPost[]> {
