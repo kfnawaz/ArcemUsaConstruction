@@ -8,12 +8,12 @@ export type OurFileRouter = FileRouter & {
       maxFileSize: string;
       maxFileCount: number;
     };
-    metadata: {
+    metadata?: {
       userId?: number;
     };
     output: {
-      url: string; // Deprecated
-      ufsUrl: string; // New URL property
+      url: string;
+      ufsUrl?: string; // New URL format from UploadThing
       key: string;
       name: string;
       size: number;

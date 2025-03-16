@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useUploadThing } from "@/lib/uploadthing";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -30,10 +30,31 @@ export default function UploadThingUploader({
 }: UploadThingUploaderProps) {
   const { toast } = useToast();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
   
-  const { startUpload, isUploading } = useUploadThing("imageUploader", {
+  // Check if UploadThing credentials are properly configured
+  useEffect(() => {
+    // Simple preflight check to see if the endpoint is available
+    fetch('/api/uploadthing')
+      .then(res => {
+        if (!res.ok && res.status === 404) {
+          console.warn('UploadThing API endpoint not found. Check server configuration.');
+        }
+      })
+      .catch(err => {
+        console.error('UploadThing API preflight check failed:', err);
+      });
+  }, []);
+  
+  const { startUpload, isUploading, permittedFileInfo } = useUploadThing("imageUploader", {
     onClientUploadComplete: (files: UploadFileResponse[] | undefined) => {
-      if (!files || files.length === 0) return;
+      if (!files || files.length === 0) {
+        console.log('Upload completed but no files returned');
+        return;
+      }
+      
+      // Log complete response for debugging
+      console.log('UploadThing complete response:', files);
       
       toast({
         title: "Upload complete",
@@ -49,14 +70,33 @@ export default function UploadThingUploader({
       if (onComplete) {
         onComplete(urls);
       }
+      
+      // Reset progress and errors
+      setUploadProgress(0);
+      setErrorMessage(null);
     },
     onUploadError: (error: Error) => {
-      setErrorMessage(error.message);
+      console.error('UploadThing upload error:', error);
+      
+      // Clear any previous error
+      setErrorMessage(error.message || "An unknown error occurred during upload");
+      
       toast({
         title: "Upload failed",
         description: error.message || "An error occurred during upload.",
         variant: "destructive",
       });
+      
+      // Reset progress
+      setUploadProgress(0);
+    },
+    onUploadBegin: (fileName) => {
+      console.log(`Starting upload for ${fileName}`);
+      setErrorMessage(null);
+    },
+    onUploadProgress: (progress) => {
+      console.log(`Upload progress: ${progress}%`);
+      setUploadProgress(progress);
     },
   });
 
@@ -65,8 +105,23 @@ export default function UploadThingUploader({
     const fileList = event.target.files;
     if (!fileList || fileList.length === 0) return;
     
+    setErrorMessage(null);
+    
     const files = Array.from(fileList);
-    startUpload(files);
+    console.log(`Starting upload for ${files.length} files`, files.map(f => f.name));
+    
+    try {
+      startUpload(files);
+    } catch (err) {
+      console.error('Error initiating upload:', err);
+      setErrorMessage(err instanceof Error ? err.message : 'Failed to start upload');
+      
+      toast({
+        title: "Upload initialization failed",
+        description: err instanceof Error ? err.message : 'Failed to start upload',
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -78,6 +133,13 @@ export default function UploadThingUploader({
             <div>
               <h3 className="text-lg font-medium">Upload Gallery Images</h3>
               <p className="text-sm text-muted-foreground">{helpText}</p>
+              {permittedFileInfo?.config && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Max file size: {permittedFileInfo.config.maxFileSize} 
+                  {permittedFileInfo.config.maxFileCount > 1 && 
+                    ` · Up to ${permittedFileInfo.config.maxFileCount} files`}
+                </p>
+              )}
             </div>
             
             <label className="cursor-pointer">
@@ -109,7 +171,10 @@ export default function UploadThingUploader({
             <Loader2 className="animate-spin h-4 w-4 mr-2 text-primary" />
             <span className="text-sm font-medium">Uploading...</span>
           </div>
-          <Progress value={45} className="h-2" />
+          <Progress value={uploadProgress} className="h-2" />
+          <p className="text-xs text-center text-muted-foreground">
+            {uploadProgress}% complete
+          </p>
         </div>
       )}
 
