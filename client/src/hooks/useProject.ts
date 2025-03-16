@@ -31,7 +31,11 @@ export const useProject = (projectId?: number) => {
   // Create project mutation
   const createMutation = useMutation({
     mutationFn: async (data: InsertProject) => {
-      return apiRequest('POST', '/api/projects', data);
+      return apiRequest({
+        url: '/api/projects',
+        method: 'POST',
+        body: data
+      });
     },
     onSuccess: () => {
       setIsSubmitting(false);
