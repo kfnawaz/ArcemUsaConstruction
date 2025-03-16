@@ -42,8 +42,7 @@ const isAdmin = (req: Request, res: Response, next: NextFunction) => {
 };
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // Setup authentication routes
-  setupAuth(app);
+  // Authentication is already set up in server/index.ts
   // API routes prefix
   const apiRouter = "/api";
   

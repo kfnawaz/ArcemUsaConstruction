@@ -3,12 +3,16 @@ import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { createUploadthing, createRouteHandler } from "uploadthing/server";
 import { uploadRouter } from "./uploadthing";
+import { setupAuth } from "./auth";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Initialize the UploadThing route handler
+// First, set up authentication to ensure session is available
+setupAuth(app);
+
+// Then initialize the UploadThing route handler
 const uploadthingHandler = createRouteHandler({
   router: uploadRouter
 });
