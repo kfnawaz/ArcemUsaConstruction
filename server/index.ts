@@ -22,11 +22,13 @@ app.use(express.urlencoded({ extended: false }));
 // First, set up authentication to ensure session is available
 setupAuth(app);
 
-// Then initialize the UploadThing route handler
-const uploadthingHandler = createUploadthingExpressHandler(uploadRouter);
+// Then initialize the UploadThing route handler - this returns an Express router
+// with all the necessary routes preconfigured
+const uploadthingRouter = createUploadthingExpressHandler(uploadRouter);
 
-// UploadThing routes - register the POST handler
-app.post("/api/uploadthing", uploadthingHandler.POST);
+// Mount the UploadThing router at the /api/uploadthing path
+// This automatically adds all the required routes (POST, etc.)
+app.use("/api/uploadthing", uploadthingRouter);
 
 app.use((req, res, next) => {
   const start = Date.now();

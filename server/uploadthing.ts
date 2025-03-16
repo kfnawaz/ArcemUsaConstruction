@@ -1,7 +1,8 @@
 import { createUploadthing, type FileRouter } from "uploadthing/server";
 import { UploadThingError } from "uploadthing/server";
+// Import the Express-specific route handler for proper Express integration
 import { createRouteHandler } from "uploadthing/express";
-import type { Request, Response } from "express";
+import type { Request, Response, Router } from "express";
 
 const f = createUploadthing();
 
@@ -62,30 +63,14 @@ export const uploadRouter = {
 
 // Export route handlers for Express integration
 export function createUploadthingExpressHandler(router: FileRouter) {
-  // Create the route handler using the official UploadThing function for Express
-  const { POST } = createRouteHandler({
+  // Create the route handler which returns an Express Router
+  // The router already has all the necessary routes configured
+  const uploadRouter = createRouteHandler({
     router,
-    config: {
-      uploadthingSecret: process.env.UPLOADTHING_SECRET || "",
-      uploadthingId: process.env.UPLOADTHING_APP_ID || ""
-    }
   });
-
-  return {
-    // POST endpoint that accepts multipart/form-data
-    POST: async (req: Request, res: Response) => {
-      console.log("UploadThing handling request");
-      try {
-        // The POST handler already handles errors internally
-        return await POST(req, res);
-      } catch (error: any) {
-        console.error("UploadThing uncaught error:", error);
-        const statusCode = error.status || error.statusCode || 500;
-        const message = error.message || "Upload failed";
-        return res.status(statusCode).json({ error: message });
-      }
-    },
-  };
+  
+  // This function returns the Express router with preconfigured routes
+  return uploadRouter;
 }
 
 // Export the fileRouter type for the frontend
