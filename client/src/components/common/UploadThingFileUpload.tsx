@@ -61,22 +61,27 @@ export default function UploadThingFileUpload({
       // Add logging to debug
       console.log('UploadThing complete, files:', files);
       
-      // Process files to use the new ufsUrl format
+      // Process files to use ONLY the new ufsUrl format to avoid triggering deprecation warnings
       const processedFiles = files.map(file => {
-        // Log file details for debugging
-        console.log('📁 File details:', {
+        // Create a new object with only the properties we need
+        const processedFile = {
           name: file.name,
-          size: (file.size / (1024 * 1024)).toFixed(2) + ' MB',
+          size: file.size,
           key: file.key,
-          url: file.url?.substring(0, 50) + '...', // Truncated for log readability
-          ufsUrl: file.ufsUrl?.substring(0, 50) + '...' // Truncated for log readability
+          // Use ONLY ufsUrl to avoid accessing deprecated properties
+          url: file.ufsUrl || '', 
+          serverData: file.serverData
+        };
+        
+        // Log file details for debugging without accessing deprecated properties
+        console.log('📁 File details:', {
+          name: processedFile.name,
+          size: (processedFile.size / (1024 * 1024)).toFixed(2) + ' MB',
+          key: processedFile.key,
+          url: processedFile.url?.substring(0, 50) + '...' // Truncated for log readability
         });
         
-        return {
-          ...file,
-          // Replace the deprecated url with ufsUrl when available
-          url: file.ufsUrl || file.url 
-        };
+        return processedFile;
       });
       
       if (onClientUploadComplete) {

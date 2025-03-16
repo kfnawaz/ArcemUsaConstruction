@@ -605,14 +605,20 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
               <UploadThingFileUpload 
                 endpoint="imageUploader"
                 onClientUploadComplete={(files) => {
-                  // Extract URLs from the response files - prefer ufsUrl over url (deprecated)
-                  const urls = files.map(file => file.ufsUrl || file.url);
+                  // Extract URLs from the response files - use ONLY ufsUrl to avoid deprecation warnings
+                  const urls = files.map(file => {
+                    // Access ufsUrl directly to avoid triggering deprecation warning with file.url
+                    const imageUrl = file.ufsUrl || '';
+                    return imageUrl;
+                  });
                   
                   // Track these files in the database
                   if (projectId) {
                     files.forEach(file => {
-                      const imageUrl = file.ufsUrl || file.url;
-                      console.log(`Adding image to gallery: ${imageUrl}`);
+                      // Use the new URL format exclusively to avoid deprecation warnings
+                      if (file.ufsUrl) {
+                        console.log(`Adding image to gallery: ${file.ufsUrl}`);
+                      }
                     });
                   }
                   
