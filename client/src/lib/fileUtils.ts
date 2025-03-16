@@ -1,6 +1,14 @@
 import { apiRequest } from './queryClient';
 
 /**
+ * Interface representing a file with its URL and original filename
+ */
+export interface FileEntry {
+  url: string;
+  filename: string;
+}
+
+/**
  * Utility functions for file management in the application
  */
 export const fileUtils = {
@@ -171,5 +179,86 @@ export const fileUtils = {
   isDocumentFile(filename: string): boolean {
     const ext = this.getFileExtension(filename).toLowerCase();
     return ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt'].includes(ext);
+  },
+
+  /**
+   * Creates a FileEntry object from a URL and filename
+   * 
+   * @param url The file URL
+   * @param filename The original filename
+   * @returns FileEntry object
+   */
+  createFileEntry(url: string, filename: string): FileEntry {
+    return { url, filename };
+  },
+
+  /**
+   * Serializes a FileEntry to a JSON string
+   * 
+   * @param fileEntry FileEntry object
+   * @returns JSON string
+   */
+  serializeFileEntry(fileEntry: FileEntry): string {
+    return JSON.stringify(fileEntry);
+  },
+
+  /**
+   * Parses a FileEntry from a JSON string
+   * If the string is not a valid FileEntry, returns null
+   * 
+   * @param json JSON string
+   * @returns FileEntry or null
+   */
+  parseFileEntry(json: string): FileEntry | null {
+    try {
+      const parsed = JSON.parse(json);
+      if (parsed && typeof parsed === 'object' && 'url' in parsed && 'filename' in parsed) {
+        return parsed as FileEntry;
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  },
+
+  /**
+   * Gets the original filename from a FileEntry or URL
+   * If the input is a URL string, extracts the filename from it
+   * If the input is a FileEntry, returns its filename property
+   * If the input is a JSON string, parses it as a FileEntry
+   * 
+   * @param input FileEntry, URL string, or JSON string
+   * @returns Original filename or a default value
+   */
+  getOriginalFilename(input: string | FileEntry): string {
+    // If it's a FileEntry object
+    if (typeof input === 'object' && 'filename' in input) {
+      return input.filename;
+    }
+    
+    // If it's a string, try to parse as JSON
+    if (typeof input === 'string') {
+      try {
+        const parsed = this.parseFileEntry(input);
+        if (parsed) {
+          return parsed.filename;
+        }
+        
+        // Check for UploadThing URL pattern
+        if (input.includes('utfs.io/f/') || input.includes('ufs.sh/f/')) {
+          // Extract file ID (last part of the URL)
+          const fileId = input.split('/').pop() || '';
+          return `file-${fileId.substring(0, 8)}`;
+        }
+        
+        // Default to extracting filename from URL
+        return input.split('/').pop() || 'file';
+      } catch (e) {
+        // Default to extracting filename from URL
+        return input.split('/').pop() || 'file';
+      }
+    }
+    
+    return 'file';
   }
 };

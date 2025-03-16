@@ -9,6 +9,7 @@ interface PendingFile {
   url: string;
   timestamp: number;
   sessionId: string;
+  filename?: string; // Original filename
 }
 
 /**
@@ -22,14 +23,16 @@ export class FileManager {
    * Tracks a newly uploaded file that hasn't been saved to the database yet
    * @param fileUrl The URL of the uploaded file
    * @param sessionId A unique identifier for the upload session (form instance)
+   * @param filename Optional original filename of the uploaded file
    * @returns The tracked file URL
    */
-  static trackPendingFile(fileUrl: string, sessionId: string): string {
+  static trackPendingFile(fileUrl: string, sessionId: string, filename?: string): string {
     const key = fileUrl;
     this.pendingFiles.set(key, {
       url: fileUrl,
       timestamp: Date.now(),
-      sessionId
+      sessionId,
+      filename
     });
     return fileUrl;
   }
