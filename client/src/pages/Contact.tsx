@@ -80,7 +80,7 @@ const Contact = () => {
       <div 
         className="relative h-[350px] flex items-center justify-center" 
         style={{
-          backgroundImage: "url('/uploads/images/contact/firmbee-com-SpVHcbuKi6E-unsplash.jpg')",
+          backgroundImage: "url('/uploads/images/contact/office-desk.jpg')",
           backgroundSize: 'cover',
           backgroundPosition: 'center'
         }}

@@ -43,7 +43,7 @@ const JoinUs = () => {
       <div 
         className="relative h-[350px] flex items-center justify-center" 
         style={{
-          backgroundImage: "url('/uploads/images/tools/construction-tools.jpg')",
+          backgroundImage: "url('/uploads/images/join-us/jesse-orrico-L94dWXNKwrY-unsplash.jpg')",
           backgroundSize: 'cover',
           backgroundPosition: 'center'
         }}
@@ -109,7 +109,7 @@ const JoinUs = () => {
                 transition={{ duration: 0.3 }}
               >
                 <img 
-                  src="/uploads/images/greyson-joralemon-A1g0oeX29ec-unsplash.jpg" 
+                  src="/uploads/images/join-us/greyson-joralemon-A1g0oeX29ec-unsplash.jpg" 
                   alt="Subcontractor working with power tool" 
                   className="w-full h-full object-cover"
                 />
@@ -120,7 +120,7 @@ const JoinUs = () => {
                 transition={{ duration: 0.3 }}
               >
                 <img 
-                  src="/uploads/images/royal-techno-india-0O-0xbvtWyw-unsplash.jpg" 
+                  src="/uploads/images/join-us/royal-techno-india-0O-0xbvtWyw-unsplash.jpg" 
                   alt="Construction equipment and machinery" 
                   className="w-full h-full object-cover"
                 />
@@ -131,7 +131,7 @@ const JoinUs = () => {
                 transition={{ duration: 0.3 }}
               >
                 <img 
-                  src="/uploads/images/daniel-mccullough--FPFq_trr2Y-unsplash.jpg" 
+                  src="/uploads/images/join-us/daniel-mccullough--FPFq_trr2Y-unsplash.jpg" 
                   alt="Architect working on plans" 
                   className="w-full h-full object-cover"
                 />
@@ -142,7 +142,7 @@ const JoinUs = () => {
                 transition={{ duration: 0.3 }}
               >
                 <img 
-                  src="/uploads/images/sol-tZw3fcjUIpM-unsplash.jpg" 
+                  src="/uploads/images/join-us/sol-tZw3fcjUIpM-unsplash.jpg" 
                   alt="Career Development" 
                   className="w-full h-full object-cover"
                 />
@@ -284,7 +284,7 @@ const JoinUs = () => {
             >
               <div className="h-56 bg-gray-200 relative overflow-hidden">
                 <img 
-                  src="/uploads/images/royal-techno-india-0O-0xbvtWyw-unsplash.jpg"
+                  src="/uploads/images/join-us/royal-techno-india-0O-0xbvtWyw-unsplash.jpg"
                   alt="Construction equipment and machinery" 
                   className="w-full h-full object-cover transition-transform hover:scale-110 duration-700"
                 />
@@ -332,7 +332,7 @@ const JoinUs = () => {
             >
               <div className="h-56 bg-gray-200 relative overflow-hidden">
                 <img 
-                  src="/uploads/images/sol-tZw3fcjUIpM-unsplash.jpg"
+                  src="/uploads/images/join-us/sol-tZw3fcjUIpM-unsplash.jpg"
                   alt="Construction workers climbing ladder" 
                   className="w-full h-full object-cover transition-transform hover:scale-110 duration-700"
                 />

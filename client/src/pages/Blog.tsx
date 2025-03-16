@@ -51,7 +51,7 @@ const Blog = () => {
       <div 
         className="relative h-[350px] flex items-center justify-center" 
         style={{
-          backgroundImage: "url('/uploads/images/blog/daniel-mccullough--FPFq_trr2Y-unsplash.jpg')",
+          backgroundImage: "url('/uploads/images/blog/blueprint-desk.jpg')",
           backgroundSize: 'cover',
           backgroundPosition: 'center'
         }}

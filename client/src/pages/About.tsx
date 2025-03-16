@@ -23,7 +23,7 @@ const About = () => {
       <div 
         className="relative h-[350px] flex items-center justify-center" 
         style={{
-          backgroundImage: "url('/uploads/images/services/residential/residential1.jpg')",
+          backgroundImage: "url('/uploads/images/about/Luxury-Residential-Community.jpg')",
           backgroundSize: 'cover',
           backgroundPosition: 'center'
         }}

@@ -147,7 +147,7 @@ const Resources = () => {
       <div 
         className="relative h-[350px] flex items-center justify-center" 
         style={{
-          backgroundImage: "url('/uploads/images/silvia-brazzoduro-YSxcf6C_SEg-unsplash.jpg')",
+          backgroundImage: "url('/uploads/images/resources/arisa-chattasa-0LaBRkmH4fM-unsplash.jpg')",
           backgroundSize: 'cover',
           backgroundPosition: 'center'
         }}
