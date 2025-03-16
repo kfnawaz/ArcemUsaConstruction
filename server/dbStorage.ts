@@ -24,6 +24,7 @@ import {
   type TeamMember, type InsertTeamMember
 } from "../shared/schema";
 import { IStorage } from "./storage";
+import { FileManager } from './utils/fileManager';
 
 export class DBStorage implements IStorage {
   // Users

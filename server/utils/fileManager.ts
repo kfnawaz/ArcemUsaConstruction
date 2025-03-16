@@ -1,9 +1,31 @@
 import path from 'path';
 import fs from 'fs';
 import { promisify } from 'util';
+import { uploadThingService } from '../services/uploadthingService';
 
 const unlink = promisify(fs.unlink);
 const exists = promisify(fs.exists);
+
+/**
+ * Extract the UploadThing file key from a URL
+ * @param url The file URL to extract the key from
+ * @returns The file key or null if not an UploadThing URL
+ */
+export function extractUploadThingKeyFromUrl(url: string | null): string | null {
+  if (!url) return null;
+  
+  // Check if this is an UploadThing URL
+  if (url.includes('utfs.io/f/') || url.includes('ufs.sh/f/')) {
+    // Extract the key from the URL
+    // Format: https://utfs.io/f/{key} or https://{tenant}.ufs.sh/f/{key}
+    const parts = url.split('/f/');
+    if (parts.length === 2) {
+      return parts[1];
+    }
+  }
+  
+  return null;
+}
 
 interface PendingFile {
   url: string;
@@ -129,18 +151,31 @@ export class FileManager {
   }
 
   /**
-   * Deletes a file from the uploads directory
-   * @param fileUrl The URL of the file to delete (e.g., '/uploads/filename.jpg')
+   * Deletes a file from storage (local filesystem or UploadThing)
+   * @param fileUrl The URL of the file to delete
    * @returns Promise<boolean> True if the file was deleted, false otherwise
    */
   static async deleteFile(fileUrl: string | null): Promise<boolean> {
     if (!fileUrl) return false;
     
     try {
-      // For UploadThing files, we can't physically delete them this way
-      // We would need to use their API to delete files
+      // Check if this is an UploadThing file
+      const uploadThingKey = extractUploadThingKeyFromUrl(fileUrl);
+      if (uploadThingKey) {
+        // Delete from UploadThing using their API
+        console.log(`Deleting UploadThing file with key: ${uploadThingKey}`);
+        try {
+          const result = await uploadThingService.deleteFile(uploadThingKey);
+          return result.success;
+        } catch (err) {
+          console.error(`Error deleting UploadThing file with key ${uploadThingKey}:`, err);
+          // Continue execution even if UploadThing fails - it might be a temporary issue
+          // and we don't want to block database cleanup
+          return false;
+        }
+      }
       
-      // But for locally uploaded files, we can delete them like this:
+      // For locally uploaded files, delete them from the filesystem
       if (fileUrl.startsWith('/uploads/')) {
         const filePath = path.join(process.cwd(), 'public', fileUrl);
         if (await exists(filePath)) {
@@ -149,6 +184,8 @@ export class FileManager {
         }
       }
       
+      // If we reach here, either the file doesn't exist or it's not in a recognized format
+      console.log(`File not found or in unrecognized format: ${fileUrl}`);
       return false;
     } catch (error) {
       console.error(`Error deleting file ${fileUrl}:`, error);
