@@ -87,13 +87,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Admin-only endpoints for project management
   app.post(`${apiRouter}/projects`, isAdmin, async (req: Request, res: Response) => {
     try {
-      const projectData = insertProjectSchema.parse(req.body);
-      const project = await storage.createProject(projectData);
+      // Parse using the extended schema that can include gallery images
+      const projectData = extendedInsertProjectSchema.parse(req.body);
+      
+      // Extract gallery images from the request if they exist
+      const galleryImages = projectData.galleryImages || [];
+      
+      // Remove galleryImages from project data before creating the project
+      const { galleryImages: _, ...projectOnly } = projectData;
+      
+      // Create the project first
+      const project = await storage.createProject(projectOnly);
+      
+      // If we have gallery images, add them to the project
+      if (galleryImages.length > 0) {
+        console.log(`Adding ${galleryImages.length} gallery images to new project ${project.id}`);
+        
+        for (let i = 0; i < galleryImages.length; i++) {
+          const image = galleryImages[i];
+          await storage.addProjectGalleryImage({
+            projectId: project.id,
+            imageUrl: image.imageUrl,
+            caption: image.caption || '',
+            displayOrder: image.displayOrder || i + 1,
+            isFeature: image.isFeature || false,
+          });
+        }
+        
+        // If we have gallery images but no feature image is marked, set the first one as feature
+        const hasFeatureImage = galleryImages.some(img => img.isFeature);
+        if (!hasFeatureImage && galleryImages.length > 0) {
+          const firstGalleryImage = await storage.getProjectGallery(project.id);
+          if (firstGalleryImage.length > 0) {
+            await storage.setProjectFeatureImage(project.id, firstGalleryImage[0].id);
+          }
+        }
+      }
+      
       res.status(201).json(project);
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid project data", errors: error.errors });
       }
+      console.error('Error creating project:', error);
       res.status(500).json({ message: "Failed to create project" });
     }
   });

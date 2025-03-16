@@ -42,6 +42,7 @@ export interface ProjectGalleryManagerHandle {
   hasUnsavedChanges: () => boolean;
   hasRecentlyModified: () => boolean;
   getUnsavedChangesCount: () => number;
+  getPendingImages: () => PendingImage[];
 }
 
 const MAX_GALLERY_IMAGES = 10;
