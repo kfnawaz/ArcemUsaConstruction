@@ -1,105 +1,128 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { apiRequest } from '@/lib/queryClient';
+import { queryClient } from '@/lib/queryClient';
 
-interface User {
+interface AuthUser {
   id: number;
   username: string;
   role: string;
 }
 
 interface AuthContextType {
+  user: AuthUser | null;
+  isLoading: boolean;
   isAuthenticated: boolean;
-  user: User | null;
+  isAdmin: boolean;
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
-  loading: boolean;
+  checkAuth: () => Promise<boolean>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  isLoading: true,
+  isAuthenticated: false,
+  isAdmin: false,
+  login: async () => false,
+  logout: async () => {},
+  checkAuth: async () => false,
+});
 
-interface AuthProviderProps {
-  children: ReactNode;
-}
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  // Check session on initial load
-  useEffect(() => {
-    const checkAuthStatus = async () => {
-      try {
-        const response = await apiRequest('GET', '/api/user');
-        
-        if (response.ok) {
-          const userData = await response.json();
-          setIsAuthenticated(true);
-          setUser(userData);
-        } else {
-          // Not authenticated or error
-          setIsAuthenticated(false);
-          setUser(null);
-        }
-      } catch (error) {
-        console.error('Auth status check failed:', error);
-        setIsAuthenticated(false);
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    checkAuthStatus();
-  }, []);
-
-  const login = async (username: string, password: string): Promise<boolean> => {
-    setLoading(true);
+  const checkAuth = useCallback(async (): Promise<boolean> => {
     try {
-      const response = await apiRequest('POST', '/api/login', { username, password });
+      const userData = await apiRequest<AuthUser>({
+        url: '/api/user',
+        method: 'GET',
+        on401: 'returnNull'
+      });
       
-      if (response.ok) {
-        const userData = await response.json();
-        setIsAuthenticated(true);
+      if (userData) {
         setUser(userData);
         return true;
+      } else {
+        setUser(null);
+        return false;
       }
-      return false;
     } catch (error) {
-      console.error('Login failed:', error);
+      console.error('Auth check error:', error);
+      setUser(null);
       return false;
     } finally {
-      setLoading(false);
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  const login = async (username: string, password: string): Promise<boolean> => {
+    setIsLoading(true);
+    try {
+      const response = await apiRequest<AuthUser>({
+        url: '/api/login',
+        method: 'POST',
+        body: { username, password }
+      });
+      
+      if (response) {
+        setUser(response);
+        // Invalidate any user-related queries
+        queryClient.invalidateQueries({ queryKey: ['/api/user'] });
+        return true;
+      }
+      
+      return false;
+    } catch (error) {
+      console.error('Login error:', error);
+      return false;
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const logout = async (): Promise<void> => {
-    setLoading(true);
+    setIsLoading(true);
     try {
-      const response = await apiRequest('POST', '/api/logout');
+      await apiRequest({
+        url: '/api/logout',
+        method: 'POST'
+      });
+      setUser(null);
       
-      if (response.ok) {
-        setIsAuthenticated(false);
-        setUser(null);
-      }
+      // Clear any authenticated queries
+      queryClient.clear();
     } catch (error) {
-      console.error('Logout failed:', error);
+      console.error('Logout error:', error);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
+  const isAuthenticated = !!user;
+  const isAdmin = isAuthenticated && user?.role === 'admin';
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, user, login, logout, loading }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        isLoading,
+        isAuthenticated,
+        isAdmin,
+        login,
+        logout,
+        checkAuth
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
-};
+}
 
-export const useAuth = (): AuthContextType => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
+export function useAuth() {
+  return useContext(AuthContext);
+}

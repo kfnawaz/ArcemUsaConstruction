@@ -27,7 +27,7 @@ const Login = () => {
     if (isAuthenticated && !isLoading) {
       setLocation('/admin');
     }
-  }, [isAuthenticated, loading, setLocation]);
+  }, [isAuthenticated, isLoading, setLocation]);
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -101,9 +101,9 @@ const Login = () => {
               <Button
                 type="submit"
                 className="w-full bg-[#1E90DB] hover:bg-[#1670B0]"
-                disabled={form.formState.isSubmitting || loading}
+                disabled={form.formState.isSubmitting || isLoading}
               >
-                {form.formState.isSubmitting || loading ? 'Logging in...' : 'Sign in'}
+                {form.formState.isSubmitting || isLoading ? 'Logging in...' : 'Sign in'}
               </Button>
             </form>
           </Form>
