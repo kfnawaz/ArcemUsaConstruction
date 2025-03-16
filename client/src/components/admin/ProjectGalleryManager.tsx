@@ -60,6 +60,18 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
     const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
     const [showMaxImagesWarning, setShowMaxImagesWarning] = useState(false);
     
+    // New state for image cropping
+    const [isCropperOpen, setIsCropperOpen] = useState(false);
+    const [cropImageUrl, setCropImageUrl] = useState<string>('');
+    const [cropImageId, setCropImageId] = useState<number | null>(null);
+    const [cropPendingIndex, setCropPendingIndex] = useState<number | null>(null);
+    
+    // New state for batch upload tracking
+    const [batchUploadProgress, setBatchUploadProgress] = useState<number>(0);
+    const [isBatchUploading, setIsBatchUploading] = useState(false);
+    const [batchUploadCount, setBatchUploadCount] = useState<number>(0);
+    const [batchUploadTotal, setBatchUploadTotal] = useState<number>(0);
+    
     const {
       projectGallery,
       isLoadingGallery,
@@ -454,6 +466,133 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
       });
       markEdited();
     };
+    
+    // Handle batch uploads with progress tracking
+    const handleBatchUpload = async (files: File[], sessionId: string) => {
+      if (!files.length) return [];
+      
+      setIsBatchUploading(true);
+      setBatchUploadTotal(files.length);
+      setBatchUploadCount(0);
+      setBatchUploadProgress(0);
+      
+      try {
+        const uploadedUrls: string[] = [];
+        
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          try {
+            const result = await uploadFile(file, sessionId);
+            uploadedUrls.push(result.url);
+            
+            // Update progress
+            setBatchUploadCount(i + 1);
+            setBatchUploadProgress(Math.round(((i + 1) / files.length) * 100));
+          } catch (error) {
+            console.error(`Error uploading file ${i + 1}/${files.length}:`, error);
+          }
+        }
+        
+        if (uploadedUrls.length > 0) {
+          await handleFileUpload(uploadedUrls);
+        }
+        
+        return uploadedUrls;
+      } catch (error) {
+        console.error('Batch upload error:', error);
+        toast({
+          title: 'Upload failed',
+          description: 'There was an error uploading your images. Please try again.',
+          variant: 'destructive',
+        });
+        return [];
+      } finally {
+        setTimeout(() => {
+          setIsBatchUploading(false);
+          setBatchUploadProgress(0);
+          setBatchUploadCount(0);
+          setBatchUploadTotal(0);
+        }, 1000); // Keep progress visible momentarily
+      }
+    };
+    
+    // Handle image cropping
+    const handleOpenCropper = (item: ProjectGallery | PendingImage, index: number) => {
+      const imageUrl = 'imageUrl' in item ? item.imageUrl : item.url;
+      setCropImageUrl(imageUrl);
+      
+      if ('id' in item) {
+        setCropImageId(item.id);
+        setCropPendingIndex(null);
+      } else {
+        setCropImageId(null);
+        setCropPendingIndex(index);
+      }
+      
+      setIsCropperOpen(true);
+    };
+    
+    // Handle crop completion
+    const handleCropComplete = async (croppedImageUrl: string) => {
+      try {
+        // Create a fetch request to get the blob from the data URL
+        const response = await fetch(croppedImageUrl);
+        const blob = await response.blob();
+        
+        // Create a File object from the blob
+        const file = new File([blob], `cropped_image_${Date.now()}.jpg`, {
+          type: 'image/jpeg',
+          lastModified: Date.now()
+        });
+        
+        // Generate a session ID for this upload
+        const sessionId = `crop_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+        if (props.trackUploadSession) {
+          props.trackUploadSession(sessionId);
+        }
+        
+        // Upload the cropped image
+        const uploadResult = await uploadFile(file, sessionId);
+        
+        // If it's a saved gallery image, update it
+        if (cropImageId !== null) {
+          await updateProjectGalleryImage(cropImageId, { imageUrl: uploadResult.url });
+          
+          toast({
+            title: 'Image updated',
+            description: 'Cropped image has been saved successfully.',
+          });
+        } 
+        // If it's a pending image, update it in the pending state
+        else if (cropPendingIndex !== null) {
+          setPendingImages(prev => {
+            const newPendingImages = [...prev];
+            if (newPendingImages[cropPendingIndex]) {
+              newPendingImages[cropPendingIndex].url = uploadResult.url;
+            }
+            return newPendingImages;
+          });
+          
+          toast({
+            title: 'Image updated',
+            description: 'Cropped image will be saved with the gallery.',
+          });
+        }
+      } catch (error) {
+        console.error('Error processing cropped image:', error);
+        toast({
+          title: 'Crop failed',
+          description: 'Failed to process the cropped image. Please try again.',
+          variant: 'destructive',
+        });
+      } finally {
+        // Reset cropping state
+        setIsCropperOpen(false);
+        setCropImageUrl('');
+        setCropImageId(null);
+        setCropPendingIndex(null);
+      }
+    };
 
     // Move image display order up
     const moveImageOrderUp = (id: number, currentOrder: number | null) => {
@@ -489,6 +628,23 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
 
     return (
       <div className="space-y-4">
+        {/* Image Cropper Dialog */}
+        {isCropperOpen && (
+          <Dialog open={isCropperOpen} onOpenChange={setIsCropperOpen}>
+            <DialogContent className="max-w-4xl">
+              <DialogHeader>
+                <DialogTitle>Crop Image</DialogTitle>
+              </DialogHeader>
+              <ImageCropper 
+                imageUrl={cropImageUrl}
+                aspectRatio={16/9}
+                onCropComplete={handleCropComplete}
+                onCancel={() => setIsCropperOpen(false)}
+              />
+            </DialogContent>
+          </Dialog>
+        )}
+        
         {showMaxImagesWarning && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
@@ -496,6 +652,17 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
               Maximum of {MAX_GALLERY_IMAGES} images allowed per project. Please delete some images to add more.
             </AlertDescription>
           </Alert>
+        )}
+        
+        {/* Batch Upload Progress Indicator */}
+        {isBatchUploading && (
+          <div className="space-y-2 p-4 border rounded-md bg-muted/10">
+            <div className="flex justify-between items-center">
+              <span className="text-sm">Uploading {batchUploadCount} of {batchUploadTotal} images...</span>
+              <span className="text-sm font-medium">{batchUploadProgress}%</span>
+            </div>
+            <Progress value={batchUploadProgress} />
+          </div>
         )}
         
         <div className="p-4 border rounded-md bg-muted/20">
