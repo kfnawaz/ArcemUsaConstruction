@@ -61,11 +61,23 @@ export default function UploadThingFileUpload({
       // Add logging to debug
       console.log('UploadThing complete, files:', files);
       
-      // Process files to ensure they use ufsUrl when available
-      const processedFiles = files.map(file => ({
-        ...file,
-        url: file.ufsUrl || file.url // Ensure we're using the new URL format
-      }));
+      // Process files to use the new ufsUrl format
+      const processedFiles = files.map(file => {
+        // Log file details for debugging
+        console.log('📁 File details:', {
+          name: file.name,
+          size: (file.size / (1024 * 1024)).toFixed(2) + ' MB',
+          key: file.key,
+          url: file.url?.substring(0, 50) + '...', // Truncated for log readability
+          ufsUrl: file.ufsUrl?.substring(0, 50) + '...' // Truncated for log readability
+        });
+        
+        return {
+          ...file,
+          // Replace the deprecated url with ufsUrl when available
+          url: file.ufsUrl || file.url 
+        };
+      });
       
       if (onClientUploadComplete) {
         onClientUploadComplete(processedFiles);

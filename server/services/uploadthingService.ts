@@ -6,7 +6,9 @@ import { UTApi } from "uploadthing/server";
 interface UploadThingFile {
   key: string;
   name?: string;
-  url?: string;
+  url?: string;        // Deprecated, will be removed in v9
+  ufsUrl?: string;     // New URL format (tenant-specific)
+  appUrl?: string;     // Deprecated, will be removed in v9
   size: number;
   uploadedAt: number;
   id: string;
@@ -59,23 +61,32 @@ export class UploadThingService {
       
       // Map to our interface with normalized properties
       return response.files.map((file: UploadThingFile) => {
-        // Generate URL from key if not provided
-        let fileUrl = file.url;
+        // Prefer new ufsUrl format, fall back to deprecated url
+        let fileUrl = file.ufsUrl || file.url;
+        
+        // If no URL is provided at all, generate one from the key
         if (!fileUrl && file.key) {
-          // The API should return the full URL, but if it doesn't, we need to construct it
           // UploadThing uses a tenant subdomain format: https://{tenant-id}.ufs.sh/f/{file-key}
           // For this application, we'll use the environment APP_ID or a default prefix
           const appId = process.env.UPLOADTHING_APP_ID || '';
           // Extract tenant ID from app ID or use a default
           const tenantId = appId.substring(0, 10).toLowerCase() || 'hdbd2e27pi';
           
-          // Check if it's the new (ufs.sh) or old (utfs.io) format based on key prefix
+          // Modern keys start with 'o1' and use the new URL format
           if (file.key.startsWith('o1')) {
             fileUrl = `https://${tenantId}.ufs.sh/f/${file.key}`;
           } else {
+            // Legacy format for older keys
             fileUrl = `https://utfs.io/f/${file.key}`;
           }
         }
+        
+        // Log URL formats for debugging
+        console.log(`File ${file.name || file.key} URLs:`, {
+          ufsUrl: file.ufsUrl?.substring(0, 30) + '...' || '[not provided]',
+          url: file.url?.substring(0, 30) + '...' || '[not provided]',
+          calculated: fileUrl?.substring(0, 30) + '...' || '[none]'
+        });
         
         return {
           key: file.key,
