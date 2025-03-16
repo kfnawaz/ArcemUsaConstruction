@@ -475,92 +475,7 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                 </div>
 
                 <div className="space-y-6">
-                  <FormField
-                    control={form.control}
-                    name="image"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Feature Image</FormLabel>
-                        <FormDescription>
-                          This image will be used as the project thumbnail on listings and cards.
-                          {form.formState.isDirty && <span className="text-blue-600 font-medium ml-1">Click "Update Project" to save changes</span>}
-                        </FormDescription>
-                        <FormControl>
-                          <div className="space-y-4">
-                            {/* Direct file upload for feature image */}
-                            {!field.value && (
-                              <FileUpload
-                                onUploadComplete={(url, sessionId) => {
-                                  if (typeof url === 'string') {
-                                    field.onChange(url);
-                                    
-                                    // Store the session ID for this feature image
-                                    if (sessionId) {
-                                      setFeatureImageSession(sessionId);
-                                      addUploadSession(sessionId);
-                                      console.log("Tracking feature image session:", sessionId);
-                                    }
-                                  }
-                                }}
-                                sessionId={featureImageSession || generateSessionId()}
-                                accept="image/*"
-                                maxSizeMB={5}
-                                buttonText="Upload Feature Image"
-                                helpText="This will be the main project image"
-                              />
-                            )}
-                            
-                            {/* Preview of selected feature image */}
-                            {field.value && (
-                              <div className="mt-2 border rounded p-2">
-                                <div className="relative">
-                                  <Badge className="absolute top-2 left-2 bg-primary text-white">Feature Image</Badge>
-                                  <img 
-                                    src={field.value} 
-                                    alt="Project feature image" 
-                                    className="w-full h-64 object-cover rounded"
-                                    onError={(e) => {
-                                      e.currentTarget.src = "https://placehold.co/600x400?text=Image+Not+Found";
-                                    }}
-                                  />
-                                  <div className="absolute bottom-2 right-2 flex space-x-2">
-                                    <Button 
-                                      type="button"
-                                      size="sm" 
-                                      variant="destructive"
-                                      onClick={() => field.onChange('')}
-                                    >
-                                      <Trash2 className="h-4 w-4 mr-1" /> Remove
-                                    </Button>
-                                  </div>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  {/* Project Gallery Section - shown for both new and existing projects */}
-                  <div className="mt-6">
-                    <h3 className="text-lg font-semibold mb-2">Project Gallery</h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      {projectId 
-                        ? "Upload additional images to showcase this project." 
-                        : "Upload images to showcase this project. Images will be saved after project creation."}
-                    </p>
-                    
-                    {/* Display gallery manager for both new and existing projects */}
-                    <ProjectGalleryManager
-                      ref={galleryManagerRef}
-                      projectId={projectId || 0}
-                      isNewProject={!projectId}
-                      commitUploads={fileUtils.commitFiles}
-                      trackUploadSession={addUploadSession}
-                    />
-                  </div>
+                  {/* Form fields moved to this column */}
                 </div>
               </div>
 
@@ -728,7 +643,100 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                 </div>
               </div>
 
-              {/* Not needed - we already have the gallery manager above */}
+              {/* Feature Image Section */}
+              <div className="mt-8">
+                <Separator className="my-6" />
+                <h3 className="text-lg font-semibold mb-4">Feature Image</h3>
+                <div className="grid grid-cols-1 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="image"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormDescription>
+                          This image will be used as the project thumbnail on listings and cards.
+                          {form.formState.isDirty && <span className="text-blue-600 font-medium ml-1">Click "Update Project" to save changes</span>}
+                        </FormDescription>
+                        <FormControl>
+                          <div className="space-y-4">
+                            {/* Direct file upload for feature image */}
+                            {!field.value && (
+                              <FileUpload
+                                onUploadComplete={(url, sessionId) => {
+                                  if (typeof url === 'string') {
+                                    field.onChange(url);
+                                    
+                                    // Store the session ID for this feature image
+                                    if (sessionId) {
+                                      setFeatureImageSession(sessionId);
+                                      addUploadSession(sessionId);
+                                      console.log("Tracking feature image session:", sessionId);
+                                    }
+                                  }
+                                }}
+                                sessionId={featureImageSession || generateSessionId()}
+                                accept="image/*"
+                                maxSizeMB={5}
+                                buttonText="Upload Feature Image"
+                                helpText="This will be the main project image"
+                              />
+                            )}
+                            
+                            {/* Preview of selected feature image */}
+                            {field.value && (
+                              <div className="mt-2 border rounded p-2">
+                                <div className="relative">
+                                  <Badge className="absolute top-2 left-2 bg-primary text-white">Feature Image</Badge>
+                                  <img 
+                                    src={field.value} 
+                                    alt="Project feature image" 
+                                    className="w-full h-64 object-cover rounded"
+                                    onError={(e) => {
+                                      e.currentTarget.src = "https://placehold.co/600x400?text=Image+Not+Found";
+                                    }}
+                                  />
+                                  <div className="absolute bottom-2 right-2 flex space-x-2">
+                                    <Button 
+                                      type="button"
+                                      size="sm" 
+                                      variant="destructive"
+                                      onClick={() => field.onChange('')}
+                                    >
+                                      <Trash2 className="h-4 w-4 mr-1" /> Remove
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              {/* Project Gallery Section */}
+              <div className="mt-8">
+                <Separator className="my-6" />
+                <h3 className="text-lg font-semibold mb-4">Project Gallery</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  {projectId 
+                    ? "Upload additional images to showcase this project." 
+                    : "Upload images to showcase this project. Images will be saved after project creation."}
+                </p>
+                
+                {/* Display gallery manager for both new and existing projects */}
+                <ProjectGalleryManager
+                  ref={galleryManagerRef}
+                  projectId={projectId || 0}
+                  isNewProject={!projectId}
+                  commitUploads={fileUtils.commitFiles}
+                  trackUploadSession={addUploadSession}
+                  previewImageUrl={form.getValues('image')}
+                />
+              </div>
 
               <div className="flex justify-end space-x-4 mt-8">
                 <Button
