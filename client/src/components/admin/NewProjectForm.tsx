@@ -10,6 +10,11 @@ import { useQueryClient } from '@tanstack/react-query';
 function safeString(value: string | null | undefined): string {
   return value || '';
 }
+
+// Helper function to safely handle boolean values
+function safeBoolean(value: boolean | null | undefined): boolean {
+  return value === true;
+}
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -595,7 +600,7 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
                   <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                     <FormControl>
                       <Checkbox
-                        checked={field.value}
+                        checked={field.value === true}
                         onCheckedChange={field.onChange}
                       />
                     </FormControl>
@@ -796,7 +801,15 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
                     <FormItem>
                       <FormLabel>Client</FormLabel>
                       <FormControl>
-                        <Input placeholder="Client name" {...field} />
+                        <Input 
+                          placeholder="Client name" 
+                          value={safeString(field.value)}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                          disabled={field.disabled}
+                          name={field.name}
+                          ref={field.ref}
+                        />
                       </FormControl>
                     </FormItem>
                   )}
@@ -809,7 +822,15 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
                     <FormItem>
                       <FormLabel>Location</FormLabel>
                       <FormControl>
-                        <Input placeholder="Project location" {...field} />
+                        <Input 
+                          placeholder="Project location" 
+                          value={safeString(field.value)}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                          disabled={field.disabled}
+                          name={field.name}
+                          ref={field.ref}
+                        />
                       </FormControl>
                     </FormItem>
                   )}
@@ -822,7 +843,15 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
                     <FormItem>
                       <FormLabel>Size</FormLabel>
                       <FormControl>
-                        <Input placeholder="Project size (e.g., 10,000 sq ft)" {...field} />
+                        <Input 
+                          placeholder="Project size (e.g., 10,000 sq ft)" 
+                          value={safeString(field.value)}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                          disabled={field.disabled}
+                          name={field.name}
+                          ref={field.ref}
+                        />
                       </FormControl>
                     </FormItem>
                   )}
@@ -835,7 +864,15 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
                     <FormItem>
                       <FormLabel>Completion Date</FormLabel>
                       <FormControl>
-                        <Input placeholder="When the project was completed" {...field} />
+                        <Input 
+                          placeholder="When the project was completed" 
+                          value={safeString(field.value)}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                          disabled={field.disabled}
+                          name={field.name}
+                          ref={field.ref}
+                        />
                       </FormControl>
                     </FormItem>
                   )}
@@ -848,7 +885,15 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
                     <FormItem className="col-span-1 md:col-span-2">
                       <FormLabel>Services Provided</FormLabel>
                       <FormControl>
-                        <Input placeholder="Services provided for this project" {...field} />
+                        <Input 
+                          placeholder="Services provided for this project" 
+                          value={safeString(field.value)}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                          disabled={field.disabled}
+                          name={field.name}
+                          ref={field.ref}
+                        />
                       </FormControl>
                     </FormItem>
                   )}
@@ -865,7 +910,12 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
                       <Textarea 
                         placeholder="Detailed description of the project" 
                         className="min-h-[150px]"
-                        {...field} 
+                        value={safeString(field.value)}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                        disabled={field.disabled}
+                        name={field.name}
+                        ref={field.ref}
                       />
                     </FormControl>
                   </FormItem>
@@ -882,7 +932,12 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
                       <Textarea 
                         placeholder="Describe the challenges faced and solutions implemented" 
                         className="min-h-[150px]"
-                        {...field} 
+                        value={safeString(field.value)}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                        disabled={field.disabled}
+                        name={field.name}
+                        ref={field.ref}
                       />
                     </FormControl>
                   </FormItem>
@@ -899,7 +954,12 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
                       <Textarea 
                         placeholder="Describe the results and outcomes of the project" 
                         className="min-h-[150px]"
-                        {...field} 
+                        value={safeString(field.value)}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                        disabled={field.disabled}
+                        name={field.name}
+                        ref={field.ref}
                       />
                     </FormControl>
                   </FormItem>
