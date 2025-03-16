@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { apiRequest } from '../lib/queryClient';
 import { queryClient } from '../lib/queryClient';
 
@@ -34,7 +34,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkAuth = useCallback(async (): Promise<boolean> => {
     try {
-      const userData = await apiRequest<AuthUser>('/api/user', {
+      const userData = await apiRequest<AuthUser>({
+        url: '/api/user',
         method: 'GET',
         on401: 'returnNull'
       });
@@ -62,9 +63,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (username: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     try {
-      const response = await apiRequest('/api/login', {
+      const response = await apiRequest<AuthUser>({
+        url: '/api/login',
         method: 'POST',
-        data: { username, password }
+        body: { username, password }
       });
       
       if (response) {
@@ -86,7 +88,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async (): Promise<void> => {
     setIsLoading(true);
     try {
-      await apiRequest('/api/logout', { method: 'POST' });
+      await apiRequest({
+        url: '/api/logout',
+        method: 'POST'
+      });
       setUser(null);
       
       // Clear any authenticated queries

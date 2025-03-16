@@ -19,12 +19,12 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 const Login = () => {
   const [, setLocation] = useLocation();
-  const { login, isAuthenticated, loading } = useAuth();
+  const { login, isAuthenticated, isLoading } = useAuth();
   const [error, setError] = useState<string | null>(null);
 
   // Redirect if already authenticated
   useEffect(() => {
-    if (isAuthenticated && !loading) {
+    if (isAuthenticated && !isLoading) {
       setLocation('/admin');
     }
   }, [isAuthenticated, loading, setLocation]);
