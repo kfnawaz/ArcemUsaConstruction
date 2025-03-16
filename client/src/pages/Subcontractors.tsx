@@ -375,7 +375,12 @@ const Subcontractors = () => {
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-      <div className="relative h-96 flex items-center justify-center bg-gradient-to-r from-gray-900 to-black">
+      <div className="relative h-96 flex items-center justify-center" 
+        style={{
+          backgroundImage: "url('/uploads/images/join-us/cytonn-photography-n95VMLxqM2I-unsplash.jpg')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center'
+        }}>
         <div className="absolute inset-0 bg-black opacity-60"></div>
         <div className="relative z-10 text-center px-4">
           <h1 className="text-white text-5xl md:text-6xl font-montserrat font-bold mb-6">
