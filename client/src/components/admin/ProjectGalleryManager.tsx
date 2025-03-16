@@ -702,211 +702,67 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
             </div>
           ) : (
             <div className="space-y-6">
-              {/* Existing saved images */}
-              {projectGallery && projectGallery.length > 0 && (
+              {/* Gallery images with drag and drop sorting */}
+              {(projectGallery && projectGallery.length > 0) || pendingImages.length > 0 ? (
                 <div className="space-y-4">
-                  <h5 className="text-sm font-medium text-muted-foreground">Saved Images</h5>
-                  
-                  <div className="grid grid-cols-1 gap-4">
-                    {projectGallery
-                      .sort((a, b) => (a.displayOrder || 0) - (b.displayOrder || 0))
-                      .map((image) => (
-                      <Card 
-                        key={`saved-${image.id}`} 
-                        className={`overflow-hidden ${modifiedCaptions.has(image.id) || modifiedOrders.has(image.id) ? 'border-amber-400 border-2 shadow-md' : ''}`}>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
-                          <div className="aspect-video relative group">
-                            <img
-                              src={image.imageUrl}
-                              alt={image.caption || `Project image ${image.id}`}
-                              className="w-full h-full object-cover rounded-md cursor-pointer"
-                              data-preview-url={image.imageUrl}
-                              data-preview-action="true"
-                              title="Click to set as preview image"
-                              onError={(e) => {
-                                e.currentTarget.src = "https://placehold.co/600x400/e2e8f0/1e293b?text=Image+Error";
-                              }}
-                            />
-                            {previewImageUrl === image.imageUrl && (
-                              <div className="absolute top-2 left-2 z-10 bg-primary text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md">
-                                <Star className="h-3 w-3 mr-1 fill-white" />
-                                Preview Image
-                              </div>
-                            )}
-                            <div className="absolute top-2 right-2 z-10">
-                              <Button
-                                variant="destructive"
-                                size="icon"
-                                type="button"
-                                className="rounded-full h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  handleDeleteClick(image.id);
-                                }}
-                                disabled={isDeletingGalleryImage}
-                                title="Delete image"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </div>
-                            <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                              <div className="bg-white/90 rounded-md px-3 py-2 flex items-center gap-1 shadow-sm cursor-pointer" data-preview-action="true" data-preview-url={image.imageUrl}>
-                                <Star className="h-4 w-4 text-primary fill-primary" />
-                                <span className="text-sm font-medium">Set as preview image</span>
-                              </div>
-                            </div>
-                          </div>
-                          
-                          <div className="space-y-3">
-                            <div>
-                              <div className="flex items-center justify-between">
-                                <Label htmlFor={`caption-${image.id}`}>Image Caption</Label>
-                                {modifiedCaptions.has(image.id) && (
-                                  <span className="text-xs text-amber-600 flex items-center">
-                                    <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                                    Saving...
-                                  </span>
-                                )}
-                              </div>
-                              <Input 
-                                id={`caption-${image.id}`}
-                                defaultValue={image.caption || ''}
-                                placeholder="Enter image caption"
-                                onBlur={(e) => handleUpdateImageCaption(image.id, e.target.value)}
-                              />
-                            </div>
-                          </div>
-                          
-                          <div className="flex flex-col space-y-3">
-                            <div>
-                              <div className="flex items-center justify-between">
-                                <Label htmlFor={`order-${image.id}`}>Display Order</Label>
-                                {modifiedOrders.has(image.id) && (
-                                  <span className="text-xs text-amber-600 flex items-center">
-                                    <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                                    Saving...
-                                  </span>
-                                )}
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <Input 
-                                  id={`order-${image.id}`}
-                                  type="number"
-                                  defaultValue={image.displayOrder || 0}
-                                  className="w-20"
-                                  onBlur={(e) => {
-                                    const value = parseInt(e.target.value, 10);
-                                    if (!isNaN(value)) {
-                                      handleUpdateImageOrder(image.id, value);
-                                    }
-                                  }}
-                                />
-                                <div className="flex flex-col">
-                                  <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className="h-8 w-8"
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      moveImageOrderUp(image.id, image.displayOrder);
-                                    }}
-                                  >
-                                    <ArrowUp className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className="h-8 w-8 mt-1"
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      moveImageOrderDown(image.id, image.displayOrder);
-                                    }}
-                                  >
-                                    <ArrowDown className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                                <GripVertical className="h-5 w-5 text-muted-foreground" />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </Card>
-                    ))}
+                  <div className="flex items-center justify-between">
+                    <h5 className="text-sm font-medium text-muted-foreground">Gallery Images</h5>
+                    {(modifiedCaptions.size > 0 || modifiedOrders.size > 0) && (
+                      <span className="text-xs text-amber-600 flex items-center">
+                        <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                        Saving changes...
+                      </span>
+                    )}
                   </div>
-                </div>
-              )}
-              
-              {/* Newly added (pending) images */}
-              {pendingImages.length > 0 && (
-                <div className="space-y-4">
-                  <h5 className="text-sm font-medium text-muted-foreground">New Images (Not Saved Yet)</h5>
                   
-                  <div className="grid grid-cols-1 gap-4">
-                    {pendingImages.map((image, index) => (
-                      <Card key={`pending-${index}`} className="overflow-hidden border-dashed border-2 border-amber-400 shadow-md">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
-                          <div className="aspect-video relative group">
-                            <img 
-                              src={image.url} 
-                              alt={image.caption || `New image ${index + 1}`}
-                              className="w-full h-full object-cover rounded-md"
-                            />
-                            {previewImageUrl === image.url && (
-                              <div className="absolute top-2 left-2 z-10 bg-primary text-white text-xs px-2 py-1 rounded-md flex items-center shadow-md">
-                                <Star className="h-3 w-3 mr-1 fill-white" />
-                                Preview Image
-                              </div>
-                            )}
-                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                type="button"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  handleDeletePendingImage(index);
-                                }}
-                                className="flex items-center gap-2"
-                              >
-                                <Trash2 className="h-4 w-4" />
-                                Remove
-                              </Button>
-                            </div>
-                          </div>
-                          
-                          <div className="space-y-3">
-                            <div>
-                              <Label htmlFor={`pending-caption-${index}`}>Image Caption</Label>
-                              <Input 
-                                id={`pending-caption-${index}`}
-                                value={image.caption || ''}
-                                placeholder="Enter image caption"
-                                onChange={(e) => handleUpdatePendingImageCaption(index, e.target.value)}
-                              />
-                            </div>
-                          </div>
-                          
-                          <div className="space-y-3">
-                            <div>
-                              <Label htmlFor={`pending-order-${index}`}>Display Order</Label>
-                              <Input 
-                                id={`pending-order-${index}`}
-                                type="number"
-                                value={image.displayOrder}
-                                className="w-20"
-                                onChange={(e) => handleUpdatePendingImageOrder(index, e.target.value)}
-                              />
-                            </div>
-                            <p className="text-xs text-muted-foreground">Will be saved with project</p>
-                          </div>
-                        </div>
-                      </Card>
-                    ))}
-                  </div>
+                  <SortableGalleryGrid 
+                    savedGalleryItems={projectGallery || []}
+                    pendingGalleryItems={pendingImages}
+                    previewImageUrl={previewImageUrl}
+                    onReorderSavedItems={(items) => {
+                      // Update the order of each item
+                      items.forEach(item => {
+                        if (item.displayOrder !== item.displayOrder) {
+                          handleUpdateImageOrder(item.id, item.displayOrder);
+                        }
+                      });
+                    }}
+                    onReorderPendingItems={(items) => {
+                      // Replace all pending items with the reordered ones
+                      setPendingImages(items);
+                      markEdited();
+                    }}
+                    onSetAsPreview={(url) => {
+                      // Find the preview image element and trigger the click
+                      const previewElement = document.querySelector(`[data-preview-url="${url}"][data-preview-action="true"]`);
+                      if (previewElement) {
+                        previewElement.dispatchEvent(new Event('click', { bubbles: true }));
+                      }
+                    }}
+                    onDeleteSavedItem={(id) => {
+                      handleDeleteClick(id);
+                    }}
+                    onDeletePendingItem={(index) => {
+                      handleDeletePendingImage(index);
+                    }}
+                    onUpdateSavedItemCaption={(id, caption) => {
+                      handleUpdateImageCaption(id, caption);
+                    }}
+                    onUpdatePendingItemCaption={(index, caption) => {
+                      handleUpdatePendingImageCaption(index, caption);
+                    }}
+                    onCropImage={(item, index) => {
+                      if ('id' in item) {
+                        // It's a saved gallery item
+                        handleOpenCropper(item, 0);
+                      } else {
+                        // It's a pending item
+                        handleOpenCropper(item, index);
+                      }
+                    }}
+                  />
                 </div>
-              )}
+              ) : null}
               
               {/* Empty state */}
               {currentImageCount === 0 && (

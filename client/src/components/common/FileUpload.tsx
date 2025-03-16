@@ -71,6 +71,22 @@ interface FileUploadProps {
    * Session ID for tracking files
    */
   sessionId?: string;
+  /**
+   * Maximum file size in MB
+   */
+  maxSizeMB?: number;
+  /**
+   * MIME types to accept (e.g., 'image/*')
+   */
+  accept?: string;
+  /**
+   * Button text for the upload button
+   */
+  buttonText?: string;
+  /**
+   * Help text to display below the upload button
+   */
+  helpText?: string;
 }
 
 export default function FileUpload({
@@ -86,6 +102,10 @@ export default function FileUpload({
   multiple = true,
   imagesOnly = false,
   sessionId: externalSessionId,
+  maxSizeMB = 8,
+  accept,
+  buttonText,
+  helpText,
 }: FileUploadProps) {
   const [files, setFiles] = useState<File[]>([]);
   const [fileUrls, setFileUrls] = useState<string[]>(initialFiles || []);
@@ -205,6 +225,26 @@ export default function FileUpload({
     // Convert FileList to array and add to files state
     const newFiles = Array.from(fileList);
     
+    // Check file size if maxSizeMB is specified
+    if (maxSizeMB) {
+      const maxSizeBytes = maxSizeMB * 1024 * 1024;
+      const oversizedFiles = newFiles.filter(file => file.size > maxSizeBytes);
+      
+      if (oversizedFiles.length > 0) {
+        toast({
+          title: "File size exceeds limit",
+          description: `Maximum file size is ${maxSizeMB}MB. ${oversizedFiles.length} file(s) exceeded this limit.`,
+          variant: "destructive",
+        });
+        
+        // Filter out oversized files
+        const sizedFiles = newFiles.filter(file => file.size <= maxSizeBytes);
+        if (sizedFiles.length === 0) return; // All files were too large
+        newFiles.length = 0;
+        newFiles.push(...sizedFiles);
+      }
+    }
+    
     // Filter by image type if required
     const filteredFiles = imagesOnly 
       ? newFiles.filter(file => file.type.startsWith('image/'))
@@ -218,11 +258,42 @@ export default function FileUpload({
       });
     }
     
-    setFiles(prev => [...prev, ...filteredFiles]);
+    // Also handle custom accept types
+    let finalFiles = filteredFiles;
+    if (accept && !imagesOnly) {
+      const acceptedTypes = accept.split(',').map(type => type.trim());
+      const acceptedFiles = filteredFiles.filter(file => {
+        // Check if file type matches any of the accepted types
+        return acceptedTypes.some(type => {
+          if (type.includes('/*')) {
+            // Handle wildcards like 'image/*'
+            const category = type.split('/')[0];
+            return file.type.startsWith(`${category}/`);
+          }
+          return file.type === type || 
+                 // Handle extensions like '.pdf'
+                 (type.startsWith('.') && file.name.toLowerCase().endsWith(type.toLowerCase()));
+        });
+      });
+      
+      if (acceptedFiles.length < filteredFiles.length) {
+        toast({
+          title: "Invalid file type",
+          description: `Only ${accept} files are allowed`,
+          variant: "destructive",
+        });
+      }
+      
+      finalFiles = acceptedFiles;
+    }
+    
+    if (finalFiles.length === 0) return; // No valid files left
+    
+    setFiles(prev => [...prev, ...finalFiles]);
     
     // Auto upload if enabled
-    if (autoUpload && filteredFiles.length > 0) {
-      startUpload(filteredFiles);
+    if (autoUpload && finalFiles.length > 0) {
+      startUpload(finalFiles);
     }
   };
   
@@ -274,21 +345,21 @@ export default function FileUpload({
           type="file"
           className="hidden"
           multiple={multiple}
-          accept={imagesOnly ? 'image/*' : undefined}
+          accept={accept || (imagesOnly ? 'image/*' : undefined)}
           onChange={handleFileChange}
         />
         
         <div className="flex flex-col items-center justify-center space-y-2">
           <Upload className="h-8 w-8 text-gray-500" />
           <p className="text-sm font-medium">
-            Drag and drop files here, or click to browse
+            {buttonText || 'Drag and drop files here, or click to browse'}
           </p>
           <p className="text-xs text-gray-500">
-            {imagesOnly ? 'Only image files are allowed' : 'All file types accepted'}
+            {helpText || (imagesOnly ? 'Only image files are allowed' : 'All file types accepted')}
           </p>
-          {maxFiles && (
+          {maxFiles && maxSizeMB && (
             <p className="text-xs text-gray-500">
-              Maximum {maxFiles} files
+              Maximum {maxFiles} files, up to {maxSizeMB}MB each
             </p>
           )}
         </div>
