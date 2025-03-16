@@ -224,8 +224,8 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
       // Check if we received a valid project response with an ID
       if (createdProject && typeof createdProject === 'object' && 'id' in createdProject) {
         const projectId = createdProject.id;
-        // Refresh the page with the new project ID to convert to edit mode
-        window.location.href = `/admin/projects/edit/${projectId}`;
+        // Refresh the page with the new project ID to convert to edit mode using the correct URL format
+        window.location.href = `/admin/projects?edit=${projectId}`;
       } else {
         // Fallback in case we don't get a proper ID back
         console.warn("No project ID returned after creation, falling back to close");
