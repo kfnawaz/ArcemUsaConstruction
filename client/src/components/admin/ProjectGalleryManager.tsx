@@ -681,18 +681,27 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
           
           {canAddMoreImages ? (
             <div className="mb-4">
-              <FileUpload 
-                onUploadComplete={(urls, sessionId) => {
-                  if (sessionId && trackUploadSession) {
-                    // Use the proper function from the hook to track the session
-                    trackUploadSession(sessionId);
-                  }
+              <UploadThingFileUpload 
+                endpoint="imageUploader"
+                onClientUploadComplete={(files) => {
+                  // Extract URLs from the response files
+                  const urls = files.map(file => file.url);
                   handleFileUpload(urls);
                 }}
-                sessionId={`project_gallery_${projectId}_${Date.now()}`}
+                onUploadError={(error) => {
+                  console.error("UploadThing error:", error);
+                  toast({
+                    title: "Upload failed",
+                    description: error.message || "There was an error uploading your images.",
+                    variant: "destructive"
+                  });
+                }}
+                onUploadBegin={() => {
+                  setIsBatchUploading(true);
+                }}
                 multiple={true}
-                accept="image/*"
-                maxSizeMB={5}
+                accept="image/jpeg, image/png, image/webp"
+                maxSizeMB={8}
                 buttonText="Add Project Images"
                 helpText={`Add up to ${MAX_GALLERY_IMAGES - currentImageCount} more image${MAX_GALLERY_IMAGES - currentImageCount !== 1 ? 's' : ''}`}
               />

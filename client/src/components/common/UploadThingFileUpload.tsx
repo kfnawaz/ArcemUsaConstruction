@@ -5,6 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, UploadCloud, XCircle, CheckCircle, AlertTriangle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import type { OurFileRouter } from "@shared/uploadthing";
+import type { FileWithPath } from "@uploadthing/react";
 
 // Define the types required for the component
 interface UploadFileResponse {
