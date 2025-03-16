@@ -71,7 +71,10 @@ const ProjectManagement = () => {
   // Delete project mutation
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest('DELETE', `/api/projects/${id}`);
+      return apiRequest({
+        url: `/api/projects/${id}`,
+        method: 'DELETE'
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
