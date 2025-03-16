@@ -34,7 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkAuth = useCallback(async (): Promise<boolean> => {
     try {
-      const userData = await apiRequest<AuthUser>('/api/auth/me', {
+      const userData = await apiRequest<AuthUser>('/api/user', {
         method: 'GET',
         on401: 'returnNull'
       });
@@ -62,15 +62,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (username: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     try {
-      const result = await apiRequest<{ success: boolean; user: AuthUser }>('/api/auth/login', {
+      const response = await apiRequest('/api/login', {
         method: 'POST',
         data: { username, password }
       });
       
-      if (result?.success && result?.user) {
-        setUser(result.user);
+      if (response) {
+        setUser(response);
         // Invalidate any user-related queries
-        queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/user'] });
         return true;
       }
       
@@ -86,7 +86,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async (): Promise<void> => {
     setIsLoading(true);
     try {
-      await apiRequest('/api/auth/logout', { method: 'POST' });
+      await apiRequest('/api/logout', { method: 'POST' });
       setUser(null);
       
       // Clear any authenticated queries
