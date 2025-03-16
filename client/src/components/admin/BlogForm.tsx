@@ -20,7 +20,8 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Loader2, Images } from 'lucide-react';
+import { ArrowLeft, Loader2, Images, Upload } from 'lucide-react';
+import { FileUpload } from '@/components/FileUpload';
 import { generateSlug } from '@/lib/utils';
 import {
   Select,
@@ -233,11 +234,14 @@ const BlogForm = ({ postId, onClose }: BlogFormProps) => {
                   name="image"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Featured Image URL</FormLabel>
+                      <FormLabel>Featured Image</FormLabel>
                       <FormControl>
-                        <Input 
-                          placeholder="Enter image URL" 
-                          {...field} 
+                        <FileUpload
+                          value={field.value}
+                          onChange={field.onChange}
+                          onError={(error) => {
+                            form.setError('image', { message: error });
+                          }}
                         />
                       </FormControl>
                       <FormMessage />

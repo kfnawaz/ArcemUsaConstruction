@@ -2,7 +2,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { createUploadthing } from "uploadthing/server";
-import { fileRouter } from "./uploadthing";
+import { uploadRouter } from "./uploadthing";
 import { createRouteHandler } from "uploadthing/server";
 
 const app = express();
@@ -11,7 +11,7 @@ app.use(express.urlencoded({ extended: false }));
 
 // Initialize the UploadThing route handler
 const uploadthingHandler = createRouteHandler({
-  router: fileRouter
+  router: uploadRouter
 });
 
 // UploadThing routes

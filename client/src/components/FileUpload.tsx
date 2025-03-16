@@ -1,84 +1,118 @@
-import React from 'react';
-import { cn } from "@/lib/utils";
-import { useFileUpload } from '@/hooks/useFileUpload';
-import { Button } from "@/components/ui/button";
-import { Loader2, Upload } from "lucide-react";
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { UploadCloud, X } from 'lucide-react';
+import { useDropzone } from 'react-dropzone';
+import { useUploadThing } from '@/lib/uploadthing';
+import { cn } from '@/lib/utils';
 
 interface FileUploadProps {
-  onUploadComplete: (url: string) => void;
-  onUploadError?: (error: Error) => void;
   accept?: string;
+  maxSize?: number;
+  value?: string;
+  onChange: (url: string) => void;
+  onError?: (error: string) => void;
   className?: string;
-  label?: string;
-  maxSize?: number; // in MB
-  uploading?: boolean;
 }
 
-export const FileUpload: React.FC<FileUploadProps> = ({
-  onUploadComplete,
-  onUploadError,
-  accept = "image/*",
-  className,
-  label = "Upload File",
-  maxSize = 4,
-  uploading = false,
-}) => {
-  const { uploadImage, uploadDocument, isUploadingImage, isUploadingDoc } = useFileUpload();
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
+export function FileUpload({
+  accept = 'image/*',
+  maxSize = 5 * 1024 * 1024, // 5MB
+  value,
+  onChange,
+  onError,
+  className
+}: FileUploadProps) {
+  const [isUploading, setIsUploading] = useState(false);
+  const { startUpload } = useUploadThing("imageUploader");
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    accept: { 'image/*': [] },
+    maxSize,
+    multiple: false,
+    disabled: isUploading,
+    onDrop: async (acceptedFiles) => {
+      if (acceptedFiles.length === 0) return;
 
-    // Check file size
-    const fileSizeInMB = file.size / (1024 * 1024);
-    if (fileSizeInMB > maxSize) {
-      onUploadError?.(new Error(`File size should not exceed ${maxSize}MB`));
-      return;
-    }
-
-    try {
-      const upload = file.type.startsWith('image/') ? uploadImage : uploadDocument;
-      const url = await upload(file);
-      if (url) {
-        onUploadComplete(url);
+      const file = acceptedFiles[0];
+      if (!file.type.startsWith('image/')) {
+        onError?.('Please upload an image file.');
+        return;
       }
-    } catch (error) {
-      console.error('Upload error:', error);
-      onUploadError?.(error as Error);
-    }
+
+      setIsUploading(true);
+      try {
+        const res = await startUpload([file]);
+        if (res && res[0]?.url) {
+          onChange(res[0].url);
+        }
+      } catch (error) {
+        console.error('Upload error:', error);
+        onError?.('Failed to upload file. Please try again.');
+      } finally {
+        setIsUploading(false);
+      }
+    },
+    onDropRejected: (fileRejections) => {
+      const error = fileRejections[0]?.errors[0];
+      if (error?.code === 'file-too-large') {
+        onError?.(`File is too large. Maximum size is ${maxSize / 1024 / 1024}MB.`);
+      } else {
+        onError?.('Invalid file. Please try again.');
+      }
+    },
+  });
+
+  const handleRemove = () => {
+    onChange('');
   };
 
-  const isUploading = uploading || isUploadingImage || isUploadingDoc;
-
   return (
-    <div className={cn("flex flex-col items-center gap-4", className)}>
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept={accept}
-        onChange={handleFileChange}
-        className="hidden"
-      />
-      <Button
-        type="button"
-        variant="outline"
-        onClick={() => fileInputRef.current?.click()}
-        disabled={isUploading}
-        className="w-full"
-      >
-        {isUploading ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Uploading...
-          </>
-        ) : (
-          <>
-            <Upload className="mr-2 h-4 w-4" />
-            {label}
-          </>
-        )}
-      </Button>
+    <div className={cn("space-y-4", className)}>
+      {!value ? (
+        <div
+          {...getRootProps()}
+          className={cn(
+            "flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-lg transition-colors",
+            isDragActive ? "border-primary bg-primary/5" : "border-border",
+            isUploading && "opacity-50 cursor-not-allowed"
+          )}
+        >
+          <input {...getInputProps()} />
+          <UploadCloud className="w-10 h-10 mb-2 text-muted-foreground" />
+          <div className="text-center space-y-1">
+            <p className="text-sm font-medium">
+              {isDragActive ? "Drop the file here" : "Drag & drop a file here"}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              or click to select a file
+            </p>
+          </div>
+          {isUploading && (
+            <div className="mt-2 text-sm text-muted-foreground animate-pulse">
+              Uploading...
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="relative group">
+          <img
+            src={value}
+            alt="Uploaded file"
+            className="w-full h-40 object-cover rounded-lg"
+          />
+          <Button
+            type="button"
+            variant="destructive"
+            size="icon"
+            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+            onClick={handleRemove}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
     </div>
   );
-};
+}
