@@ -254,6 +254,9 @@ export const useProject = (projectId?: number) => {
       
       const data = await response.json();
       
+      // Log the response to debug URL format
+      console.log('Upload response data:', data);
+      
       // Add to tracked sessions
       setUploadSessions(prev => {
         const updated = new Set(prev);
@@ -261,8 +264,9 @@ export const useProject = (projectId?: number) => {
         return updated;
       });
       
+      // Check for and prefer ufsUrl if available
       return { 
-        url: data.url,
+        url: data.ufsUrl || data.url, // Use the new URL format if available
         sessionId: data.sessionId || fileSessionId
       };
     } catch (error) {
