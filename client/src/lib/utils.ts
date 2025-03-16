@@ -83,3 +83,11 @@ export function initializeRevealEffects() {
     window.removeEventListener('scroll', revealElements);
   };
 }
+
+/**
+ * Generate a unique ID for client-side use
+ * Useful for temporary IDs before server assignment
+ */
+export function generateId(): string {
+  return Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
+}

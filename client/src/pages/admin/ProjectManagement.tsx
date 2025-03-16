@@ -8,6 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Search, Plus, Edit, Trash2, Star, StarOff, AlertTriangle, Image } from 'lucide-react';
 import AdminNav from '@/components/admin/AdminNav';
 import ProjectForm from '@/components/admin/ProjectForm';
+import NewProjectForm from '@/components/admin/NewProjectForm';
 import ExportButton from '@/components/admin/ExportButton';
 import { 
   Dialog,
@@ -214,7 +215,7 @@ const ProjectManagement = () => {
           <div className="flex-1">
             {/* Add/Edit Project Form */}
             {isAdding || isEditing ? (
-              <ProjectForm 
+              <NewProjectForm 
                 projectId={currentEditId} 
                 onClose={handleCloseForm} 
               />
