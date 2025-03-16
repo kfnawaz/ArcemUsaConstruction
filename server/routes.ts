@@ -24,6 +24,7 @@ import { z } from "zod";
 import { setupAuth } from "./auth";
 import { upload, getFileUrl } from "./utils/fileUpload";
 import path from "path";
+import { uploadThingService } from "./services/uploadthingService";
 
 // Authentication middleware
 const isAuthenticated = (req: Request, res: Response, next: NextFunction) => {

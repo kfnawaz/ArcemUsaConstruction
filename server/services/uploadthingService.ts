@@ -1,6 +1,28 @@
 import { UTApi } from "uploadthing/server";
 
 /**
+ * Interface for a file returned from UploadThing API
+ */
+interface UploadThingFile {
+  key: string;
+  name?: string;
+  url?: string;
+  size: number;
+  uploadedAt: number;
+  id: string;
+  status: "Uploaded" | "Uploading" | "Failed" | "Deletion Pending";
+  customId: string | null;
+}
+
+/**
+ * Interface for the response from UploadThing listFiles API
+ */
+interface UploadThingListFilesResponse {
+  files: UploadThingFile[];
+  hasMore: boolean;
+}
+
+/**
  * Interface for file list response
  */
 export interface FileListItem {
@@ -28,15 +50,20 @@ export class UploadThingService {
    */
   async listFiles(): Promise<FileListItem[]> {
     try {
-      const files = await this.utapi.listFiles();
+      const response = await this.utapi.listFiles() as UploadThingListFilesResponse;
+      
+      // Check if files property exists
+      if (!response.files || !Array.isArray(response.files)) {
+        return [];
+      }
       
       // Map to our interface with normalized properties
-      return files.map(file => ({
+      return response.files.map((file: UploadThingFile) => ({
         key: file.key,
         name: file.name || file.key,
-        url: file.url,
-        size: file.size,
-        uploadedAt: new Date(file.uploadedAt).toISOString()
+        url: file.url || '',
+        size: file.size || 0,
+        uploadedAt: new Date(file.uploadedAt || Date.now()).toISOString()
       }));
     } catch (error) {
       console.error("Error listing UploadThing files:", error);
