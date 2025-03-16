@@ -3,7 +3,10 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useProject } from '@/hooks/useProject';
 import { ProjectGallery, InsertProjectGallery } from '@shared/schema';
-import { Trash2, Image, Loader2, AlertCircle, ArrowUp, ArrowDown, GripVertical, Star } from 'lucide-react';
+import { 
+  Trash2, Image, Loader2, AlertCircle, ArrowUp, ArrowDown, 
+  GripVertical, Star, Upload, Plus, ImagePlus 
+} from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -17,7 +20,10 @@ import {
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
 import FileUpload from '@/components/common/FileUpload';
+import SortableGalleryGrid from './SortableGalleryGrid';
+import ImageCropper from '../common/ImageCropper';
 
 interface ProjectGalleryManagerProps {
   projectId: number;
