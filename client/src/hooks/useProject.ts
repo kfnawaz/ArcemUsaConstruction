@@ -60,7 +60,11 @@ export const useProject = (projectId?: number) => {
   // Update project mutation
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<InsertProject> }) => {
-      return apiRequest('PUT', `/api/projects/${id}`, data);
+      return apiRequest({
+        url: `/api/projects/${id}`,
+        method: 'PUT',
+        body: data
+      });
     },
     onSuccess: () => {
       setIsSubmitting(false);
@@ -88,7 +92,11 @@ export const useProject = (projectId?: number) => {
   // Add gallery image mutation
   const addGalleryImageMutation = useMutation({
     mutationFn: async ({ projectId, data }: { projectId: number; data: Omit<InsertProjectGallery, 'projectId'> }) => {
-      return apiRequest('POST', `/api/projects/${projectId}/gallery`, data);
+      return apiRequest({
+        url: `/api/projects/${projectId}/gallery`,
+        method: 'POST',
+        body: data
+      });
     },
     onSuccess: () => {
       if (projectId) {
@@ -113,7 +121,11 @@ export const useProject = (projectId?: number) => {
   // Update gallery image mutation
   const updateGalleryImageMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<InsertProjectGallery> }) => {
-      return apiRequest('PUT', `/api/projects/gallery/${id}`, data);
+      return apiRequest({
+        url: `/api/projects/gallery/${id}`,
+        method: 'PUT',
+        body: data
+      });
     },
     onSuccess: () => {
       if (projectId) {
@@ -138,7 +150,10 @@ export const useProject = (projectId?: number) => {
   // Delete gallery image mutation
   const deleteGalleryImageMutation = useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest('DELETE', `/api/projects/gallery/${id}`);
+      return apiRequest({
+        url: `/api/projects/gallery/${id}`,
+        method: 'DELETE'
+      });
     },
     onSuccess: () => {
       if (projectId) {

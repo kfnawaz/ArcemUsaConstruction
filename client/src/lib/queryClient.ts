@@ -72,7 +72,7 @@ type UnauthorizedBehavior = "returnNull" | "throw";
 export const getQueryFn = <T>(options: {
   on401: UnauthorizedBehavior;
 }) => {
-  return async (context: { queryKey: [string, ...any[]] }) => {
+  return async (context: any) => {
     const [url, ...params] = context.queryKey;
     
     // Handle query parameters
