@@ -23,7 +23,7 @@ import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import FileUpload from '@/components/common/FileUpload';
 import SortableGalleryGrid from './SortableGalleryGrid';
-import ImageCropper from '../common/ImageCropper';
+
 import UploadThingFileUpload from '@/components/common/UploadThingFileUpload';
 
 interface ProjectGalleryManagerProps {
@@ -820,15 +820,6 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
                     }}
                     onUpdatePendingItemCaption={(index, caption) => {
                       handleUpdatePendingImageCaption(index, caption);
-                    }}
-                    onCropImage={(item, index) => {
-                      if ('id' in item) {
-                        // It's a saved gallery item
-                        handleOpenCropper(item, 0);
-                      } else {
-                        // It's a pending item
-                        handleOpenCropper(item, index);
-                      }
                     }}
                   />
                 </div>

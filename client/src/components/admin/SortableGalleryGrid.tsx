@@ -16,12 +16,11 @@ import {
   rectSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Pencil, Trash2, GripVertical, Star, Crop } from 'lucide-react';
+import { Pencil, Trash2, GripVertical, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { ProjectGallery } from '@shared/schema';
-import ImageCropper from '../common/ImageCropper';
 
 // Type that matches our pending image structure
 type PendingImage = {
@@ -50,7 +49,6 @@ interface SortableItemProps {
   onSetAsPreview: (url: string) => void;
   onDelete: () => void;
   onUpdateCaption: (caption: string) => void;
-  onCrop: () => void;
 }
 
 const SortableItem: React.FC<SortableItemProps> = ({
@@ -60,8 +58,7 @@ const SortableItem: React.FC<SortableItemProps> = ({
   isPending,
   onSetAsPreview,
   onDelete,
-  onUpdateCaption,
-  onCrop
+  onUpdateCaption
 }) => {
   const [caption, setCaption] = useState(item.caption || '');
   const [isEditing, setIsEditing] = useState(false);
@@ -115,20 +112,6 @@ const SortableItem: React.FC<SortableItemProps> = ({
         />
         
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-200"></div>
-        
-        <div className="absolute top-2 right-2 space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          <Button
-            size="icon"
-            variant="secondary"
-            className="h-8 w-8 bg-white/90 hover:bg-white"
-            onClick={(e) => {
-              e.preventDefault(); // Prevent form submission
-              onCrop();
-            }}
-          >
-            <Crop className="h-4 w-4 text-gray-700" />
-          </Button>
-        </div>
         
         <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           <div className="flex justify-between items-center mb-1">
@@ -238,7 +221,6 @@ interface SortableGalleryGridProps {
   onDeletePendingItem: (index: number) => void;
   onUpdateSavedItemCaption: (id: number, caption: string) => void;
   onUpdatePendingItemCaption: (index: number, caption: string) => void;
-  onCropImage: (item: GalleryImage, index: number) => void;
 }
 
 const SortableGalleryGrid: React.FC<SortableGalleryGridProps> = ({
@@ -251,8 +233,7 @@ const SortableGalleryGrid: React.FC<SortableGalleryGridProps> = ({
   onDeleteSavedItem,
   onDeletePendingItem,
   onUpdateSavedItemCaption,
-  onUpdatePendingItemCaption,
-  onCropImage
+  onUpdatePendingItemCaption
 }) => {
   // Combine saved and pending items for rendering
   const allItems: GalleryImage[] = [
@@ -394,7 +375,6 @@ const SortableGalleryGrid: React.FC<SortableGalleryGridProps> = ({
                     }
                   }
                 }}
-                onCrop={() => onCropImage(item, index)}
               />
             );
           })}
