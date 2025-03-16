@@ -1,150 +1,174 @@
-import React, { useCallback, useState } from 'react';
-import { useDropzone } from 'react-dropzone';
-import { Button } from '@/components/ui/button';
+import { useState, useRef, DragEvent, ChangeEvent } from 'react';
 import { cn } from '@/lib/utils';
-import { useToast } from '@/hooks/use-toast';
-import { X, File, Image, Upload, Loader2, AlertTriangle } from 'lucide-react';
-import { FileUpload } from './FileUpload';
-import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/components/ui/button';
+import { Upload, XCircle, Image, File as FileIcon } from 'lucide-react';
 
 interface FileInputProps {
-  onFilesSelected?: (files: File[]) => void;
-  onFileRemoved?: (index: number) => void;
-  onUploadComplete?: (urls: string[]) => void;
-  onUploadError?: (error: Error) => void;
+  onFilesSelected: (files: File[]) => void;
   maxFiles?: number;
   accept?: Record<string, string[]>;
-  uploadImmediately?: boolean;
-  className?: string;
-  label?: string;
-  description?: string;
-  disabled?: boolean;
   value?: File[];
   allowedTypes?: string;
+  className?: string;
 }
 
 export function FileInput({
   onFilesSelected,
-  onFileRemoved,
-  onUploadComplete,
-  onUploadError,
   maxFiles = 5,
   accept = {
     'image/*': ['.png', '.jpg', '.jpeg', '.gif'],
   },
-  uploadImmediately = false,
-  className,
-  label = 'Upload files',
-  description = 'Drag & drop files here, or click to select files',
-  disabled = false,
-  value,
   allowedTypes = 'PNG, JPG, GIF',
+  value = [],
+  className,
 }: FileInputProps) {
-  const [files, setFiles] = useState<File[]>(value || []);
-  const { toast } = useToast();
-  const { isAdmin } = useAuth();
-  
-  const onDrop = useCallback((acceptedFiles: File[]) => {
-    // Check if adding new files would exceed the limit
-    if (files.length + acceptedFiles.length > maxFiles) {
-      toast({
-        title: 'Upload limit exceeded',
-        description: `You can only upload up to ${maxFiles} files at a time.`,
-        variant: 'destructive',
-      });
-      return;
-    }
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
     
-    const newFiles = [...files, ...acceptedFiles];
-    setFiles(newFiles);
-    onFilesSelected?.(newFiles);
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length === 0) return;
     
-    if (uploadImmediately) {
-      // If we need to upload immediately, we'll use the FileUpload component's functionality
-    }
-  }, [files, maxFiles, onFilesSelected, toast, uploadImmediately]);
-  
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept,
-    disabled,
-    maxFiles: maxFiles - files.length,
-  });
-  
-  const removeFile = (index: number) => {
-    const newFiles = files.filter((_, i) => i !== index);
-    setFiles(newFiles);
-    onFileRemoved?.(index);
-    onFilesSelected?.(newFiles);
+    handleFilesSelection(files);
+  };
+
+  const handleFileInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files ? Array.from(e.target.files) : [];
+    if (files.length === 0) return;
+    
+    handleFilesSelection(files);
   };
   
-  if (!isAdmin) {
-    return (
-      <div className="flex items-center justify-center p-8 border-2 border-dashed rounded-lg bg-destructive/5 text-destructive">
-        <AlertTriangle className="h-6 w-6 mr-2" />
-        <p>You need administrator privileges to upload files.</p>
-      </div>
-    );
-  }
-  
+  const handleFilesSelection = (files: File[]) => {
+    // Filter files that match accepted types
+    const acceptedExtensions = Object.values(accept).flat();
+    const acceptedMimeTypes = Object.keys(accept);
+    
+    const validFiles = files.filter(file => {
+      const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+      return (
+        acceptedExtensions.includes(fileExtension) ||
+        acceptedMimeTypes.some(type => {
+          if (type.endsWith('*')) {
+            const mimePrefix = type.slice(0, -1);
+            return file.type.startsWith(mimePrefix);
+          }
+          return file.type === type;
+        })
+      );
+    });
+    
+    const allowedFiles = validFiles.slice(0, maxFiles - value.length);
+    if (allowedFiles.length > 0) {
+      onFilesSelected([...value, ...allowedFiles]);
+    }
+  };
+
+  const handleRemoveFile = (index: number) => {
+    const newFiles = [...value];
+    newFiles.splice(index, 1);
+    onFilesSelected(newFiles);
+  };
+
+  const handleBrowseClick = () => {
+    fileInputRef.current?.click();
+  };
+
   return (
     <div className={cn('space-y-4', className)}>
-      {label && <h4 className="font-medium">{label}</h4>}
-      
       <div
-        {...getRootProps()}
         className={cn(
           'border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors',
-          isDragActive ? 'border-primary bg-primary/5' : 'border-border',
-          disabled && 'opacity-50 cursor-not-allowed',
+          isDragging ? 'border-primary bg-muted/50' : 'border-muted-foreground/25 hover:border-muted-foreground/50',
+          'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'
         )}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        onClick={handleBrowseClick}
+        tabIndex={0}
+        role="button"
+        aria-label="Upload files"
       >
-        <input {...getInputProps()} />
-        <div className="flex flex-col items-center justify-center gap-2">
-          <Upload className="h-8 w-8 text-muted-foreground" />
-          {isDragActive ? (
-            <p>Drop the files here...</p>
-          ) : (
-            <>
-              <p>{description}</p>
-              <p className="text-sm text-muted-foreground">
-                Supported formats: {allowedTypes} (max {maxFiles} files)
+        <div className="flex flex-col items-center justify-center space-y-3">
+          <Upload className="h-10 w-10 text-muted-foreground" />
+          <div className="flex flex-col space-y-1">
+            <p className="text-sm font-medium">
+              Drag & drop files here or <span className="text-primary underline">browse</span>
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Accepted file types: {allowedTypes}
+            </p>
+            {maxFiles && (
+              <p className="text-xs text-muted-foreground">
+                Maximum {maxFiles} file{maxFiles !== 1 ? 's' : ''}
+                {value.length > 0 && ` (${maxFiles - value.length} remaining)`}
               </p>
-            </>
-          )}
+            )}
+          </div>
         </div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept={Object.entries(accept)
+            .map(([type, exts]) => [type, ...exts])
+            .flat()
+            .join(',')}
+          multiple={maxFiles > 1}
+          className="sr-only"
+          onChange={handleFileInputChange}
+        />
       </div>
-      
-      {files.length > 0 && (
+
+      {value.length > 0 && (
         <div className="space-y-2">
-          {files.map((file, index) => (
-            <div
-              key={`${file.name}-${index}`}
-              className="flex items-center justify-between p-2 border rounded"
-            >
-              <div className="flex items-center gap-2">
-                {file.type.startsWith('image/') ? (
-                  <Image className="h-4 w-4" />
-                ) : (
-                  <File className="h-4 w-4" />
-                )}
-                <span className="text-sm truncate max-w-[200px]">
-                  {file.name}
-                </span>
-                <span className="text-sm text-muted-foreground">
-                  ({(file.size / 1024 / 1024).toFixed(2)} MB)
-                </span>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => removeFile(index)}
-                disabled={disabled}
+          <div className="text-sm font-medium">Selected files ({value.length})</div>
+          <div className="space-y-2">
+            {value.map((file, index) => (
+              <div
+                key={`${file.name}-${index}`}
+                className="flex items-center justify-between bg-muted/50 rounded p-2 group"
               >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-          ))}
+                <div className="flex items-center space-x-2 truncate mr-2">
+                  {file.type.startsWith('image/') ? (
+                    <Image className="h-5 w-5 text-muted-foreground" />
+                  ) : (
+                    <FileIcon className="h-5 w-5 text-muted-foreground" />
+                  )}
+                  <span className="text-sm truncate">{file.name}</span>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 opacity-60 hover:opacity-100"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemoveFile(index);
+                  }}
+                >
+                  <XCircle className="h-4 w-4" />
+                  <span className="sr-only">Remove file</span>
+                </Button>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
