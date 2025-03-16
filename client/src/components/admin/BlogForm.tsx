@@ -237,11 +237,17 @@ const BlogForm = ({ postId, onClose }: BlogFormProps) => {
                       <FormLabel>Featured Image</FormLabel>
                       <FormControl>
                         <FileUpload
-                          value={field.value}
-                          onChange={field.onChange}
-                          onError={(error) => {
-                            form.setError('image', { message: error });
+                          onUploadComplete={(urls) => {
+                            if (urls.length > 0) {
+                              field.onChange(urls[0]);
+                            }
                           }}
+                          onUploadError={(error) => {
+                            form.setError('image', { 
+                              message: error.message || 'Upload failed' 
+                            });
+                          }}
+                          maxFiles={1}
                         />
                       </FormControl>
                       <FormMessage />

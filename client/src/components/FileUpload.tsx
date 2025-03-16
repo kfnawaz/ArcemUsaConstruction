@@ -4,8 +4,8 @@ import { useUploadThing } from '@/lib/uploadthing';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Icon } from '@/components/ui/icons';
-import { X, File, Image, Upload, Loader2 } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { X, File, Image, Upload, Loader2, AlertTriangle } from 'lucide-react';
 
 interface FileUploadProps {
   onUploadComplete?: (urls: string[]) => void;
@@ -23,6 +23,7 @@ export function FileUpload({
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
+  const { isAdmin } = useAuth();
   const { startUpload } = useUploadThing('imageUploader');
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -82,29 +83,36 @@ export function FileUpload({
 
   return (
     <div className={cn('space-y-4', className)}>
-      <div
-        {...getRootProps()}
-        className={cn(
-          'border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors',
-          isDragActive ? 'border-primary bg-primary/5' : 'border-border',
-        )}
-      >
-        <input {...getInputProps()} />
-        <div className="flex flex-col items-center justify-center gap-2">
-          <Icons.upload className="h-8 w-8 text-muted-foreground" />
-          {isDragActive ? (
-            <p>Drop the files here...</p>
-          ) : (
-            <p>
-              Drag &apos;n&apos; drop files here, or click to select files
-              <br />
-              <span className="text-sm text-muted-foreground">
-                Supported formats: PNG, JPG, GIF (max {maxFiles} files)
-              </span>
-            </p>
-          )}
+      {!isAdmin ? (
+        <div className="flex items-center justify-center p-8 border-2 border-dashed rounded-lg bg-destructive/5 text-destructive">
+          <AlertTriangle className="h-6 w-6 mr-2" />
+          <p>You need administrator privileges to upload files.</p>
         </div>
-      </div>
+      ) : (
+        <div
+          {...getRootProps()}
+          className={cn(
+            'border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors',
+            isDragActive ? 'border-primary bg-primary/5' : 'border-border',
+          )}
+        >
+          <input {...getInputProps()} />
+          <div className="flex flex-col items-center justify-center gap-2">
+            <Upload className="h-8 w-8 text-muted-foreground" />
+            {isDragActive ? (
+              <p>Drop the files here...</p>
+            ) : (
+              <p>
+                Drag &apos;n&apos; drop files here, or click to select files
+                <br />
+                <span className="text-sm text-muted-foreground">
+                  Supported formats: PNG, JPG, GIF (max {maxFiles} files)
+                </span>
+              </p>
+            )}
+          </div>
+        </div>
+      )}
 
       {files.length > 0 && (
         <div className="space-y-2">
@@ -142,7 +150,7 @@ export function FileUpload({
           >
             {uploading ? (
               <>
-                <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Uploading...
               </>
             ) : (
