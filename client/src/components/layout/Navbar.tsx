@@ -87,17 +87,19 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
             href="/"
             className="text-white font-montserrat font-bold flex items-center overflow-hidden"
           >
-            <img
-              ref={logoRef}
-              src="/uploads/images/arcem-logo-new.png"
-              alt="A+R C.E.M Logo"
-              className={cn(
-                "h-12 sm:h-14 md:h-16 transform transition-all duration-1000 ease-out",
-                logoAnimated
-                  ? "translate-x-0 opacity-100"
-                  : "-translate-x-full opacity-0",
-              )}
-            />
+            <div className="relative h-12 sm:h-14 md:h-16 transform transition-all duration-500">
+              <img
+                ref={logoRef}
+                src="/uploads/images/arcem-logo-transparent.png"
+                alt="A+R C.E.M Logo"
+                className={cn(
+                  "h-full w-auto max-w-[280px] object-contain transform transition-all duration-1000 ease-out",
+                  logoAnimated
+                    ? "translate-x-0 opacity-100"
+                    : "-translate-x-full opacity-0",
+                )}
+              />
+            </div>
           </Link>
 
           {/* Desktop Navigation */}
@@ -159,11 +161,19 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
         <div
           id="mobile-menu"
           className={cn(
-            "md:hidden bg-black bg-opacity-95 absolute left-0 right-0 mt-4 py-4 px-4 slide-in",
+            "md:hidden bg-black bg-opacity-95 absolute left-0 right-0 mt-4 py-4 px-4 slide-in z-50",
             isMobileMenuOpen ? "block" : "hidden",
           )}
         >
           <div className="flex flex-col space-y-4">
+            {/* Logo in mobile menu */}
+            <div className="mb-4 flex justify-center">
+              <img
+                src="/uploads/images/arcem-logo-transparent.png"
+                alt="A+R C.E.M Logo"
+                className="h-10 w-auto object-contain"
+              />
+            </div>
             {navItems.map((item) => (
               <Link
                 key={item.href}
