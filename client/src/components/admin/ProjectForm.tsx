@@ -233,8 +233,10 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
       const result = await saveProject(data);
       
       // Save the ID of the newly created project and move to the image step
-      if (result && typeof result === 'object' && 'id' in result) {
-        setCreatedProjectId(result.id as number);
+      // Type assertion since we know saveProject returns a Project object or undefined
+      const projectResult = result as any;
+      if (projectResult && typeof projectResult === 'object' && 'id' in projectResult) {
+        setCreatedProjectId(projectResult.id as number);
         setCurrentStep('images');
         toast({
           title: "Project created",
