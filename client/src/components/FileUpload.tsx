@@ -6,6 +6,7 @@ import { UploadCloud, X } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 import { useUploadThing } from '@/lib/uploadthing';
 import { cn } from '@/lib/utils';
+import type { OurFileRouter } from '../../../shared/uploadthing';
 
 interface FileUploadProps {
   accept?: string;
