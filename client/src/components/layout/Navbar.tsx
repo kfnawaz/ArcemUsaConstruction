@@ -90,7 +90,7 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
             <div className="relative h-12 sm:h-14 md:h-16 transform transition-all duration-500">
               <img
                 ref={logoRef}
-                src="/uploads/images/arcem-logo-transparent.png"
+                src="/uploads/images/arcem-logo-transparent.png?v=1"
                 alt="A+R C.E.M Logo"
                 className={cn(
                   "h-full w-auto max-w-[280px] object-contain transform transition-all duration-1000 ease-out",
@@ -169,7 +169,7 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
             {/* Logo in mobile menu */}
             <div className="mb-4 flex justify-center">
               <img
-                src="/uploads/images/arcem-logo-transparent.png"
+                src="/uploads/images/arcem-logo-transparent.png?v=1"
                 alt="A+R C.E.M Logo"
                 className="h-10 w-auto object-contain"
               />
