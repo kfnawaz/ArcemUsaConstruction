@@ -38,6 +38,7 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import ProjectGalleryManager, { ProjectGalleryManagerHandle } from './ProjectGalleryManager';
 import { fileUtils } from '@/lib/fileUtils';
+import UploadThingUploader from '@/components/common/UploadThingUploader';
 import {
   Dialog,
   DialogContent,
@@ -285,7 +286,7 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
       if (confirm("You have unsaved changes. Are you sure you want to leave without saving?")) {
         // Clean up any tracked files
         uploadSessions.forEach(sessionId => {
-          fileUtils.cleanupSession(sessionId);
+          fileUtils.cleanupFiles(sessionId);
         });
         onClose();
       }
