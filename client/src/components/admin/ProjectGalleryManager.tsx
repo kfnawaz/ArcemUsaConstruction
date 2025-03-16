@@ -411,7 +411,9 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
     };
 
     // Update order for a saved image
-    const handleUpdateImageOrder = async (id: number, displayOrder: number) => {
+    const handleUpdateImageOrder = async (id: number, displayOrder: number | null) => {
+      // If displayOrder is null, we can't process it
+      if (displayOrder === null) return;
       try {
         // Track this order as being modified
         setModifiedOrders(prev => {
@@ -722,7 +724,8 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
                     onReorderSavedItems={(items) => {
                       // Update the order of each item
                       items.forEach(item => {
-                        if (item.displayOrder !== item.displayOrder) {
+                        // Need to update display order for each item
+                        if (item.id !== undefined && item.id !== null && item.displayOrder !== undefined && item.displayOrder !== null) {
                           handleUpdateImageOrder(item.id, item.displayOrder);
                         }
                       });

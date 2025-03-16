@@ -305,8 +305,13 @@ const SortableGalleryGrid: React.FC<SortableGalleryGridProps> = ({
           const newOrder = arrayMove(pendingGalleryItems, pendingOldIndex, pendingNewIndex);
           
           // Update display orders based on new positions
-          const startOrder = savedGalleryItems.length > 0 
-            ? Math.max(...savedGalleryItems.map(item => item.displayOrder)) + 1 
+          // Filter out null display orders and use a safe default if the array is empty
+          const validOrders = savedGalleryItems
+            .map(item => item.displayOrder)
+            .filter((order): order is number => order !== null);
+          
+          const startOrder = validOrders.length > 0 
+            ? Math.max(...validOrders) + 1 
             : 1;
           
           const updatedOrder = newOrder.map((item, index) => ({
