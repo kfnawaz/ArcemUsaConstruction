@@ -62,9 +62,16 @@ export class UploadThingService {
         // Generate URL from key if not provided
         let fileUrl = file.url;
         if (!fileUrl && file.key) {
+          // The API should return the full URL, but if it doesn't, we need to construct it
+          // UploadThing uses a tenant subdomain format: https://{tenant-id}.ufs.sh/f/{file-key}
+          // For this application, we'll use the environment APP_ID or a default prefix
+          const appId = process.env.UPLOADTHING_APP_ID || '';
+          // Extract tenant ID from app ID or use a default
+          const tenantId = appId.substring(0, 10).toLowerCase() || 'hdbd2e27pi';
+          
           // Check if it's the new (ufs.sh) or old (utfs.io) format based on key prefix
           if (file.key.startsWith('o1')) {
-            fileUrl = `https://ufs.sh/f/${file.key}`;
+            fileUrl = `https://${tenantId}.ufs.sh/f/${file.key}`;
           } else {
             fileUrl = `https://utfs.io/f/${file.key}`;
           }
