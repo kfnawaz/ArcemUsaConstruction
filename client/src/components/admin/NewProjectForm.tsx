@@ -95,7 +95,7 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
 
   // Extract project data if editing
   const project = projectId ? getProject.data : undefined;
-  const galleryData = projectId ? getProjectGallery.data : [];
+  const galleryData = projectId ? getProjectGallery.data || [] : [];
 
   // Initialize file upload hooks
   const {
@@ -330,13 +330,13 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
   // Load existing project data if editing
   useEffect(() => {
     if (projectId && project) {
-      // Populate form with project data
+      // Populate form with project data, converting null/undefined values to empty strings
       form.reset({
         title: project.title,
         category: project.category,
         description: project.description,
         image: project.image,
-        featured: project.featured,
+        featured: project.featured === true, // Ensure boolean value
         overview: project.overview || '',
         challenges: project.challenges || '',
         results: project.results || '',
@@ -424,10 +424,7 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
       
       if (projectId) {
         // Update existing project
-        await updateProject.mutateAsync({
-          id: projectId,
-          ...formData
-        });
+        await updateProject(projectId, formData);
         
         toast({
           title: "Project Updated",
@@ -436,7 +433,7 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
         });
       } else {
         // Create new project
-        await createProject.mutateAsync(formData);
+        await createProject(formData);
         
         toast({
           title: "Project Created",

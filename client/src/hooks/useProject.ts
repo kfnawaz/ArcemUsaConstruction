@@ -10,16 +10,24 @@ export const useProject = (projectId?: number) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Fetch single project if ID is provided
-  const { data: project, isLoading, error } = useQuery<Project>({
+  const getProject = useQuery<Project>({
     queryKey: [`/api/projects/${projectId}`],
     enabled: !!projectId,
   });
   
   // Fetch project gallery images if ID is provided
-  const { data: projectGallery = [], isLoading: isLoadingGallery } = useQuery<ProjectGallery[]>({
+  const getProjectGallery = useQuery<ProjectGallery[]>({
     queryKey: [`/api/projects/${projectId}/gallery`],
     enabled: !!projectId,
   });
+  
+  // Extract data for backward compatibility
+  const project = getProject.data;
+  const projectGallery = getProjectGallery.data || [];
+  const isLoading = getProject.isLoading;
+  const isLoadingGallery = getProjectGallery.isLoading;
+  const error = getProject.error;
+  const galleryLoading = getProjectGallery.isLoading;
   
   // Log project data when it changes
   useEffect(() => {
@@ -453,6 +461,10 @@ export const useProject = (projectId?: number) => {
     trackUploadSession,
     // New feature image functionality
     setProjectFeatureImage,
-    isSettingFeatureImage: setFeatureImageMutation.isPending
+    isSettingFeatureImage: setFeatureImageMutation.isPending,
+    // Add the new getters for queries
+    getProject,
+    getProjectGallery,
+    galleryLoading
   };
 };

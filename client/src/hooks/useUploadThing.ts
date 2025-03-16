@@ -6,12 +6,14 @@ interface UseFileUploadProps {
   onClientUploadComplete?: (urls: string[]) => void;
   onUploadError?: (error: Error) => void;
   onUploadBegin?: () => void;
+  onUploadProgress?: (progress: number) => void;
 }
 
 export function useFileUpload({
   onClientUploadComplete,
   onUploadError,
   onUploadBegin,
+  onUploadProgress,
 }: UseFileUploadProps = {}) {
   const [files, setFiles] = useState<File[]>([]);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
@@ -52,6 +54,10 @@ export function useFileUpload({
     },
     onUploadProgress: (progress: number) => {
       setUploadProgress(progress);
+      
+      if (onUploadProgress) {
+        onUploadProgress(progress);
+      }
     },
   });
 
