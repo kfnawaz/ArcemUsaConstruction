@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
-import { useUploadThing } from '@uploadthing/react';
 import type { OurFileRouter } from '@/lib/uploadthing';
+import { useUploadThing as useUploadThingHook } from '@/lib/uploadthing';
 
 interface UseFileUploadProps {
   onClientUploadComplete?: (urls: string[]) => void;

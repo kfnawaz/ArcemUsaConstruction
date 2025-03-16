@@ -1,8 +1,8 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import { createUploadthing, createRouteHandler } from "uploadthing/server";
-import { uploadRouter } from "./uploadthing";
+import { createUploadthing } from "uploadthing/server";
+import { uploadRouter, createUploadthingExpressHandler } from "./uploadthing";
 import { setupAuth } from "./auth";
 
 const app = express();
@@ -13,12 +13,10 @@ app.use(express.urlencoded({ extended: false }));
 setupAuth(app);
 
 // Then initialize the UploadThing route handler
-const uploadthingHandler = createRouteHandler({
-  router: uploadRouter
-});
+const uploadthingHandler = createUploadthingExpressHandler(uploadRouter);
 
-// UploadThing routes
-app.use("/api/uploadthing", uploadthingHandler);
+// UploadThing routes - register the POST handler
+app.post("/api/uploadthing", uploadthingHandler.POST);
 
 app.use((req, res, next) => {
   const start = Date.now();
