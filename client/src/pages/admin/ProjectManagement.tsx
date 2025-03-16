@@ -5,7 +5,7 @@ import { scrollToTop } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Search, Plus, Edit, Trash2, Star, StarOff } from 'lucide-react';
+import { Search, Plus, Edit, Trash2, Star, StarOff, AlertTriangle, Image } from 'lucide-react';
 import AdminNav from '@/components/admin/AdminNav';
 import ProjectForm from '@/components/admin/ProjectForm';
 import ExportButton from '@/components/admin/ExportButton';
@@ -18,7 +18,8 @@ import {
   DialogFooter,
   DialogClose
 } from '@/components/ui/dialog';
-import { Project } from '@shared/schema';
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Project, ProjectGallery } from '@shared/schema';
 import { apiRequest } from '@/lib/queryClient';
 
 const ProjectManagement = () => {
@@ -57,6 +58,8 @@ const ProjectManagement = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
+  const [projectGallery, setProjectGallery] = useState<ProjectGallery[]>([]);
+  const [isLoadingGallery, setIsLoadingGallery] = useState(false);
 
   useEffect(() => {
     scrollToTop();
@@ -153,15 +156,34 @@ const ProjectManagement = () => {
   };
 
   // Show delete confirmation
-  const handleDeleteClick = (project: Project) => {
+  const handleDeleteClick = async (project: Project) => {
     setProjectToDelete(project);
-    setShowDeleteDialog(true);
+    setIsLoadingGallery(true);
+    
+    // Fetch gallery images for the project
+    try {
+      const response = await fetch(`/api/projects/${project.id}/gallery`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch gallery images');
+      }
+      const galleryImages: ProjectGallery[] = await response.json();
+      setProjectGallery(galleryImages);
+    } catch (error) {
+      console.error('Error fetching gallery images:', error);
+      // If we fail to fetch gallery, we'll just proceed with an empty array
+      setProjectGallery([]);
+    } finally {
+      setIsLoadingGallery(false);
+      setShowDeleteDialog(true);
+    }
   };
 
   // Confirm delete project
   const confirmDelete = () => {
     if (projectToDelete) {
       deleteMutation.mutate(projectToDelete.id);
+      // Reset gallery state after deletion
+      setProjectGallery([]);
     }
   };
 
@@ -340,6 +362,27 @@ const ProjectManagement = () => {
               Are you sure you want to delete the project "{projectToDelete?.title}"? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
+          
+          {isLoadingGallery ? (
+            <div className="py-4 flex items-center justify-center">
+              <div className="animate-spin h-6 w-6 border-2 border-gray-500 rounded-full border-t-transparent"></div>
+              <span className="ml-2">Checking for gallery images...</span>
+            </div>
+          ) : projectGallery.length > 0 ? (
+            <Alert className="my-3 border-amber-500 bg-amber-50">
+              <AlertTriangle className="h-5 w-5 text-amber-600" />
+              <div className="ml-3">
+                <AlertDescription className="text-amber-800">
+                  <p className="font-medium">Warning: This project has {projectGallery.length} gallery {projectGallery.length === 1 ? 'image' : 'images'} that will be permanently deleted.</p>
+                  <div className="flex items-center mt-2 gap-2">
+                    <Image className="h-4 w-4 text-amber-600" />
+                    <span>{projectGallery.filter(img => img.isFeature).length > 0 ? 'Includes feature image' : 'No feature image'}</span>
+                  </div>
+                </AlertDescription>
+              </div>
+            </Alert>
+          ) : null}
+          
           <DialogFooter>
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
@@ -347,7 +390,7 @@ const ProjectManagement = () => {
             <Button 
               variant="destructive" 
               onClick={confirmDelete}
-              disabled={deleteMutation.isPending}
+              disabled={deleteMutation.isPending || isLoadingGallery}
             >
               {deleteMutation.isPending ? "Deleting..." : "Delete"}
             </Button>
