@@ -5,6 +5,16 @@ import { createUploadthing } from "uploadthing/server";
 import { uploadRouter, createUploadthingExpressHandler } from "./uploadthing";
 import { setupAuth } from "./auth";
 
+// Set UploadThing environment variables
+if (!process.env.UPLOADTHING_SECRET || !process.env.UPLOADTHING_APP_ID) {
+  console.warn("Warning: UploadThing environment variables are not set properly.");
+  console.warn("Make sure UPLOADTHING_SECRET and UPLOADTHING_APP_ID are available in the environment.");
+} else {
+  console.log("UploadThing credentials detected:", {
+    appId: process.env.UPLOADTHING_APP_ID.substring(0, 4) + "..." // Only log a small part for security
+  });
+}
+
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

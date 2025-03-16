@@ -20,5 +20,8 @@ export type OurFileRouter = FileRouter & {
   };
 };
 
-// Create the React hooks
-export const { useUploadThing, uploadFiles } = generateReactHelpers<OurFileRouter>();
+// Create the React hooks with explicit endpoint config
+export const { useUploadThing, uploadFiles } = generateReactHelpers<OurFileRouter>({
+  // Specify the URL for the UploadThing API endpoint
+  url: "/api/uploadthing",
+});
