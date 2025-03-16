@@ -1064,16 +1064,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // File management endpoints
   app.post(`${apiRouter}/files/track`, isAdmin, (req: Request, res: Response) => {
     try {
-      const { fileUrl, sessionId } = req.body;
+      const { fileUrl, sessionId, filename } = req.body;
       
       if (!fileUrl || !sessionId) {
         return res.status(400).json({ message: "File URL and session ID are required" });
       }
       
-      const trackedFile = FileManager.trackPendingFile(fileUrl, sessionId);
+      const trackedFile = FileManager.trackPendingFile(fileUrl, sessionId, filename);
       return res.status(200).json({ 
         message: "File tracked successfully", 
-        file: trackedFile 
+        file: trackedFile,
+        filename: filename
       });
     } catch (error) {
       console.error("Error tracking file:", error);

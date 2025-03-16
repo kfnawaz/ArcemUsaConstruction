@@ -114,8 +114,10 @@ export default function FileUpload({
       setUploadProgress(null);
       
       // Track uploaded files for cleanup if needed
-      uploadedUrls.forEach(url => {
-        fileUtils.trackFile(url, sessionId);
+      uploadedUrls.forEach((url, index) => {
+        // Get the original filename from the results
+        const originalFilename = results[index]?.name || url.split('/').pop() || 'file';
+        fileUtils.trackFile(url, sessionId, originalFilename);
       });
       
       onUploadComplete?.(uploadedUrls);
