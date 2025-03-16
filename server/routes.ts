@@ -1866,6 +1866,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // File management API endpoints
+  app.post(`${apiRouter}/files/commit`, isAdmin, (req: Request, res: Response) => {
+    try {
+      const { sessionId, fileUrls } = req.body;
+      
+      if (!sessionId) {
+        return res.status(400).json({ message: "Session ID is required" });
+      }
+      
+      const committedFiles = FileManager.commitFiles(sessionId, fileUrls);
+      return res.status(200).json({ 
+        message: "Files committed successfully", 
+        files: committedFiles 
+      });
+    } catch (error) {
+      console.error("Error committing files:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.post(`${apiRouter}/files/cleanup`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const { sessionId, fileUrl } = req.body;
+      
+      if (!sessionId) {
+        return res.status(400).json({ message: "Session ID is required" });
+      }
+      
+      const deletedFiles = await FileManager.cleanupSession(sessionId, fileUrl);
+      return res.status(200).json({ 
+        message: "Files cleaned up successfully", 
+        files: deletedFiles 
+      });
+    } catch (error) {
+      console.error("Error cleaning up files:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.post(`${apiRouter}/files/track`, isAdmin, (req: Request, res: Response) => {
+    try {
+      const { fileUrl, sessionId } = req.body;
+      
+      if (!fileUrl || !sessionId) {
+        return res.status(400).json({ message: "File URL and session ID are required" });
+      }
+      
+      const trackedFile = FileManager.trackPendingFile(fileUrl, sessionId);
+      return res.status(200).json({ 
+        message: "File tracked successfully", 
+        file: trackedFile 
+      });
+    } catch (error) {
+      console.error("Error tracking file:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // Run scheduled cleanup of old pending files every hour
+  setInterval(async () => {
+    try {
+      const cleanedCount = await FileManager.cleanupOldPendingFiles();
+      if (cleanedCount > 0) {
+        console.log(`Cleaned up ${cleanedCount} old pending files`);
+      }
+    } catch (error) {
+      console.error("Error in scheduled file cleanup:", error);
+    }
+  }, 3600000); // Run every hour
+
   const httpServer = createServer(app);
   return httpServer;
 }

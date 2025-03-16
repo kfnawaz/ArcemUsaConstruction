@@ -13,14 +13,19 @@ async function throwIfResNotOk(res: Response) {
 }
 
 export async function apiRequest<T = any>(
-  url: string,
   options: {
+    url: string;
     method?: string;
-    data?: any;
+    body?: any;
     on401?: 'returnNull' | 'throw';
-  } = {}
+  } | string
 ): Promise<T | null> {
-  const { method = 'GET', data, on401 = 'throw' } = options;
+  // Handle string input (backward compatibility)
+  if (typeof options === 'string') {
+    options = { url: options };
+  }
+
+  const { url, method = 'GET', body: data, on401 = 'throw' } = options;
 
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
@@ -64,17 +69,17 @@ export async function apiRequest<T = any>(
 
 type UnauthorizedBehavior = "returnNull" | "throw";
 
-export const getQueryFn: <T>(options: {
+export const getQueryFn = <T>(options: {
   on401: UnauthorizedBehavior;
-}) => (context: { queryKey: [string, ...any[]] }) => Promise<T | null> = (options) => {
-  return async (context) => {
+}) => {
+  return async (context: { queryKey: [string, ...any[]] }) => {
     const [url, ...params] = context.queryKey;
     
     // Handle query parameters
     const queryParams = params.length > 0 ? `?${new URLSearchParams(params[0]).toString()}` : '';
     const fullUrl = `${url}${queryParams}`;
     
-    return apiRequest<T>(fullUrl, { on401: options.on401 });
+    return apiRequest<T>({ url: fullUrl, on401: options.on401 });
   };
 };
 

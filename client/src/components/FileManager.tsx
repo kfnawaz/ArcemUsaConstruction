@@ -1,162 +1,256 @@
 import { useState, useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
-import { Loader2, Trash2, Check, X } from 'lucide-react';
-import { FileInput } from './FileInput';
-import { useAuth } from '@/hooks/useAuth';
-import { useUploadThing } from '@/lib/uploadthing';
-import { cn } from '@/lib/utils';
+import { Trash2, Plus, Loader2 } from 'lucide-react';
+import FileUpload from '@/components/common/FileUpload';
+import { useToast } from '@/hooks/use-toast';
+import { fileUtils } from '@/lib/fileUtils';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogFooter,
+  DialogClose,
+} from '@/components/ui/dialog';
 
+/**
+ * Props for the FileManager component
+ */
 interface FileManagerProps {
-  onFilesUploaded?: (fileUrls: string[]) => void;
+  /**
+   * Array of file URLs to display
+   */
+  value?: string[];
+  /**
+   * Function called when files are added or removed
+   */
+  onChange?: (fileUrls: string[]) => void;
+  /**
+   * Maximum number of files allowed
+   */
   maxFiles?: number;
+  /**
+   * Whether to only allow image files
+   */
+  imagesOnly?: boolean;
+  /**
+   * Dialog title
+   */
+  title?: string;
+  /**
+   * Description text to show in the dialog
+   */
+  description?: string;
+  /**
+   * Label for the add button
+   */
+  addLabel?: string;
+  /**
+   * Whether the component is disabled
+   */
+  disabled?: boolean;
+  /**
+   * CSS class for the button
+   */
   className?: string;
-  existingFiles?: string[];
-  onRemoveExistingFile?: (fileUrl: string) => void;
-  acceptedTypes?: Record<string, string[]>;
-  allowedTypes?: string;
-  showPreview?: boolean;
+  /**
+   * Whether the file manager is in a loading state
+   */
+  isLoading?: boolean;
+  /**
+   * Whether to show file preview thumbnails
+   */
+  showThumbnails?: boolean;
 }
 
-export function FileManager({
-  onFilesUploaded,
-  maxFiles = 5,
-  className,
-  existingFiles = [],
-  onRemoveExistingFile,
-  acceptedTypes = {
-    'image/*': ['.png', '.jpg', '.jpeg', '.gif'],
-  },
-  allowedTypes = 'PNG, JPG, GIF',
-  showPreview = true,
+/**
+ * A component for managing file uploads and displaying uploaded files
+ */
+export default function FileManager({
+  value = [],
+  onChange,
+  maxFiles = 10,
+  imagesOnly = false,
+  title = 'Manage Files',
+  description = 'Upload, view, and manage your files.',
+  addLabel = 'Add Files',
+  disabled = false,
+  className = '',
+  isLoading = false,
+  showThumbnails = true,
 }: FileManagerProps) {
-  const [files, setFiles] = useState<File[]>([]);
-  const [uploading, setUploading] = useState(false);
+  const [files, setFiles] = useState<string[]>(value);
+  const [isOpen, setIsOpen] = useState(false);
+  const [sessionId] = useState<string>(fileUtils.generateSessionId());
   const { toast } = useToast();
-  const { isAdmin } = useAuth();
-  const { startUpload } = useUploadThing('imageUploader');
   
-  // Reset files if maxFiles changes
+  // Update internal state when value prop changes
   useEffect(() => {
-    if (files.length > maxFiles) {
-      setFiles(files.slice(0, maxFiles));
-    }
-  }, [maxFiles, files]);
+    setFiles(value);
+  }, [value]);
   
-  const handleFileSelection = (selectedFiles: File[]) => {
-    setFiles(selectedFiles);
-  };
+  // Synchronize changes back to parent component
+  useEffect(() => {
+    onChange?.(files);
+  }, [files, onChange]);
   
-  const handleRemoveExisting = (fileUrl: string) => {
-    onRemoveExistingFile?.(fileUrl);
-  };
-  
-  const handleUpload = async () => {
-    if (!files.length) {
+  // Handle files being added
+  const handleFilesAdded = (newFiles: string | string[], sessionId?: string) => {
+    const filesArray = Array.isArray(newFiles) ? newFiles : [newFiles];
+    const updatedFiles = [...files, ...filesArray];
+    
+    // Ensure we don't exceed the maximum
+    if (updatedFiles.length > maxFiles) {
       toast({
-        title: 'No files selected',
-        description: 'Please select at least one file to upload.',
+        title: 'Too many files',
+        description: `You can only upload up to ${maxFiles} files.`,
         variant: 'destructive',
       });
       return;
     }
     
-    try {
-      setUploading(true);
-      const uploadedFiles = await startUpload(files);
-      
-      if (!uploadedFiles) {
-        throw new Error('Upload failed');
-      }
-      
-      const urls = uploadedFiles.map(f => f.url);
-      
-      toast({
-        title: 'Upload complete',
-        description: `Successfully uploaded ${urls.length} file${urls.length === 1 ? '' : 's'}.`,
-      });
-      
-      onFilesUploaded?.(urls);
-      setFiles([]);
-    } catch (error) {
-      console.error('Upload error:', error);
-      toast({
-        title: 'Upload failed',
-        description: (error as Error)?.message || 'Something went wrong during upload.',
-        variant: 'destructive',
-      });
-    } finally {
-      setUploading(false);
-    }
+    setFiles(updatedFiles);
+    
+    // Commit the files to mark them as permanent
+    fileUtils.commitFiles(sessionId || fileUtils.generateSessionId(), filesArray);
   };
   
-  const filePreview = (url: string) => {
-    const extension = url.split('.').pop()?.toLowerCase();
-    const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension || '');
+  // Handle a file being removed
+  const handleFileRemoved = (fileUrl: string) => {
+    setFiles(files.filter(file => file !== fileUrl));
+  };
+  
+  // Handle all files being removed
+  const handleAllFilesRemoved = () => {
+    setFiles([]);
+  };
+  
+  // Handle dialog closed without saving
+  const handleDialogClose = () => {
+    // No need to perform any cleanup
+  };
+  
+  // Handle upload error
+  const handleUploadError = (error: Error) => {
+    toast({
+      title: 'Upload error',
+      description: error.message || 'An error occurred during file upload',
+      variant: 'destructive',
+    });
+  };
+  
+  // Render file thumbnails for preview
+  const renderThumbnails = () => {
+    if (!showThumbnails || files.length === 0) return null;
     
     return (
-      <div className="relative w-24 h-24 border rounded overflow-hidden group">
-        {isImage ? (
-          <img src={url} alt="File preview" className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-muted">
-            <span className="text-xs text-center px-2 truncate w-full">
-              {url.split('/').pop()}
-            </span>
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 mt-2">
+        {files.map((file, index) => (
+          <div 
+            key={index} 
+            className="relative group aspect-square border rounded-md overflow-hidden bg-gray-50"
+          >
+            {fileUtils.isImageFile(file) ? (
+              <img 
+                src={file} 
+                alt={`File ${index + 1}`} 
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-gray-500 text-xs">
+                {fileUtils.getFileExtension(file).toUpperCase()}
+              </div>
+            )}
+            <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <Button
+                variant="destructive"
+                size="icon"
+                className="h-7 w-7"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleFileRemoved(file);
+                }}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
-        )}
-        
-        <Button
-          variant="destructive"
-          size="icon"
-          className="w-6 h-6 absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity"
-          onClick={() => handleRemoveExisting(url)}
-        >
-          <X className="w-3 h-3" />
-        </Button>
+        ))}
       </div>
     );
   };
   
-  if (!isAdmin) {
-    return null;
-  }
-  
   return (
-    <div className={cn('space-y-4', className)}>
-      {showPreview && existingFiles.length > 0 && (
-        <div className="space-y-2">
-          <h4 className="font-medium">Existing Files</h4>
-          <div className="flex flex-wrap gap-2">
-            {existingFiles.map((url) => filePreview(url))}
+    <div className={className}>
+      <div className="flex flex-col">
+        <div className="flex justify-between items-center">
+          <div className="text-sm mb-1">
+            Files ({files.length}/{maxFiles})
           </div>
+          
+          <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                disabled={disabled || isLoading || files.length >= maxFiles}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Loading...
+                  </>
+                ) : (
+                  <>
+                    <Plus className="h-4 w-4 mr-1" />
+                    {addLabel}
+                  </>
+                )}
+              </Button>
+            </DialogTrigger>
+            
+            <DialogContent className="max-w-3xl">
+              <DialogHeader>
+                <DialogTitle>{title}</DialogTitle>
+                <DialogDescription>
+                  {description}
+                </DialogDescription>
+              </DialogHeader>
+              
+              <FileUpload
+                onUploadComplete={handleFilesAdded}
+                sessionId={sessionId}
+                multiple={true}
+                accept={imagesOnly ? "image/*" : undefined}
+                maxSizeMB={5}
+                buttonText="Upload Files"
+                helpText="Drag and drop files here or click to browse"
+              />
+              
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button 
+                    variant="outline" 
+                    onClick={handleDialogClose}
+                  >
+                    Close
+                  </Button>
+                </DialogClose>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
-      )}
-      
-      <FileInput
-        onFilesSelected={handleFileSelection}
-        maxFiles={maxFiles}
-        accept={acceptedTypes}
-        allowedTypes={allowedTypes}
-        value={files}
-      />
-      
-      {files.length > 0 && (
-        <Button
-          onClick={handleUpload}
-          disabled={uploading}
-          className="w-full"
-        >
-          {uploading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Uploading...
-            </>
-          ) : (
-            <>Upload {files.length} file{files.length === 1 ? '' : 's'}</>
-          )}
-        </Button>
-      )}
+        
+        {renderThumbnails()}
+        
+        {files.length === 0 && !isLoading && (
+          <div className="text-sm text-gray-500 mt-2 border rounded-md p-4 text-center">
+            No files added yet
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -1,170 +1,196 @@
-import { useState } from 'react';
-import { FileUpload } from '@/components/FileUpload';
-import { FileManager } from '@/components/FileManager';
-import { FileInput } from '@/components/FileInput';
-import { useToast } from '@/hooks/use-toast';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState, useEffect } from 'react';
+import FileUpload from '@/components/common/FileUpload';
+import FileManager from '@/components/FileManager';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/hooks/useAuth';
-import { Loader2, FileType } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Separator } from '@/components/ui/separator';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { InfoIcon } from 'lucide-react';
+import { fileUtils } from '@/lib/fileUtils';
+import { useToast } from '@/hooks/use-toast';
+import AdminNav from '@/components/admin/AdminNav';
+import { scrollToTop } from '@/lib/utils';
 
 export default function FileUploadTest() {
-  const { toast } = useToast();
-  const { isAuthenticated, isAdmin, isLoading } = useAuth();
   const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
+  const [managedFiles, setManagedFiles] = useState<string[]>([]);
+  const [sessionId] = useState<string>(fileUtils.generateSessionId());
+  const { toast } = useToast();
+  
+  useEffect(() => {
+    scrollToTop();
+    document.title = 'File Upload Test - ARCEM';
+  }, []);
 
-  const handleUploadComplete = (urls: string[]) => {
-    console.log('Uploaded files:', urls);
+  // Handle upload complete
+  const handleUploadComplete = (fileUrls: string | string[], sessionId?: string) => {
+    const urls = Array.isArray(fileUrls) ? fileUrls : [fileUrls];
     setUploadedFiles(prev => [...prev, ...urls]);
     toast({
-      title: 'Upload successful',
-      description: `${urls.length} files were uploaded successfully.`,
+      title: 'Upload Complete',
+      description: `Successfully uploaded ${urls.length} files.`,
     });
   };
 
-  const handleUploadError = (error: Error) => {
-    console.error('Upload error:', error);
+  // Handle file removed
+  const handleFileRemoved = (fileUrl: string) => {
+    setUploadedFiles(prev => prev.filter(url => url !== fileUrl));
     toast({
-      title: 'Upload failed',
-      description: error.message || 'An error occurred during upload.',
+      title: 'File Removed',
+      description: 'File was removed successfully.',
+    });
+  };
+
+  // Handle upload error
+  const handleUploadError = (error: Error) => {
+    toast({
+      title: 'Upload Error',
+      description: error.message || 'An error occurred during file upload.',
       variant: 'destructive',
     });
   };
 
-  const handleRemoveExistingFile = (fileUrl: string) => {
-    setUploadedFiles(prev => prev.filter(url => url !== fileUrl));
-    toast({
-      title: 'File removed',
-      description: 'The file has been removed from your uploaded files list.',
-    });
+  // Clear all files
+  const handleClearAll = async () => {
+    if (uploadedFiles.length === 0) {
+      toast({
+        title: 'No Files',
+        description: 'There are no files to clear.',
+      });
+      return;
+    }
+
+    try {
+      await fileUtils.cleanupFiles(sessionId);
+      setUploadedFiles([]);
+      toast({
+        title: 'Files Cleared',
+        description: 'All files have been cleaned up.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to clean up files.',
+        variant: 'destructive',
+      });
+    }
   };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-[calc(100vh-200px)]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return (
-      <Card className="max-w-md mx-auto mt-12">
-        <CardHeader>
-          <CardTitle>Authentication Required</CardTitle>
-          <CardDescription>
-            You need to be logged in to access this page.
-          </CardDescription>
-        </CardHeader>
-      </Card>
-    );
-  }
-
-  if (!isAdmin) {
-    return (
-      <Card className="max-w-md mx-auto mt-12">
-        <CardHeader>
-          <CardTitle>Admin Access Required</CardTitle>
-          <CardDescription>
-            You need administrator privileges to access this page.
-          </CardDescription>
-        </CardHeader>
-      </Card>
-    );
-  }
-
   return (
-    <div className="container py-10 max-w-3xl">
-      <Card>
-        <CardHeader>
-          <CardTitle>File Upload Test</CardTitle>
-          <CardDescription>
-            This page tests the file upload functionality with UploadThing.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <Tabs defaultValue="file-manager">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="file-manager">File Manager</TabsTrigger>
-              <TabsTrigger value="file-input">File Input</TabsTrigger>
-              <TabsTrigger value="file-upload">File Upload</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="file-manager" className="mt-6">
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">File Manager Component</h3>
-                <p className="text-muted-foreground text-sm">
-                  Complete file management with upload, preview and deletion capabilities.
-                </p>
-                <FileManager
-                  onFilesUploaded={handleUploadComplete}
-                  maxFiles={5}
-                  existingFiles={uploadedFiles}
-                  onRemoveExistingFile={handleRemoveExistingFile}
-                />
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="file-input" className="mt-6">
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">File Input Component</h3>
-                <p className="text-muted-foreground text-sm">
-                  File selection without immediate upload functionality.
-                </p>
-                <FileInput
-                  onFilesSelected={(files) => console.log('Files selected:', files)}
-                  maxFiles={5}
-                />
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="file-upload" className="mt-6">
-              <div className="space-y-4">
-                <h3 className="text-lg font-medium">Legacy File Upload Component</h3>
-                <p className="text-muted-foreground text-sm">
-                  Direct upload component with immediate upload functionality.
-                </p>
-                <FileUpload
-                  onUploadComplete={handleUploadComplete}
-                  onUploadError={handleUploadError}
-                  maxFiles={5}
-                />
-              </div>
-            </TabsContent>
-          </Tabs>
+    <div className="min-h-screen pt-32 pb-20 bg-gray-50">
+      <div className="container mx-auto px-4 md:px-8">
+        <div className="flex flex-col md:flex-row gap-8">
+          {/* Admin Navigation */}
+          <AdminNav activePage="file-upload-test" />
           
-          {uploadedFiles.length > 0 && (
-            <div className="mt-8 pt-6 border-t">
-              <h3 className="text-lg font-medium mb-4">Upload History</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {uploadedFiles.map((url, index) => (
-                  <div key={index} className="border rounded p-3 flex justify-between items-center">
-                    <div className="flex items-center space-x-2 overflow-hidden">
-                      <FileType className="h-5 w-5 flex-shrink-0 text-muted-foreground" />
-                      <a 
-                        href={url} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-sm text-blue-600 hover:underline truncate"
-                      >
-                        {url.split('/').pop()}
-                      </a>
-                    </div>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => handleRemoveExistingFile(url)}
-                    >
-                      Remove
-                    </Button>
-                  </div>
-                ))}
+          {/* Main Content */}
+          <div className="flex-1">
+            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <h1 className="text-2xl font-montserrat font-bold">File Upload Test</h1>
+                <div className="text-sm text-gray-500">Admin / File Upload</div>
               </div>
+              
+              <Alert className="mb-6">
+                <InfoIcon className="h-4 w-4" />
+                <AlertTitle>Important Note</AlertTitle>
+                <AlertDescription>
+                  This page demonstrates the integrated file management system using UploadThing.
+                  You can test both the direct file upload component and the managed file interface.
+                </AlertDescription>
+              </Alert>
             </div>
-          )}
-        </CardContent>
-      </Card>
+            
+            <Tabs defaultValue="fileupload" className="mb-6">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="fileupload">File Upload Component</TabsTrigger>
+                <TabsTrigger value="filemanager">File Manager Component</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="fileupload">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Direct File Upload</CardTitle>
+                    <CardDescription>
+                      Upload files directly with drag and drop support, progress tracking, and preview.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="mb-4">
+                      <FileUpload
+                        onUploadComplete={handleUploadComplete}
+                        sessionId={sessionId}
+                        multiple={true}
+                        accept="image/*"
+                        maxSizeMB={5}
+                        buttonText="Upload Files"
+                        helpText="Drag and drop files here or click to browse"
+                      />
+                    </div>
+                    
+                    <Separator className="my-4" />
+                    
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <strong>{uploadedFiles.length}</strong> files uploaded
+                      </div>
+                      <Button variant="outline" onClick={handleClearAll}>
+                        Clear All Files
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="filemanager">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>File Manager Interface</CardTitle>
+                    <CardDescription>
+                      A simplified interface for managing files with thumbnails and modals.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <FileManager
+                      value={managedFiles}
+                      onChange={setManagedFiles}
+                      maxFiles={10}
+                      title="Manage Project Files"
+                      description="Upload and manage files for your project."
+                      showThumbnails={true}
+                    />
+                    
+                    <Separator className="my-4" />
+                    
+                    <div>
+                      <h3 className="font-medium mb-2">Current Files:</h3>
+                      <ul className="list-disc ml-5">
+                        {managedFiles.length === 0 ? (
+                          <li className="text-gray-500">No files added yet</li>
+                        ) : (
+                          managedFiles.map((file, index) => (
+                            <li key={index} className="text-sm">
+                              <a 
+                                href={file} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:underline"
+                              >
+                                {file.split('/').pop()}
+                              </a>
+                            </li>
+                          ))
+                        )}
+                      </ul>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

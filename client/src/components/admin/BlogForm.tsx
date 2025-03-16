@@ -21,7 +21,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft, Loader2, Images, Upload } from 'lucide-react';
-import { FileUpload } from '@/components/FileUpload';
+import FileUpload from '@/components/common/FileUpload';
 import { generateSlug } from '@/lib/utils';
 import {
   Select,
@@ -237,17 +237,17 @@ const BlogForm = ({ postId, onClose }: BlogFormProps) => {
                       <FormLabel>Featured Image</FormLabel>
                       <FormControl>
                         <FileUpload
-                          onUploadComplete={(urls) => {
+                          onUploadComplete={(fileUrls, sessionId) => {
+                            const urls = Array.isArray(fileUrls) ? fileUrls : [fileUrls];
                             if (urls.length > 0) {
                               field.onChange(urls[0]);
                             }
                           }}
-                          onUploadError={(error) => {
-                            form.setError('image', { 
-                              message: error.message || 'Upload failed' 
-                            });
-                          }}
-                          maxFiles={1}
+                          multiple={false}
+                          accept="image/*"
+                          maxSizeMB={5}
+                          buttonText="Upload Featured Image"
+                          helpText="Select or drag an image file"
                         />
                       </FormControl>
                       <FormMessage />

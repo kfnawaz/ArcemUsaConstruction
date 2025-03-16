@@ -12,13 +12,14 @@ import {
   Wrench,
   Users,
   Briefcase,
-  UserRound
+  UserRound,
+  UploadCloud
 } from 'lucide-react';
 import { useNotifications } from '@/hooks/useNotifications';
 import NotificationIndicator from '@/components/common/NotificationIndicator';
 
 type AdminNavProps = {
-  activePage: 'dashboard' | 'projects' | 'services' | 'blog' | 'messages' | 'testimonials' | 'settings' | 'accessibility' | 'newsletter' | 'quotes' | 'subcontractors' | 'careers' | 'team-members';
+  activePage: 'dashboard' | 'projects' | 'services' | 'blog' | 'messages' | 'testimonials' | 'settings' | 'accessibility' | 'newsletter' | 'quotes' | 'subcontractors' | 'careers' | 'team-members' | 'file-upload-test';
 };
 
 const AdminNav = ({ activePage }: AdminNavProps) => {
@@ -103,6 +104,12 @@ const AdminNav = ({ activePage }: AdminNavProps) => {
       label: 'Accessibility', 
       icon: <Eye className="w-5 h-5 mr-3" />,
       active: activePage === 'accessibility'
+    },
+    { 
+      href: '/admin/file-upload-test', 
+      label: 'File Upload', 
+      icon: <UploadCloud className="w-5 h-5 mr-3" />,
+      active: activePage === 'file-upload-test'
     }
   ];
 
