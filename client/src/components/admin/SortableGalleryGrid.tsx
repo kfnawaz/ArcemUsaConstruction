@@ -147,7 +147,10 @@ const SortableItem: React.FC<SortableItemProps> = ({
                 size="icon"
                 variant="ghost"
                 className="h-7 w-7 text-white hover:bg-white/20"
-                onClick={() => setIsEditing(true)}
+                onClick={(e) => {
+                  e.preventDefault(); // Prevent form submission
+                  setIsEditing(true);
+                }}
               >
                 <Pencil className="h-3.5 w-3.5" />
               </Button>
@@ -156,7 +159,10 @@ const SortableItem: React.FC<SortableItemProps> = ({
                 size="icon"
                 variant="ghost"
                 className="h-7 w-7 text-white hover:bg-white/20"
-                onClick={onDelete}
+                onClick={(e) => {
+                  e.preventDefault(); // Prevent form submission
+                  onDelete();
+                }}
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </Button>
@@ -343,7 +349,7 @@ const SortableGalleryGrid: React.FC<SortableGalleryGridProps> = ({
             const isPending = !isProjectGallery(item);
             const imageUrl = isProjectGallery(item) ? item.imageUrl : item.url;
             // Check both the isFeature flag (if it exists) and the previewImageUrl
-            const isFeatureImage = isProjectGallery(item) ? item.isFeature : previewImageUrl === imageUrl;
+            const isFeatureImage = isProjectGallery(item) ? Boolean(item.isFeature) : previewImageUrl === imageUrl;
             
             return (
               <SortableItem
