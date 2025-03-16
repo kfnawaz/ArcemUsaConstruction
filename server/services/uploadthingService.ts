@@ -58,13 +58,26 @@ export class UploadThingService {
       }
       
       // Map to our interface with normalized properties
-      return response.files.map((file: UploadThingFile) => ({
-        key: file.key,
-        name: file.name || file.key,
-        url: file.url || '',
-        size: file.size || 0,
-        uploadedAt: new Date(file.uploadedAt || Date.now()).toISOString()
-      }));
+      return response.files.map((file: UploadThingFile) => {
+        // Generate URL from key if not provided
+        let fileUrl = file.url;
+        if (!fileUrl && file.key) {
+          // Check if it's the new (ufs.sh) or old (utfs.io) format based on key prefix
+          if (file.key.startsWith('o1')) {
+            fileUrl = `https://ufs.sh/f/${file.key}`;
+          } else {
+            fileUrl = `https://utfs.io/f/${file.key}`;
+          }
+        }
+        
+        return {
+          key: file.key,
+          name: file.name || file.key,
+          url: fileUrl || '',
+          size: file.size || 0,
+          uploadedAt: new Date(file.uploadedAt || Date.now()).toISOString()
+        };
+      });
     } catch (error) {
       console.error("Error listing UploadThing files:", error);
       throw error;
