@@ -120,7 +120,7 @@ export default function FileUploadTest() {
                     <div className="mb-4">
                       <FileUpload
                         onUploadComplete={handleUploadComplete}
-                        onUploadError={handleUploadError}
+                        onError={handleUploadError}
                         onFileRemoved={handleFileRemoved}
                         initialFiles={uploadedFiles}
                         sessionId={sessionId}

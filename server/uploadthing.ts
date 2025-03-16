@@ -29,7 +29,8 @@ export const uploadRouter = {
     .middleware(({ req }) => {
       try {
         // This code runs on your server before upload
-        const session = isAuthenticated(req);
+        // Type assertion to solve type mismatch between Express.Request types
+  const session = isAuthenticated(req as any);
         
         // Either throw or return the session
         if (session.role !== 'admin') {
@@ -66,7 +67,8 @@ export function createUploadthingExpressHandler(router: FileRouter) {
       try {
         console.log("UploadThing handling request");
         // Parse the multipart form data and handle the upload
-        const result = await router.handleUpload(req, res);
+        // Using type assertion to resolve type issues with FileRouter
+        const result = await (router as any).handleUpload(req, res);
         console.log("UploadThing result:", result);
         return res.status(200).json(result);
       } catch (error: any) {

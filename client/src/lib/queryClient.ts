@@ -22,7 +22,7 @@ export async function apiRequest<T = any>(
 ): Promise<T | null> {
   // Handle string input (backward compatibility)
   if (typeof options === 'string') {
-    options = { url: options };
+    options = { url: options, on401: 'throw' };
   }
 
   const { url, method = 'GET', body: data, on401 = 'throw' } = options;
