@@ -37,6 +37,7 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import FileUpload from '@/components/common/FileUpload';
+import UploadThingUploader from '@/components/common/UploadThingUploader';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
@@ -229,18 +230,28 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
   // Modified form submission for two-step approach (Step 1: Project Details)
   const handleDetailsSubmit = async (data: InsertProject) => {
     try {
+      console.log("Creating new project with data:", data);
+      
       // When creating a new project, we only save the details on first step
       const result = await saveProject(data);
       
+      console.log("Project creation result:", result);
+      
       // Save the ID of the newly created project and move to the image step
-      // Type assertion since we know saveProject returns a Project object or undefined
-      const projectResult = result as any;
-      if (projectResult && typeof projectResult === 'object' && 'id' in projectResult) {
-        setCreatedProjectId(projectResult.id as number);
+      if (result && typeof result === 'object' && 'id' in result) {
+        console.log("Moving to image step with project ID:", result.id);
+        setCreatedProjectId(result.id);
         setCurrentStep('images');
         toast({
           title: "Project created",
           description: "Now you can add images to showcase your project",
+        });
+      } else {
+        console.error("Project was created but couldn't extract ID:", result);
+        toast({
+          title: "Warning",
+          description: "Project was created but there was an issue preparing image upload. Please continue or refresh the page.",
+          variant: "destructive"
         });
       }
     } catch (error) {
