@@ -148,32 +148,26 @@ export default function UploadThingFileUpload({
     // Set the selected files for display and tracking
     setSelectedFiles(validFiles);
     
-    // No need to auto-upload using startUpload - the files will be handled by the project form's submit
-    // This prevents the redundant "Upload Files" button UX confusion
-    if (onClientUploadComplete && validFiles.length > 0) {
-      // We prepare the files structure for the parent handler to manage
-      // Note: This is a mock of the UploadThing response format
-      const preparedFiles = validFiles.map(file => ({
-        name: file.name,
-        size: file.size,
-        // We don't have actual URLs yet, but the form will handle these files
-        url: URL.createObjectURL(file),
-        key: `temp-${file.name}-${Date.now()}`,
-        // Add necessary fields to match UploadThing API response format
-        serverData: { uploadedBy: "user" }
-      }));
-      
-      // Notify the user that files were selected
+    // We need to upload the files to UploadThing immediately to get real URLs
+    if (validFiles.length > 0) {
+      // Notify user that upload is starting
       toast({
-        title: 'Files ready',
-        description: `${validFiles.length} file${validFiles.length === 1 ? '' : 's'} selected and ready to upload when you save the project.`,
+        title: 'Uploading files',
+        description: `Starting upload of ${validFiles.length} file${validFiles.length === 1 ? '' : 's'}...`,
       });
       
-      // Pass files to the parent component through the callback
-      onClientUploadComplete(preparedFiles);
-      console.log('Files selected and ready for form submission:', preparedFiles.length);
+      // Start the actual upload to UploadThing
+      if (onUploadBegin) {
+        onUploadBegin();
+      }
+      
+      // Now upload files to get real URLs
+      startUpload(validFiles);
+      
+      // The onClientUploadComplete callback will be triggered by the useUploadThing hook
+      // once the upload completes, with actual server URLs
     }
-  }, [validateFiles, onClientUploadComplete]);
+  }, [validateFiles, onUploadBegin, startUpload, toast]);
 
   // Handle drag events
   const handleDragEnter = useCallback((e: React.DragEvent) => {
@@ -223,30 +217,26 @@ export default function UploadThingFileUpload({
     const validFiles = validateFiles(files);
     setSelectedFiles(validFiles);
     
-    // Handle the dropped files similar to handleFileChange
-    if (onClientUploadComplete && validFiles.length > 0) {
-      // Prepare files structure for the parent handler
-      const preparedFiles = validFiles.map(file => ({
-        name: file.name,
-        size: file.size,
-        url: URL.createObjectURL(file),
-        key: `temp-${file.name}-${Date.now()}`,
-        // Add necessary fields to match UploadThing API response format
-        serverData: { uploadedBy: "user" }
-      }));
-      
-      // Notify the user that files were selected
+    // We need to upload the files to UploadThing immediately to get real URLs
+    if (validFiles.length > 0) {
+      // Notify user that upload is starting
       toast({
-        title: 'Files ready',
-        description: `${validFiles.length} file${validFiles.length === 1 ? '' : 's'} selected and ready to upload when you save the project.`,
+        title: 'Uploading files',
+        description: `Starting upload of ${validFiles.length} file${validFiles.length === 1 ? '' : 's'}...`,
       });
       
-      // Pass the prepared files to the upload complete handler
-      // This will trigger the same handling as if they were selected via the file input
-      onClientUploadComplete(preparedFiles);
-      console.log('Files dropped and ready for form submission:', preparedFiles.length);
+      // Start the actual upload to UploadThing
+      if (onUploadBegin) {
+        onUploadBegin();
+      }
+      
+      // Now upload files to get real URLs
+      startUpload(validFiles);
+      
+      // The onClientUploadComplete callback will be triggered by the useUploadThing hook
+      // once the upload completes, with actual server URLs
     }
-  }, [validateFiles, onClientUploadComplete]);
+  }, [validateFiles, onUploadBegin, startUpload, toast]);
 
   // We no longer need a separate upload button click handler
   // as files are now automatically processed when the parent form is submitted
@@ -312,9 +302,9 @@ export default function UploadThingFileUpload({
           <div className="flex items-center justify-between">
             <h4 className="text-sm font-medium">Selected files ({selectedFiles.length})</h4>
             
-            {/* Auto-upload notification instead of button */}
+            {/* Upload status */}
             <p className="text-sm text-muted-foreground italic">
-              Files will be uploaded when you save the project
+              {isUploading ? "Files are uploading..." : "Files being processed"}
             </p>
           </div>
           
