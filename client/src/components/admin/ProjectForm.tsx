@@ -339,12 +339,11 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                       {!field.value && (
                         <div className="space-y-3">
                           <UploadThingUploader
-                            onClientUploadComplete={(res: any) => {
-                              if (res && res.length > 0) {
-                                const uploadedFileUrl = res[0].url;
-                                const fallbackUrl = res[0].ufsUrl || uploadedFileUrl;
+                            onComplete={(urls: string[]) => {
+                              if (urls && urls.length > 0) {
+                                const uploadedFileUrl = urls[0];
                                 
-                                console.log("Feature image uploaded successfully:", fallbackUrl);
+                                console.log("Feature image uploaded successfully:", uploadedFileUrl);
                                 
                                 // Create a new session ID for the feature image
                                 const sessionId = generateSessionId();
@@ -352,18 +351,13 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                                 addUploadSession(sessionId);
                                 
                                 // Track the file with the session ID
-                                fileUtils.trackFile(fallbackUrl, sessionId);
+                                (async () => {
+                                  await fileUtils.trackFile(uploadedFileUrl, sessionId);
+                                })();
                                 
                                 // Set the feature image URL in the form
-                                field.onChange(fallbackUrl);
+                                field.onChange(uploadedFileUrl);
                               }
-                            }}
-                            onUploadError={(error: Error) => {
-                              toast({
-                                title: "Upload failed",
-                                description: error.message,
-                                variant: "destructive"
-                              });
                             }}
                           />
                         </div>
