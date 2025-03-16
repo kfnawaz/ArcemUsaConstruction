@@ -121,7 +121,10 @@ const SortableItem: React.FC<SortableItemProps> = ({
             size="icon"
             variant="secondary"
             className="h-8 w-8 bg-white/90 hover:bg-white"
-            onClick={onCrop}
+            onClick={(e) => {
+              e.preventDefault(); // Prevent form submission
+              onCrop();
+            }}
           >
             <Crop className="h-4 w-4 text-gray-700" />
           </Button>
