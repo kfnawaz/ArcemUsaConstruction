@@ -46,7 +46,10 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
       uploadFile,
       addGalleryImage,
       deleteGalleryImage,
-      isDeletingGalleryImage
+      isDeletingGalleryImage,
+      trackUploadSession,
+      commitUploads,
+      cleanupUploads
     } = useService(serviceId);
 
     // Check if we've reached the maximum image limit
@@ -87,18 +90,8 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
       if (uploadSession && !isCommitted && pendingImages.length > 0) {
         try {
           console.log('Cleaning up uncommitted files for session:', uploadSession);
-          const response = await fetch('/api/files/cleanup', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ sessionId: uploadSession }),
-            credentials: 'include'
-          });
-          
-          if (response.ok) {
-            console.log('Successfully cleaned up uncommitted files');
-          }
+          await cleanupUploads(uploadSession);
+          console.log('Successfully cleaned up uncommitted files');
         } catch (err) {
           console.error('Error cleaning up files:', err);
         }
@@ -122,6 +115,7 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
       if (sessionId) {
         setUploadSession(sessionId);
         setIsCommitted(false);
+        trackUploadSession(sessionId);
       }
       
       // Check if adding these images would exceed the limit
@@ -175,17 +169,7 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
         // If we have a session ID, mark the files as committed on the server
         if (uploadSession) {
           try {
-            await fetch('/api/files/commit', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                sessionId: uploadSession,
-                fileUrls: pendingImages
-              }),
-              credentials: 'include'
-            });
+            await commitUploads(uploadSession, pendingImages);
           } catch (err) {
             console.error('Error committing files:', err);
             // Continue anyway since we've already marked them as committed client-side
@@ -276,18 +260,20 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
       if (imageUrl) {
         try {
           console.log('Deleting file:', imageUrl);
-          const response = await fetch('/api/files/cleanup', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ fileUrl: imageUrl }),
-            credentials: 'include'
-          });
-          
-          if (response.ok) {
-            console.log('Successfully deleted file:', imageUrl);
+          if (uploadSession) {
+            await cleanupUploads(uploadSession, imageUrl);
+          } else {
+            // Fallback if no session ID (unlikely but possible)
+            await fetch('/api/files/cleanup', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ fileUrl: imageUrl }),
+              credentials: 'include'
+            });
           }
+          console.log('Successfully deleted file:', imageUrl);
         } catch (err) {
           console.error('Error deleting file:', err);
         }
