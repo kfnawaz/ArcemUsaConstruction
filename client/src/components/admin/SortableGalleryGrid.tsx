@@ -342,7 +342,8 @@ const SortableGalleryGrid: React.FC<SortableGalleryGridProps> = ({
           {allItems.map((item, index) => {
             const isPending = !isProjectGallery(item);
             const imageUrl = isProjectGallery(item) ? item.imageUrl : item.url;
-            const isFeatureImage = previewImageUrl === imageUrl;
+            // Check both the isFeature flag (if it exists) and the previewImageUrl
+            const isFeatureImage = isProjectGallery(item) ? item.isFeature : previewImageUrl === imageUrl;
             
             return (
               <SortableItem
