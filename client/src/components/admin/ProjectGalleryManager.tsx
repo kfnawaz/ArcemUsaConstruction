@@ -63,11 +63,7 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
     const [pendingImages, setPendingImages] = useState<PendingImage[]>([]);
     const [showMaxImagesWarning, setShowMaxImagesWarning] = useState(false);
     
-    // New state for image cropping
-    const [isCropperOpen, setIsCropperOpen] = useState(false);
-    const [cropImageUrl, setCropImageUrl] = useState<string>('');
-    const [cropImageId, setCropImageId] = useState<number | null>(null);
-    const [cropPendingIndex, setCropPendingIndex] = useState<number | null>(null);
+    // Removed image cropping states
     
     // New state for batch upload tracking
     const [batchUploadProgress, setBatchUploadProgress] = useState<number>(0);
@@ -532,83 +528,7 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
       }
     };
     
-    // Handle image cropping
-    const handleOpenCropper = (item: ProjectGallery | PendingImage, index: number) => {
-      const imageUrl = 'imageUrl' in item ? item.imageUrl : item.url;
-      setCropImageUrl(imageUrl);
-      
-      if ('id' in item) {
-        setCropImageId(item.id);
-        setCropPendingIndex(null);
-      } else {
-        setCropImageId(null);
-        setCropPendingIndex(index);
-      }
-      
-      setIsCropperOpen(true);
-    };
-    
-    // Handle crop completion
-    const handleCropComplete = async (croppedImageUrl: string) => {
-      try {
-        // Create a fetch request to get the blob from the data URL
-        const response = await fetch(croppedImageUrl);
-        const blob = await response.blob();
-        
-        // Create a File object from the blob
-        const file = new File([blob], `cropped_image_${Date.now()}.jpg`, {
-          type: 'image/jpeg',
-          lastModified: Date.now()
-        });
-        
-        // Generate a session ID for this upload
-        const sessionId = `crop_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-        if (props.trackUploadSession) {
-          props.trackUploadSession(sessionId);
-        }
-        
-        // Upload the cropped image
-        const uploadResult = await uploadFile(file, sessionId);
-        
-        // If it's a saved gallery image, update it
-        if (cropImageId !== null) {
-          await updateProjectGalleryImage(cropImageId, { imageUrl: uploadResult.url });
-          
-          toast({
-            title: 'Image updated',
-            description: 'Cropped image has been saved successfully.',
-          });
-        } 
-        // If it's a pending image, update it in the pending state
-        else if (cropPendingIndex !== null) {
-          setPendingImages(prev => {
-            const newPendingImages = [...prev];
-            if (newPendingImages[cropPendingIndex]) {
-              newPendingImages[cropPendingIndex].url = uploadResult.url;
-            }
-            return newPendingImages;
-          });
-          
-          toast({
-            title: 'Image updated',
-            description: 'Cropped image will be saved with the gallery.',
-          });
-        }
-      } catch (error) {
-        console.error('Error processing cropped image:', error);
-        toast({
-          title: 'Crop failed',
-          description: 'Failed to process the cropped image. Please try again.',
-          variant: 'destructive',
-        });
-      } finally {
-        // Reset cropping state
-        setIsCropperOpen(false);
-        setCropImageUrl('');
-        setCropImageId(null);
-        setCropPendingIndex(null);
-      }
-    };
+    // Removed image cropping functions
 
     // Move image display order up
     const moveImageOrderUp = (id: number, currentOrder: number | null) => {
@@ -644,22 +564,6 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
 
     return (
       <div className="space-y-4">
-        {/* Image Cropper Dialog */}
-        {isCropperOpen && (
-          <Dialog open={isCropperOpen} onOpenChange={setIsCropperOpen}>
-            <DialogContent className="max-w-4xl">
-              <DialogHeader>
-                <DialogTitle>Crop Image</DialogTitle>
-              </DialogHeader>
-              <ImageCropper 
-                imageUrl={cropImageUrl}
-                aspectRatio={16/9}
-                onCropComplete={handleCropComplete}
-                onCancel={() => setIsCropperOpen(false)}
-              />
-            </DialogContent>
-          </Dialog>
-        )}
         
         {showMaxImagesWarning && (
           <Alert variant="destructive">
