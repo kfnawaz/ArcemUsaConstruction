@@ -766,10 +766,30 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
                       markEdited();
                     }}
                     onSetAsPreview={(url) => {
-                      // Find the preview image element and trigger the click
-                      const previewElement = document.querySelector(`[data-preview-url="${url}"][data-preview-action="true"]`);
-                      if (previewElement) {
-                        previewElement.dispatchEvent(new Event('click', { bubbles: true }));
+                      // Find the corresponding gallery item
+                      const galleryItem = projectGallery?.find(item => item.imageUrl === url);
+                      
+                      if (galleryItem) {
+                        // If we found the image in the gallery, use the new feature image API
+                        setProjectFeatureImage(galleryItem.id)
+                          .then(() => {
+                            toast({
+                              title: "Feature image updated",
+                              description: "This image is now the feature image for the project.",
+                              variant: "default"
+                            });
+                          })
+                          .catch(error => {
+                            console.error("Error setting feature image:", error);
+                            toast({
+                              title: "Error",
+                              description: "Failed to set feature image. Please try again.",
+                              variant: "destructive"
+                            });
+                          });
+                      } else if (props.onSetAsPreview) {
+                        // Fall back to the old method for pending images or if we have a callback
+                        props.onSetAsPreview(null, url);
                       }
                     }}
                     onDeleteSavedItem={(id) => {
