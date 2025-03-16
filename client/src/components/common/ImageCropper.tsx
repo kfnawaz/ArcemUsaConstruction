@@ -12,23 +12,13 @@ interface ImageCropperProps {
   onCancel: () => void;
 }
 
-// Add TypeScript type for ReactCropper
-type ReactCropperElement = HTMLImageElement & {
-  cropper: {
-    getCroppedCanvas: (options?: any) => HTMLCanvasElement;
-    rotate: (degree: number) => void;
-    reset: () => void;
-    zoomTo: (ratio: number) => void;
-  }
-};
-
 const ImageCropper: React.FC<ImageCropperProps> = ({
   imageUrl,
   aspectRatio = 16 / 9,
   onCropComplete,
   onCancel
 }) => {
-  const cropperRef = useRef<ReactCropperElement>(null);
+  const cropperRef = useRef<any>(null);
   const [zoom, setZoom] = useState<number>(0);
   const [rotation, setRotation] = useState<number>(0);
   const [isImageLoaded, setIsImageLoaded] = useState<boolean>(false);
@@ -41,68 +31,104 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
   }, [imageUrl]);
   
   const handleCrop = () => {
-    if (!cropperRef.current || !cropperRef.current.cropper) return;
+    if (!cropperRef.current || !cropperRef.current.cropper) {
+      console.error("Cropper reference not available");
+      return;
+    }
     
-    // Get the cropped canvas
-    const croppedCanvas = cropperRef.current.cropper.getCroppedCanvas({
-      minWidth: 256,
-      minHeight: 256,
-      maxWidth: 4096,
-      maxHeight: 4096,
-      fillColor: '#fff',
-      imageSmoothingEnabled: true,
-      imageSmoothingQuality: 'high',
-    });
-    
-    // Convert canvas to blob
-    croppedCanvas.toBlob((blob: Blob | null) => {
-      if (!blob) {
-        console.error('Canvas is empty or image is invalid');
+    try {
+      // Get the cropped canvas
+      const croppedCanvas = cropperRef.current.cropper.getCroppedCanvas({
+        minWidth: 256,
+        minHeight: 256,
+        maxWidth: 4096,
+        maxHeight: 4096,
+        fillColor: '#fff',
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: 'high',
+      });
+      
+      if (!croppedCanvas) {
+        console.error("Failed to get cropped canvas");
         return;
       }
       
-      // Create a File object from the blob
-      const file = new File([blob], `cropped_image_${Date.now()}.jpg`, {
-        type: 'image/jpeg',
-        lastModified: Date.now()
-      });
-      
-      // Create a FileReader to read the file as a data URL
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        if (e.target?.result) {
-          // Pass the data URL to the parent component
-          onCropComplete(e.target.result as string);
+      // Convert canvas to blob
+      croppedCanvas.toBlob((blob: Blob | null) => {
+        if (!blob) {
+          console.error('Canvas is empty or image is invalid');
+          return;
         }
-      };
-      reader.readAsDataURL(file);
-    }, 'image/jpeg', 0.95);
+        
+        // Create a File object from the blob
+        const file = new File([blob], `cropped_image_${Date.now()}.jpg`, {
+          type: 'image/jpeg',
+          lastModified: Date.now()
+        });
+        
+        // Create a FileReader to read the file as a data URL
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          if (e.target?.result) {
+            // Pass the data URL to the parent component
+            onCropComplete(e.target.result as string);
+          }
+        };
+        reader.readAsDataURL(file);
+      }, 'image/jpeg', 0.95);
+    } catch (error) {
+      console.error("Error during crop operation:", error);
+    }
   };
   
   const handleZoom = (value: number[]) => {
-    if (!cropperRef.current || !cropperRef.current.cropper) return;
-    
-    const newZoom = value[0];
-    setZoom(newZoom);
-    
-    // Convert zoom scale from 0-100 to a reasonable zoom scale
-    const zoomScale = 1 + (newZoom / 100);
-    cropperRef.current.cropper.zoomTo(zoomScale);
+    try {
+      if (!cropperRef.current || !cropperRef.current.cropper) {
+        console.error("Cropper reference not available for zoom");
+        return;
+      }
+      
+      const newZoom = value[0];
+      setZoom(newZoom);
+      
+      // Convert zoom scale from 0-100 to a reasonable zoom scale
+      const zoomScale = 1 + (newZoom / 100);
+      console.log("Zooming to:", zoomScale);
+      cropperRef.current.cropper.zoomTo(zoomScale);
+    } catch (error) {
+      console.error("Error during zoom operation:", error);
+    }
   };
   
   const handleRotate = (degrees: number) => {
-    if (!cropperRef.current || !cropperRef.current.cropper) return;
-    
-    cropperRef.current.cropper.rotate(degrees);
-    setRotation((prev) => prev + degrees);
+    try {
+      if (!cropperRef.current || !cropperRef.current.cropper) {
+        console.error("Cropper reference not available for rotation");
+        return;
+      }
+      
+      console.log("Rotating by:", degrees);
+      cropperRef.current.cropper.rotate(degrees);
+      setRotation((prev) => prev + degrees);
+    } catch (error) {
+      console.error("Error during rotate operation:", error);
+    }
   };
   
   const resetCropper = () => {
-    if (!cropperRef.current || !cropperRef.current.cropper) return;
-    
-    cropperRef.current.cropper.reset();
-    setZoom(0);
-    setRotation(0);
+    try {
+      if (!cropperRef.current || !cropperRef.current.cropper) {
+        console.error("Cropper reference not available for reset");
+        return;
+      }
+      
+      console.log("Resetting cropper");
+      cropperRef.current.cropper.reset();
+      setZoom(0);
+      setRotation(0);
+    } catch (error) {
+      console.error("Error during reset operation:", error);
+    }
   };
   
   return (
@@ -119,7 +145,10 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
           responsive={true}
           autoCropArea={0.8}
           checkOrientation={false}
-          onInitialized={() => setIsImageLoaded(true)}
+          onInitialized={() => {
+            console.log("Cropper initialized");
+            setIsImageLoaded(true);
+          }}
           className="cropper"
         />
       </div>
@@ -134,7 +163,10 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
               min={0}
               max={100}
               step={1}
-              onValueChange={handleZoom}
+              onValueChange={(value) => {
+                console.log("Zoom slider value:", value);
+                handleZoom(value);
+              }}
               className="flex-1"
               disabled={!isImageLoaded}
             />
@@ -148,7 +180,10 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
             <Button 
               variant="outline" 
               size="icon"
-              onClick={() => handleRotate(-90)}
+              onClick={(e) => {
+                e.preventDefault();
+                handleRotate(-90);
+              }}
               disabled={!isImageLoaded}
             >
               <RotateCcw className="h-4 w-4" />
@@ -157,7 +192,10 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
             <Button 
               variant="outline" 
               size="icon"
-              onClick={() => handleRotate(90)}
+              onClick={(e) => {
+                e.preventDefault();
+                handleRotate(90);
+              }}
               disabled={!isImageLoaded}
             >
               <RotateCw className="h-4 w-4" />
@@ -166,7 +204,10 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
               variant="outline"
               size="sm"
               className="ml-2"
-              onClick={resetCropper}
+              onClick={(e) => {
+                e.preventDefault();
+                resetCropper();
+              }}
               disabled={!isImageLoaded}
             >
               <Maximize className="h-4 w-4 mr-2" />
@@ -177,11 +218,25 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
       </div>
       
       <div className="flex justify-end space-x-2 mt-6">
-        <Button variant="outline" onClick={onCancel} className="gap-1.5">
+        <Button 
+          variant="outline" 
+          onClick={(e) => {
+            e.preventDefault();
+            onCancel();
+          }} 
+          className="gap-1.5"
+        >
           <X className="h-4 w-4" />
           Cancel
         </Button>
-        <Button onClick={handleCrop} className="gap-1.5" disabled={!isImageLoaded}>
+        <Button 
+          onClick={(e) => {
+            e.preventDefault();
+            handleCrop();
+          }} 
+          className="gap-1.5" 
+          disabled={!isImageLoaded}
+        >
           <Crop className="h-4 w-4" />
           Apply Crop
         </Button>
