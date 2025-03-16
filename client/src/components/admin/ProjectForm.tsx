@@ -751,30 +751,57 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                                       <div className="space-y-4">
                                         {/* Direct file upload for feature image */}
                                         {!field.value && (
-                                          <FileUpload
-                                            onUploadComplete={(url, sessionId) => {
-                                              if (typeof url === 'string') {
-                                                field.onChange(url);
-                                                
-                                                // Store the session ID for this feature image
-                                                if (sessionId) {
-                                                  setFeatureImageSession(sessionId);
-                                                  addUploadSession(sessionId);
-                                                  console.log("Tracking feature image session:", sessionId);
+                                          <div className="space-y-3">
+                                            {/* Traditional upload for backward compatibility */}
+                                            <FileUpload
+                                              onUploadComplete={(url, sessionId) => {
+                                                if (typeof url === 'string') {
+                                                  field.onChange(url);
+                                                  
+                                                  // Store the session ID for this feature image
+                                                  if (sessionId) {
+                                                    setFeatureImageSession(sessionId);
+                                                    addUploadSession(sessionId);
+                                                    console.log("Tracking feature image session:", sessionId);
+                                                  }
+                                                  
+                                                  // Auto-save the feature image when it's uploaded
+                                                  if (createdProjectId) {
+                                                    saveFeatureImage(url);
+                                                  }
                                                 }
-                                                
-                                                // Auto-save the feature image when it's uploaded
-                                                if (createdProjectId) {
-                                                  saveFeatureImage(url);
-                                                }
-                                              }
-                                            }}
-                                            sessionId={featureImageSession || generateSessionId()}
-                                            accept="image/*"
-                                            maxSizeMB={5}
-                                            buttonText="Upload Feature Image"
-                                            helpText="This will be the main project image"
-                                          />
+                                              }}
+                                              sessionId={featureImageSession || generateSessionId()}
+                                              accept="image/*"
+                                              maxSizeMB={5}
+                                              buttonText="Upload Feature Image"
+                                              helpText="This will be the main project image"
+                                            />
+
+                                            {/* New UploadThing uploader */}
+                                            <div className="mt-6">
+                                              <Separator className="my-4" />
+                                              <p className="text-sm text-muted-foreground mb-4">
+                                                <span className="font-semibold">Enhanced upload:</span> Use our new high-speed uploader with progress tracking
+                                              </p>
+                                              <UploadThingUploader 
+                                                onComplete={(urls) => {
+                                                  if (urls && urls.length > 0) {
+                                                    // Use the first image as the feature image
+                                                    field.onChange(urls[0]);
+                                                    
+                                                    // Auto-save the feature image when it's uploaded
+                                                    if (createdProjectId) {
+                                                      saveFeatureImage(urls[0]);
+                                                    }
+                                                  }
+                                                }}
+                                                multiple={false}
+                                                buttonText="Upload Feature Image"
+                                                helpText="Max 8MB. JPEG, PNG, WebP formats supported."
+                                              />
+                                            </div>
+                                          </div>
                                         )}
                                         
                                         {/* Preview of selected feature image */}
