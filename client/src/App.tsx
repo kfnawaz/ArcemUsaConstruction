@@ -44,6 +44,7 @@ import TeamMembersManagement from "@/pages/admin/TeamMembersManagement";
 import SettingsPage from "@/pages/admin/Settings";
 import AccessibilityCheckerPage from "@/pages/admin/AccessibilityChecker";
 import SubcontractorManagement from "@/pages/admin/SubcontractorManagement";
+import FileUploadTest from "@/pages/admin/FileUploadTest";
 import Resources from "@/pages/Resources";
 import JoinTogether from "@/pages/JoinTogether";
 import NotFound from "@/pages/not-found";
@@ -206,6 +207,11 @@ function Router() {
           <Route path="/admin/team-members">
             <ProtectedRoute>
               <TeamMembersManagement />
+            </ProtectedRoute>
+          </Route>
+          <Route path="/admin/file-upload-test">
+            <ProtectedRoute>
+              <FileUploadTest />
             </ProtectedRoute>
           </Route>
           
