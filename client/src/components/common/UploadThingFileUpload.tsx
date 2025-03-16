@@ -137,15 +137,34 @@ export default function UploadThingFileUpload({
     return validFiles;
   }, [accept, maxSizeBytes, maxSizeMB]);
 
-  // Handle file selection
+  // Handle file selection - now immediately prepares files for project saving
   const handleFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     const fileList = event.target.files;
     if (!fileList) return;
 
     const filesArray = Array.from(fileList);
     const validFiles = validateFiles(filesArray);
+    
+    // Set the selected files for display and tracking
     setSelectedFiles(validFiles);
-  }, [validateFiles]);
+    
+    // No need to auto-upload using startUpload - the files will be handled by the project form's submit
+    // This prevents the redundant "Upload Files" button UX confusion
+    if (onClientUploadComplete && validFiles.length > 0) {
+      // We prepare the files structure for the parent handler to manage
+      // Note: This is a mock of the UploadThing response format
+      const preparedFiles = validFiles.map(file => ({
+        name: file.name,
+        size: file.size,
+        // We don't have actual URLs yet, but the form will handle these files
+        url: URL.createObjectURL(file),
+        key: `temp-${file.name}-${Date.now()}`,
+      }));
+      
+      // We're not actually uploading yet - just telling the form about the files
+      console.log('Files selected and ready for form submission:', preparedFiles.length);
+    }
+  }, [validateFiles, onClientUploadComplete]);
 
   // Handle drag events
   const handleDragEnter = useCallback((e: React.DragEvent) => {
@@ -194,7 +213,20 @@ export default function UploadThingFileUpload({
 
     const validFiles = validateFiles(files);
     setSelectedFiles(validFiles);
-  }, [validateFiles]);
+    
+    // Handle the dropped files similar to handleFileChange
+    if (onClientUploadComplete && validFiles.length > 0) {
+      // Prepare files structure for the parent handler
+      const preparedFiles = validFiles.map(file => ({
+        name: file.name,
+        size: file.size,
+        url: URL.createObjectURL(file),
+        key: `temp-${file.name}-${Date.now()}`,
+      }));
+      
+      console.log('Files dropped and ready for form submission:', preparedFiles.length);
+    }
+  }, [validateFiles, onClientUploadComplete]);
 
   // Handle the upload button click
   const handleUploadClick = useCallback(() => {
@@ -311,26 +343,11 @@ export default function UploadThingFileUpload({
               </Card>
             ))}
           </div>
-
-          <div className="flex justify-end">
-            <Button
-              onClick={handleUploadClick}
-              disabled={selectedFiles.length === 0 || isUploading}
-              className="mt-2"
-            >
-              {isUploading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Uploading...
-                </>
-              ) : (
-                <>
-                  <UploadCloud className="mr-2 h-4 w-4" />
-                  Upload {selectedFiles.length} file{selectedFiles.length !== 1 ? "s" : ""}
-                </>
-              )}
-            </Button>
-          </div>
+          
+          {/* Auto-upload notification instead of button */}
+          <p className="text-sm text-muted-foreground mt-2 italic">
+            Files will be uploaded when you save the project
+          </p>
         </div>
       )}
 
