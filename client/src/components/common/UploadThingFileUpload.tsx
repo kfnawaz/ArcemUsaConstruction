@@ -159,7 +159,15 @@ export default function UploadThingFileUpload({
         // We don't have actual URLs yet, but the form will handle these files
         url: URL.createObjectURL(file),
         key: `temp-${file.name}-${Date.now()}`,
+        // Add necessary fields to match UploadThing API response format
+        serverData: { uploadedBy: "user" }
       }));
+      
+      // Notify the user that files were selected
+      toast({
+        title: 'Files ready',
+        description: `${validFiles.length} file${validFiles.length === 1 ? '' : 's'} selected and ready to upload when you save the project.`,
+      });
       
       // Pass files to the parent component through the callback
       onClientUploadComplete(preparedFiles);
@@ -223,7 +231,15 @@ export default function UploadThingFileUpload({
         size: file.size,
         url: URL.createObjectURL(file),
         key: `temp-${file.name}-${Date.now()}`,
+        // Add necessary fields to match UploadThing API response format
+        serverData: { uploadedBy: "user" }
       }));
+      
+      // Notify the user that files were selected
+      toast({
+        title: 'Files ready',
+        description: `${validFiles.length} file${validFiles.length === 1 ? '' : 's'} selected and ready to upload when you save the project.`,
+      });
       
       // Pass the prepared files to the upload complete handler
       // This will trigger the same handling as if they were selected via the file input

@@ -616,6 +616,7 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
                     });
                   }
                   
+                  // Process the selected files
                   handleFileUpload(urls);
                 }}
                 onUploadError={(error) => {
@@ -632,7 +633,7 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
                 multiple={true}
                 accept="image/jpeg, image/png, image/webp"
                 maxSizeMB={8}
-                buttonText="Add Project Images"
+                buttonText="Select Project Images"
                 helpText={`Add up to ${MAX_GALLERY_IMAGES - currentImageCount} more image${MAX_GALLERY_IMAGES - currentImageCount !== 1 ? 's' : ''}`}
               />
             </div>
