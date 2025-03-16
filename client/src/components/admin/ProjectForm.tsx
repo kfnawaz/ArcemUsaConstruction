@@ -30,7 +30,9 @@ import {
   ImageIcon, 
   Loader2, 
   Star, 
-  Trash2
+  Trash2,
+  Images,
+  LayoutDashboard
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -71,13 +73,17 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
     uploadSessions
   } = useProject(projectId);
   
-  const { toast } = useToast(); // Provides the toast notification function
+  const { toast } = useToast();
   const [isAddingImage, setIsAddingImage] = useState(false);
   const [isUpdatingGallery, setIsUpdatingGallery] = useState(false);
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
   const [pendingFormData, setPendingFormData] = useState<InsertProject | null>(null);
   const [currentUploadSession, setCurrentUploadSession] = useState<string>(`session_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`);
   const [featureImageSession, setFeatureImageSession] = useState<string | null>(null);
+  
+  // New state for two-step approach
+  const [currentStep, setCurrentStep] = useState<'details' | 'images'>('details');
+  const [createdProjectId, setCreatedProjectId] = useState<number | null>(null);
   
   // Helper function to generate a random session ID for uploads
   const generateSessionId = () => {
@@ -90,6 +96,9 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
     uploadSessions.add(sessionId);
     console.log(`Added session ${sessionId} to tracked sessions`);
   };
+  
+  // Create a ref to the ProjectGalleryManager component
+  const galleryManagerRef = useRef<ProjectGalleryManagerHandle>(null);
   
   // List of construction industry project categories
   const projectCategories = [
@@ -114,9 +123,6 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
     "Religious Facilities",
     "Sports & Recreation"
   ];
-  
-  // Create a ref to the ProjectGalleryManager component
-  const galleryManagerRef = useRef<ProjectGalleryManagerHandle>(null);
   
   const form = useForm<InsertProject>({
     resolver: zodResolver(insertProjectSchema),
@@ -171,58 +177,75 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
     return false;
   };
 
-  // Handle form pre-submit to check for unsaved gallery changes
-  const handleFormSubmit = (data: InsertProject) => {
+  // Original form onSubmit handler for existing projects
+  const onSubmit = async (data: InsertProject) => {
     if (checkUnsavedGalleryChanges()) {
       // Store form data and show confirmation dialog
       setPendingFormData(data);
       setShowUnsavedDialog(true);
     } else {
       // No unsaved gallery changes, proceed with form submission
-      submitForm(data);
-    }
-  };
-
-  // Actual form submission logic
-  const submitForm = async (data: InsertProject) => {
-    try {
-      await saveProject(data);
-      
-      // If we have a gallery manager (either new or existing project), save the gallery images
-      if (galleryManagerRef.current) {
-        try {
-          await galleryManagerRef.current.saveGalleryImages();
-        } catch (error) {
-          console.error("Error saving gallery images:", error);
-          toast({
-            title: "Warning",
-            description: "Project was saved but there was an error saving some gallery images.",
-            variant: "destructive"
-          });
-        }
-      }
-      
-      toast({
-        title: "Success",
-        description: projectId ? "Project updated successfully" : "Project created successfully",
-      });
-      
-      if (!isSubmitting) {
-        // If the form was successfully saved, commit the uploads instead of cleaning them up
-        if (currentUploadSession) {
-          await commitUploads(currentUploadSession);
-        }
-        if (featureImageSession) {
-          await commitUploads(featureImageSession);
+      try {
+        await saveProject(data);
+        
+        // If we have a gallery manager (for existing project), save the gallery images
+        if (galleryManagerRef.current) {
+          try {
+            await galleryManagerRef.current.saveGalleryImages();
+          } catch (error) {
+            console.error("Error saving gallery images:", error);
+            toast({
+              title: "Warning",
+              description: "Project was saved but there was an error saving some gallery images.",
+              variant: "destructive"
+            });
+          }
         }
         
-        onClose();
+        toast({
+          title: "Success",
+          description: "Project updated successfully",
+        });
+        
+        if (!isSubmitting) {
+          // If the form was successfully saved, commit the uploads instead of cleaning them up
+          if (featureImageSession) {
+            await commitUploads(featureImageSession);
+          }
+          
+          onClose();
+        }
+      } catch (error) {
+        console.error("Error saving project:", error);
+        toast({
+          title: "Error",
+          description: "Failed to save project. Please try again.",
+          variant: "destructive"
+        });
+      }
+    }
+  };
+  
+  // Modified form submission for two-step approach (Step 1: Project Details)
+  const handleDetailsSubmit = async (data: InsertProject) => {
+    try {
+      // When creating a new project, we only save the details on first step
+      const result = await saveProject(data);
+      
+      // Save the ID of the newly created project and move to the image step
+      if (result && typeof result === 'object' && 'id' in result) {
+        setCreatedProjectId(result.id as number);
+        setCurrentStep('images');
+        toast({
+          title: "Project created",
+          description: "Now you can add images to showcase your project",
+        });
       }
     } catch (error) {
-      console.error("Error saving project:", error);
+      console.error("Error saving project details:", error);
       toast({
         title: "Error",
-        description: "Failed to save project. Please try again.",
+        description: "Failed to save project details. Please try again.",
         variant: "destructive"
       });
     }
@@ -231,13 +254,10 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
   // Continue with form submission and save gallery changes
   const confirmSubmitWithChanges = () => {
     if (pendingFormData) {
-      submitForm(pendingFormData);
+      onSubmit(pendingFormData);
       setShowUnsavedDialog(false);
     }
   };
-  
-  // Original form onSubmit handler
-  const onSubmit = handleFormSubmit;
   
   // Custom close handler that cleans up pending uploads
   const handleClose = async () => {
@@ -277,55 +297,31 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
     onClose();
   };
   
-  const handleMultipleImagesUpload = async (urls: string | string[]) => {
-    if (!Array.isArray(urls)) {
-      urls = [urls];
-    }
-    
-    setIsAddingImage(true);
+  // Save feature image change for a newly created project
+  const saveFeatureImage = async (imageUrl: string) => {
+    if (!createdProjectId) return;
     
     try {
-      // Calculate next display order
-      const nextOrder = galleryImages.length > 0 
-        ? Math.max(...galleryImages.map(img => img.displayOrder !== null ? img.displayOrder : 0)) + 1 
-        : 0;
+      await saveProject({
+        ...form.getValues(),
+        image: imageUrl
+      });
       
-      // Add each image to the gallery with sequential display order
-      for (let i = 0; i < urls.length; i++) {
-        await addGalleryImage({
-          projectId: projectId as number,
-          imageUrl: urls[i],
-          caption: `Gallery image ${i + 1}`,
-          displayOrder: nextOrder + i
-        });
-      }
-      
-      // Success notification will be shown by the hook
+      toast({
+        title: "Success",
+        description: "Feature image updated",
+      });
     } catch (error) {
-      console.error("Error adding multiple gallery images:", error);
-    } finally {
-      setIsAddingImage(false);
+      console.error("Error updating feature image:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update feature image",
+        variant: "destructive"
+      });
     }
   };
-  
-  const handleDeleteGalleryImage = async (id: number) => {
-    if (window.confirm("Are you sure you want to delete this image?")) {
-      await deleteGalleryImage(id);
-    }
-  };
-  
-  const handleUpdateGalleryImage = async (id: number, updates: Partial<InsertProjectGallery>) => {
-    setIsUpdatingGallery(true);
-    try {
-      await updateGalleryImage(id, updates);
-    } catch (error) {
-      console.error(`Error updating gallery image ${id}:`, error);
-    } finally {
-      setIsUpdatingGallery(false);
-    }
-  };
-  
-  // This function only updates the form state without submitting
+
+  // This function only updates the form state without submitting (for existing projects)
   const handleSetAsPreview = (e: React.MouseEvent<HTMLButtonElement, MouseEvent> | null, imageUrl: string) => {
     // Prevent the event from bubbling up to any parent elements if event is provided
     if (e) {
@@ -347,13 +343,6 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
       title: "Feature image updated",
       description: "This image will be used as the project thumbnail and hero image"
     });
-    
-    // Explicitly log the form state to verify it's not submitting
-    console.log("Form state after setting feature image:", {
-      isDirty: form.formState.isDirty,
-      isSubmitting: form.formState.isSubmitting,
-      isSubmitted: form.formState.isSubmitted
-    });
   };
 
   return (
@@ -366,6 +355,27 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
         <h1 className="text-2xl font-montserrat font-bold">
           {projectId ? 'Edit Project' : 'Add New Project'}
         </h1>
+        
+        {/* Step indicator for new projects */}
+        {!projectId && (
+          <div className="ml-auto flex items-center gap-3">
+            <Badge 
+              variant={currentStep === 'details' ? "default" : "outline"}
+              className="flex items-center gap-1"
+            >
+              <LayoutDashboard className="h-3.5 w-3.5" />
+              Step 1: Details
+            </Badge>
+            <span className="text-gray-400">→</span>
+            <Badge 
+              variant={currentStep === 'images' ? "default" : "outline"}
+              className="flex items-center gap-1"
+            >
+              <Images className="h-3.5 w-3.5" />
+              Step 2: Images
+            </Badge>
+          </div>
+        )}
       </div>
 
       {isLoading ? (
@@ -379,414 +389,888 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
         </div>
       ) : (
         <div className="space-y-8">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="space-y-6">
-                  <FormField
-                    control={form.control}
-                    name="title"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Project Title</FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder="Enter project title" 
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+          {/* For new projects, show two-step form */}
+          {!projectId ? (
+            // Step 1: Project Details Form
+            currentStep === 'details' ? (
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(handleDetailsSubmit)} className="space-y-6">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="space-y-6">
+                      <FormField
+                        control={form.control}
+                        name="title"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Project Title</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="Enter project title" 
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                  <FormField
-                    control={form.control}
-                    name="category"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Category</FormLabel>
-                        <Select 
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          value={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select a project category" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {projectCategories.map((category) => (
-                              <SelectItem key={category} value={category}>
-                                {category}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormDescription>
-                          Select the construction industry category that best fits this project
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                      <FormField
+                        control={form.control}
+                        name="category"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Category</FormLabel>
+                            <Select 
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                              value={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder="Select a project category" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {projectCategories.map((category) => (
+                                  <SelectItem key={category} value={category}>
+                                    {category}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>
+                              Select the category that best fits this project
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                  <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Description</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="Provide a detailed description of the project" 
-                            rows={5}
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                      <FormField
+                        control={form.control}
+                        name="featured"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                            <FormControl>
+                              <Checkbox
+                                checked={field.value === true}
+                                onCheckedChange={(checked) => field.onChange(checked === true)}
+                              />
+                            </FormControl>
+                            <div className="space-y-1 leading-none">
+                              <FormLabel>
+                                Featured Project
+                              </FormLabel>
+                              <FormDescription>
+                                Featured projects are displayed prominently on the homepage
+                              </FormDescription>
+                            </div>
+                          </FormItem>
+                        )}
+                      />
+                    </div>
 
-                  <FormField
-                    control={form.control}
-                    name="featured"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                        <FormControl>
-                          <Checkbox
-                            checked={field.value === true}
-                            onCheckedChange={(checked) => field.onChange(checked === true)}
-                          />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <FormLabel>
-                            Featured Project
-                          </FormLabel>
-                          <FormDescription>
-                            Featured projects are displayed prominently on the homepage
-                          </FormDescription>
+                    <div className="space-y-6">
+                      <FormField
+                        control={form.control}
+                        name="description"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Description</FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                placeholder="Provide a detailed description of the project" 
+                                rows={5}
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <Card>
+                        <CardContent className="p-4">
+                          <div className="text-sm">
+                            <span className="font-semibold block mb-1">About the image upload:</span>
+                            <p className="text-muted-foreground">
+                              After creating the project, you'll be able to upload a feature image and gallery images in step 2.
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+
+                  {/* Project Details Fields */}
+                  <div className="mt-8">
+                    <Separator className="my-6" />
+                    <h3 className="text-lg font-semibold mb-4">Project Details</h3>
+                    <div className="grid grid-cols-1 gap-6">
+                      <FormField
+                        control={form.control}
+                        name="overview"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Project Overview</FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                placeholder="Provide an overview of the project" 
+                                rows={4}
+                                {...field}
+                                value={field.value ?? ''} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="challenges"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Challenges and Solutions</FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                placeholder="Describe challenges faced during the project and solutions implemented" 
+                                rows={4}
+                                {...field}
+                                value={field.value ?? ''} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="results"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Results</FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                placeholder="Describe the project results and outcomes" 
+                                rows={4}
+                                {...field}
+                                value={field.value ?? ''} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Project Specifications Fields */}
+                  <div className="mt-8">
+                    <Separator className="my-6" />
+                    <h3 className="text-lg font-semibold mb-4">Project Specifications</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <FormField
+                        control={form.control}
+                        name="client"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Client</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="Client name" 
+                                {...field}
+                                value={field.value ?? ''} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="location"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Location</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="Project location" 
+                                {...field}
+                                value={field.value ?? ''} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="size"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Project Size</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="E.g., 10,000 sq ft" 
+                                {...field}
+                                value={field.value ?? ''} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="completionDate"
+                        render={({ field: { value, onChange, ...fieldProps } }) => (
+                          <FormItem>
+                            <FormLabel>Completion Date</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="E.g., June 2023" 
+                                {...fieldProps}
+                                value={value ?? ''} 
+                                onChange={onChange}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="servicesProvided"
+                        render={({ field: { value, onChange, ...fieldProps } }) => (
+                          <FormItem className="md:col-span-2">
+                            <FormLabel>Services Provided</FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                placeholder="List services provided for this project" 
+                                rows={3}
+                                {...fieldProps}
+                                value={value ?? ''} 
+                                onChange={onChange}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Action buttons */}
+                  <div className="flex justify-end space-x-4 mt-8">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleClose}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="submit"
+                      variant="gold"
+                      disabled={isSubmitting}
+                    >
+                      {isSubmitting ? (
+                        <span className="flex items-center">
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Creating...
+                        </span>
+                      ) : (
+                        <span className="flex items-center">
+                          <CheckCircle2 className="h-4 w-4 mr-2" />
+                          Create Project
+                        </span>
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            ) : (
+              // Step 2: Images Form
+              <div className="space-y-6">
+                {createdProjectId ? (
+                  <div className="space-y-6">
+                    <div className="bg-green-50 border border-green-100 rounded-md p-4 mb-6">
+                      <div className="flex">
+                        <CheckCircle2 className="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />
+                        <div>
+                          <h3 className="text-sm font-medium text-green-800">Project created successfully!</h3>
+                          <p className="text-sm text-green-700 mt-1">
+                            Now add images to showcase your project. You must add a feature image to display on listings.
+                          </p>
                         </div>
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div className="space-y-6">
-                  {/* Form fields moved to this column */}
-                </div>
-              </div>
-
-              {/* Project Details Fields */}
-              <div className="mt-8">
-                <Separator className="my-6" />
-                <h3 className="text-lg font-semibold mb-4">Project Details</h3>
-                <div className="grid grid-cols-1 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="overview"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Project Overview</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="Provide an overview of the project" 
-                            rows={4}
-                            {...field}
-                            value={field.value ?? ''} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="challenges"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Challenges and Solutions</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="Describe challenges faced during the project and solutions implemented" 
-                            rows={6}
-                            {...field}
-                            value={field.value ?? ''} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="results"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Results</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="Describe the project results and outcomes" 
-                            rows={4}
-                            {...field}
-                            value={field.value ?? ''} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
-
-              {/* Project Specifications Fields */}
-              <div className="mt-8">
-                <Separator className="my-6" />
-                <h3 className="text-lg font-semibold mb-4">Project Specifications</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="client"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Client</FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder="Client name" 
-                            {...field}
-                            value={field.value ?? ''} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="location"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Location</FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder="Project location" 
-                            {...field}
-                            value={field.value ?? ''} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="size"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Project Size</FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder="E.g., 10,000 sq ft" 
-                            {...field}
-                            value={field.value ?? ''} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="completionDate"
-                    render={({ field: { value, onChange, ...fieldProps } }) => (
-                      <FormItem>
-                        <FormLabel>Completion Date</FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder="E.g., June 2023" 
-                            {...fieldProps}
-                            value={value ?? ''} 
-                            onChange={onChange}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="servicesProvided"
-                    render={({ field: { value, onChange, ...fieldProps } }) => (
-                      <FormItem className="md:col-span-2">
-                        <FormLabel>Services Provided</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="List services provided for this project" 
-                            rows={3}
-                            {...fieldProps}
-                            value={value ?? ''} 
-                            onChange={onChange}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
-
-              {/* Project Images Section - Combined Feature Image and Gallery */}
-              <div className="mt-8">
-                <Separator className="my-6" />
-                <h3 className="text-lg font-semibold mb-4">Project Images</h3>
-                
-                <div className="space-y-6">
-                  <div className="bg-muted/30 rounded-lg p-5 border">
-                    <div className="flex items-start justify-between mb-4">
-                      <div>
-                        <h4 className="text-base font-medium">Feature Image</h4>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          This image will be used as the project thumbnail on listings and cards.
-                          {form.formState.isDirty && <span className="text-blue-600 font-medium ml-1">Click "Update Project" to save changes</span>}
-                        </p>
                       </div>
                     </div>
                     
+                    {/* Project Images Section for newly created projects */}
+                    <div className="mt-8">
+                      <h3 className="text-lg font-semibold mb-4">Project Images</h3>
+                      
+                      <div className="space-y-6">
+                        <div className="bg-muted/30 rounded-lg p-5 border">
+                          <div className="flex items-start justify-between mb-4">
+                            <div>
+                              <h4 className="text-base font-medium">Feature Image</h4>
+                              <p className="text-sm text-muted-foreground mt-1">
+                                Set the main image that will be used as the project thumbnail
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <Form {...form}>
+                            <form>
+                              <FormField
+                                control={form.control}
+                                name="image"
+                                render={({ field }) => (
+                                  <FormItem className="space-y-3">
+                                    <FormControl>
+                                      <div className="space-y-4">
+                                        {/* Direct file upload for feature image */}
+                                        {!field.value && (
+                                          <FileUpload
+                                            onUploadComplete={(url, sessionId) => {
+                                              if (typeof url === 'string') {
+                                                field.onChange(url);
+                                                
+                                                // Store the session ID for this feature image
+                                                if (sessionId) {
+                                                  setFeatureImageSession(sessionId);
+                                                  addUploadSession(sessionId);
+                                                  console.log("Tracking feature image session:", sessionId);
+                                                }
+                                                
+                                                // Auto-save the feature image when it's uploaded
+                                                if (createdProjectId) {
+                                                  saveFeatureImage(url);
+                                                }
+                                              }
+                                            }}
+                                            sessionId={featureImageSession || generateSessionId()}
+                                            accept="image/*"
+                                            maxSizeMB={5}
+                                            buttonText="Upload Feature Image"
+                                            helpText="This will be the main project image"
+                                          />
+                                        )}
+                                        
+                                        {/* Preview of selected feature image */}
+                                        {field.value && (
+                                          <div className="mt-2 border rounded bg-background p-2">
+                                            <div className="relative">
+                                              <Badge className="absolute top-2 left-2 bg-primary text-white">Feature Image</Badge>
+                                              <img 
+                                                src={field.value} 
+                                                alt="Project feature image" 
+                                                className="w-full h-64 object-cover rounded"
+                                                onError={(e) => {
+                                                  e.currentTarget.src = "https://placehold.co/600x400?text=Image+Not+Found";
+                                                }}
+                                              />
+                                              <div className="absolute bottom-2 right-2 flex space-x-2">
+                                                <Button 
+                                                  type="button"
+                                                  size="sm" 
+                                                  variant="destructive"
+                                                  onClick={() => {
+                                                    field.onChange('');
+                                                    if (createdProjectId) {
+                                                      saveFeatureImage('');
+                                                    }
+                                                  }}
+                                                >
+                                                  <Trash2 className="h-4 w-4 mr-1" /> Remove
+                                                </Button>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </form>
+                          </Form>
+                        </div>
+                        
+                        <div className="bg-muted/30 rounded-lg p-5 border">
+                          <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
+                            <div>
+                              <h4 className="text-base font-medium">Project Gallery</h4>
+                              <p className="text-sm text-muted-foreground mt-1">
+                                Upload additional images to showcase this project
+                              </p>
+                            </div>
+                          </div>
+                          
+                          {/* Display gallery manager for the newly created project */}
+                          <ProjectGalleryManager
+                            ref={galleryManagerRef}
+                            projectId={createdProjectId}
+                            isNewProject={false}
+                            commitUploads={fileUtils.commitFiles}
+                            trackUploadSession={addUploadSession}
+                            previewImageUrl={form.getValues('image')}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Action buttons for the images step */}
+                    <div className="flex justify-end space-x-4 mt-8">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setCurrentStep('details')}
+                      >
+                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        Back to Details
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="gold"
+                        onClick={handleClose}
+                      >
+                        <CheckCircle2 className="h-4 w-4 mr-2" />
+                        Complete
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center h-64 border-2 border-dashed rounded-md">
+                    <div className="text-center">
+                      <ImageIcon className="h-10 w-10 text-gray-400 mx-auto mb-2" />
+                      <h3 className="text-sm font-medium text-gray-900">Save project details first</h3>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Complete step 1 to create your project before adding images
+                      </p>
+                      <Button 
+                        variant="outline" 
+                        className="mt-4" 
+                        onClick={() => setCurrentStep('details')}
+                      >
+                        Go to Step 1
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )
+          ) : (
+            // Form for existing projects (all in one view)
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="space-y-6">
                     <FormField
                       control={form.control}
-                      name="image"
+                      name="title"
                       render={({ field }) => (
-                        <FormItem className="space-y-3">
+                        <FormItem>
+                          <FormLabel>Project Title</FormLabel>
                           <FormControl>
-                            <div className="space-y-4">
-                              {/* Direct file upload for feature image */}
-                              {!field.value && (
-                                <FileUpload
-                                  onUploadComplete={(url, sessionId) => {
-                                    if (typeof url === 'string') {
-                                      field.onChange(url);
-                                      
-                                      // Store the session ID for this feature image
-                                      if (sessionId) {
-                                        setFeatureImageSession(sessionId);
-                                        addUploadSession(sessionId);
-                                        console.log("Tracking feature image session:", sessionId);
-                                      }
-                                    }
-                                  }}
-                                  sessionId={featureImageSession || generateSessionId()}
-                                  accept="image/*"
-                                  maxSizeMB={5}
-                                  buttonText="Upload Feature Image"
-                                  helpText="This will be the main project image"
-                                />
-                              )}
-                              
-                              {/* Preview of selected feature image */}
-                              {field.value && (
-                                <div className="border rounded bg-background p-2">
-                                  <div className="relative">
-                                    <Badge className="absolute top-2 left-2 bg-primary text-white">Feature Image</Badge>
-                                    <img 
-                                      src={field.value} 
-                                      alt="Project feature image" 
-                                      className="w-full h-64 object-cover rounded"
-                                      onError={(e) => {
-                                        e.currentTarget.src = "https://placehold.co/600x400?text=Image+Not+Found";
-                                      }}
-                                    />
-                                    <div className="absolute bottom-2 right-2 flex space-x-2">
-                                      <Button 
-                                        type="button"
-                                        size="sm" 
-                                        variant="destructive"
-                                        onClick={() => field.onChange('')}
-                                      >
-                                        <Trash2 className="h-4 w-4 mr-1" /> Remove
-                                      </Button>
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
+                            <Input 
+                              placeholder="Enter project title" 
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="category"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Category</FormLabel>
+                          <Select 
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            value={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a project category" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {projectCategories.map((category) => (
+                                <SelectItem key={category} value={category}>
+                                  {category}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormDescription>
+                            Select the construction industry category that best fits this project
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Description</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Provide a detailed description of the project" 
+                              rows={5}
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="featured"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value === true}
+                              onCheckedChange={(checked) => field.onChange(checked === true)}
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel>
+                              Featured Project
+                            </FormLabel>
+                            <FormDescription>
+                              Featured projects are displayed prominently on the homepage
+                            </FormDescription>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="space-y-6">
+                    {/* Form fields moved to this column */}
+                  </div>
+                </div>
+
+                {/* Project Details Fields */}
+                <div className="mt-8">
+                  <Separator className="my-6" />
+                  <h3 className="text-lg font-semibold mb-4">Project Details</h3>
+                  <div className="grid grid-cols-1 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="overview"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Project Overview</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Provide an overview of the project" 
+                              rows={4}
+                              {...field}
+                              value={field.value ?? ''} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="challenges"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Challenges and Solutions</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Describe challenges faced during the project and solutions implemented" 
+                              rows={6}
+                              {...field}
+                              value={field.value ?? ''} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="results"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Results</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Describe the project results and outcomes" 
+                              rows={4}
+                              {...field}
+                              value={field.value ?? ''} 
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                   </div>
-                  
-                  <div className="bg-muted/30 rounded-lg p-5 border">
-                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
-                      <div>
-                        <h4 className="text-base font-medium">Project Gallery</h4>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {projectId 
-                            ? "Upload additional images to showcase this project." 
-                            : "Upload images to showcase this project. Images will be saved after project creation."}
-                        </p>
-                      </div>
-                      {!projectId && (
-                        <div className="mt-2 md:mt-0">
-                          <Badge variant="outline" className="bg-amber-50 text-amber-800 border-amber-200">
-                            Will be saved after project creation
-                          </Badge>
-                        </div>
+                </div>
+
+                {/* Project Specifications Fields */}
+                <div className="mt-8">
+                  <Separator className="my-6" />
+                  <h3 className="text-lg font-semibold mb-4">Project Specifications</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="client"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Client</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="Client name" 
+                              {...field}
+                              value={field.value ?? ''} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
                       )}
-                    </div>
-                    
-                    {/* Display gallery manager for both new and existing projects */}
-                    <ProjectGalleryManager
-                      ref={galleryManagerRef}
-                      projectId={projectId || 0}
-                      isNewProject={!projectId}
-                      commitUploads={fileUtils.commitFiles}
-                      trackUploadSession={addUploadSession}
-                      previewImageUrl={form.getValues('image')}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="location"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Location</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="Project location" 
+                              {...field}
+                              value={field.value ?? ''} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="size"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Project Size</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="E.g., 10,000 sq ft" 
+                              {...field}
+                              value={field.value ?? ''} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="completionDate"
+                      render={({ field: { value, onChange, ...fieldProps } }) => (
+                        <FormItem>
+                          <FormLabel>Completion Date</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="E.g., June 2023" 
+                              {...fieldProps}
+                              value={value ?? ''} 
+                              onChange={onChange}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="servicesProvided"
+                      render={({ field: { value, onChange, ...fieldProps } }) => (
+                        <FormItem className="md:col-span-2">
+                          <FormLabel>Services Provided</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="List services provided for this project" 
+                              rows={3}
+                              {...fieldProps}
+                              value={value ?? ''} 
+                              onChange={onChange}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
                   </div>
                 </div>
-              </div>
 
-              <div className="flex justify-end space-x-4 mt-8">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={handleClose}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  variant="gold"
-                  disabled={isSubmitting}
-                  className={form.formState.isDirty ? "animate-pulse" : ""}
-                >
-                  {isSubmitting ? (
-                    <span className="flex items-center">
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      {projectId ? 'Updating...' : 'Creating...'}
-                    </span>
-                  ) : (
-                    <span className="flex items-center">
-                      <CheckCircle2 className="h-4 w-4 mr-2" />
-                      {form.formState.isDirty && projectId ? 'Save Changes' : projectId ? 'Update Project' : 'Create Project'}
-                    </span>
-                  )}
-                </Button>
-              </div>
-            </form>
-          </Form>
+                {/* Project Images Section - Combined Feature Image and Gallery */}
+                <div className="mt-8">
+                  <Separator className="my-6" />
+                  <h3 className="text-lg font-semibold mb-4">Project Images</h3>
+                  
+                  <div className="space-y-6">
+                    <div className="bg-muted/30 rounded-lg p-5 border">
+                      <div className="flex items-start justify-between mb-4">
+                        <div>
+                          <h4 className="text-base font-medium">Feature Image</h4>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            This image will be used as the project thumbnail on listings and cards.
+                            {form.formState.isDirty && <span className="text-blue-600 font-medium ml-1">Click "Update Project" to save changes</span>}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <FormField
+                        control={form.control}
+                        name="image"
+                        render={({ field }) => (
+                          <FormItem className="space-y-3">
+                            <FormControl>
+                              <div className="space-y-4">
+                                {/* Direct file upload for feature image */}
+                                {!field.value && (
+                                  <FileUpload
+                                    onUploadComplete={(url, sessionId) => {
+                                      if (typeof url === 'string') {
+                                        field.onChange(url);
+                                        
+                                        // Store the session ID for this feature image
+                                        if (sessionId) {
+                                          setFeatureImageSession(sessionId);
+                                          addUploadSession(sessionId);
+                                          console.log("Tracking feature image session:", sessionId);
+                                        }
+                                      }
+                                    }}
+                                    sessionId={featureImageSession || generateSessionId()}
+                                    accept="image/*"
+                                    maxSizeMB={5}
+                                    buttonText="Upload Feature Image"
+                                    helpText="This will be the main project image"
+                                  />
+                                )}
+                                
+                                {/* Preview of selected feature image */}
+                                {field.value && (
+                                  <div className="mt-2 border rounded bg-background p-2">
+                                    <div className="relative">
+                                      <Badge className="absolute top-2 left-2 bg-primary text-white">Feature Image</Badge>
+                                      <img 
+                                        src={field.value} 
+                                        alt="Project feature image" 
+                                        className="w-full h-64 object-cover rounded"
+                                        onError={(e) => {
+                                          e.currentTarget.src = "https://placehold.co/600x400?text=Image+Not+Found";
+                                        }}
+                                      />
+                                      <div className="absolute bottom-2 right-2 flex space-x-2">
+                                        <Button 
+                                          type="button"
+                                          size="sm" 
+                                          variant="destructive"
+                                          onClick={() => field.onChange('')}
+                                        >
+                                          <Trash2 className="h-4 w-4 mr-1" /> Remove
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    <div className="bg-muted/30 rounded-lg p-5 border">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
+                        <div>
+                          <h4 className="text-base font-medium">Project Gallery</h4>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Upload additional images to showcase this project
+                          </p>
+                        </div>
+                      </div>
+                      
+                      {/* Display gallery manager for both new and existing projects */}
+                      <ProjectGalleryManager
+                        ref={galleryManagerRef}
+                        projectId={projectId as number}
+                        isNewProject={false}
+                        commitUploads={fileUtils.commitFiles}
+                        trackUploadSession={addUploadSession}
+                        previewImageUrl={form.getValues('image')}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end space-x-4 mt-8">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleClose}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="gold"
+                    disabled={isSubmitting}
+                    className={form.formState.isDirty ? "animate-pulse" : ""}
+                  >
+                    {isSubmitting ? (
+                      <span className="flex items-center">
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        {projectId ? 'Updating...' : 'Creating...'}
+                      </span>
+                    ) : (
+                      <span className="flex items-center">
+                        <CheckCircle2 className="h-4 w-4 mr-2" />
+                        {form.formState.isDirty && projectId ? 'Save Changes' : projectId ? 'Update Project' : 'Create Project'}
+                      </span>
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          )}
         </div>
       )}
+      
       {/* Unsaved Gallery Changes Confirmation Dialog */}
       <Dialog open={showUnsavedDialog} onOpenChange={setShowUnsavedDialog}>
         <DialogContent>
