@@ -192,7 +192,10 @@ const SortableItem: React.FC<SortableItemProps> = ({
               size="sm"
               variant="outline"
               className="h-7 text-xs"
-              onClick={() => setIsEditing(false)}
+              onClick={(e) => {
+                e.preventDefault(); // Prevent form submission
+                setIsEditing(false);
+              }}
             >
               Cancel
             </Button>
@@ -200,7 +203,10 @@ const SortableItem: React.FC<SortableItemProps> = ({
               size="sm"
               variant="default"
               className="h-7 text-xs"
-              onClick={handleSaveCaption}
+              onClick={(e) => {
+                e.preventDefault(); // Prevent form submission
+                handleSaveCaption();
+              }}
             >
               Save
             </Button>
