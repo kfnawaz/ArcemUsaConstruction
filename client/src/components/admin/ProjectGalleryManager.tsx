@@ -86,7 +86,9 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
       uploadSessions,
       commitUploads,
       cleanupUploads,
-      trackUploadSession
+      trackUploadSession,
+      setProjectFeatureImage,
+      isSettingFeatureImage
     } = useProject(projectId);
 
     // Check if we've reached the maximum image limit
@@ -769,7 +771,7 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
                       // Find the corresponding gallery item
                       const galleryItem = projectGallery?.find(item => item.imageUrl === url);
                       
-                      if (galleryItem) {
+                      if (galleryItem && setProjectFeatureImage) {
                         // If we found the image in the gallery, use the new feature image API
                         setProjectFeatureImage(galleryItem.id)
                           .then(() => {
@@ -779,7 +781,7 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
                               variant: "default"
                             });
                           })
-                          .catch(error => {
+                          .catch((error: unknown) => {
                             console.error("Error setting feature image:", error);
                             toast({
                               title: "Error",
