@@ -161,7 +161,8 @@ export default function UploadThingFileUpload({
         key: `temp-${file.name}-${Date.now()}`,
       }));
       
-      // We're not actually uploading yet - just telling the form about the files
+      // Pass files to the parent component through the callback
+      onClientUploadComplete(preparedFiles);
       console.log('Files selected and ready for form submission:', preparedFiles.length);
     }
   }, [validateFiles, onClientUploadComplete]);
@@ -224,19 +225,15 @@ export default function UploadThingFileUpload({
         key: `temp-${file.name}-${Date.now()}`,
       }));
       
+      // Pass the prepared files to the upload complete handler
+      // This will trigger the same handling as if they were selected via the file input
+      onClientUploadComplete(preparedFiles);
       console.log('Files dropped and ready for form submission:', preparedFiles.length);
     }
   }, [validateFiles, onClientUploadComplete]);
 
-  // Handle the upload button click
-  const handleUploadClick = useCallback(() => {
-    if (selectedFiles.length === 0) {
-      setErrorMessage("Please select files to upload");
-      return;
-    }
-
-    startUpload(selectedFiles);
-  }, [selectedFiles, startUpload]);
+  // We no longer need a separate upload button click handler
+  // as files are now automatically processed when the parent form is submitted
 
   // Define allowed file types for display
   const allowedFileTypes = accept.split(',').map(type => type.trim());
@@ -296,7 +293,15 @@ export default function UploadThingFileUpload({
       {/* Selected files preview */}
       {selectedFiles.length > 0 && (
         <div className="mt-4 space-y-3">
-          <h4 className="text-sm font-medium">Selected files ({selectedFiles.length})</h4>
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-medium">Selected files ({selectedFiles.length})</h4>
+            
+            {/* Auto-upload notification instead of button */}
+            <p className="text-sm text-muted-foreground italic">
+              Files will be uploaded when you save the project
+            </p>
+          </div>
+          
           <div className="space-y-2">
             {selectedFiles.map((file, index) => (
               <Card key={`${file.name}-${index}`} className="overflow-hidden">
@@ -343,11 +348,6 @@ export default function UploadThingFileUpload({
               </Card>
             ))}
           </div>
-          
-          {/* Auto-upload notification instead of button */}
-          <p className="text-sm text-muted-foreground mt-2 italic">
-            Files will be uploaded when you save the project
-          </p>
         </div>
       )}
 
