@@ -6,6 +6,14 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, UploadCloud, XCircle, AlertTriangle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
+// Define interface for UploadThing file response
+interface UploadFileResponse {
+  url: string;
+  key: string;
+  name: string;
+  size: number;
+}
+
 interface UploadThingUploaderProps {
   onComplete?: (urls: string[]) => void;
   buttonText?: string;
@@ -23,7 +31,9 @@ export default function UploadThingUploader({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   
   const { startUpload, isUploading } = useUploadThing("imageUploader", {
-    onClientUploadComplete: (files) => {
+    onClientUploadComplete: (files: UploadFileResponse[] | undefined) => {
+      if (!files || files.length === 0) return;
+      
       toast({
         title: "Upload complete",
         description: `Successfully uploaded ${files.length} file${files.length !== 1 ? "s" : ""}.`,
@@ -35,7 +45,7 @@ export default function UploadThingUploader({
         onComplete(urls);
       }
     },
-    onUploadError: (error) => {
+    onUploadError: (error: Error) => {
       setErrorMessage(error.message);
       toast({
         title: "Upload failed",

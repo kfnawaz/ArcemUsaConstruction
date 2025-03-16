@@ -1,11 +1,23 @@
 import { useCallback, useState } from "react";
-import type { UploadThingError } from "uploadthing/client";
-import { useUploadThing, type FileRouter } from "@uploadthing/react";
+import { useUploadThing } from "@/lib/uploadthing";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, UploadCloud, XCircle, CheckCircle, AlertTriangle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+
+// Define the types required for the component
+interface UploadFileResponse {
+  url: string;
+  key: string;
+  name: string;
+  size: number;
+}
+
+interface UploadThingError extends Error {
+  code?: string;
+  data?: Record<string, any>;
+}
 
 interface UploadThingFileUploadProps {
   endpoint: "imageUploader";
