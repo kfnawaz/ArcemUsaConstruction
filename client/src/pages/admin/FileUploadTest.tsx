@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import FileUpload from '@/components/FileUpload';
 import FileManager from '@/components/FileManager';
+import UploadThingFileManager from '@/components/UploadThingFileManager';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -114,9 +115,10 @@ export default function FileUploadTest() {
             </div>
             
             <Tabs defaultValue="fileupload" className="mb-6">
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="fileupload">File Upload Component</TabsTrigger>
                 <TabsTrigger value="filemanager">File Manager Component</TabsTrigger>
+                <TabsTrigger value="uploadthing">UploadThing Manager</TabsTrigger>
               </TabsList>
               
               <TabsContent value="fileupload">
@@ -199,6 +201,20 @@ export default function FileUploadTest() {
                         )}
                       </ul>
                     </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="uploadthing">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>UploadThing File Manager</CardTitle>
+                    <CardDescription>
+                      Directly manage all files in your UploadThing account, including deletion capabilities.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <UploadThingFileManager />
                   </CardContent>
                 </Card>
               </TabsContent>

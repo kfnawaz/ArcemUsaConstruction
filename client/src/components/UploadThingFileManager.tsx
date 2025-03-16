@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -25,6 +24,7 @@ import { AlertCircle, FileIcon, FilePenIcon, Image, Trash2 } from 'lucide-react'
 import { formatBytes, formatDate } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import axios from 'axios';
 
 // Interface for files returned from the API
 export interface FileListItem {
@@ -62,11 +62,15 @@ export default function UploadThingFileManager() {
     error 
   } = useQuery<FileListItem[]>({
     queryKey: ['/api/uploadthing/files'],
+    queryFn: async () => {
+      const response = await axios.get('/api/uploadthing/files');
+      return response.data;
+    },
     staleTime: 1000 * 60, // 1 minute
   });
 
   // Safe access to files data
-  const files = (Array.isArray(filesData) ? filesData : []) as FileListItem[];
+  const files = Array.isArray(filesData) ? filesData : [];
 
   // Clean up selected files if they no longer exist
   useEffect(() => {
@@ -81,12 +85,10 @@ export default function UploadThingFileManager() {
   }, [files, selectedFiles]);
 
   // Mutation for deleting a file
-  const deleteMutation = useMutation<DeleteFileResponse, Error, string>({
+  const deleteMutation = useMutation({
     mutationFn: async (key: string) => {
-      const response = await apiRequest<DeleteFileResponse>(`/api/uploadthing/files/${key}`, {
-        method: 'DELETE',
-      });
-      return response || { message: 'File deleted successfully' };
+      const response = await axios.delete<DeleteFileResponse>(`/api/uploadthing/files/${key}`);
+      return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/uploadthing/files'] });
@@ -97,23 +99,20 @@ export default function UploadThingFileManager() {
       setFileToDelete(null);
       setIsDeleteDialogOpen(false);
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({
         title: 'Failed to delete file',
-        description: error instanceof Error ? error.message : 'An unknown error occurred',
+        description: error?.message || 'An unknown error occurred',
         variant: 'destructive',
       });
     },
   });
 
   // Mutation for batch deleting files
-  const batchDeleteMutation = useMutation<DeleteBatchResponse, Error, string[]>({
+  const batchDeleteMutation = useMutation({
     mutationFn: async (keys: string[]) => {
-      const response = await apiRequest<DeleteBatchResponse>('/api/uploadthing/files/delete-batch', {
-        method: 'POST',
-        data: { keys },
-      });
-      return response;
+      const response = await axios.post<DeleteBatchResponse>('/api/uploadthing/files/delete-batch', { keys });
+      return response.data;
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/uploadthing/files'] });
@@ -124,10 +123,10 @@ export default function UploadThingFileManager() {
       setSelectedFiles(new Set());
       setIsBatchDeleteDialogOpen(false);
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({
         title: 'Failed to delete files',
-        description: error instanceof Error ? error.message : 'An unknown error occurred',
+        description: error?.message || 'An unknown error occurred',
         variant: 'destructive',
       });
     },
