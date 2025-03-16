@@ -4,6 +4,15 @@ import { UploadThingError } from "uploadthing/server";
 import { createRouteHandler } from "uploadthing/express";
 import type { Request, Response, Router } from "express";
 
+// Check UploadThing environment variables
+if (!process.env.UPLOADTHING_SECRET || !process.env.UPLOADTHING_APP_ID) {
+  console.error("⚠️ UploadThing environment variables are missing!");
+  console.error("Make sure UPLOADTHING_SECRET and UPLOADTHING_APP_ID are set in your environment");
+} else {
+  console.log("UploadThing config loaded for app ID:", process.env.UPLOADTHING_APP_ID.slice(0, 6) + "...");
+}
+
+// Create the uploadthing instance
 const f = createUploadthing();
 
 interface Session {
@@ -15,6 +24,8 @@ interface Session {
 const isAuthenticated = (req: Request) => {
   // For development purposes, temporarily bypass authentication check
   // In production, we would use proper authentication
+  console.log("Authentication check bypassed for development");
+  
   return {
     userId: 1, // Default to admin user ID
     role: 'admin'
@@ -44,11 +55,10 @@ export const uploadRouter = {
         // Type assertion to solve type mismatch between Express.Request types
         const session = isAuthenticated(req as any);
         
-        // For development, always allow uploads
-        console.log("Upload authorized for user:", session.userId);
+        console.log("📤 Upload middleware executed for user:", session.userId);
         return { userId: session.userId };
       } catch (error) {
-        console.error("Upload authorization error:", error);
+        console.error("❌ Upload authorization error:", error);
         // For development, allow uploads even if authentication fails
         return { userId: 1 };
       }
@@ -56,11 +66,16 @@ export const uploadRouter = {
     // Define upload completion handler
     .onUploadComplete(({ metadata, file }) => {
       // This code runs on your server after upload
-      console.log(`Upload complete from user ${metadata.userId}`);
+      console.log(`✅ Upload complete from user ${metadata?.userId || 'unknown'}`);
       
-      // Log both URL types for debugging
-      console.log(`File URL (deprecated): ${file.url}`);
-      console.log(`File URL (new): ${file.ufsUrl || 'Not available'}`);
+      // Log file details for debugging
+      console.log("📁 File details:", {
+        name: file.name,
+        size: (file.size / 1024 / 1024).toFixed(2) + " MB",
+        key: file.key,
+        url: file.url?.substring(0, 50) + "...",
+        ufsUrl: file.ufsUrl ? (file.ufsUrl.substring(0, 50) + "...") : 'Not available'
+      });
       
       return { 
         url: file.url, // Keep for backwards compatibility
@@ -72,16 +87,34 @@ export const uploadRouter = {
     }),
 };
 
+// Custom error handler for diagnostic purposes
+const logErrorsHandler = (err: Error) => {
+  console.error("⚠️ UploadThing error:", err.message);
+  if (err.stack) {
+    console.error(err.stack.split("\n").slice(0, 3).join("\n"));
+  }
+};
+
 // Export route handlers for Express integration
 export function createUploadthingExpressHandler(router: FileRouter) {
-  // Create the route handler which returns an Express Router
-  // The router already has all the necessary routes configured
+  // Create the route handler which returns an Express Router with custom error handling
   const uploadRouter = createRouteHandler({
     router,
+    errorHandler: logErrorsHandler
+  });
+  
+  // Add a healthcheck endpoint to the router for debugging
+  const originalRouter = uploadRouter;
+  originalRouter.get('/', (req, res) => {
+    res.json({
+      status: 'ok',
+      message: 'UploadThing API is ready',
+      configured: !!(process.env.UPLOADTHING_APP_ID && process.env.UPLOADTHING_SECRET)
+    });
   });
   
   // This function returns the Express router with preconfigured routes
-  return uploadRouter;
+  return originalRouter;
 }
 
 // Export the fileRouter type for the frontend

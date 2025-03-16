@@ -46,7 +46,7 @@ export default function UploadThingUploader({
       });
   }, []);
   
-  const { startUpload, isUploading, permittedFileInfo } = useUploadThing("imageUploader", {
+  const { startUpload, isUploading } = useUploadThing("imageUploader", {
     onClientUploadComplete: (files: UploadFileResponse[] | undefined) => {
       if (!files || files.length === 0) {
         console.log('Upload completed but no files returned');
@@ -133,13 +133,9 @@ export default function UploadThingUploader({
             <div>
               <h3 className="text-lg font-medium">Upload Gallery Images</h3>
               <p className="text-sm text-muted-foreground">{helpText}</p>
-              {permittedFileInfo?.config && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  Max file size: {permittedFileInfo.config.maxFileSize} 
-                  {permittedFileInfo.config.maxFileCount > 1 && 
-                    ` · Up to ${permittedFileInfo.config.maxFileCount} files`}
-                </p>
-              )}
+              <p className="text-xs text-muted-foreground mt-1">
+                Max file size: 8MB · Up to 10 files
+              </p>
             </div>
             
             <label className="cursor-pointer">
