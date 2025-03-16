@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Message, QuoteRequest, Testimonial } from "@shared/schema";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 
 // Type for notification counts
 export interface NotificationCounts {
@@ -11,13 +11,6 @@ export interface NotificationCounts {
 }
 
 export const useNotifications = () => {
-  const [counts, setCounts] = useState<NotificationCounts>({
-    unreadMessages: 0,
-    pendingTestimonials: 0,
-    pendingQuoteRequests: 0,
-    total: 0
-  });
-
   // Get all messages
   const { 
     data: messages = [],
@@ -45,13 +38,8 @@ export const useNotifications = () => {
     retry: 1,
   });
 
-  // Calculate counts whenever data changes
-  useEffect(() => {
-    // Only update counts when all data is loaded
-    if (isLoadingMessages || isLoadingPendingTestimonials || isLoadingQuoteRequests) {
-      return;
-    }
-
+  // Calculate counts using useMemo instead of useEffect to avoid state updates
+  const counts = useMemo(() => {
     // Calculate notification counts
     const unreadMessages = Array.isArray(messages) ? messages.filter(msg => !msg.read).length : 0;
     const pendingTestimonialsCount = Array.isArray(pendingTestimonials) ? pendingTestimonials.length : 0;
@@ -61,20 +49,12 @@ export const useNotifications = () => {
     
     const totalCount = unreadMessages + pendingTestimonialsCount + pendingQuoteRequestsCount;
     
-    // Compare with previous counts to prevent unnecessary updates
-    if (
-      counts.unreadMessages !== unreadMessages ||
-      counts.pendingTestimonials !== pendingTestimonialsCount ||
-      counts.pendingQuoteRequests !== pendingQuoteRequestsCount ||
-      counts.total !== totalCount
-    ) {
-      setCounts({
-        unreadMessages,
-        pendingTestimonials: pendingTestimonialsCount,
-        pendingQuoteRequests: pendingQuoteRequestsCount,
-        total: totalCount
-      });
-    }
+    return {
+      unreadMessages,
+      pendingTestimonials: pendingTestimonialsCount,
+      pendingQuoteRequests: pendingQuoteRequestsCount,
+      total: totalCount
+    };
   }, [messages, pendingTestimonials, quoteRequests]);
 
   return {
