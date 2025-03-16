@@ -17,13 +17,15 @@ export function useFileUpload({
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [isUploading, setIsUploading] = useState<boolean>(false);
 
-  const { startUpload, permittedFileInfo } = useUploadThing('imageUploader', {
+  const { startUpload, isUploading: uploading, permittedFileInfo } = useUploadThingHook('imageUploader', {
     onClientUploadComplete: (res) => {
       setIsUploading(false);
       setUploadProgress(100);
       
       // Extract URLs from response
       const urls = res ? res.map((file) => file.url) : [];
+      
+      console.log("Upload complete:", urls);
       
       if (onClientUploadComplete) {
         onClientUploadComplete(urls);

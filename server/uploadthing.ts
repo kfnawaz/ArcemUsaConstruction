@@ -1,6 +1,6 @@
 import { createUploadthing, type FileRouter } from "uploadthing/server";
 import { UploadThingError } from "uploadthing/server";
-import { Request, Response } from "express";
+import type { Request, Response } from "express";
 
 const f = createUploadthing();
 
@@ -27,15 +27,21 @@ export const uploadRouter = {
   imageUploader: f({ image: { maxFileSize: "8MB", maxFileCount: 10 } })
     // Set permissions and get metadata to identify the user
     .middleware(({ req }) => {
-      // This code runs on your server before upload
-      const session = isAuthenticated(req);
-      
-      // Either throw or return the session
-      if (session.role !== 'admin') {
-        throw new UploadThingError("Only administrators can upload files");
+      try {
+        // This code runs on your server before upload
+        const session = isAuthenticated(req);
+        
+        // Either throw or return the session
+        if (session.role !== 'admin') {
+          throw new UploadThingError("Only administrators can upload files");
+        }
+        
+        console.log("Upload authorized for user:", session.userId);
+        return { userId: session.userId };
+      } catch (error) {
+        console.error("Upload authorization error:", error);
+        throw new UploadThingError("Authentication failed");
       }
-      
-      return { userId: session.userId };
     })
     // Define upload completion handler
     .onUploadComplete(({ metadata, file }) => {
@@ -58,12 +64,16 @@ export function createUploadthingExpressHandler(router: FileRouter) {
     // POST endpoint that accepts multipart/form-data
     POST: async (req: Request, res: Response) => {
       try {
+        console.log("UploadThing handling request");
         // Parse the multipart form data and handle the upload
         const result = await router.handleUpload(req, res);
+        console.log("UploadThing result:", result);
         return res.status(200).json(result);
-      } catch (error) {
-        console.error("Uploadthing error:", error);
-        return res.status(error.status || 500).json({ error: error.message });
+      } catch (error: any) {
+        console.error("UploadThing error:", error);
+        const statusCode = error.status || error.statusCode || 500;
+        const message = error.message || "Upload failed";
+        return res.status(statusCode).json({ error: message });
       }
     },
   };
