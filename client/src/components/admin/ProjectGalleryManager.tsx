@@ -681,6 +681,24 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
                         const setFeature = (e: React.MouseEvent<HTMLButtonElement, MouseEvent> | null) => {
                           if (e) e.preventDefault();
                           
+                          // Optimistic update: Mark this image as the feature image in the UI
+                          if (projectGallery) {
+                            const updatedProjectGallery = projectGallery.map(item => ({
+                              ...item,
+                              isFeature: item.id === galleryItem.id
+                            }));
+                            
+                            // Force a UI update with the new gallery state
+                            // This doesn't actually modify the state but tricks React into re-rendering
+                            document.querySelectorAll('.feature-image-star').forEach(el => {
+                              if (el.getAttribute('data-gallery-id') === galleryItem.id.toString()) {
+                                (el as HTMLElement).style.color = 'gold';
+                              } else {
+                                (el as HTMLElement).style.color = '';
+                              }
+                            });
+                          }
+                          
                           setProjectFeatureImage(galleryItem.id)
                             .then(() => {
                               toast({

@@ -124,7 +124,10 @@ const SortableItem: React.FC<SortableItemProps> = ({
                 onSetAsPreview(imageUrl);
               }}
             >
-              <Star className={`h-3.5 w-3.5 mr-1 ${isFeatureImage ? 'fill-yellow-400' : ''}`} />
+              <Star 
+                className={`h-3.5 w-3.5 mr-1 feature-image-star ${isFeatureImage ? 'fill-yellow-400' : ''}`} 
+                data-gallery-id={isPending ? '' : (item as ProjectGallery).id.toString()}
+              />
               <span className="text-xs">Feature</span>
             </Button>
             
