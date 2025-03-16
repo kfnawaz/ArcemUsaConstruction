@@ -30,7 +30,7 @@ export const useProject = (projectId?: number) => {
 
   // Create project mutation
   const createMutation = useMutation({
-    mutationFn: async (data: InsertProject) => {
+    mutationFn: async (data: InsertProject | ExtendedInsertProject) => {
       return apiRequest({
         url: '/api/projects',
         method: 'POST',
@@ -371,7 +371,7 @@ export const useProject = (projectId?: number) => {
   };
 
   // Create a separate function for createProject
-  const createProject = async (data: InsertProject): Promise<any> => {
+  const createProject = async (data: InsertProject | ExtendedInsertProject): Promise<any> => {
     return createMutation.mutateAsync(data);
   };
 

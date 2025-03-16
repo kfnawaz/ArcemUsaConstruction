@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useProject } from '@/hooks/useProject';
-import { InsertProject, insertProjectSchema, InsertProjectGallery, ProjectGallery } from '@shared/schema';
+import { InsertProject, insertProjectSchema, InsertProjectGallery, ProjectGallery, ExtendedInsertProject } from '@shared/schema';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -237,7 +237,31 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
       await updateProject(projectId, data);
     } else {
       // Create new project
-      await createProject(data);
+
+      // Check if we have pending gallery images to include with the project
+      if (galleryManagerRef.current && galleryManagerRef.current.hasPendingImages()) {
+        console.log("Including pending gallery images with project creation");
+        
+        // Get the pending images from the gallery manager
+        const pendingImages = galleryManagerRef.current.getPendingImages();
+        
+        // Create an ExtendedInsertProject that includes gallery images
+        const extendedData: ExtendedInsertProject = {
+          ...data,
+          galleryImages: pendingImages.map(img => ({
+            imageUrl: img.url,
+            caption: img.caption,
+            displayOrder: img.displayOrder,
+            isFeature: false // We'll set the first one as feature by default in the backend
+          }))
+        };
+        
+        // Create the project with the gallery images included
+        await createProject(extendedData);
+      } else {
+        // Create the project without gallery images
+        await createProject(data);
+      }
       
       // Commit any pending uploads
       uploadSessions.forEach(sessionId => {
