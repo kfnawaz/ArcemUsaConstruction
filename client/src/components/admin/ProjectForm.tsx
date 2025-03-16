@@ -84,7 +84,6 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
   
   // State for tracking the project creation process
   const [createdProjectId, setCreatedProjectId] = useState<number | null>(null);
-  // No step tracking needed for simplified approach
   
   // Helper function to generate a random session ID for uploads
   const generateSessionId = () => {
@@ -375,6 +374,121 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
     });
   };
 
+  // Render gallery section for project creation/editing
+  const renderGallerySection = () => {
+    return (
+      <div className="mt-8">
+        <Separator className="my-6" />
+        <h3 className="text-lg font-semibold mb-4">Project Images</h3>
+      
+        <div className="space-y-6">
+          {/* Feature Image Upload */}
+          <div className="bg-muted/30 rounded-lg p-5 border">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h4 className="text-base font-medium">Feature Image</h4>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Set the main image that will be used as the project thumbnail and hero image
+                </p>
+              </div>
+            </div>
+              
+            <FormField
+              control={form.control}
+              name="image"
+              render={({ field }) => (
+                <FormItem className="space-y-3">
+                  <FormControl>
+                    <div className="space-y-4">
+                      {/* Feature Image Upload */}
+                      {!field.value && (
+                        <div className="space-y-3">
+                          <UploadThingUploader
+                            endpoint="imageUploader"
+                            onClientUploadComplete={(res: any) => {
+                              if (res && res.length > 0) {
+                                const uploadedFileUrl = res[0].url;
+                                const fallbackUrl = res[0].ufsUrl || uploadedFileUrl;
+                                
+                                console.log("Feature image uploaded successfully:", fallbackUrl);
+                                
+                                // Create a new session ID for the feature image
+                                const sessionId = generateSessionId();
+                                setFeatureImageSession(sessionId);
+                                addUploadSession(sessionId);
+                                
+                                // Track the file with the session ID
+                                fileUtils.trackFile(fallbackUrl, sessionId);
+                                
+                                // Set the feature image URL in the form
+                                field.onChange(fallbackUrl);
+                              }
+                            }}
+                            onUploadError={(error: Error) => {
+                              toast({
+                                title: "Upload failed",
+                                description: error.message,
+                                variant: "destructive"
+                              });
+                            }}
+                          />
+                        </div>
+                      )}
+                      
+                      {/* Display feature image if selected */}
+                      {field.value && (
+                        <div className="relative">
+                          <div className="relative aspect-video rounded-md overflow-hidden border">
+                            <img
+                              src={field.value}
+                              alt="Feature Image"
+                              className="object-cover w-full h-full"
+                            />
+                          </div>
+                          <div className="absolute top-2 right-2 flex space-x-2">
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="destructive"
+                              onClick={() => field.onChange('')}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          
+          {/* Gallery Images Section */}
+          <div className="bg-muted/30 rounded-lg p-5 border">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h4 className="text-base font-medium">Project Gallery</h4>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Add additional images to showcase the project (up to 10 images)
+                </p>
+              </div>
+            </div>
+            
+            {/* Use the gallery manager for both new and existing projects */}
+            <ProjectGalleryManager
+              ref={galleryManagerRef}
+              projectId={projectId || 0}
+              onSetAsPreview={handleSetAsPreview}
+              allowReordering={true}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-8">
       <div className="flex items-center mb-6">
@@ -386,23 +500,16 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
           {projectId ? 'Edit Project' : 'Add New Project'}
         </h1>
         
-        {/* Step indicator for new projects */}
+        {/* Project type indicator */}
         {!projectId && (
           <div className="ml-auto flex items-center gap-3">
             <Badge 
-              variant={currentStep === 'details' ? "default" : "outline"}
+              variant="default"
               className="flex items-center gap-1"
             >
               <LayoutDashboard className="h-3.5 w-3.5" />
-              Step 1: Details
-            </Badge>
-            <span className="text-gray-400">→</span>
-            <Badge 
-              variant={currentStep === 'images' ? "default" : "outline"}
-              className="flex items-center gap-1"
-            >
-              <Images className="h-3.5 w-3.5" />
-              Step 2: Images
+              <Images className="h-3.5 w-3.5 ml-1" />
+              New Project
             </Badge>
           </div>
         )}
@@ -419,12 +526,163 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
         </div>
       ) : (
         <div className="space-y-8">
-          {/* For new projects, show two-step form */}
-          {!projectId ? (
-            // Step 1: Project Details Form
-            currentStep === 'details' ? (
-              <Form {...form}>
-                <form onSubmit={form.handleSubmit(handleDetailsSubmit)} className="space-y-6">
+          {projectId ? (
+            // Form for existing projects (all in one view)
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Form fields for existing projects */}
+                  <div className="space-y-6">
+                    <FormField
+                      control={form.control}
+                      name="title"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Project Title</FormLabel>
+                          <FormControl>
+                            <Input 
+                              placeholder="Enter project title" 
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="category"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Category</FormLabel>
+                          <Select 
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            value={field.value || undefined}
+                          >
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a project category" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {projectCategories.map((category) => (
+                                <SelectItem key={category} value={category}>
+                                  {category}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormDescription>
+                            Select the category that best fits this project
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="featured"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value === true}
+                              onCheckedChange={(checked) => field.onChange(checked === true)}
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel>
+                              Featured Project
+                            </FormLabel>
+                            <FormDescription>
+                              Featured projects are displayed prominently on the homepage
+                            </FormDescription>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="space-y-6">
+                    <FormField
+                      control={form.control}
+                      name="description"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Description</FormLabel>
+                          <FormControl>
+                            <Textarea 
+                              placeholder="Provide a detailed description of the project" 
+                              rows={5}
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                {/* Project details section */}
+                <div className="mt-8">
+                  <Separator className="my-6" />
+                  <h3 className="text-lg font-semibold mb-4">Project Details</h3>
+                  <div className="grid grid-cols-1 gap-6">
+                    {/* Project details fields */}
+                    {/* Add fields for overview, challenges, results */}
+                  </div>
+                </div>
+
+                {/* Project specifications section */}
+                <div className="mt-8">
+                  <Separator className="my-6" />
+                  <h3 className="text-lg font-semibold mb-4">Project Specifications</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Project specification fields */}
+                    {/* Add fields for client, location, size, etc */}
+                  </div>
+                </div>
+
+                {/* Rendering the gallery section for existing projects */}
+                {renderGallerySection()}
+
+                {/* Action buttons */}
+                <div className="flex justify-end space-x-4 mt-8">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleClose}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="gold"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <span className="flex items-center">
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Saving...
+                      </span>
+                    ) : (
+                      <span className="flex items-center">
+                        <CheckCircle2 className="h-4 w-4 mr-2" />
+                        Save Changes
+                      </span>
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          ) : (
+            // Form for new projects (unified approach)
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(handleNewProjectSubmit)} className="space-y-6">
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div className="space-y-6">
                       <FormField
@@ -725,10 +983,6 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                   </div>
                 </form>
               </Form>
-            ) : (
-              // Step 2: Images Form
-              <div className="space-y-6">
-                {createdProjectId ? (
                   <div className="space-y-6">
                     <div className="bg-green-50 border border-green-100 rounded-md p-4 mb-6">
                       <div className="flex">
