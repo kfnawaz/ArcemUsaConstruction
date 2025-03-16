@@ -355,10 +355,6 @@ export default function FileUpload({
               <Card key={`${url}-${index}`} className="overflow-hidden">
                 {fileUtils.isImageFile(url) ? (
                   <div className="aspect-video relative">
-                    {/* Debug overlay */}
-                    <div className="absolute top-0 left-0 bg-black bg-opacity-50 text-white text-xs p-1 z-10">
-                      ID: {index} | URL: {url.substring(0, 20)}...
-                    </div>
                     <img
                       src={url}
                       alt={`Uploaded file ${index + 1}`}

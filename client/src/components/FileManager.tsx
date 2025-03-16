@@ -238,10 +238,6 @@ export default function FileManager({
             className="aspect-square relative cursor-pointer" 
             onClick={() => previewFileHandler(file)}
           >
-            {/* Debug info */}
-            <p className="absolute top-0 left-0 bg-black bg-opacity-50 text-white text-xs p-1 z-10">
-              URL: {file.substring(0, 20)}...
-            </p>
             <img
               src={file}
               alt={fileName}
