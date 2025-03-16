@@ -15,11 +15,10 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
   const [logoAnimated, setLogoAnimated] = useState(false);
   const { isAuthenticated, user } = useAuth();
   const logoRef = useRef<HTMLImageElement>(null);
-  const textRef = useRef<HTMLSpanElement>(null);
 
   // Check if we're on an admin page
   const isAdminPage = location.startsWith("/admin");
-  
+
   // Check if we're on a project detail page
   const isProjectDetailPage = location.match(/^\/projects\/\d+$/) !== null;
 
@@ -75,38 +74,30 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
       id="navbar"
       className={cn(
         "fixed w-full z-50 py-4 transition-all duration-300",
-        isAdminPage ? "navbar-admin" : isProjectDetailPage || isScrolled ? "navbar-fixed" : "",
+        isAdminPage
+          ? "navbar-admin"
+          : isProjectDetailPage || isScrolled
+            ? "navbar-fixed"
+            : "",
       )}
     >
       <div className="container mx-auto px-4 md:px-8">
         <div className="flex justify-between items-center">
           <Link
             href="/"
-            className="text-white text-2xl font-montserrat font-bold flex items-center overflow-hidden"
+            className="text-white font-montserrat font-bold flex items-center overflow-hidden"
           >
             <img
               ref={logoRef}
-              src="/uploads/images/logo.png"
-              alt="ARCEMUSA Logo"
+              src="/uploads/images/arcem-logo-new.png"
+              alt="A+R C.E.M Logo"
               className={cn(
-                "h-20 w-20 mr-2 transform transition-all duration-1000 ease-out",
-                logoAnimated
-                  ? "translate-x-0 rotate-0 opacity-100"
-                  : "-translate-x-full rotate-90 opacity-0",
-              )}
-            />
-            <div
-              ref={textRef}
-              className={cn(
-                "flex flex-col text-[#1E90DB] transition-all duration-700 delay-500 transform",
+                "h-12 sm:h-14 md:h-16 transform transition-all duration-1000 ease-out",
                 logoAnimated
                   ? "translate-x-0 opacity-100"
-                  : "translate-x-20 opacity-0",
+                  : "-translate-x-full opacity-0",
               )}
-            >
-              <span className="text-2xl font-bold">A+R C.E.M</span>
-              <span className="text-xs font-medium -mt-1">Construction Engineering Management</span>
-            </div>
+            />
           </Link>
 
           {/* Desktop Navigation */}
@@ -138,7 +129,7 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
                 <NotificationBadge />
               </div>
             )}
-            
+
             {/* Login/Admin Button */}
             <Link
               href={isAuthenticated ? "/admin" : "/auth/login"}
@@ -199,10 +190,12 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
             {isAuthenticated && (
               <div className="flex items-center justify-start py-2">
                 <NotificationBadge />
-                <span className="ml-2 text-white font-montserrat text-sm">Notifications</span>
+                <span className="ml-2 text-white font-montserrat text-sm">
+                  Notifications
+                </span>
               </div>
             )}
-            
+
             {/* Mobile Login/Admin Button */}
             <Link
               href={isAuthenticated ? "/admin" : "/auth/login"}
