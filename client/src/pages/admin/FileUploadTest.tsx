@@ -14,6 +14,7 @@ import { scrollToTop } from '@/lib/utils';
 
 export default function FileUploadTest() {
   const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
+  const [fileMetadata, setFileMetadata] = useState<Map<string, string>>(new Map());
   const [managedFiles, setManagedFiles] = useState<string[]>([]);
   const [sessionId] = useState<string>(fileUtils.generateSessionId());
   const { toast } = useToast();
@@ -24,9 +25,19 @@ export default function FileUploadTest() {
   }, []);
 
   // Handle upload complete
-  const handleUploadComplete = (fileUrls: string | string[], sessionId?: string) => {
+  const handleUploadComplete = (fileUrls: string | string[], sessionId?: string, fileNames?: string[]) => {
     const urls = Array.isArray(fileUrls) ? fileUrls : [fileUrls];
     setUploadedFiles(prev => [...prev, ...urls]);
+    
+    // Store file metadata if available
+    if (fileNames && fileNames.length === urls.length) {
+      const newMetadata = new Map(fileMetadata);
+      urls.forEach((url, index) => {
+        newMetadata.set(url, fileNames[index]);
+      });
+      setFileMetadata(newMetadata);
+    }
+    
     toast({
       title: 'Upload Complete',
       description: `Successfully uploaded ${urls.length} files.`,
@@ -181,7 +192,7 @@ export default function FileUploadTest() {
                                 rel="noopener noreferrer"
                                 className="text-blue-600 hover:underline"
                               >
-                                {file.split('/').pop()}
+                                {fileMetadata.get(file) || file.split('/').pop() || 'file'}
                               </a>
                             </li>
                           ))

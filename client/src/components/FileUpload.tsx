@@ -30,8 +30,11 @@ interface FileUploadProps {
   initialFiles?: string[];
   /**
    * Function called when files are successfully uploaded
+   * @param fileUrls Array of uploaded file URLs
+   * @param sessionId Optional session ID used for tracking
+   * @param fileNames Optional array of original file names
    */
-  onUploadComplete?: (fileUrls: string[]) => void;
+  onUploadComplete?: (fileUrls: string[], sessionId?: string, fileNames?: string[]) => void;
   /**
    * Function called when a file is removed from the list
    */
@@ -113,14 +116,17 @@ export default function FileUpload({
       setFiles([]);
       setUploadProgress(null);
       
-      // Track uploaded files for cleanup if needed
+      // Track uploaded files for cleanup if needed and collect original filenames
+      const originalFilenames: string[] = [];
+      
       uploadedUrls.forEach((url, index) => {
         // Get the original filename from the results
         const originalFilename = results[index]?.name || url.split('/').pop() || 'file';
+        originalFilenames.push(originalFilename);
         fileUtils.trackFile(url, sessionId, originalFilename);
       });
       
-      onUploadComplete?.(uploadedUrls);
+      onUploadComplete?.(uploadedUrls, sessionId, originalFilenames);
       
       toast({
         title: "Files uploaded successfully",

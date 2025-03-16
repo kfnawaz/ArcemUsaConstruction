@@ -64,14 +64,15 @@ export const fileUtils = {
    * 
    * @param fileUrl The URL of the file to track
    * @param sessionId The session ID to associate with the file
+   * @param filename Optional original filename of the file
    * @returns Promise with the tracked file URL
    */
-  async trackFile(fileUrl: string, sessionId: string): Promise<string | null> {
+  async trackFile(fileUrl: string, sessionId: string, filename?: string): Promise<string | null> {
     try {
-      const response = await apiRequest<{ message: string, file: string }>({
+      const response = await apiRequest<{ message: string, file: string, filename?: string }>({
         url: '/api/files/track',
         method: 'POST',
-        body: { fileUrl, sessionId }
+        body: { fileUrl, sessionId, filename }
       });
       
       return response?.file || null;
