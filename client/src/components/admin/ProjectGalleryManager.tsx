@@ -23,6 +23,8 @@ interface ProjectGalleryManagerProps {
   projectId: number;
   isNewProject?: boolean;
   previewImageUrl?: string;
+  commitUploads?: (sessionId: string, fileUrls?: string[]) => Promise<string[]>;
+  trackUploadSession?: (sessionId: string) => void;
 }
 
 export interface ProjectGalleryManagerHandle {
