@@ -643,99 +643,117 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                 </div>
               </div>
 
-              {/* Feature Image Section */}
+              {/* Project Images Section - Combined Feature Image and Gallery */}
               <div className="mt-8">
                 <Separator className="my-6" />
-                <h3 className="text-lg font-semibold mb-4">Feature Image</h3>
-                <div className="grid grid-cols-1 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="image"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormDescription>
+                <h3 className="text-lg font-semibold mb-4">Project Images</h3>
+                
+                <div className="space-y-6">
+                  <div className="bg-muted/30 rounded-lg p-5 border">
+                    <div className="flex items-start justify-between mb-4">
+                      <div>
+                        <h4 className="text-base font-medium">Feature Image</h4>
+                        <p className="text-sm text-muted-foreground mt-1">
                           This image will be used as the project thumbnail on listings and cards.
                           {form.formState.isDirty && <span className="text-blue-600 font-medium ml-1">Click "Update Project" to save changes</span>}
-                        </FormDescription>
-                        <FormControl>
-                          <div className="space-y-4">
-                            {/* Direct file upload for feature image */}
-                            {!field.value && (
-                              <FileUpload
-                                onUploadComplete={(url, sessionId) => {
-                                  if (typeof url === 'string') {
-                                    field.onChange(url);
-                                    
-                                    // Store the session ID for this feature image
-                                    if (sessionId) {
-                                      setFeatureImageSession(sessionId);
-                                      addUploadSession(sessionId);
-                                      console.log("Tracking feature image session:", sessionId);
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <FormField
+                      control={form.control}
+                      name="image"
+                      render={({ field }) => (
+                        <FormItem className="space-y-3">
+                          <FormControl>
+                            <div className="space-y-4">
+                              {/* Direct file upload for feature image */}
+                              {!field.value && (
+                                <FileUpload
+                                  onUploadComplete={(url, sessionId) => {
+                                    if (typeof url === 'string') {
+                                      field.onChange(url);
+                                      
+                                      // Store the session ID for this feature image
+                                      if (sessionId) {
+                                        setFeatureImageSession(sessionId);
+                                        addUploadSession(sessionId);
+                                        console.log("Tracking feature image session:", sessionId);
+                                      }
                                     }
-                                  }
-                                }}
-                                sessionId={featureImageSession || generateSessionId()}
-                                accept="image/*"
-                                maxSizeMB={5}
-                                buttonText="Upload Feature Image"
-                                helpText="This will be the main project image"
-                              />
-                            )}
-                            
-                            {/* Preview of selected feature image */}
-                            {field.value && (
-                              <div className="mt-2 border rounded p-2">
-                                <div className="relative">
-                                  <Badge className="absolute top-2 left-2 bg-primary text-white">Feature Image</Badge>
-                                  <img 
-                                    src={field.value} 
-                                    alt="Project feature image" 
-                                    className="w-full h-64 object-cover rounded"
-                                    onError={(e) => {
-                                      e.currentTarget.src = "https://placehold.co/600x400?text=Image+Not+Found";
-                                    }}
-                                  />
-                                  <div className="absolute bottom-2 right-2 flex space-x-2">
-                                    <Button 
-                                      type="button"
-                                      size="sm" 
-                                      variant="destructive"
-                                      onClick={() => field.onChange('')}
-                                    >
-                                      <Trash2 className="h-4 w-4 mr-1" /> Remove
-                                    </Button>
+                                  }}
+                                  sessionId={featureImageSession || generateSessionId()}
+                                  accept="image/*"
+                                  maxSizeMB={5}
+                                  buttonText="Upload Feature Image"
+                                  helpText="This will be the main project image"
+                                />
+                              )}
+                              
+                              {/* Preview of selected feature image */}
+                              {field.value && (
+                                <div className="border rounded bg-background p-2">
+                                  <div className="relative">
+                                    <Badge className="absolute top-2 left-2 bg-primary text-white">Feature Image</Badge>
+                                    <img 
+                                      src={field.value} 
+                                      alt="Project feature image" 
+                                      className="w-full h-64 object-cover rounded"
+                                      onError={(e) => {
+                                        e.currentTarget.src = "https://placehold.co/600x400?text=Image+Not+Found";
+                                      }}
+                                    />
+                                    <div className="absolute bottom-2 right-2 flex space-x-2">
+                                      <Button 
+                                        type="button"
+                                        size="sm" 
+                                        variant="destructive"
+                                        onClick={() => field.onChange('')}
+                                      >
+                                        <Trash2 className="h-4 w-4 mr-1" /> Remove
+                                      </Button>
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
-                            )}
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                              )}
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  
+                  <div className="bg-muted/30 rounded-lg p-5 border">
+                    <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
+                      <div>
+                        <h4 className="text-base font-medium">Project Gallery</h4>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {projectId 
+                            ? "Upload additional images to showcase this project." 
+                            : "Upload images to showcase this project. Images will be saved after project creation."}
+                        </p>
+                      </div>
+                      {!projectId && (
+                        <div className="mt-2 md:mt-0">
+                          <Badge variant="outline" className="bg-amber-50 text-amber-800 border-amber-200">
+                            Will be saved after project creation
+                          </Badge>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Display gallery manager for both new and existing projects */}
+                    <ProjectGalleryManager
+                      ref={galleryManagerRef}
+                      projectId={projectId || 0}
+                      isNewProject={!projectId}
+                      commitUploads={fileUtils.commitFiles}
+                      trackUploadSession={addUploadSession}
+                      previewImageUrl={form.getValues('image')}
+                    />
+                  </div>
                 </div>
-              </div>
-
-              {/* Project Gallery Section */}
-              <div className="mt-8">
-                <Separator className="my-6" />
-                <h3 className="text-lg font-semibold mb-4">Project Gallery</h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  {projectId 
-                    ? "Upload additional images to showcase this project." 
-                    : "Upload images to showcase this project. Images will be saved after project creation."}
-                </p>
-                
-                {/* Display gallery manager for both new and existing projects */}
-                <ProjectGalleryManager
-                  ref={galleryManagerRef}
-                  projectId={projectId || 0}
-                  isNewProject={!projectId}
-                  commitUploads={fileUtils.commitFiles}
-                  trackUploadSession={addUploadSession}
-                  previewImageUrl={form.getValues('image')}
-                />
               </div>
 
               <div className="flex justify-end space-x-4 mt-8">
