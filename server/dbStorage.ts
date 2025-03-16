@@ -106,15 +106,36 @@ export class DBStorage implements IStorage {
   }
   
   async deleteProjectGalleryImage(id: number): Promise<boolean> {
-    const result = await db.delete(projectGallery).where(eq(projectGallery.id, id)).returning();
-    return result.length > 0;
+    // First fetch the image to get its URL
+    const imageToDelete = await db.select().from(projectGallery).where(eq(projectGallery.id, id));
+    
+    if (imageToDelete.length > 0) {
+      // Delete image from UploadThing if applicable
+      await FileManager.deleteFile(imageToDelete[0].imageUrl);
+      
+      // Then delete from database
+      const result = await db.delete(projectGallery).where(eq(projectGallery.id, id)).returning();
+      return result.length > 0;
+    }
+    
+    return false;
   }
   
   async deleteAllProjectGalleryImages(projectId: number): Promise<boolean> {
+    // First get all gallery images for this project
+    const imagesToDelete = await db.select().from(projectGallery).where(eq(projectGallery.projectId, projectId));
+    
+    // Delete each image from UploadThing if applicable
+    for (const image of imagesToDelete) {
+      await FileManager.deleteFile(image.imageUrl);
+    }
+    
+    // Then delete from database
     const result = await db.delete(projectGallery)
       .where(eq(projectGallery.projectId, projectId))
       .returning();
-    return result.length > 0;
+    
+    return result.length > 0 || imagesToDelete.length > 0;
   }
   
   async setProjectFeatureImage(projectId: number, galleryImageId: number): Promise<ProjectGallery | undefined> {
@@ -211,13 +232,36 @@ export class DBStorage implements IStorage {
   }
 
   async deleteBlogGalleryImage(id: number): Promise<boolean> {
-    const result = await db.delete(blogGallery).where(eq(blogGallery.id, id)).returning();
-    return result.length > 0;
+    // First fetch the image to get its URL
+    const imageToDelete = await db.select().from(blogGallery).where(eq(blogGallery.id, id));
+    
+    if (imageToDelete.length > 0) {
+      // Delete image from UploadThing if applicable
+      await FileManager.deleteFile(imageToDelete[0].imageUrl);
+      
+      // Then delete from database
+      const result = await db.delete(blogGallery).where(eq(blogGallery.id, id)).returning();
+      return result.length > 0;
+    }
+    
+    return false;
   }
 
   async deleteAllBlogGalleryImages(postId: number): Promise<boolean> {
-    const result = await db.delete(blogGallery).where(eq(blogGallery.postId, postId)).returning();
-    return result.length >= 0; // Return true even if there were no images to delete
+    // First get all gallery images for this post
+    const imagesToDelete = await db.select().from(blogGallery).where(eq(blogGallery.postId, postId));
+    
+    // Delete each image from UploadThing if applicable
+    for (const image of imagesToDelete) {
+      await FileManager.deleteFile(image.imageUrl);
+    }
+    
+    // Then delete from database
+    const result = await db.delete(blogGallery)
+      .where(eq(blogGallery.postId, postId))
+      .returning();
+    
+    return result.length > 0 || imagesToDelete.length > 0;
   }
   
   // Blog Categories
@@ -442,13 +486,36 @@ export class DBStorage implements IStorage {
   }
   
   async deleteServiceGalleryImage(id: number): Promise<boolean> {
-    const result = await db.delete(serviceGallery).where(eq(serviceGallery.id, id)).returning();
-    return result.length > 0;
+    // First fetch the image to get its URL
+    const imageToDelete = await db.select().from(serviceGallery).where(eq(serviceGallery.id, id));
+    
+    if (imageToDelete.length > 0) {
+      // Delete image from UploadThing if applicable
+      await FileManager.deleteFile(imageToDelete[0].imageUrl);
+      
+      // Then delete from database
+      const result = await db.delete(serviceGallery).where(eq(serviceGallery.id, id)).returning();
+      return result.length > 0;
+    }
+    
+    return false;
   }
   
   async deleteAllServiceGalleryImages(serviceId: number): Promise<boolean> {
-    const result = await db.delete(serviceGallery).where(eq(serviceGallery.serviceId, serviceId)).returning();
-    return result.length >= 0; // Return true even if there were no images to delete
+    // First get all gallery images for this service
+    const imagesToDelete = await db.select().from(serviceGallery).where(eq(serviceGallery.serviceId, serviceId));
+    
+    // Delete each image from UploadThing if applicable
+    for (const image of imagesToDelete) {
+      await FileManager.deleteFile(image.imageUrl);
+    }
+    
+    // Then delete from database
+    const result = await db.delete(serviceGallery)
+      .where(eq(serviceGallery.serviceId, serviceId))
+      .returning();
+    
+    return result.length > 0 || imagesToDelete.length > 0;
   }
 
   // Messages/Contact
