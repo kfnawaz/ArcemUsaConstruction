@@ -238,10 +238,18 @@ export default function FileManager({
             className="aspect-square relative cursor-pointer" 
             onClick={() => previewFileHandler(file)}
           >
+            {/* Debug info */}
+            <p className="absolute top-0 left-0 bg-black bg-opacity-50 text-white text-xs p-1 z-10">
+              URL: {file.substring(0, 20)}...
+            </p>
             <img
               src={file}
               alt={fileName}
               className="w-full h-full object-cover"
+              onError={(e) => {
+                console.error("Image failed to load:", file);
+                e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z'%3E%3C/path%3E%3Ccircle cx='12' cy='13' r='3'%3E%3C/circle%3E%3C/svg%3E";
+              }}
             />
           </div>
         ) : (

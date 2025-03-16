@@ -50,10 +50,14 @@ export const uploadRouter = {
     .onUploadComplete(({ metadata, file }) => {
       // This code runs on your server after upload
       console.log(`Upload complete from user ${metadata.userId}`);
-      console.log(`File URL: ${file.url}`);
+      
+      // Log both URL types for debugging
+      console.log(`File URL (deprecated): ${file.url}`);
+      console.log(`File URL (new): ${file.ufsUrl || 'Not available'}`);
       
       return { 
-        url: file.url,
+        url: file.url, // Keep for backwards compatibility
+        ufsUrl: file.ufsUrl || file.url, // Prefer the new URL property
         key: file.key,
         name: file.name,
         size: file.size

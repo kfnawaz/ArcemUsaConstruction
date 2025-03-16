@@ -109,6 +109,34 @@ export const fileUtils = {
    * @returns The file extension (e.g., "jpg")
    */
   getFileExtension(filename: string): string {
+    // For UploadThing URLs, try to extract from query params or just return 'jpg' as fallback
+    if (filename.includes('utfs.io')) {
+      // Try to extract from filename in Content-Disposition header (not available client-side)
+      // Or from URL query parameters if they exist
+      const urlObj = new URL(filename);
+      
+      // Check for file extension in pathname
+      const pathname = urlObj.pathname;
+      const pathParts = pathname.split('.');
+      if (pathParts.length > 1) {
+        return pathParts[pathParts.length - 1];
+      }
+      
+      // Check for file name or type in query parameters
+      const fileNameParam = urlObj.searchParams.get('x-ut-file-name');
+      if (fileNameParam) {
+        const fileNameParts = fileNameParam.split('.');
+        if (fileNameParts.length > 1) {
+          return fileNameParts[fileNameParts.length - 1];
+        }
+      }
+      
+      // Default to 'jpg' for image files from UploadThing
+      console.log("Could not determine extension for UploadThing URL:", filename);
+      return 'jpg';
+    }
+    
+    // Standard method for regular filenames
     return filename.slice((filename.lastIndexOf(".") - 1 >>> 0) + 2);
   },
 
@@ -119,7 +147,16 @@ export const fileUtils = {
    * @returns True if the file is an image
    */
   isImageFile(filename: string): boolean {
+    // Special handling for UploadThing URLs
+    if (filename.includes('utfs.io')) {
+      console.log("Detected UploadThing URL:", filename);
+      // UploadThing URLs don't always have file extensions, so we'll assume it's an image
+      // This is a simplification - in a production app, you'd want to store metadata about the file type
+      return true;
+    }
+    
     const ext = this.getFileExtension(filename).toLowerCase();
+    console.log("File extension detected:", ext, "for file:", filename);
     return ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'].includes(ext);
   },
 
