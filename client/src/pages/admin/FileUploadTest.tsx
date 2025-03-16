@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import FileUpload from '@/components/common/FileUpload';
+import FileUpload from '@/components/FileUpload';
 import FileManager from '@/components/FileManager';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -120,12 +120,16 @@ export default function FileUploadTest() {
                     <div className="mb-4">
                       <FileUpload
                         onUploadComplete={handleUploadComplete}
+                        onUploadError={handleUploadError}
+                        onFileRemoved={handleFileRemoved}
+                        initialFiles={uploadedFiles}
                         sessionId={sessionId}
                         multiple={true}
-                        accept="image/*"
-                        maxSizeMB={5}
-                        buttonText="Upload Files"
-                        helpText="Drag and drop files here or click to browse"
+                        imagesOnly={true}
+                        autoUpload={true}
+                        maxFiles={10}
+                        uploadLabel="Upload Files"
+                        emptyMessage="Drag and drop files here or click to browse"
                       />
                     </div>
                     
