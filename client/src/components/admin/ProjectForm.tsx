@@ -737,36 +737,28 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                     " Simply click on any image to set it as the project preview image."}
                 </p>
                 
-                {projectId && (
-                  <div
-                    onClick={(e) => {
-                      // Find if the clicked element is our image with data-preview-action
-                      const targetElem = e.target as HTMLElement;
-                      const previewImage = targetElem.closest('[data-preview-action="true"]');
-                      
-                      if (previewImage) {
-                        // Get the image URL from the data attribute
-                        const imageUrl = previewImage.getAttribute('data-preview-url');
-                        if (imageUrl) {
-                          handleSetAsPreview(null, imageUrl);
-                        }
+                <div
+                  onClick={(e) => {
+                    // Find if the clicked element is our image with data-preview-action
+                    const targetElem = e.target as HTMLElement;
+                    const previewImage = targetElem.closest('[data-preview-action="true"]');
+                    
+                    if (previewImage) {
+                      // Get the image URL from the data attribute
+                      const imageUrl = previewImage.getAttribute('data-preview-url');
+                      if (imageUrl) {
+                        handleSetAsPreview(null, imageUrl);
                       }
-                    }}
-                  >
-                    <ProjectGalleryManager 
-                      ref={galleryManagerRef}
-                      projectId={projectId} 
-                      previewImageUrl={form.getValues('image')}
-                    />
-                  </div>
-                )}
-                
-                {!projectId && (
-                  <div className="text-center py-8 border rounded-md bg-muted/20">
-                    <ImageIcon className="h-12 w-12 mx-auto text-muted-foreground" />
-                    <p className="mt-2 text-muted-foreground">Save the project first to add gallery images.</p>
-                  </div>
-                )}
+                    }
+                  }}
+                >
+                  <ProjectGalleryManager 
+                    ref={galleryManagerRef}
+                    projectId={projectId || 0} 
+                    isNewProject={!projectId}
+                    previewImageUrl={form.getValues('image')}
+                  />
+                </div>
                 
 
               </div>
