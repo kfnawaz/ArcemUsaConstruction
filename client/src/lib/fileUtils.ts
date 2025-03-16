@@ -20,7 +20,7 @@ export const fileUtils = {
         body: { sessionId, fileUrls }
       });
       
-      return response.files;
+      return response?.files || [];
     } catch (error) {
       console.error('Error committing files:', error);
       return [];
@@ -43,7 +43,7 @@ export const fileUtils = {
         body: { sessionId, fileUrl }
       });
       
-      return response.files;
+      return response?.files || [];
     } catch (error) {
       console.error('Error cleaning up files:', error);
       return [];
@@ -66,7 +66,7 @@ export const fileUtils = {
         body: { fileUrl, sessionId }
       });
       
-      return response.file;
+      return response?.file || null;
     } catch (error) {
       console.error('Error tracking file:', error);
       return null;

@@ -44,7 +44,8 @@ export class FileManager {
     const committedFiles: string[] = [];
     
     // Iterate through all pending files
-    for (const [key, pendingFile] of this.pendingFiles.entries()) {
+    for (const entry of Array.from(this.pendingFiles.entries())) {
+      const [key, pendingFile] = entry;
       // If file belongs to this session and is in the list to commit (or no list provided)
       if (pendingFile.sessionId === sessionId && 
           (!fileUrls || fileUrls.includes(pendingFile.url))) {
@@ -68,7 +69,8 @@ export class FileManager {
     const keysToDelete: string[] = [];
     
     // Find files for deletion
-    for (const [key, pendingFile] of this.pendingFiles.entries()) {
+    for (const entry of Array.from(this.pendingFiles.entries())) {
+      const [key, pendingFile] = entry;
       if (pendingFile.sessionId === sessionId && 
           (!specificFileUrl || pendingFile.url === specificFileUrl)) {
         filesToDelete.push(pendingFile.url);
@@ -106,7 +108,8 @@ export class FileManager {
     const oldSessionIds = new Set<string>();
     
     // Identify old sessions
-    for (const [key, pendingFile] of this.pendingFiles.entries()) {
+    for (const entry of Array.from(this.pendingFiles.entries())) {
+      const [key, pendingFile] = entry;
       if (now - pendingFile.timestamp > maxAgeMs) {
         oldSessionIds.add(pendingFile.sessionId);
       }
@@ -114,7 +117,7 @@ export class FileManager {
     
     // Clean up each old session
     let totalCleaned = 0;
-    for (const sessionId of oldSessionIds) {
+    for (const sessionId of Array.from(oldSessionIds)) {
       const cleanedFiles = await this.cleanupSession(sessionId);
       totalCleaned += cleanedFiles.length;
     }
