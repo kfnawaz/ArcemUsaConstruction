@@ -54,7 +54,7 @@ export default function UploadThingDropzone({
   const canUploadMore = remainingSlots > 0;
 
   // useUploadThing hook from the uploadthing library
-  const { startUpload, isUploading, permittedFileInfo } = useUploadThing("imageUploader", {
+  const { startUpload, isUploading } = useUploadThing("imageUploader", {
     onClientUploadComplete: (files) => {
       if (!files || files.length === 0) return;
       
@@ -191,11 +191,8 @@ export default function UploadThingDropzone({
         });
       }
 
-      // Start the upload
-      await startUpload(imageFiles, {
-        userId: 1, // This will be picked up by the server
-        sessionId // Track this upload with the session
-      });
+      // Start the upload - UploadThing expects no metadata in this version
+      await startUpload(imageFiles);
     } catch (error) {
       console.error('Error starting upload:', error);
       toast({
@@ -262,10 +259,8 @@ export default function UploadThingDropzone({
     });
   };
 
-  // Get permitted file types string
-  const fileTypesString = permittedFileInfo?.config 
-    ? Object.keys(permittedFileInfo.config).join(', ') 
-    : 'images (jpg, png, webp, gif)';
+  // Define permitted file types
+  const fileTypesString = 'images (jpg, png, webp, gif)';
 
   return (
     <div className="w-full space-y-4">
