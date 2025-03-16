@@ -99,7 +99,12 @@ const ProjectManagement = () => {
   // Toggle featured status mutation
   const toggleFeaturedMutation = useMutation({
     mutationFn: async ({ id, featured }: { id: number; featured: boolean }) => {
-      return apiRequest('PUT', `/api/projects/${id}`, { featured });
+      // Converting to newer format using object parameter
+      return apiRequest({
+        url: `/api/projects/${id}`,
+        method: 'PUT',
+        body: { featured }
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
