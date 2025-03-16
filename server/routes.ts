@@ -1136,6 +1136,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to cleanup files" });
     }
   });
+  
+  // UploadThing direct file management APIs
+  app.get(`${apiRouter}/uploadthing/files`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const files = await uploadThingService.listFiles();
+      res.json(files);
+    } catch (error) {
+      console.error("Error listing UploadThing files:", error);
+      res.status(500).json({ 
+        message: "Failed to list UploadThing files",
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+  
+  app.delete(`${apiRouter}/uploadthing/files/:key`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const { key } = req.params;
+      
+      if (!key) {
+        return res.status(400).json({ message: "File key is required" });
+      }
+      
+      const result = await uploadThingService.deleteFile(key);
+      
+      if (result.success) {
+        res.json({ 
+          message: "File deleted successfully",
+          key
+        });
+      } else {
+        res.status(500).json({ message: "Failed to delete file" });
+      }
+    } catch (error) {
+      console.error(`Error deleting UploadThing file:`, error);
+      res.status(500).json({ 
+        message: "Failed to delete UploadThing file",
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+  
+  app.post(`${apiRouter}/uploadthing/files/delete-batch`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const { keys } = req.body;
+      
+      if (!keys || !Array.isArray(keys) || keys.length === 0) {
+        return res.status(400).json({ message: "File keys array is required" });
+      }
+      
+      const result = await uploadThingService.deleteFiles(keys);
+      
+      if (result.success) {
+        res.json({ 
+          message: `${result.deletedCount} files deleted successfully`,
+          deletedCount: result.deletedCount,
+          keys
+        });
+      } else {
+        res.status(500).json({ message: "Failed to delete files" });
+      }
+    } catch (error) {
+      console.error(`Error batch deleting UploadThing files:`, error);
+      res.status(500).json({ 
+        message: "Failed to delete UploadThing files", 
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
 
   // Serve static files from public directory
   app.use('/uploads', (req, res, next) => {
