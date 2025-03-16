@@ -5,6 +5,7 @@ import { FileManager } from "./utils/fileManager";
 import { 
   insertProjectSchema,
   insertProjectGallerySchema,
+  extendedInsertProjectSchema,
   insertBlogCategorySchema,
   insertBlogTagSchema,
   insertBlogPostSchema,

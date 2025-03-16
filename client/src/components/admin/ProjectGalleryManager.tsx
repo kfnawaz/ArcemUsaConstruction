@@ -123,6 +123,9 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
       },
       getUnsavedChangesCount: () => {
         return pendingImages.length + modifiedCaptions.size + modifiedOrders.size;
+      },
+      getPendingImages: () => {
+        return [...pendingImages];
       }
     }));
 
