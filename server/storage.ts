@@ -593,11 +593,16 @@ export class MemStorage implements IStorage {
 
   async addProjectGalleryImage(galleryImage: InsertProjectGallery): Promise<ProjectGallery> {
     const id = this.projectGalleryCurrentId++;
+    
+    // Handle isFeature properly - use null coalescing to ensure we get a boolean
+    const isFeature = galleryImage.isFeature ?? false;
+    
     const newImage: ProjectGallery = {
       ...galleryImage,
       id,
       displayOrder: galleryImage.displayOrder || 0,
-      caption: galleryImage.caption || null
+      caption: galleryImage.caption || null,
+      isFeature: isFeature
     };
     this.projectGallery.set(id, newImage);
     return newImage;
@@ -626,6 +631,34 @@ export class MemStorage implements IStorage {
       this.projectGallery.delete(image.id);
     });
     return true;
+  }
+  
+  async setProjectFeatureImage(projectId: number, galleryImageId: number): Promise<ProjectGallery | undefined> {
+    // Get all gallery images for this project
+    const galleryImages = await this.getProjectGallery(projectId);
+    
+    // Reset all feature flags to false
+    for (const image of galleryImages) {
+      if (image.isFeature) {
+        await this.updateProjectGalleryImage(image.id, { isFeature: false });
+      }
+    }
+    
+    // Set the selected image as the feature image
+    const featureImage = this.projectGallery.get(galleryImageId);
+    if (!featureImage || featureImage.projectId !== projectId) {
+      return undefined; // Image not found or doesn't belong to this project
+    }
+    
+    // Update the feature image
+    const updatedImage = await this.updateProjectGalleryImage(galleryImageId, { isFeature: true });
+    
+    // Also update the project's image field to use this feature image
+    if (updatedImage) {
+      await this.updateProject(projectId, { image: updatedImage.imageUrl });
+    }
+    
+    return updatedImage;
   }
   
   // Blog Posts

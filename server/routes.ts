@@ -210,6 +210,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  app.put(`${apiRouter}/projects/:projectId/gallery/:imageId/set-feature`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const projectId = parseInt(req.params.projectId);
+      const imageId = parseInt(req.params.imageId);
+      
+      if (isNaN(projectId) || isNaN(imageId)) {
+        return res.status(400).json({ message: "Invalid project ID or image ID" });
+      }
+      
+      const featureImage = await storage.setProjectFeatureImage(projectId, imageId);
+      
+      if (!featureImage) {
+        return res.status(404).json({ message: "Gallery image not found or does not belong to this project" });
+      }
+      
+      res.json(featureImage);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to set feature image" });
+    }
+  });
+  
   app.delete(`${apiRouter}/projects/gallery/:id`, isAdmin, async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
