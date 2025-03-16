@@ -11,7 +11,13 @@ interface User {
 export function useAuth() {
   const { data: user, isLoading } = useQuery<User | null>({
     queryKey: ['/api/user'],
-    queryFn: () => apiRequest<User>({ url: '/api/user', on401: 'returnNull' }),
+    queryFn: async () => {
+      // Use the proper options format
+      return await apiRequest<User>({ 
+        url: '/api/user', 
+        on401: 'returnNull' 
+      });
+    },
   });
 
   const isAuthenticated = !!user;
