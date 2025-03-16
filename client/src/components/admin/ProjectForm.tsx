@@ -208,16 +208,29 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
       console.log("Creating new project with data:", data);
       setIsSubmitting(true);
       
+      // First, save any pending gallery images if they exist
+      if (galleryManagerRef.current && galleryManagerRef.current.hasPendingImages()) {
+        console.log("Saving pending gallery images with project creation");
+      }
+      
       // Save the project data
-      await saveProject(data);
+      const createdProject = await saveProject(data);
       
       toast({
         title: "Success!",
         description: "Project created successfully",
       });
       
-      // Close the form and return to project list
-      onClose();
+      // Check if we received a valid project response with an ID
+      if (createdProject && typeof createdProject === 'object' && 'id' in createdProject) {
+        const projectId = createdProject.id;
+        // Refresh the page with the new project ID to convert to edit mode
+        window.location.href = `/admin/projects/edit/${projectId}`;
+      } else {
+        // Fallback in case we don't get a proper ID back
+        console.warn("No project ID returned after creation, falling back to close");
+        onClose();
+      }
     } catch (error) {
       console.error("Error creating project:", error);
       toast({
@@ -225,48 +238,56 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
         description: "There was a problem creating your project. Please try again.",
         variant: "destructive"
       });
-    } finally {
       setIsSubmitting(false);
     }
   };
   
   // Save project data (used by both create and update paths)
   const saveProject = async (data: InsertProject) => {
-    if (projectId) {
-      // Update existing project
-      await updateProject(projectId, data);
-    } else {
-      // Create new project
-
-      // Check if we have pending gallery images to include with the project
-      if (galleryManagerRef.current && galleryManagerRef.current.hasPendingImages()) {
-        console.log("Including pending gallery images with project creation");
-        
-        // Get the pending images from the gallery manager
-        const pendingImages = galleryManagerRef.current.getPendingImages();
-        
-        // Create an ExtendedInsertProject that includes gallery images
-        const extendedData: ExtendedInsertProject = {
-          ...data,
-          galleryImages: pendingImages.map(img => ({
-            imageUrl: img.url,
-            caption: img.caption,
-            displayOrder: img.displayOrder,
-            isFeature: false // We'll set the first one as feature by default in the backend
-          }))
-        };
-        
-        // Create the project with the gallery images included
-        await createProject(extendedData);
+    try {
+      if (projectId) {
+        // Update existing project
+        await updateProject(projectId, data);
+        return { id: projectId }; // Return project id for consistency
       } else {
-        // Create the project without gallery images
-        await createProject(data);
+        // Create new project
+        let createdProject;
+
+        // Check if we have pending gallery images to include with the project
+        if (galleryManagerRef.current && galleryManagerRef.current.hasPendingImages()) {
+          console.log("Including pending gallery images with project creation");
+          
+          // Get the pending images from the gallery manager
+          const pendingImages = galleryManagerRef.current.getPendingImages();
+          
+          // Create an ExtendedInsertProject that includes gallery images
+          const extendedData: ExtendedInsertProject = {
+            ...data,
+            galleryImages: pendingImages.map(img => ({
+              imageUrl: img.url,
+              caption: img.caption,
+              displayOrder: img.displayOrder,
+              isFeature: false // We'll set the first one as feature by default in the backend
+            }))
+          };
+          
+          // Create the project with the gallery images included
+          createdProject = await createProject(extendedData);
+        } else {
+          // Create the project without gallery images
+          createdProject = await createProject(data);
+        }
+        
+        // Commit any pending uploads
+        uploadSessions.forEach(sessionId => {
+          fileUtils.commitFiles(sessionId);
+        });
+        
+        return createdProject;
       }
-      
-      // Commit any pending uploads
-      uploadSessions.forEach(sessionId => {
-        fileUtils.commitFiles(sessionId);
-      });
+    } catch (error) {
+      console.error("Error in saveProject:", error);
+      throw error;
     }
   };
 
