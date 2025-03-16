@@ -17,13 +17,13 @@ export function useFileUpload({
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [isUploading, setIsUploading] = useState<boolean>(false);
 
-  const { startUpload, isUploading: uploading, permittedFileInfo } = useUploadThingHook('imageUploader', {
-    onClientUploadComplete: (res) => {
+  const { startUpload, isUploading: uploading } = useUploadThing('imageUploader', {
+    onClientUploadComplete: (res: any[]) => {
       setIsUploading(false);
       setUploadProgress(100);
       
       // Extract URLs from response
-      const urls = res ? res.map((file) => file.url) : [];
+      const urls = res ? res.map((file: any) => file.url) : [];
       
       console.log("Upload complete:", urls);
       
@@ -34,7 +34,7 @@ export function useFileUpload({
       // Reset file state after successful upload
       setFiles([]);
     },
-    onUploadError: (error) => {
+    onUploadError: (error: Error) => {
       setIsUploading(false);
       setUploadProgress(0);
       
@@ -50,15 +50,13 @@ export function useFileUpload({
         onUploadBegin();
       }
     },
-    onUploadProgress: (progress) => {
+    onUploadProgress: (progress: number) => {
       setUploadProgress(progress);
     },
   });
 
-  // Calculate total permitted file size
-  const maxFileSize = permittedFileInfo?.config?.maxFileSize
-    ? parseInt(permittedFileInfo.config.maxFileSize, 10)
-    : undefined;
+  // Set default max file size (8MB)
+  const maxFileSize = 8 * 1024 * 1024; // 8MB in bytes
 
   // Helper to format file size in human-readable format
   const formatFileSize = (sizeInBytes: number) => {
@@ -102,6 +100,14 @@ export function useFileUpload({
     }
   }, [files, startUpload]);
 
+  // Define file size limits and permitted information
+  const permittedFileInfo = {
+    config: {
+      maxFileSize: "8MB",
+      maxFileCount: 10
+    }
+  };
+  
   return {
     files,
     addFiles,

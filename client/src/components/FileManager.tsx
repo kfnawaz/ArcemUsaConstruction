@@ -84,7 +84,7 @@ export default function FileManager({
   const { toast } = useToast();
   
   // Set up upload thing hook
-  const { startUpload, isUploading, permittedFileInfo } = useUploadThing("imageUploader", {
+  const { startUpload, isUploading } = useUploadThing("imageUploader", {
     onClientUploadComplete: (results) => {
       // Process upload results
       const uploadedUrls = results.map((result) => result.url);
