@@ -100,8 +100,8 @@ const SortableItem: React.FC<SortableItemProps> = ({
     >
       <div className="relative aspect-square">
         {isFeatureImage && (
-          <Badge className="absolute top-2 left-2 z-10 bg-yellow-400 text-black font-medium">
-            <Star className="h-3 w-3 mr-1 fill-current" /> Feature Image
+          <Badge className="absolute top-2 left-2 z-10 bg-yellow-400 text-black font-medium p-1.5">
+            <Star className="h-3.5 w-3.5 fill-current" />
           </Badge>
         )}
         
