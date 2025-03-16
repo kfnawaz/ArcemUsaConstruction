@@ -41,6 +41,7 @@ export interface IStorage {
   updateProjectGalleryImage(id: number, galleryImage: Partial<InsertProjectGallery>): Promise<ProjectGallery | undefined>;
   deleteProjectGalleryImage(id: number): Promise<boolean>;
   deleteAllProjectGalleryImages(projectId: number): Promise<boolean>;
+  setProjectFeatureImage(projectId: number, galleryImageId: number): Promise<ProjectGallery | undefined>;
   
   // Blog Categories
   getBlogCategories(): Promise<BlogCategory[]>;
