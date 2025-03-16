@@ -110,30 +110,32 @@ export const fileUtils = {
    */
   getFileExtension(filename: string): string {
     // For UploadThing URLs, try to extract from query params or just return 'jpg' as fallback
-    if (filename.includes('utfs.io')) {
-      // Try to extract from filename in Content-Disposition header (not available client-side)
-      // Or from URL query parameters if they exist
-      const urlObj = new URL(filename);
-      
-      // Check for file extension in pathname
-      const pathname = urlObj.pathname;
-      const pathParts = pathname.split('.');
-      if (pathParts.length > 1) {
-        return pathParts[pathParts.length - 1];
-      }
-      
-      // Check for file name or type in query parameters
-      const fileNameParam = urlObj.searchParams.get('x-ut-file-name');
-      if (fileNameParam) {
-        const fileNameParts = fileNameParam.split('.');
-        if (fileNameParts.length > 1) {
-          return fileNameParts[fileNameParts.length - 1];
+    if (filename.includes('utfs.io') || filename.includes('ufs.sh')) {
+      try {
+        // Try to extract from filename in Content-Disposition header (not available client-side)
+        // Or from URL query parameters if they exist
+        const urlObj = new URL(filename);
+        
+        // Check for file extension in pathname
+        const pathname = urlObj.pathname;
+        const pathParts = pathname.split('.');
+        if (pathParts.length > 1) {
+          return pathParts[pathParts.length - 1];
         }
+        
+        // Extract the file ID from the path
+        const fileId = pathname.split('/').pop();
+        
+        // Log the fileId for debugging
+        console.log("UploadThing file ID:", fileId);
+        
+        // Default to 'jpg' for image files from UploadThing
+        console.log("Using default extension for UploadThing URL:", filename);
+        return 'jpg';
+      } catch (error) {
+        console.error("Error parsing UploadThing URL:", error);
+        return 'jpg';
       }
-      
-      // Default to 'jpg' for image files from UploadThing
-      console.log("Could not determine extension for UploadThing URL:", filename);
-      return 'jpg';
     }
     
     // Standard method for regular filenames
@@ -147,8 +149,8 @@ export const fileUtils = {
    * @returns True if the file is an image
    */
   isImageFile(filename: string): boolean {
-    // Special handling for UploadThing URLs
-    if (filename.includes('utfs.io')) {
+    // Special handling for UploadThing URLs (both old and new formats)
+    if (filename.includes('utfs.io') || filename.includes('ufs.sh')) {
       console.log("Detected UploadThing URL:", filename);
       // UploadThing URLs don't always have file extensions, so we'll assume it's an image
       // This is a simplification - in a production app, you'd want to store metadata about the file type

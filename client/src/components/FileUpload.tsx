@@ -100,9 +100,12 @@ export default function FileUpload({
       const uploadedUrls = results.map((result) => {
         // Log each result to debug
         console.log("Result item:", result);
-        console.log("URL to use:", result.ufsUrl || result.url);
         
-        return result.ufsUrl || result.url; // Prefer ufsUrl, fallback to url
+        // IMPORTANT: Always prefer the new ufsUrl format
+        const fileUrl = result.ufsUrl || result.url;
+        console.log("URL to use:", fileUrl);
+        
+        return fileUrl;
       });
       
       console.log("Final URLs to display:", uploadedUrls);
