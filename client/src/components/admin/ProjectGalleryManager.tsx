@@ -773,25 +773,40 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
                       
                       if (galleryItem && setProjectFeatureImage) {
                         // If we found the image in the gallery, use the new feature image API
-                        setProjectFeatureImage(galleryItem.id)
-                          .then(() => {
-                            toast({
-                              title: "Feature image updated",
-                              description: "This image is now the feature image for the project.",
-                              variant: "default"
+                        // Add preventDefault to prevent form submission when clicking on feature star
+                        const setFeature = (e: React.MouseEvent<HTMLButtonElement, MouseEvent> | null) => {
+                          if (e) e.preventDefault();
+                          
+                          setProjectFeatureImage(galleryItem.id)
+                            .then(() => {
+                              toast({
+                                title: "Feature image updated",
+                                description: "This image is now the feature image for the project.",
+                                variant: "default"
+                              });
+                            })
+                            .catch((error: unknown) => {
+                              console.error("Error setting feature image:", error);
+                              toast({
+                                title: "Error",
+                                description: "Failed to set feature image. Please try again.",
+                                variant: "destructive"
+                              });
                             });
-                          })
-                          .catch((error: unknown) => {
-                            console.error("Error setting feature image:", error);
-                            toast({
-                              title: "Error",
-                              description: "Failed to set feature image. Please try again.",
-                              variant: "destructive"
-                            });
-                          });
+                        };
+                        
+                        // Call with null since we're not receiving the event here
+                        setFeature(null);
                       } else if (props.onSetAsPreview) {
                         // Fall back to the old method for pending images or if we have a callback
-                        props.onSetAsPreview(null, url);
+                        // Add preventDefault in the handler to prevent form submission
+                        const handlePreview = (e: React.MouseEvent<HTMLButtonElement, MouseEvent> | null) => {
+                          if (e) e.preventDefault();
+                          props.onSetAsPreview!(e, url);
+                        };
+                        
+                        // Call with null since we're not receiving the event here
+                        handlePreview(null);
                       }
                     }}
                     onDeleteSavedItem={(id) => {

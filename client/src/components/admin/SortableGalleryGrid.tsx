@@ -100,8 +100,8 @@ const SortableItem: React.FC<SortableItemProps> = ({
     >
       <div className="relative aspect-square">
         {isFeatureImage && (
-          <Badge className="absolute top-2 left-2 z-10 bg-primary text-white">
-            Feature Image
+          <Badge className="absolute top-2 left-2 z-10 bg-yellow-400 text-black font-medium">
+            <Star className="h-3 w-3 mr-1 fill-current" /> Feature Image
           </Badge>
         )}
         
@@ -132,10 +132,13 @@ const SortableItem: React.FC<SortableItemProps> = ({
             <Button
               size="sm"
               variant="ghost"
-              className="h-7 px-2 text-white hover:bg-white/20"
-              onClick={() => onSetAsPreview(imageUrl)}
+              className={`h-7 px-2 ${isFeatureImage ? 'text-yellow-400 hover:bg-white/20' : 'text-white hover:bg-white/20'}`}
+              onClick={(e) => {
+                e.preventDefault(); // Prevent form submission
+                onSetAsPreview(imageUrl);
+              }}
             >
-              <Star className="h-3.5 w-3.5 mr-1" />
+              <Star className={`h-3.5 w-3.5 mr-1 ${isFeatureImage ? 'fill-yellow-400' : ''}`} />
               <span className="text-xs">Feature</span>
             </Button>
             
