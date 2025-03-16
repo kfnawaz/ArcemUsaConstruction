@@ -1,5 +1,6 @@
 import { createUploadthing, type FileRouter } from "uploadthing/server";
 import { UploadThingError } from "uploadthing/server";
+import { createRouteHandler } from "uploadthing/server";
 import type { Request, Response } from "express";
 
 const f = createUploadthing();
@@ -61,16 +62,24 @@ export const uploadRouter = {
 
 // Export route handlers for Express integration
 export function createUploadthingExpressHandler(router: FileRouter) {
+  // Create the route handler using the official UploadThing function
+  const handler = createRouteHandler({
+    router,
+    config: {
+      // Required environment variables for UploadThing
+      uploadthingSecret: process.env.UPLOADTHING_SECRET,
+      // Debug mode for development
+      debug: process.env.NODE_ENV !== 'production',
+    }
+  });
+
   return {
     // POST endpoint that accepts multipart/form-data
     POST: async (req: Request, res: Response) => {
       try {
         console.log("UploadThing handling request");
-        // Parse the multipart form data and handle the upload
-        // Using type assertion to resolve type issues with FileRouter
-        const result = await (router as any).handleUpload(req, res);
-        console.log("UploadThing result:", result);
-        return res.status(200).json(result);
+        // Call the handler directly with request and response
+        return await handler(req, res);
       } catch (error: any) {
         console.error("UploadThing error:", error);
         const statusCode = error.status || error.statusCode || 500;

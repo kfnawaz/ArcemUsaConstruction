@@ -1,0 +1,33 @@
+Warning: Maximum update depth exceeded. This can happen when a component calls setState inside useEffect, but useEffect either doesn't have a dependency array, or one of the dependencies changes on every render.
+    at NotificationBadge (https://fbe7ba2a-346f-4143-a55b-0647355c9548-00-3sorubf261gs8.kirk.replit.dev/src/components/common/NotificationBadge.tsx:32:33)
+    at div
+    at div
+    at div
+    at div
+    at nav
+    at Navbar (https://fbe7ba2a-346f-4143-a55b-0647355c9548-00-3sorubf261gs8.kirk.replit.dev/src/components/layout/Navbar.tsx:24:19)
+    at div
+    at Router (https://fbe7ba2a-346f-4143-a55b-0647355c9548-00-3sorubf261gs8.kirk.replit.dev/src/App.tsx?v=tBnZjehnjY28l62oKWizG:85:39)
+    at SeoProvider (https://fbe7ba2a-346f-4143-a55b-0647355c9548-00-3sorubf261gs8.kirk.replit.dev/src/contexts/SeoContext.tsx:40:31)
+    at AuthProvider (https://fbe7ba2a-346f-4143-a55b-0647355c9548-00-3sorubf261gs8.kirk.replit.dev/src/contexts/AuthContext.tsx:31:32)
+    at QueryClientProvider (https://fbe7ba2a-346f-4143-a55b-0647355c9548-00-3sorubf261gs8.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=9887d3b3:2805:3)
+    at App
+printWarning @ chunk-RPCDYKBN.js?v=9887d3b3:521
+error @ chunk-RPCDYKBN.js?v=9887d3b3:505
+checkForNestedUpdates @ chunk-RPCDYKBN.js?v=9887d3b3:19665
+scheduleUpdateOnFiber @ chunk-RPCDYKBN.js?v=9887d3b3:18533
+dispatchSetState @ chunk-RPCDYKBN.js?v=9887d3b3:12403
+(anonymous) @ useNotifications.ts:62
+commitHookEffectListMount @ chunk-RPCDYKBN.js?v=9887d3b3:16915
+commitPassiveMountOnFiber @ chunk-RPCDYKBN.js?v=9887d3b3:18156
+commitPassiveMountEffects_complete @ chunk-RPCDYKBN.js?v=9887d3b3:18129
+commitPassiveMountEffects_begin @ chunk-RPCDYKBN.js?v=9887d3b3:18119
+commitPassiveMountEffects @ chunk-RPCDYKBN.js?v=9887d3b3:18109
+flushPassiveEffectsImpl @ chunk-RPCDYKBN.js?v=9887d3b3:19490
+flushPassiveEffects @ chunk-RPCDYKBN.js?v=9887d3b3:19447
+(anonymous) @ chunk-RPCDYKBN.js?v=9887d3b3:19328
+workLoop @ chunk-RPCDYKBN.js?v=9887d3b3:197
+flushWork @ chunk-RPCDYKBN.js?v=9887d3b3:176
+performWorkUntilDeadline @ chunk-RPCDYKBN.js?v=9887d3b3:384
+Show 16 more frames
+Show less

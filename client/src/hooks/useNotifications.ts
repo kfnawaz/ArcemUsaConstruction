@@ -47,25 +47,35 @@ export const useNotifications = () => {
 
   // Calculate counts whenever data changes
   useEffect(() => {
+    // Only update counts when all data is loaded
     if (isLoadingMessages || isLoadingPendingTestimonials || isLoadingQuoteRequests) {
       return;
     }
 
-    const unreadMessages = messages.filter(msg => !msg.read).length;
-    const pendingTestimonialsCount = pendingTestimonials.length;
-    const pendingQuoteRequestsCount = quoteRequests.filter(quote => 
-      quote.status === "pending" && !quote.reviewed
-    ).length;
+    // Calculate notification counts
+    const unreadMessages = Array.isArray(messages) ? messages.filter(msg => !msg.read).length : 0;
+    const pendingTestimonialsCount = Array.isArray(pendingTestimonials) ? pendingTestimonials.length : 0;
+    const pendingQuoteRequestsCount = Array.isArray(quoteRequests) 
+      ? quoteRequests.filter(quote => quote.status === "pending" && !quote.reviewed).length 
+      : 0;
     
     const totalCount = unreadMessages + pendingTestimonialsCount + pendingQuoteRequestsCount;
     
-    setCounts({
-      unreadMessages,
-      pendingTestimonials: pendingTestimonialsCount,
-      pendingQuoteRequests: pendingQuoteRequestsCount,
-      total: totalCount
-    });
-  }, [messages, pendingTestimonials, quoteRequests, isLoadingMessages, isLoadingPendingTestimonials, isLoadingQuoteRequests]);
+    // Compare with previous counts to prevent unnecessary updates
+    if (
+      counts.unreadMessages !== unreadMessages ||
+      counts.pendingTestimonials !== pendingTestimonialsCount ||
+      counts.pendingQuoteRequests !== pendingQuoteRequestsCount ||
+      counts.total !== totalCount
+    ) {
+      setCounts({
+        unreadMessages,
+        pendingTestimonials: pendingTestimonialsCount,
+        pendingQuoteRequests: pendingQuoteRequestsCount,
+        total: totalCount
+      });
+    }
+  }, [messages, pendingTestimonials, quoteRequests]);
 
   return {
     counts,
