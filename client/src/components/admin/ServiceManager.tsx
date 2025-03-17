@@ -110,16 +110,21 @@ const ServiceManager: React.FC<ServiceManagerProps> = ({ service, onSuccess }) =
   
   // Handle cleanup when component unmounts
   useEffect(() => {
+    // Store the session ID and cleanup function for unmount
+    const currentSessionId = uploadSessionId;
+    const currentCleanupFn = cleanupUploads;
+    
     return () => {
-      if (uploadSessionId && pendingImages.length > 0) {
-        console.log('Cleaning up service upload session on unmount:', uploadSessionId);
-        cleanupUploads(uploadSessionId);
+      if (currentSessionId && pendingImages.length > 0) {
+        console.log('Cleaning up service upload session on unmount:', currentSessionId);
+        currentCleanupFn(currentSessionId);
         
         // Also cleanup object URLs to avoid memory leaks
         pendingImages.forEach(img => URL.revokeObjectURL(img.previewUrl));
       }
     };
-  }, [uploadSessionId, pendingImages, cleanupUploads]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Define form with default values
   const form = useForm<ServiceFormValues>({

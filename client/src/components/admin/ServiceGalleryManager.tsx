@@ -103,13 +103,19 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
     
     // Handle component unmount - clean up any uncommitted files
     useEffect(() => {
+      // Store current values to avoid stale closure issues
+      const currentSession = uploadSession;
+      const currentCommitStatus = isCommitted;
+      const currentCleanupFn = cleanupUploads;
+      
       return () => {
-        if (uploadSession && !isCommitted && pendingImages.length > 0) {
-          console.log('Cleaning up uncommitted files for session:', uploadSession);
-          cleanupUploads(uploadSession);
+        if (currentSession && !currentCommitStatus && pendingImages.length > 0) {
+          console.log('Cleaning up uncommitted files for session:', currentSession);
+          currentCleanupFn(currentSession);
         }
       };
-    }, [uploadSession, isCommitted, pendingImages.length, cleanupUploads]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
     
     // This function handles the file upload but doesn't save to database
     const handleFileUpload = async (urls: string | string[], sessionId?: string) => {
