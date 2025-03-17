@@ -24,6 +24,7 @@ interface ServiceGalleryManagerProps {
 
 export interface ServiceGalleryManagerHandle {
   saveGalleryImages: () => Promise<void>;
+  hasUnsavedChanges: () => boolean;
 }
 
 const MAX_GALLERY_IMAGES = 3;
@@ -56,10 +57,13 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
     const currentImageCount = (serviceGallery?.length || 0) + pendingImages.length;
     const canAddMoreImages = currentImageCount < MAX_GALLERY_IMAGES;
 
-    // Expose the saveGalleryImages method via ref
+    // Expose the saveGalleryImages method and hasUnsavedChanges via ref
     useImperativeHandle(ref, () => ({
       saveGalleryImages: async () => {
         return saveGalleryImages();
+      },
+      hasUnsavedChanges: () => {
+        return pendingImages.length > 0;
       }
     }));
 

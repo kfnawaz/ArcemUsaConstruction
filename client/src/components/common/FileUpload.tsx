@@ -72,6 +72,11 @@ interface FileUploadProps {
    */
   sessionId?: string;
   /**
+   * Function called when a new session ID is created
+   * @param sessionId The newly created session ID
+   */
+  onSessionIdCreated?: (sessionId: string) => void;
+  /**
    * Maximum file size in MB
    */
   maxSizeMB?: number;
@@ -102,6 +107,7 @@ export default function FileUpload({
   multiple = true,
   imagesOnly = false,
   sessionId: externalSessionId,
+  onSessionIdCreated,
   maxSizeMB = 8,
   accept,
   buttonText,
@@ -111,7 +117,14 @@ export default function FileUpload({
   const [fileUrls, setFileUrls] = useState<string[]>(initialFiles || []);
   const [isDragging, setIsDragging] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
-  const [sessionId, setSessionId] = useState<string>(externalSessionId || fileUtils.generateSessionId());
+  const [sessionId, setSessionId] = useState<string>(() => {
+    const newSessionId = externalSessionId || fileUtils.generateSessionId();
+    // Notify parent component of the session ID if not externally provided
+    if (!externalSessionId && onSessionIdCreated) {
+      onSessionIdCreated(newSessionId);
+    }
+    return newSessionId;
+  });
   const { toast } = useToast();
   
   const { startUpload, isUploading } = useUploadThing("imageUploader", {
