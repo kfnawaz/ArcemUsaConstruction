@@ -49,13 +49,32 @@ const ProjectManagement = () => {
       const projectId = Number(editId);
       
       // Pre-fetch the project data so it's available when NewProjectForm renders
+      console.log("Prefetching project data for ID:", projectId);
+      
+      // The API endpoint is /api/projects/:id 
       queryClient.prefetchQuery({
         queryKey: [`/api/projects/${projectId}`],
+        queryFn: async () => {
+          console.log(`Fetching project data for ID ${projectId}`);
+          const response = await fetch(`/api/projects/${projectId}`);
+          if (!response.ok) {
+            throw new Error('Failed to fetch project');
+          }
+          return response.json();
+        }
       });
       
       // Pre-fetch gallery data too
       queryClient.prefetchQuery({
         queryKey: [`/api/projects/${projectId}/gallery`],
+        queryFn: async () => {
+          console.log(`Fetching project gallery for ID ${projectId}`);
+          const response = await fetch(`/api/projects/${projectId}/gallery`);
+          if (!response.ok) {
+            throw new Error('Failed to fetch gallery');
+          }
+          return response.json();
+        }
       });
       
       console.log("Setting edit mode for project ID:", projectId);

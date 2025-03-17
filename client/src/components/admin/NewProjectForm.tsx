@@ -94,7 +94,7 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
     getProjectGallery,
     isLoading,
     galleryLoading
-  } = useProject();
+  } = useProject(projectId); // Pass projectId to useProject
 
   // Track temporary gallery images
   const [galleryImages, setGalleryImages] = useState<TempGalleryImage[]>([]);
@@ -105,8 +105,11 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
   const [sessionId] = useState(() => generateId());
 
   // Extract project data if editing
-  const project = projectId ? getProject.data : undefined;
-  const galleryData = projectId ? getProjectGallery.data || [] : [];
+  const project = getProject.data; // Will be undefined if no data available
+  console.log("Extracted project data:", { projectId, projectData: project, getProjectStatus: getProject.status, isProjectLoading: getProject.isLoading });
+  
+  const galleryData = getProjectGallery.data || [];
+  console.log("Extracted gallery data:", { projectId, galleryCount: galleryData.length, galleryLoading: getProjectGallery.isLoading });
 
   // Initialize file upload hooks
   const {
