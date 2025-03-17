@@ -546,45 +546,26 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
     
     console.log("Files to cleanup:", filesToCleanup);
     
-    // If we have uploaded files with URLs, clean them up specifically
+    // Use our enhanced fileUtils.cleanupFiles which handles both server and browser cleanup
     if (filesToCleanup.length > 0) {
-      // Clean up specific file URLs (uploaded files)
-      fetch('/api/files/cleanup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          sessionId,
-          fileUrls: filesToCleanup
+      // Enhanced cleanup for both server and browser files
+      fileUtils.cleanupFiles(sessionId, undefined, filesToCleanup, true)
+        .then(deletedFiles => {
+          console.log('File cleanup completed:', deletedFiles);
         })
-      })
-      .then(response => response.json())
-      .then(data => {
-        console.log('File cleanup response:', data);
-      })
-      .catch(err => {
-        console.error('Error cleaning up specific files:', err);
-      });
+        .catch(err => {
+          console.error('Error cleaning up files:', err);
+        });
+    } else {
+      // Even if no specific files to clean up, clean the session to catch orphaned files
+      fileUtils.cleanupFiles(sessionId, undefined, undefined, true)
+        .then(deletedFiles => {
+          console.log('Session cleanup completed:', deletedFiles);
+        })
+        .catch(err => {
+          console.error('Error during session cleanup:', err);
+        });
     }
-    
-    // Also attempt to clean up the session to catch any orphaned files
-    fetch('/api/files/cleanup', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        sessionId
-      })
-    })
-    .then(response => response.json())
-    .then(data => {
-      console.log('Session cleanup response:', data);
-    })
-    .catch(err => {
-      console.error('Error cleaning up session:', err);
-    });
     
     // Clean up browser caches and temporary in-memory files
     if ('caches' in window) {
@@ -640,9 +621,9 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
       }
     });
     
-    // Reset states
+    // Reset states and clean up any uploaded files
     setGalleryImages([]);
-    clearFiles();
+    clearFiles(true); // Pass true to clean up uploaded files
     
     // Clean up any File objects to help garbage collection
     files.forEach(file => {

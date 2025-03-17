@@ -42,12 +42,14 @@ export const fileUtils = {
    * @param sessionId The session ID to clean up
    * @param fileUrl Optional specific file URL to delete
    * @param fileUrls Optional array of file URLs to delete
+   * @param cleanBrowserCache Whether to attempt cleaning browser cache as well
    * @returns Promise with the deleted file URLs
    */
   async cleanupFiles(
     sessionId: string, 
     fileUrl?: string, 
-    fileUrls?: string[]
+    fileUrls?: string[],
+    cleanBrowserCache: boolean = true
   ): Promise<string[]> {
     try {
       console.log(`Cleaning up files for session: ${sessionId}`);
@@ -58,23 +60,113 @@ export const fileUtils = {
         console.log(`Cleaning up ${fileUrls.length} specific files`);
       }
       
-      const response = await apiRequest<{ message: string, deletedFiles: string[] }>({
+      // Step 1: Clean up server-side files
+      const response = await apiRequest<{ success: boolean, message: string, deletedFiles: string[], deletedCount: number }>({
         url: '/api/files/cleanup',
         method: 'POST',
         body: { sessionId, fileUrl, fileUrls }
       });
       
-      if (response?.deletedFiles) {
-        console.log(`Successfully cleaned up ${response.deletedFiles.length} files`);
-        return response.deletedFiles;
-      } else {
-        console.log('No files were cleaned up or response format was unexpected');
-        return [];
+      const deletedFiles = response?.deletedFiles || [];
+      console.log(`Server cleanup completed: ${response?.deletedCount || 0} files deleted`);
+      
+      // Step 2: Clean up browser cache if requested
+      if (cleanBrowserCache) {
+        this.cleanBrowserCachedFiles(sessionId, fileUrl, fileUrls);
       }
+      
+      return deletedFiles;
     } catch (error) {
       console.error('Error cleaning up files:', error);
       return [];
     }
+  },
+  
+  /**
+   * Cleans up browser-cached files and memory associated with uploads
+   * This complements server-side cleanup to ensure complete file cleanup
+   * 
+   * @param sessionId The session ID to clean up
+   * @param fileUrl Optional specific file URL to clean
+   * @param fileUrls Optional array of file URLs to clean
+   */
+  cleanBrowserCachedFiles(
+    sessionId: string,
+    fileUrl?: string,
+    fileUrls?: string[]
+  ): void {
+    // Clean up browser caches and temporary in-memory files
+    console.log('Cleaning browser caches and temporary files');
+    
+    const filesToClean = [...(fileUrls || [])];
+    if (fileUrl) {
+      filesToClean.push(fileUrl);
+    }
+    
+    // 1. Clear sessionStorage entries related to this session
+    try {
+      // Remove any session-specific keys from sessionStorage
+      const keysToRemove = [];
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i);
+        if (key && (key.includes(sessionId) || key.includes('upload'))) {
+          keysToRemove.push(key);
+        }
+      }
+      
+      keysToRemove.forEach(key => sessionStorage.removeItem(key));
+      console.log(`Removed ${keysToRemove.length} related items from sessionStorage`);
+    } catch (error) {
+      console.error('Error cleaning sessionStorage:', error);
+    }
+    
+    // 2. Clear localStorage entries related to this session
+    try {
+      // Remove any session-specific keys from localStorage
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.includes(sessionId) || key.includes('upload'))) {
+          keysToRemove.push(key);
+        }
+      }
+      
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+      console.log(`Removed ${keysToRemove.length} related items from localStorage`);
+    } catch (error) {
+      console.error('Error cleaning localStorage:', error);
+    }
+    
+    // 3. Revoke any object URLs that might be in memory
+    filesToClean.forEach(url => {
+      if (url && url.startsWith('blob:')) {
+        try {
+          URL.revokeObjectURL(url);
+          console.log('Revoked object URL:', url);
+        } catch (error) {
+          console.error('Error revoking object URL:', error);
+        }
+      }
+    });
+    
+    // 4. Clean up browser caches if possible
+    if ('caches' in window) {
+      try {
+        // Clear any browser caches for uploads
+        caches.keys().then(cacheNames => {
+          cacheNames.forEach(cacheName => {
+            if (cacheName.includes('upload') || cacheName.includes('files')) {
+              caches.delete(cacheName);
+              console.log(`Deleted cache: ${cacheName}`);
+            }
+          });
+        });
+      } catch (error) {
+        console.error('Error cleaning browser caches:', error);
+      }
+    }
+    
+    console.log('Browser cleanup completed');
   },
 
   /**
