@@ -9,6 +9,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from '@/components/ui/dialog';
 import {
   Card,
@@ -16,6 +17,7 @@ import {
 } from '@/components/ui/card';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import FileUpload from '@/components/common/FileUpload';
+import * as fileUtils from '@/lib/fileUtils';
 
 interface ServiceGalleryManagerProps {
   serviceId: number;
@@ -30,21 +32,20 @@ export interface ServiceGalleryManagerHandle {
 const MAX_GALLERY_IMAGES = 3;
 
 const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGalleryManagerProps>(
-  function ServiceGalleryManager(props, ref) {
-    const { serviceId, isNewService = false } = props;
+  function ServiceGalleryManager({ serviceId, isNewService = false }, ref) {
     const { toast } = useToast();
     const [isUploading, setIsUploading] = useState(false);
     const [selectedImageId, setSelectedImageId] = useState<number | null>(null);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [pendingImages, setPendingImages] = useState<string[]>([]);
     const [showMaxImagesWarning, setShowMaxImagesWarning] = useState(false);
-    const [uploadSession, setUploadSession] = useState<string>('');
+    const [uploadSession, setUploadSession] = useState<string>(fileUtils.generateSessionId());
     const [isCommitted, setIsCommitted] = useState(false);
+    const [hasTrackedSession, setHasTrackedSession] = useState(false);
 
     const {
       serviceGallery,
       isLoadingGallery,
-      uploadFile,
       addGalleryImage,
       deleteGalleryImage,
       isDeletingGalleryImage,
@@ -89,24 +90,10 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
       }
     }, [serviceId]);
     
-    // Function to clean up uncommitted files
-    const cleanupUncommittedFiles = async () => {
-      if (uploadSession && !isCommitted && pendingImages.length > 0) {
-        try {
-          console.log('Cleaning up uncommitted files for session:', uploadSession);
-          await cleanupUploads(uploadSession);
-          console.log('Successfully cleaned up uncommitted files');
-        } catch (err) {
-          console.error('Error cleaning up files:', err);
-        }
-      }
-    };
-    
     // Track upload session only once to prevent infinite loops
-    const [hasTrackedSession, setHasTrackedSession] = useState(false);
-    
     useEffect(() => {
-      // Only track the session if it exists, we're not creating a new service, and we haven't tracked it yet
+      // Only track the session if it exists, we're not creating a new service, 
+      // and we haven't tracked it yet
       if (uploadSession && !isNewService && !hasTrackedSession) {
         console.log('ServiceGalleryManager: Tracking upload session:', uploadSession);
         trackUploadSession(uploadSession);
@@ -117,9 +104,12 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
     // Handle component unmount - clean up any uncommitted files
     useEffect(() => {
       return () => {
-        cleanupUncommittedFiles();
+        if (uploadSession && !isCommitted && pendingImages.length > 0) {
+          console.log('Cleaning up uncommitted files for session:', uploadSession);
+          cleanupUploads(uploadSession);
+        }
       };
-    }, []);
+    }, [uploadSession, isCommitted, pendingImages.length, cleanupUploads]);
     
     // This function handles the file upload but doesn't save to database
     const handleFileUpload = async (urls: string | string[], sessionId?: string) => {
@@ -128,12 +118,14 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
       }
       
       // If we received a session ID, track it for cleanup
-      if (sessionId) {
+      if (sessionId && sessionId !== uploadSession) {
         setUploadSession(sessionId);
         setIsCommitted(false);
-        // Only track if not a new service to avoid infinite loops
-        if (!isNewService) {
+        
+        // Only track if not a new service and if we haven't tracked it yet
+        if (!isNewService && !hasTrackedSession) {
           trackUploadSession(sessionId);
+          setHasTrackedSession(true);
         }
       }
       
@@ -322,8 +314,13 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
                 maxSizeMB={5}
                 buttonText="Add Images"
                 helpText={`Add up to ${MAX_GALLERY_IMAGES - currentImageCount} more image${MAX_GALLERY_IMAGES - currentImageCount !== 1 ? 's' : ''}`}
-                sessionId={uploadSession || undefined}
-                onSessionIdCreated={(newSessionId) => setUploadSession(newSessionId)}
+                sessionId={uploadSession}
+                onSessionIdCreated={(newSessionId) => {
+                  if (newSessionId !== uploadSession) {
+                    setUploadSession(newSessionId);
+                    setHasTrackedSession(false);
+                  }
+                }}
               />
             </div>
           ) : null}
@@ -409,7 +406,7 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
               <DialogTitle>Delete Gallery Image</DialogTitle>
             </DialogHeader>
             <p>Are you sure you want to delete this image? This action cannot be undone.</p>
-            <div className="flex justify-end gap-3 mt-4">
+            <DialogFooter>
               <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
                 Cancel
               </Button>
@@ -420,14 +417,14 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
               >
                 {isDeletingGalleryImage ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Deleting...
                   </>
                 ) : (
-                  'Delete'
+                  "Delete"
                 )}
               </Button>
-            </div>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
