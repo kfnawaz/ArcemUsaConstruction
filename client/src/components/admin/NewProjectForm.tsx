@@ -106,10 +106,18 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
 
   // Extract project data if editing
   const project = getProject.data; // Will be undefined if no data available
-  console.log("Extracted project data:", { projectId, projectData: project, getProjectStatus: getProject.status, isProjectLoading: getProject.isLoading });
+  
+  // Only log in development mode
+  if (process.env.NODE_ENV === 'development') {
+    console.log("Extracted project data:", { 
+      projectId, 
+      projectData: project, 
+      getProjectStatus: getProject.status, 
+      isProjectLoading: getProject.isLoading
+    });
+  }
   
   const galleryData = getProjectGallery.data || [];
-  console.log("Extracted gallery data:", { projectId, galleryCount: galleryData.length, galleryLoading: getProjectGallery.isLoading });
 
   // Initialize file upload hooks
   const {
@@ -341,16 +349,20 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
     });
   };
 
+  // Track if form has been populated to avoid infinite loop
+  const [formPopulated, setFormPopulated] = useState(false);
+
   // Load existing project data if editing
   useEffect(() => {
     console.log("NewProjectForm: projectId changed or project data updated", { 
       projectId, 
       projectData: project, 
       projectDataLoading: isLoading,
-      projectQueryState: getProject
+      formPopulated
     });
     
-    if (projectId && project) {
+    // Only populate the form if we have project data and haven't already populated it
+    if (projectId && project && !formPopulated) {
       console.log("Populating form with project data:", project);
       // Populate form with project data, converting null/undefined values to empty strings
       form.reset({
@@ -368,14 +380,23 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
         completionDate: project.completionDate || '',
         servicesProvided: project.servicesProvided || '',
       });
-    } else if (projectId && !project && !isLoading) {
+      
+      // Mark form as populated to prevent infinite loop
+      setFormPopulated(true);
+    } else if (projectId && !project && !isLoading && !formPopulated) {
       console.warn("Project ID provided but no project data available and not loading");
     }
-  }, [projectId, project, form, isLoading, getProject]);
+  }, [projectId, project, form, isLoading, formPopulated]);
+
+  // Track if gallery has been loaded
+  const [galleryLoaded, setGalleryLoaded] = useState(false);
 
   // Load gallery images if editing
   useEffect(() => {
-    if (projectId && galleryData && galleryData.length > 0) {
+    // Only load gallery if we have data and haven't already loaded it
+    if (projectId && galleryData && galleryData.length > 0 && !galleryLoaded) {
+      console.log("Loading gallery images:", galleryData.length);
+      
       // Convert gallery data to our temporary format
       const tempGallery: TempGalleryImage[] = galleryData.map(img => ({
         id: `existing-${img.id}`, // Prefix to identify existing images
@@ -387,8 +408,9 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
       }));
       
       setGalleryImages(tempGallery);
+      setGalleryLoaded(true);
     }
-  }, [projectId, galleryData]);
+  }, [projectId, galleryData, galleryLoaded]);
 
   // Function to prepare form submission
   const onSubmit = async (data: ExtendedInsertProject) => {
@@ -547,6 +569,20 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
     }
   };
 
+  // Reset form state when component unmounts or is closed
+  const resetFormState = () => {
+    setFormPopulated(false);
+    setGalleryLoaded(false);
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      console.log("Component unmounting, resetting form state");
+      resetFormState();
+    };
+  }, []);
+
   // Cancel form and clean up
   const handleCancel = () => {
     // Log cleanup attempt
@@ -578,6 +614,7 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
     // Reset states and clean up any uploaded files
     setGalleryImages([]);
     clearFiles(true); // Pass true to clean up uploaded files
+    resetFormState();
     
     // Close form
     onClose();
