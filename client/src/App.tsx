@@ -11,6 +11,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { SeoProvider } from "@/contexts/SeoContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ChatbotWidget from "@/components/custom/ChatbotWidget";
+import ElectronCleanupHandler from "@/components/system/ElectronCleanupHandler";
 
 // Pages
 import Home from "@/pages/Home";
@@ -236,6 +237,8 @@ function App() {
           <Router />
           <Toaster />
           <AdminAccessibilityButton />
+          {/* Invisible component to handle Electron-specific file cleanup */}
+          <ElectronCleanupHandler />
         </SeoProvider>
       </AuthProvider>
     </QueryClientProvider>

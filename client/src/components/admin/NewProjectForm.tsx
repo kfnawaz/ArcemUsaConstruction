@@ -546,6 +546,52 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
     
     console.log("Files to cleanup:", filesToCleanup);
     
+    // Special handling for Electron Isolated Context files
+    // This is the most direct approach to clean up the visible files in the screenshot
+    try {
+      // Extract file paths from the URLs to get the actual files in the workspace
+      const workspaceFiles = galleryImages
+        .filter(img => img.imageUrl)
+        .map(img => {
+          try {
+            const fileUrl = img.imageUrl;
+            if (!fileUrl) return null;
+            
+            // For local filesystem URLs like those seen in Electron context
+            if (fileUrl.includes('/uploads/')) {
+              const fileName = fileUrl.split('/').pop();
+              return fileName;
+            }
+            
+            // For UploadThing URLs, see if we have local cache
+            if (fileUrl.includes('utfs.io') || fileUrl.includes('ufs.sh')) {
+              // We might have a local copy in the workspace, try both formats
+              const fileId = fileUrl.split('/').pop();
+              if (fileId) return fileId;
+            }
+            
+            return null;
+          } catch (e) {
+            return null;
+          }
+        })
+        .filter(Boolean);
+      
+      console.log("Electron workspace files to clean:", workspaceFiles);
+      
+      // If in Electron context (which we can detect from the URL or user agent)
+      const isElectron = window.navigator.userAgent.toLowerCase().includes('electron');
+      if (isElectron) {
+        // Signal to any potential listeners that we need to clean these files
+        // We'll store a list of files to clean in localStorage as a fallback
+        localStorage.setItem('electron_files_to_clean', JSON.stringify(workspaceFiles));
+        localStorage.setItem('electron_cleanup_time', Date.now().toString());
+        console.log("Set electron_files_to_clean in localStorage with these files:", workspaceFiles);
+      }
+    } catch (error) {
+      console.error("Error in Electron cleanup preparation:", error);
+    }
+    
     // Use our enhanced fileUtils.cleanupFiles which handles both server and browser cleanup
     if (filesToCleanup.length > 0) {
       // Enhanced cleanup for both server and browser files
@@ -567,59 +613,8 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
         });
     }
     
-    // Clean up browser caches and temporary in-memory files
-    if ('caches' in window) {
-      // Clear any browser caches for this URL pattern
-      try {
-        // URL pattern for our uploads
-        const cachePattern = location.origin + '/uploads/';
-        caches.keys().then(cacheNames => {
-          cacheNames.forEach(cacheName => {
-            caches.open(cacheName).then(cache => {
-              cache.keys().then(requests => {
-                requests.forEach(request => {
-                  if (request.url.startsWith(cachePattern)) {
-                    cache.delete(request);
-                  }
-                });
-              });
-            });
-          });
-        });
-        console.log('Browser cache cleanup attempted');
-      } catch (error) {
-        console.error('Error cleaning browser cache:', error);
-      }
-    }
-    
-    // Clear any local storage items related to this session
-    try {
-      // Remove any session-specific keys from localStorage
-      const keysToRemove = [];
-      for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && (key.includes(sessionId) || key.includes('upload'))) {
-          keysToRemove.push(key);
-        }
-      }
-      
-      keysToRemove.forEach(key => localStorage.removeItem(key));
-      console.log(`Removed ${keysToRemove.length} related items from localStorage`);
-    } catch (error) {
-      console.error('Error cleaning localStorage:', error);
-    }
-    
-    // Attempt to revoke any object URLs that might be in memory
-    galleryImages.forEach(img => {
-      if (img.imageUrl && img.imageUrl.startsWith('blob:')) {
-        try {
-          URL.revokeObjectURL(img.imageUrl);
-          console.log('Revoked object URL:', img.imageUrl);
-        } catch (error) {
-          console.error('Error revoking object URL:', error);
-        }
-      }
-    });
+    // Note: We no longer need explicit browser cache cleanup here 
+    // since fileUtils.cleanupFiles already handles both server and browser cleanup
     
     // Reset states and clean up any uploaded files
     setGalleryImages([]);

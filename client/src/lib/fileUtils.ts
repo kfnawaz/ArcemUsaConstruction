@@ -166,7 +166,98 @@ export const fileUtils = {
       }
     }
     
+    // 5. Special handling for Electron Isolated Context
+    this.cleanElectronIsolatedContextFiles(filesToClean);
+    
     console.log('Browser cleanup completed');
+  },
+  
+  /**
+   * Special handler for cleaning up files in Electron Isolated Context
+   * This is needed because Electron's isolated context maintains its own file system
+   * 
+   * @param fileUrls Array of file URLs that might be in the Electron context
+   */
+  cleanElectronIsolatedContextFiles(fileUrls: string[] = []): void {
+    try {
+      // Check if we're in an Electron environment
+      const isElectron = window.navigator.userAgent.toLowerCase().includes('electron');
+      
+      if (!isElectron) {
+        console.log('Not in Electron context, skipping Electron-specific cleanup');
+        return;
+      }
+      
+      console.log('Detected Electron environment, performing specialized cleanup');
+      
+      // Try to access the filesystem API if available
+      if ('webkitRequestFileSystem' in window) {
+        // @ts-ignore - Electron may have this API
+        window.webkitRequestFileSystem(
+          // @ts-ignore - TEMPORARY constant from Electron
+          window.TEMPORARY, 
+          1024 * 1024, // 1MB space
+          (fs: any) => {
+            console.log('Got filesystem access in Electron, cleaning temporary files');
+            
+            // If we have specific files to delete
+            if (fileUrls.length > 0) {
+              fileUrls.forEach(url => {
+                try {
+                  // Get just the filename from the URL
+                  const filename = url.split('/').pop();
+                  if (filename) {
+                    fs.root.getFile(filename, {}, (fileEntry: any) => {
+                      fileEntry.remove(() => {
+                        console.log(`Removed Electron file: ${filename}`);
+                      }, (err: any) => {
+                        console.error(`Error removing Electron file ${filename}:`, err);
+                      });
+                    }, (err: any) => {
+                      console.log(`File not found in Electron context: ${filename}`);
+                    });
+                  }
+                } catch (error) {
+                  console.error('Error parsing URL for Electron file cleanup:', error);
+                }
+              });
+            } else {
+              // If no specific files, try to clean the whole directory
+              const reader = fs.root.createReader();
+              reader.readEntries((entries: any[]) => {
+                entries.forEach((entry) => {
+                  if (entry.isFile) {
+                    entry.remove(() => {
+                      console.log(`Removed Electron file: ${entry.name}`);
+                    }, (err: any) => {
+                      console.error(`Error removing Electron file ${entry.name}:`, err);
+                    });
+                  }
+                });
+              }, (err: any) => {
+                console.error('Error reading Electron directory:', err);
+              });
+            }
+          },
+          (err: any) => {
+            console.error('Error accessing Electron filesystem:', err);
+          }
+        );
+      } else {
+        console.log('No filesystem API available in this Electron context');
+        
+        // Try to use localStorage to signal that files should be cleaned
+        try {
+          localStorage.setItem('electron_cleanup_needed', 'true');
+          localStorage.setItem('electron_cleanup_time', Date.now().toString());
+          console.log('Set cleanup flag in localStorage for Electron context');
+        } catch (e) {
+          console.error('Error setting cleanup flag:', e);
+        }
+      }
+    } catch (error) {
+      console.error('Error in Electron cleanup:', error);
+    }
   },
 
   /**
