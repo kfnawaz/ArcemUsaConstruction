@@ -779,8 +779,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.post(`${apiRouter}/services`, isAdmin, async (req: Request, res: Response) => {
     try {
+      console.log("[DEBUG] POST /api/services - Request body:", req.body);
+      
       const serviceData = insertServiceSchema.parse(req.body);
+      console.log("[DEBUG] POST /api/services - Parsed service data:", serviceData);
+      
       const service = await storage.createService(serviceData);
+      console.log("[DEBUG] POST /api/services - Created service:", service);
       
       // Handle gallery images if provided
       if (req.body.galleryImages && Array.isArray(req.body.galleryImages)) {
@@ -794,8 +799,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
+      // Ensure we're sending proper JSON
+      res.setHeader('Content-Type', 'application/json');
       res.status(201).json(service);
     } catch (error) {
+      console.error("[ERROR] POST /api/services - Error creating service:", error);
+      
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid service data", errors: error.errors });
       }
