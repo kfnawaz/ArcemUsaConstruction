@@ -93,7 +93,8 @@ const ServiceManager: React.FC<ServiceManagerProps> = ({ service, onSuccess }) =
 
   // Track upload session
   useEffect(() => {
-    if (uploadSessionId) {
+    // Only track session for existing services, not for new ones
+    if (uploadSessionId && service?.id) {
       trackUploadSession(uploadSessionId);
     }
     
@@ -106,7 +107,7 @@ const ServiceManager: React.FC<ServiceManagerProps> = ({ service, onSuccess }) =
         pendingImages.forEach(img => URL.revokeObjectURL(img.previewUrl));
       }
     };
-  }, [uploadSessionId, trackUploadSession, pendingImages, cleanupUploads]);
+  }, [uploadSessionId, service?.id, trackUploadSession, pendingImages, cleanupUploads]);
 
   // Define form with default values
   const form = useForm<ServiceFormValues>({
