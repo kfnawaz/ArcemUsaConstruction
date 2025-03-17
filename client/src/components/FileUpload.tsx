@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useUploadThing } from '@/lib/uploadthing';
-import { fileUtils } from '@/lib/fileUtils';
+import * as fileUtils from '@/lib/fileUtils';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Loader2, Upload, X, FileIcon, ImageIcon } from 'lucide-react';

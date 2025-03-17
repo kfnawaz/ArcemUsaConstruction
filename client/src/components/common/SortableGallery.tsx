@@ -22,7 +22,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Star, X, ImageIcon, MoveUp, MoveDown } from 'lucide-react';
-import { fileUtils } from '@/lib/fileUtils';
+import * as fileUtils from '@/lib/fileUtils';
 
 // Interface for gallery image items
 export interface GalleryImage {

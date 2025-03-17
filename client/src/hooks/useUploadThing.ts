@@ -1,7 +1,7 @@
 import { useCallback, useState, useRef } from 'react';
 import type { OurFileRouter } from '@/lib/uploadthing';
 import { useUploadThing } from '@/lib/uploadthing';
-import { fileUtils } from '@/lib/fileUtils';
+import * as fileUtils from '@/lib/fileUtils';
 import { generateId } from '@/lib/utils';
 
 interface UseFileUploadProps {
@@ -45,9 +45,8 @@ export function useFileUpload({
       urls.forEach(url => {
         // Get original filename if available
         const filename = files.find(f => f.name)?.name || 'unknown';
-        fileUtils.trackFile(url, sessionId, filename).catch(err => {
-          console.error('Error tracking file:', err);
-        });
+        const key = fileUtils.extractUploadThingKeyFromUrl(url);
+        fileUtils.trackUploadedFile(url, sessionId, key || undefined);
       });
       
       if (onClientUploadComplete) {
@@ -116,13 +115,13 @@ export function useFileUpload({
       console.log(`Cleaning up ${uploadedUrls.length} uploaded files for session ${sessionId}`);
       
       // Clean up the files both on server and in browser
-      fileUtils.cleanupFiles(sessionId, undefined, uploadedUrls, true)
-        .then(deletedFiles => {
-          console.log(`Cleaned up ${deletedFiles.length} files`);
+      fileUtils.cleanupFiles(sessionId)
+        .then((cleanedUrls) => {
+          console.log(`Cleaned up ${cleanedUrls.length} files`);
           setUploadedUrls([]); // Clear the tracked URLs after cleanup
         })
-        .catch(err => {
-          console.error('Error cleaning up files:', err);
+        .catch((error: Error) => {
+          console.error('Error cleaning up files:', error);
         });
     }
   }, [sessionId, uploadedUrls]);
@@ -150,9 +149,10 @@ export function useFileUpload({
       // Track the files on the server for this session
       urls.forEach((url, index) => {
         const file = files[index];
-        fileUtils.trackFile(url, sessionId, file?.name).catch(err => {
-          console.error('Error tracking file:', err);
-        });
+        const fileKey = fileUtils.extractUploadThingKeyFromUrl(url);
+        if (fileKey) {
+          fileUtils.trackUploadedFile(url, sessionId, fileKey);
+        }
       });
       
       // Call the onClientUploadComplete callback with the URLs
@@ -180,7 +180,7 @@ export function useFileUpload({
     console.log(`Cleaning up session ${sessionId} with ${uploadedUrls.length} tracked URLs`);
     
     // Clean up on both server and browser
-    const cleanedFiles = await fileUtils.cleanupFiles(sessionId, undefined, uploadedUrls, true);
+    const cleanedFiles = await fileUtils.cleanupFiles(sessionId);
     
     // Reset state after cleanup
     setUploadedUrls([]);

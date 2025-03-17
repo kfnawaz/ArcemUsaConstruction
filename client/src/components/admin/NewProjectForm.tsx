@@ -55,7 +55,7 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import { fileUtils } from '@/lib/fileUtils';
+import * as fileUtils from '@/lib/fileUtils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { generateId } from '@/lib/utils';
 import SortableGallery, { GalleryImage } from '@/components/common/SortableGallery';
@@ -546,99 +546,25 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
     
     console.log("Files to cleanup:", filesToCleanup);
     
-    // Special handling for Electron Isolated Context files
-    // This is the most direct approach to clean up the visible files in the screenshot
-    try {
-      // Extract file paths from the URLs to get the actual files in the workspace
-      const workspaceFiles = galleryImages
-        .filter(img => img.imageUrl)
-        .map(img => {
-          try {
-            const fileUrl = img.imageUrl;
-            if (!fileUrl) return null;
-            
-            // For local filesystem URLs like those seen in Electron context
-            if (fileUrl.includes('/uploads/')) {
-              const fileName = fileUrl.split('/').pop();
-              return fileName;
-            }
-            
-            // For UploadThing URLs, see if we have local cache
-            if (fileUrl.includes('utfs.io') || fileUrl.includes('ufs.sh')) {
-              // We might have a local copy in the workspace, try both formats
-              const fileId = fileUrl.split('/').pop();
-              if (fileId) return fileId;
-            }
-            
-            return null;
-          } catch (e) {
-            return null;
-          }
-        })
-        .filter(Boolean);
-      
-      console.log("Electron workspace files to clean:", workspaceFiles);
-      
-      // If in Electron context (which we can detect from the URL or user agent)
-      const isElectron = window.navigator.userAgent.toLowerCase().includes('electron');
-      if (isElectron) {
-        // Signal to any potential listeners that we need to clean these files
-        // We'll store a list of files to clean in localStorage as a fallback
-        localStorage.setItem('electron_files_to_clean', JSON.stringify(workspaceFiles));
-        localStorage.setItem('electron_cleanup_time', Date.now().toString());
-        console.log("Set electron_files_to_clean in localStorage with these files:", workspaceFiles);
-      }
-    } catch (error) {
-      console.error("Error in Electron cleanup preparation:", error);
-    }
-    
-    // Use our enhanced fileUtils.cleanupFiles which handles both server and browser cleanup
+    // Register each file with our tracking system
     if (filesToCleanup.length > 0) {
-      // Enhanced cleanup for both server and browser files
-      fileUtils.cleanupFiles(sessionId, undefined, filesToCleanup, true)
-        .then(deletedFiles => {
-          console.log('File cleanup completed:', deletedFiles);
-        })
-        .catch(err => {
-          console.error('Error cleaning up files:', err);
-        });
-    } else {
-      // Even if no specific files to clean up, clean the session to catch orphaned files
-      fileUtils.cleanupFiles(sessionId, undefined, undefined, true)
-        .then(deletedFiles => {
-          console.log('Session cleanup completed:', deletedFiles);
-        })
-        .catch(err => {
-          console.error('Error during session cleanup:', err);
-        });
+      filesToCleanup.forEach(fileUrl => {
+        fileUtils.trackUploadedFile(fileUrl, sessionId);
+      });
     }
     
-    // Note: We no longer need explicit browser cache cleanup here 
-    // since fileUtils.cleanupFiles already handles both server and browser cleanup
+    // Clean all files for this session
+    fileUtils.cleanupFiles(sessionId)
+      .then((cleanedUrls: string[]) => {
+        console.log('File cleanup completed:', cleanedUrls.length, 'files');
+      })
+      .catch((error: Error) => {
+        console.error('Error cleaning up files:', error);
+      });
     
     // Reset states and clean up any uploaded files
     setGalleryImages([]);
     clearFiles(true); // Pass true to clean up uploaded files
-    
-    // Clean up any File objects to help garbage collection
-    files.forEach(file => {
-      try {
-        // @ts-ignore - setting to null to help GC
-        file = null;
-      } catch (e) {
-        // Ignore errors
-      }
-    });
-    
-    // Force garbage collection if possible (this is a hint, not guaranteed)
-    if (window.gc) {
-      try {
-        // @ts-ignore
-        window.gc();
-      } catch (e) {
-        // Ignore if not available
-      }
-    }
     
     // Close form
     onClose();

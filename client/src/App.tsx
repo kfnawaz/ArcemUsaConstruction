@@ -12,6 +12,7 @@ import { SeoProvider } from "@/contexts/SeoContext";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import ChatbotWidget from "@/components/custom/ChatbotWidget";
 import ElectronCleanupHandler from "@/components/system/ElectronCleanupHandler";
+import GlobalCleanupHandler from "@/components/system/GlobalCleanupHandler";
 
 // Pages
 import Home from "@/pages/Home";
@@ -237,8 +238,9 @@ function App() {
           <Router />
           <Toaster />
           <AdminAccessibilityButton />
-          {/* Invisible component to handle Electron-specific file cleanup */}
+          {/* Invisible components to handle file cleanup */}
           <ElectronCleanupHandler />
+          <GlobalCleanupHandler />
         </SeoProvider>
       </AuthProvider>
     </QueryClientProvider>

@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useUploadThing } from '@/lib/uploadthing';
 import { useToast } from '@/hooks/use-toast';
-import { fileUtils } from '@/lib/fileUtils';
+import * as fileUtils from '@/lib/fileUtils';
 import { 
   UploadCloud, 
   X, 
