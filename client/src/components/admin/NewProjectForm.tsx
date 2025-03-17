@@ -58,6 +58,7 @@ import { useToast } from '@/hooks/use-toast';
 import { fileUtils } from '@/lib/fileUtils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { generateId } from '@/lib/utils';
+import SortableGallery from '@/components/common/SortableGallery';
 
 // Import file upload hooks and utilities
 import { useFileUpload } from '@/hooks/useUploadThing';
@@ -670,119 +671,15 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
               
               {/* Gallery preview */}
               {galleryImages.length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
-                  {galleryImages.map((image) => (
-                    <Card key={image.id} className="overflow-hidden group relative">
-                      <div className="absolute top-2 right-2 z-10 flex space-x-1">
-                        <Button
-                          type="button"
-                          variant={image.isFeature ? "default" : "outline"}
-                          size="icon"
-                          className="w-7 h-7 bg-white/80 backdrop-blur-sm hover:bg-white"
-                          onClick={() => setFeatureImage(image.id)}
-                          title={image.isFeature ? "Featured Image" : "Set as Featured Image"}
-                        >
-                          <Star 
-                            className="h-4 w-4" 
-                            fill={image.isFeature ? "currentColor" : "none"} 
-                          />
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          className="w-7 h-7 bg-white/80 backdrop-blur-sm hover:bg-red-50"
-                          onClick={() => removeGalleryImage(image.id)}
-                          title="Remove Image"
-                        >
-                          <X className="h-4 w-4 text-red-500" />
-                        </Button>
-                      </div>
-                      
-                      {/* Image Preview */}
-                      <div className="aspect-video relative">
-                        {image.imageUrl ? (
-                          <img 
-                            src={image.imageUrl} 
-                            alt={image.caption} 
-                            className="w-full h-full object-cover"
-                          />
-                        ) : image.file ? (
-                          <img 
-                            src={URL.createObjectURL(image.file)} 
-                            alt={image.caption} 
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                            <ImageIcon className="h-8 w-8 text-gray-400" />
-                          </div>
-                        )}
-                        
-                        {/* Upload progress overlay */}
-                        {!image.uploaded && image.uploadProgress !== undefined && (
-                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                            <div className="bg-white rounded-lg p-4 w-4/5">
-                              <div className="text-center text-sm mb-2">
-                                Uploading... {Math.round(image.uploadProgress)}%
-                              </div>
-                              <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
-                                <div 
-                                  className="bg-primary h-full" 
-                                  style={{ width: `${image.uploadProgress}%` }}
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                        
-                        {/* Featured badge */}
-                        {image.isFeature && (
-                          <div className="absolute top-2 left-2 bg-amber-400 text-white text-xs px-2 py-1 rounded-md font-medium">
-                            Featured
-                          </div>
-                        )}
-                      </div>
-                      
-                      <CardContent className="p-3">
-                        <Input
-                          placeholder="Image caption"
-                          value={image.caption}
-                          onChange={(e) => updateCaption(image.id, e.target.value)}
-                          className="text-sm"
-                        />
-                      </CardContent>
-                      
-                      <CardFooter className="p-3 pt-0 flex justify-between">
-                        <div className="flex items-center gap-1">
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0"
-                            onClick={() => moveImageUp(image.id)}
-                            disabled={image.displayOrder <= 1}
-                          >
-                            <MoveUp className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0"
-                            onClick={() => moveImageDown(image.id)}
-                            disabled={image.displayOrder >= galleryImages.length}
-                          >
-                            <MoveDown className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          Order: {image.displayOrder}
-                        </div>
-                      </CardFooter>
-                    </Card>
-                  ))}
-                </div>
+                <SortableGallery 
+                  images={galleryImages}
+                  onImagesChange={setGalleryImages}
+                  onRemoveImage={removeGalleryImage}
+                  onSetFeatureImage={setFeatureImage}
+                  onUpdateCaption={updateCaption}
+                  onMoveImageUp={moveImageUp}
+                  onMoveImageDown={moveImageDown}
+                />
               )}
             </div>
             
