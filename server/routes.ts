@@ -1270,6 +1270,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Debug endpoint to view pending files in FileManager
+  app.get(`${apiRouter}/files/debug`, isAdmin, (req: Request, res: Response) => {
+    try {
+      // Get the current state of pendingFiles from FileManager
+      const pendingFiles = FileManager.getPendingFiles();
+      res.json({
+        count: Object.keys(pendingFiles).length,
+        files: pendingFiles
+      });
+    } catch (error) {
+      console.error("Error in debug endpoint:", error);
+      res.status(500).json({
+        message: "Failed to get debug information",
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
   // UploadThing direct file management APIs
   app.get(`${apiRouter}/uploadthing/files`, isAdmin, async (req: Request, res: Response) => {
     try {

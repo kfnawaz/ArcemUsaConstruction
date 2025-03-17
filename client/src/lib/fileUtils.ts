@@ -177,7 +177,7 @@ export const cleanupFiles = async (sessionId: string, specificFileUrl?: string):
     // Tell the server to clean up these files
     if (cleanedUrls.length > 0) {
       try {
-        await fetch('/api/files/cleanup', {
+        const response = await fetch('/api/files/cleanup', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
@@ -185,6 +185,15 @@ export const cleanupFiles = async (sessionId: string, specificFileUrl?: string):
             fileUrls: specificFileUrl ? [specificFileUrl] : cleanedUrls
           })
         });
+        
+        const result = await response.json();
+        console.log('Server cleanup response:', result);
+        
+        if (result.success) {
+          console.log(`Server successfully cleaned up ${result.deletedCount} files`);
+        } else {
+          console.error('Server cleanup failed:', result.message);
+        }
       } catch (error) {
         console.error('Error cleaning up files on server:', error);
       }

@@ -63,6 +63,18 @@ interface PendingFile {
 export class FileManager {
   // Track files that are uploaded but not yet saved to the database
   private static pendingFiles: Map<string, PendingFile> = new Map();
+  
+  /**
+   * Get the current state of pending files (for debugging)
+   * @returns Object with pending files
+   */
+  static getPendingFiles(): Record<string, PendingFile> {
+    const files: Record<string, PendingFile> = {};
+    this.pendingFiles.forEach((file, key) => {
+      files[key] = file;
+    });
+    return files;
+  }
 
   /**
    * Tracks a newly uploaded file that hasn't been saved to the database yet
