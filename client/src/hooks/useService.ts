@@ -44,8 +44,11 @@ export const useService = (serviceId?: number) => {
   // Create service mutation
   const createServiceMutation = useMutation({
     mutationFn: async (data: InsertService) => {
-      const res = await apiRequest('POST', '/api/services', data);
-      return await res.json();
+      return await apiRequest({
+        url: '/api/services',
+        method: 'POST',
+        body: data
+      });
     },
     onSuccess: () => {
       toast({
@@ -55,6 +58,7 @@ export const useService = (serviceId?: number) => {
       queryClient.invalidateQueries({ queryKey: ['/api/services'] });
     },
     onError: (error: Error) => {
+      console.error('Service creation error:', error);
       toast({
         title: 'Failed to create service',
         description: error.message,
@@ -66,8 +70,11 @@ export const useService = (serviceId?: number) => {
   // Update service mutation
   const updateServiceMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<InsertService> }) => {
-      const res = await apiRequest('PUT', `/api/services/${id}`, data);
-      return await res.json();
+      return await apiRequest({
+        url: `/api/services/${id}`,
+        method: 'PUT',
+        body: data
+      });
     },
     onSuccess: () => {
       toast({
@@ -80,6 +87,7 @@ export const useService = (serviceId?: number) => {
       }
     },
     onError: (error: Error) => {
+      console.error('Service update error:', error);
       toast({
         title: 'Failed to update service',
         description: error.message,
