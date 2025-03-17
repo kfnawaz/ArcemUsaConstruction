@@ -61,8 +61,9 @@ const Services = () => {
         
         for (const service of services) {
           try {
-            const response = await apiRequest('GET', `/api/services/${service.id}/gallery`);
+            const response = await fetch(`/api/services/${service.id}/gallery`);
             const galleryData = await response.json();
+            console.log(`Gallery data for service ${service.id}:`, galleryData);
             galleries[service.id] = galleryData;
           } catch (error) {
             console.error(`Error fetching gallery for service ${service.id}:`, error);

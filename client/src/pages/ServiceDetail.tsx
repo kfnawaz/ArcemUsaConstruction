@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/carousel";
 // Using AutoplayType to avoid TypeScript errors
 import Autoplay, { type AutoplayType } from "embla-carousel-autoplay";
-import { apiRequest } from "@/lib/queryClient";
+// Using fetch directly instead of apiRequest
 import { useService } from "@/hooks/useService";
 
 const ServiceDetail = () => {
@@ -58,7 +58,7 @@ const ServiceDetail = () => {
     queryKey: ["/api/services", serviceId, "gallery"],
     queryFn: async () => {
       if (!serviceId) return [];
-      const res = await apiRequest("GET", `/api/services/${serviceId}/gallery`);
+      const res = await fetch(`/api/services/${serviceId}/gallery`);
       return await res.json();
     },
     enabled: !!serviceId,
@@ -71,7 +71,12 @@ const ServiceDetail = () => {
   useEffect(() => {
     if (serviceGallery && serviceGallery.length > 0) {
       console.log("Service gallery images:", serviceGallery);
-      setGalleryImages(serviceGallery as ServiceGallery[]);
+      
+      // Make sure we have valid image URLs before setting gallery
+      const validGallery = serviceGallery.filter(img => !!img.imageUrl);
+      console.log("Valid gallery images:", validGallery);
+      
+      setGalleryImages(validGallery as ServiceGallery[]);
     }
   }, [serviceGallery]);
 
