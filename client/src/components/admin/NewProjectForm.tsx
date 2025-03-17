@@ -106,17 +106,6 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
 
   // Extract project data if editing
   const project = getProject.data; // Will be undefined if no data available
-  
-  // Only log in development mode
-  if (process.env.NODE_ENV === 'development') {
-    console.log("Extracted project data:", { 
-      projectId, 
-      projectData: project, 
-      getProjectStatus: getProject.status, 
-      isProjectLoading: getProject.isLoading
-    });
-  }
-  
   const galleryData = getProjectGallery.data || [];
 
   // Initialize file upload hooks
@@ -353,17 +342,9 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
   const [formPopulated, setFormPopulated] = useState(false);
 
   // Load existing project data if editing
-  useEffect(() => {
-    console.log("NewProjectForm: projectId changed or project data updated", { 
-      projectId, 
-      projectData: project, 
-      projectDataLoading: isLoading,
-      formPopulated
-    });
-    
+  useEffect(() => {    
     // Only populate the form if we have project data and haven't already populated it
     if (projectId && project && !formPopulated) {
-      console.log("Populating form with project data:", project);
       // Populate form with project data, converting null/undefined values to empty strings
       form.reset({
         title: project.title,
@@ -395,8 +376,6 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
   useEffect(() => {
     // Only load gallery if we have data and haven't already loaded it
     if (projectId && galleryData && galleryData.length > 0 && !galleryLoaded) {
-      console.log("Loading gallery images:", galleryData.length);
-      
       // Convert gallery data to our temporary format
       const tempGallery: TempGalleryImage[] = galleryData.map(img => ({
         id: `existing-${img.id}`, // Prefix to identify existing images
