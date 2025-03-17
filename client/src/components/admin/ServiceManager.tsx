@@ -282,8 +282,11 @@ const ServiceManager: React.FC<ServiceManagerProps> = ({ service, onSuccess }) =
       
       // Extract the URLs from the upload results
       const uploadedUrls = uploadResults.map(result => {
-        // Always use ufsUrl when available to avoid deprecation warnings
-        return result.ufsUrl || result.url;
+        // Always prefer ufsUrl, then fallback to url for legacy compatibility
+        console.log("Upload result:", result);
+        const fileUrl = result.ufsUrl || result.url;
+        console.log("Using image URL:", fileUrl);
+        return fileUrl;
       });
       
       // Clear the pending images
