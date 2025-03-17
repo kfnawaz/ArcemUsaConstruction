@@ -6,16 +6,6 @@ import { useProject } from '@/hooks/useProject';
 import { InsertProject, insertProjectSchema, ExtendedInsertProject, ProjectGallery } from '@shared/schema';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-
-// Helper function to safely handle string or null values
-function safeString(value: string | null | undefined): string {
-  return value || '';
-}
-
-// Helper function to safely handle boolean values
-function safeBoolean(value: boolean | null | undefined): boolean {
-  return value === true;
-}
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Form,
@@ -51,6 +41,16 @@ import {
   Upload,
   UploadCloud
 } from 'lucide-react';
+
+// Helper function to safely handle string or null values
+function safeString(value: string | null | undefined): string {
+  return value || '';
+}
+
+// Helper function to safely handle boolean values
+function safeBoolean(value: boolean | null | undefined): boolean {
+  return value === true;
+}
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
@@ -58,7 +58,7 @@ import { useToast } from '@/hooks/use-toast';
 import { fileUtils } from '@/lib/fileUtils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { generateId } from '@/lib/utils';
-import SortableGallery from '@/components/common/SortableGallery';
+import SortableGallery, { GalleryImage } from '@/components/common/SortableGallery';
 
 // Import file upload hooks and utilities
 import { useFileUpload } from '@/hooks/useUploadThing';
