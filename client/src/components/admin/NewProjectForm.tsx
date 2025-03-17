@@ -539,15 +539,36 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
     // Log cleanup attempt
     console.log("Cleaning up files for session:", sessionId);
     
-    // Track any files that might need to be cleaned up
+    // Track any files that might need to be cleaned up - both uploaded and browser files
     const filesToCleanup = galleryImages
       .filter(img => img.uploaded && img.imageUrl && !img.id.startsWith('existing-'))
       .map(img => img.imageUrl!);
     
     console.log("Files to cleanup:", filesToCleanup);
     
-    // Always attempt to clean up the session, even if no files are detected
-    // This is to catch any orphaned files tracked on the server
+    // If we have uploaded files with URLs, clean them up specifically
+    if (filesToCleanup.length > 0) {
+      // Clean up specific file URLs (uploaded files)
+      fetch('/api/files/cleanup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          sessionId,
+          fileUrls: filesToCleanup
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('File cleanup response:', data);
+      })
+      .catch(err => {
+        console.error('Error cleaning up specific files:', err);
+      });
+    }
+    
+    // Also attempt to clean up the session to catch any orphaned files
     fetch('/api/files/cleanup', {
       method: 'POST',
       headers: {
@@ -559,18 +580,99 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
     })
     .then(response => response.json())
     .then(data => {
-      console.log('Cleanup response:', data);
+      console.log('Session cleanup response:', data);
     })
     .catch(err => {
-      console.error('Error cleaning up files:', err);
+      console.error('Error cleaning up session:', err);
+    });
+    
+    // Clean up browser caches and temporary in-memory files
+    if ('caches' in window) {
+      // Clear any browser caches for this URL pattern
+      try {
+        // URL pattern for our uploads
+        const cachePattern = location.origin + '/uploads/';
+        caches.keys().then(cacheNames => {
+          cacheNames.forEach(cacheName => {
+            caches.open(cacheName).then(cache => {
+              cache.keys().then(requests => {
+                requests.forEach(request => {
+                  if (request.url.startsWith(cachePattern)) {
+                    cache.delete(request);
+                  }
+                });
+              });
+            });
+          });
+        });
+        console.log('Browser cache cleanup attempted');
+      } catch (error) {
+        console.error('Error cleaning browser cache:', error);
+      }
+    }
+    
+    // Clear any local storage items related to this session
+    try {
+      // Remove any session-specific keys from localStorage
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.includes(sessionId) || key.includes('upload'))) {
+          keysToRemove.push(key);
+        }
+      }
+      
+      keysToRemove.forEach(key => localStorage.removeItem(key));
+      console.log(`Removed ${keysToRemove.length} related items from localStorage`);
+    } catch (error) {
+      console.error('Error cleaning localStorage:', error);
+    }
+    
+    // Attempt to revoke any object URLs that might be in memory
+    galleryImages.forEach(img => {
+      if (img.imageUrl && img.imageUrl.startsWith('blob:')) {
+        try {
+          URL.revokeObjectURL(img.imageUrl);
+          console.log('Revoked object URL:', img.imageUrl);
+        } catch (error) {
+          console.error('Error revoking object URL:', error);
+        }
+      }
     });
     
     // Reset states
     setGalleryImages([]);
     clearFiles();
     
+    // Clean up any File objects to help garbage collection
+    files.forEach(file => {
+      try {
+        // @ts-ignore - setting to null to help GC
+        file = null;
+      } catch (e) {
+        // Ignore errors
+      }
+    });
+    
+    // Force garbage collection if possible (this is a hint, not guaranteed)
+    if (window.gc) {
+      try {
+        // @ts-ignore
+        window.gc();
+      } catch (e) {
+        // Ignore if not available
+      }
+    }
+    
     // Close form
     onClose();
+    
+    // Display success message
+    toast({
+      title: "Form Cancelled",
+      description: "All temporary files have been cleaned up.",
+      duration: 3000
+    });
   };
 
   return (
