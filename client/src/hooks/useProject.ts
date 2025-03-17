@@ -13,12 +13,18 @@ export const useProject = (projectId?: number) => {
   const getProject = useQuery<Project>({
     queryKey: [`/api/projects/${projectId}`],
     enabled: !!projectId,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
+    staleTime: 0 // Always refetch when mounting with a new project ID
   });
   
   // Fetch project gallery images if ID is provided
   const getProjectGallery = useQuery<ProjectGallery[]>({
     queryKey: [`/api/projects/${projectId}/gallery`],
     enabled: !!projectId,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
+    staleTime: 0 // Always refetch when mounting with a new project ID
   });
   
   // Extract data for backward compatibility

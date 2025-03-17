@@ -45,15 +45,29 @@ const ProjectManagement = () => {
       setIsEditing(false);
       setCurrentEditId(undefined);
     } else if (editId) {
+      // Convert editId to a number and prefetch the project data
+      const projectId = Number(editId);
+      
+      // Pre-fetch the project data so it's available when NewProjectForm renders
+      queryClient.prefetchQuery({
+        queryKey: [`/api/projects/${projectId}`],
+      });
+      
+      // Pre-fetch gallery data too
+      queryClient.prefetchQuery({
+        queryKey: [`/api/projects/${projectId}/gallery`],
+      });
+      
+      console.log("Setting edit mode for project ID:", projectId);
       setIsEditing(true);
       setIsAdding(false);
-      setCurrentEditId(Number(editId));
+      setCurrentEditId(projectId);
     } else {
       setIsEditing(false);
       setIsAdding(false);
       setCurrentEditId(undefined);
     }
-  }, [location]);
+  }, [location, queryClient]);
 
   // States
   const [searchQuery, setSearchQuery] = useState('');

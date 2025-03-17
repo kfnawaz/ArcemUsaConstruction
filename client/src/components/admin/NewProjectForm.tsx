@@ -340,7 +340,15 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
 
   // Load existing project data if editing
   useEffect(() => {
+    console.log("NewProjectForm: projectId changed or project data updated", { 
+      projectId, 
+      projectData: project, 
+      projectDataLoading: isLoading,
+      projectQueryState: getProject
+    });
+    
     if (projectId && project) {
+      console.log("Populating form with project data:", project);
       // Populate form with project data, converting null/undefined values to empty strings
       form.reset({
         title: project.title,
@@ -357,8 +365,10 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
         completionDate: project.completionDate || '',
         servicesProvided: project.servicesProvided || '',
       });
+    } else if (projectId && !project && !isLoading) {
+      console.warn("Project ID provided but no project data available and not loading");
     }
-  }, [projectId, project, form]);
+  }, [projectId, project, form, isLoading, getProject]);
 
   // Load gallery images if editing
   useEffect(() => {
