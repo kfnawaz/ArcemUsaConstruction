@@ -151,15 +151,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid project ID" });
       }
       
-      const projectData = insertProjectSchema.partial().parse(req.body);
-      const project = await storage.updateProject(id, projectData);
+      // Extract gallery images from the request body
+      const { galleryImages, ...projectData } = req.body;
+      
+      // Parse only the project data with the schema
+      const validatedProjectData = insertProjectSchema.partial().parse(projectData);
+      const project = await storage.updateProject(id, validatedProjectData);
       
       if (!project) {
         return res.status(404).json({ message: "Project not found" });
       }
       
-      res.json(project);
+      // Process gallery images if provided
+      if (galleryImages && Array.isArray(galleryImages)) {
+        // First, delete old gallery images that are no longer included
+        const existingGallery = await storage.getProjectGallery(id);
+        const existingIds = existingGallery.map(img => img.id);
+        const updatedIds = galleryImages
+          .filter(img => img.id && img.id.toString().startsWith('existing-'))
+          .map(img => parseInt(img.id.toString().replace('existing-', '')));
+        
+        // Delete removed images
+        const idsToDelete = existingIds.filter(existingId => !updatedIds.includes(existingId));
+        for (const idToDelete of idsToDelete) {
+          await storage.deleteProjectGalleryImage(idToDelete);
+        }
+        
+        // Update or add gallery images
+        for (let i = 0; i < galleryImages.length; i++) {
+          const image = galleryImages[i];
+          
+          // Check if this is an existing image that needs to be updated
+          if (image.id && image.id.toString().startsWith('existing-')) {
+            const imageId = parseInt(image.id.toString().replace('existing-', ''));
+            
+            // Update the existing image
+            await storage.updateProjectGalleryImage(imageId, {
+              caption: image.caption || '',
+              displayOrder: i + 1,
+              isFeature: image.isFeature === true
+            });
+            
+            // Set as feature image if marked
+            if (image.isFeature === true) {
+              await storage.setProjectFeatureImage(id, imageId);
+            }
+          } else if (image.imageUrl) {
+            // Add new image
+            await storage.addProjectGalleryImage({
+              projectId: id,
+              imageUrl: image.imageUrl,
+              caption: image.caption || '',
+              displayOrder: i + 1,
+              isFeature: image.isFeature === true
+            });
+          }
+        }
+        
+        // Make sure at least one image is marked as feature
+        const updatedGallery = await storage.getProjectGallery(id);
+        const hasFeatureImage = updatedGallery.some(img => img.isFeature);
+        
+        if (!hasFeatureImage && updatedGallery.length > 0) {
+          await storage.setProjectFeatureImage(id, updatedGallery[0].id);
+        }
+      }
+      
+      // Get the updated project data
+      const updatedProject = await storage.getProject(id);
+      res.json(updatedProject);
     } catch (error) {
+      console.error('Error updating project:', error);
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid project data", errors: error.errors });
       }
