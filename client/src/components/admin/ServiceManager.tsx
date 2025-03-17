@@ -1,8 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { Service, InsertService } from '@shared/schema';
+import { Service, InsertService, InsertServiceGallery } from '@shared/schema';
 import { useService } from '@/hooks/useService';
 import { Button } from '@/components/ui/button';
 import {
@@ -25,10 +25,15 @@ import {
 import ServiceGalleryManager from './ServiceGalleryManager';
 import { 
   Loader2, Save, ArrowLeft, Building, Home, Wrench, Clipboard, 
-  Factory, Settings, PencilRuler, BarChart, HardHat 
+  Factory, Settings, PencilRuler, BarChart, HardHat, UploadCloud, ImagePlus, X
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import * as fileUtils from '@/lib/fileUtils';
+import { Progress } from '@/components/ui/progress';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import UploadThingFileUpload from '@/components/common/UploadThingFileUpload';
+import { useUploadThing } from '@/lib/uploadthing';
 
 // Extend the base schema with client-side validation
 const serviceFormSchema = z.object({
@@ -51,6 +56,14 @@ interface ServiceManagerProps {
   onSuccess?: () => void;
 }
 
+// Define a type for pending gallery images
+interface PendingGalleryImage {
+  file: File;
+  previewUrl: string;
+}
+
+const MAX_GALLERY_IMAGES = 3;
+
 const ServiceManager: React.FC<ServiceManagerProps> = ({ service, onSuccess }) => {
   const { toast } = useToast();
   const [featureInput, setFeatureInput] = useState('');
@@ -58,13 +71,42 @@ const ServiceManager: React.FC<ServiceManagerProps> = ({ service, onSuccess }) =
     service?.features || []
   );
   const galleryManagerRef = useRef<{saveGalleryImages: () => Promise<void>}>(null);
-
+  
+  // State for image uploads
+  const [pendingImages, setPendingImages] = useState<PendingGalleryImage[]>([]);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadSessionId, setUploadSessionId] = useState<string>(fileUtils.generateSessionId());
+  const [isDragging, setIsDragging] = useState(false);
+  const [showImageLimitWarning, setShowImageLimitWarning] = useState(false);
+  
   const {
     createService,
     updateService,
+    addGalleryImage,
     isCreatingService,
     isUpdatingService,
+    trackUploadSession,
+    commitUploads,
+    cleanupUploads
   } = useService(service?.id);
+
+  // Track upload session
+  useEffect(() => {
+    if (uploadSessionId) {
+      trackUploadSession(uploadSessionId);
+    }
+    
+    // Clean up any pending images when component unmounts
+    return () => {
+      if (uploadSessionId && pendingImages.length > 0) {
+        cleanupUploads(uploadSessionId);
+        
+        // Also cleanup object URLs to avoid memory leaks
+        pendingImages.forEach(img => URL.revokeObjectURL(img.previewUrl));
+      }
+    };
+  }, [uploadSessionId, trackUploadSession, pendingImages, cleanupUploads]);
 
   // Define form with default values
   const form = useForm<ServiceFormValues>({
@@ -77,7 +119,7 @@ const ServiceManager: React.FC<ServiceManagerProps> = ({ service, onSuccess }) =
     },
   });
 
-  const isSubmitting = isCreatingService || isUpdatingService;
+  const isSubmitting = isCreatingService || isUpdatingService || isUploading;
 
   // Add feature to the list
   const addFeature = () => {
@@ -93,6 +135,191 @@ const ServiceManager: React.FC<ServiceManagerProps> = ({ service, onSuccess }) =
     const updatedFeatures = featuresList.filter((_, i) => i !== index);
     setFeaturesList(updatedFeatures);
     form.setValue('features', updatedFeatures);
+  };
+  
+  // Handle drag events for image uploads
+  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+  
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+  
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+  
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleImageFiles(e.dataTransfer.files);
+    }
+  };
+  
+  // Handle file input change
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      handleImageFiles(e.target.files);
+    }
+  };
+  
+  // Process selected image files
+  const handleImageFiles = (fileList: FileList) => {
+    // Check if we've exceeded maximum files
+    if (pendingImages.length + fileList.length > MAX_GALLERY_IMAGES) {
+      setShowImageLimitWarning(true);
+      toast({
+        title: "Too many images",
+        description: `Maximum ${MAX_GALLERY_IMAGES} images allowed per service`,
+        variant: "destructive",
+      });
+      
+      // Only take up to the max allowed
+      const remainingSlots = MAX_GALLERY_IMAGES - pendingImages.length;
+      if (remainingSlots <= 0) return;
+      
+      const newFiles = Array.from(fileList).slice(0, remainingSlots);
+      addImageFiles(newFiles);
+    } else {
+      setShowImageLimitWarning(false);
+      addImageFiles(Array.from(fileList));
+    }
+  };
+  
+  // Add image files to pending list
+  const addImageFiles = (files: File[]) => {
+    // Only allow image files
+    const imageFiles = files.filter(file => file.type.startsWith('image/'));
+    
+    if (imageFiles.length !== files.length) {
+      toast({
+        title: "Invalid file type",
+        description: "Only image files are allowed",
+        variant: "destructive",
+      });
+    }
+    
+    if (imageFiles.length === 0) return;
+    
+    // Create preview URLs and add to pending images
+    const newPendingImages = imageFiles.map(file => ({
+      file,
+      previewUrl: URL.createObjectURL(file)
+    }));
+    
+    setPendingImages(prev => [...prev, ...newPendingImages]);
+    
+    toast({
+      title: `${imageFiles.length} image${imageFiles.length > 1 ? 's' : ''} added`,
+      description: "Images will be uploaded when you save the service",
+    });
+  };
+  
+  // Remove a pending image
+  const removePendingImage = (index: number) => {
+    setPendingImages(prev => {
+      // Release object URL to prevent memory leaks
+      URL.revokeObjectURL(prev[index].previewUrl);
+      
+      const newList = [...prev];
+      newList.splice(index, 1);
+      
+      // Reset warning if we're now under the limit
+      if (newList.length < MAX_GALLERY_IMAGES) {
+        setShowImageLimitWarning(false);
+      }
+      
+      return newList;
+    });
+  };
+  
+  // Initialize UploadThing outside the function
+  const { startUpload } = useUploadThing("imageUploader");
+  
+  // Upload images to uploadthing.com
+  const uploadImagesToUploadThing = async (): Promise<string[]> => {
+    if (pendingImages.length === 0) return [];
+    
+    setIsUploading(true);
+    setUploadProgress(0);
+    
+    try {
+      // Upload files using uploadthing
+      const files = pendingImages.map(img => img.file);
+      
+      const uploadResults = await startUpload(files);
+      
+      if (!uploadResults || uploadResults.length === 0) {
+        throw new Error("Upload failed - no results returned");
+      }
+      
+      // Extract the URLs from the upload results
+      const uploadedUrls = uploadResults.map(result => {
+        // Always use ufsUrl when available to avoid deprecation warnings
+        return result.ufsUrl || result.url;
+      });
+      
+      // Clear the pending images
+      pendingImages.forEach(img => URL.revokeObjectURL(img.previewUrl));
+      setPendingImages([]);
+      
+      return uploadedUrls;
+    } catch (error) {
+      console.error("Error uploading images:", error);
+      toast({
+        title: "Upload failed",
+        description: "There was an error uploading your images. Please try again.",
+        variant: "destructive"
+      });
+      throw error;
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(null);
+    }
+  };
+  
+  // Create gallery images from uploaded URLs
+  const createGalleryImages = async (serviceId: number, imageUrls: string[]): Promise<void> => {
+    if (imageUrls.length === 0) return;
+    
+    try {
+      // Mark files as committed in the upload system
+      await commitUploads(uploadSessionId, imageUrls);
+      
+      // Add each image to the database
+      for (let i = 0; i < imageUrls.length; i++) {
+        const galleryImage: InsertServiceGallery = {
+          serviceId,
+          imageUrl: imageUrls[i],
+          alt: `Service image ${i + 1}`,
+          order: i + 1,
+        };
+        
+        await addGalleryImage(serviceId, galleryImage);
+      }
+      
+      toast({
+        title: "Images added",
+        description: `${imageUrls.length} image${imageUrls.length > 1 ? 's' : ''} added to the gallery`,
+      });
+    } catch (error) {
+      console.error("Error creating gallery images:", error);
+      toast({
+        title: "Error adding images",
+        description: "There was an error adding the images to the service gallery",
+        variant: "destructive"
+      });
+      throw error;
+    }
   };
 
   // Handle form submission
@@ -111,15 +338,21 @@ const ServiceManager: React.FC<ServiceManagerProps> = ({ service, onSuccess }) =
         // Update existing service
         await updateService(service.id, serviceData);
         savedServiceId = service.id;
+        
+        // Save gallery images if there are any pending via the gallery manager
+        if (galleryManagerRef.current) {
+          await galleryManagerRef.current.saveGalleryImages();
+        }
       } else {
         // Create new service
         const newService = await createService(serviceData);
         savedServiceId = newService?.id || 0;
-      }
-      
-      // Save gallery images if there are any pending
-      if (service && galleryManagerRef.current) {
-        await galleryManagerRef.current.saveGalleryImages();
+        
+        // Upload and save pending images
+        if (pendingImages.length > 0 && savedServiceId) {
+          const uploadedUrls = await uploadImagesToUploadThing();
+          await createGalleryImages(savedServiceId, uploadedUrls);
+        }
       }
       
       toast({
@@ -330,6 +563,109 @@ const ServiceManager: React.FC<ServiceManagerProps> = ({ service, onSuccess }) =
                 )}
               />
 
+              {/* Gallery Images Section - Only show for new services */}
+              {!service && (
+                <div className="mt-8">
+                  <h3 className="text-xl font-semibold mb-4">Service Images</h3>
+                  {showImageLimitWarning && (
+                    <Alert variant="destructive" className="mb-4">
+                      <AlertDescription>
+                        Maximum of {MAX_GALLERY_IMAGES} images allowed per service. Please remove some images to add more.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                  
+                  {/* Drag and drop area */}
+                  <div
+                    className={`border-2 border-dashed rounded-lg p-6 mb-4 text-center cursor-pointer transition-colors ${
+                      isDragging ? 'border-primary bg-primary/10' : 'border-gray-300 hover:border-primary/50'
+                    }`}
+                    onDragEnter={handleDragEnter}
+                    onDragLeave={handleDragLeave}
+                    onDragOver={handleDragOver}
+                    onDrop={handleDrop}
+                    onClick={() => document.getElementById('service-images-input')?.click()}
+                  >
+                    <input
+                      id="service-images-input"
+                      type="file"
+                      className="hidden"
+                      multiple
+                      accept="image/*"
+                      onChange={handleFileChange}
+                    />
+                    
+                    <div className="flex flex-col items-center justify-center space-y-2">
+                      <UploadCloud className="h-10 w-10 text-gray-500" />
+                      <p className="text-lg font-semibold">
+                        Drag and drop images here
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        or click to browse for images
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        Maximum {MAX_GALLERY_IMAGES} images, up to 5MB each
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {pendingImages.length}/{MAX_GALLERY_IMAGES} images
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {/* Pending images preview */}
+                  {pendingImages.length > 0 && (
+                    <div className="mt-4">
+                      <h4 className="text-sm font-medium mb-2">Pending Images ({pendingImages.length})</h4>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {pendingImages.map((img, index) => (
+                          <Card key={index} className="overflow-hidden">
+                            <div className="aspect-video relative group">
+                              <img
+                                src={img.previewUrl}
+                                alt={`Pending image ${index + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    removePendingImage(index);
+                                  }}
+                                  className="flex items-center gap-1"
+                                >
+                                  <X className="h-4 w-4" />
+                                  Remove
+                                </Button>
+                              </div>
+                            </div>
+                            <CardContent className="p-2 bg-muted/20">
+                              <p className="text-xs truncate">{img.file.name}</p>
+                              <p className="text-xs text-muted-foreground">{fileUtils.formatFileSize(img.file.size)}</p>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Upload progress indicator */}
+                  {isUploading && uploadProgress !== null && (
+                    <div className="mt-4 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm">Uploading images...</span>
+                        <span className="text-sm">{Math.round(uploadProgress)}%</span>
+                      </div>
+                      <Progress value={uploadProgress} />
+                    </div>
+                  )}
+                  
+                  <p className="text-sm text-muted-foreground mt-4">
+                    Images will be uploaded to the service gallery when you click "Create Service". They will be displayed on the service pages and marketing materials.
+                  </p>
+                </div>
+              )}
             </form>
           </Form>
         </div>
@@ -354,12 +690,12 @@ const ServiceManager: React.FC<ServiceManagerProps> = ({ service, onSuccess }) =
             {isSubmitting ? (
               <>
                 <Loader2 className="h-5 w-5 animate-spin" />
-                Saving Service...
+                {service ? 'Saving Service...' : 'Creating Service...'}
               </>
             ) : (
               <>
                 <Save className="h-5 w-5" />
-                Save Service
+                {service ? 'Save Service' : 'Create Service'}
               </>
             )}
           </Button>
