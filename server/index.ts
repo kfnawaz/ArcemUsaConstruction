@@ -64,11 +64,21 @@ app.use((req, res, next) => {
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+    console.error("Error in Express middleware:", err);
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
 
-    res.status(status).json({ message });
-    throw err;
+    // Prevent response if already sent
+    if (!res.headersSent) {
+      res.status(status).json({ 
+        message, 
+        error: process.env.NODE_ENV === 'production' ? undefined : String(err),
+        stack: process.env.NODE_ENV === 'production' ? undefined : err.stack
+      });
+    }
+    
+    // Don't throw the error as it crashes the server
+    // throw err;
   });
 
   // importantly only setup vite in development and after
@@ -80,14 +90,25 @@ app.use((req, res, next) => {
     serveStatic(app);
   }
 
-  // ALWAYS serve the app on port 5000
-  // this serves both the API and the client
-  const port = 5000;
-  server.listen({
-    port,
-    host: "0.0.0.0",
-    reusePort: true,
-  }, () => {
-    log(`serving on port ${port}`);
-  });
+  // Try port 5000 first, then fallback to 5001 if necessary
+  const tryListenOnPort = (portToTry: number) => {
+    const serverInstance = server.listen({
+      port: portToTry,
+      host: "0.0.0.0",
+      reusePort: true,
+    }, () => {
+      log(`serving on port ${portToTry}`);
+    });
+    
+    serverInstance.on('error', (e: any) => {
+      if (e.code === 'EADDRINUSE' && portToTry === 5000) {
+        console.log(`Port ${portToTry} in use, trying 5001...`);
+        tryListenOnPort(5001);
+      } else {
+        console.error(`Failed to start server: ${e.message}`);
+      }
+    });
+  };
+  
+  tryListenOnPort(5000);
 })();
