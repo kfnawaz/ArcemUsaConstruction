@@ -34,12 +34,6 @@ export const useService = (serviceId?: number) => {
     error: galleryError,
   } = useQuery<ServiceGallery[]>({
     queryKey: ['/api/services', serviceId, 'gallery'],
-    queryFn: async () => {
-      // Use non-null assertion since the query is only enabled when serviceId exists
-      return await apiRequest<ServiceGallery[]>({
-        url: `/api/services/${serviceId!}/gallery`
-      });
-    },
     enabled: !!serviceId,
   });
 
