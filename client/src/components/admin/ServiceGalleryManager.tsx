@@ -102,12 +102,20 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
       }
     };
     
+    // Track upload session only when needed, not on every render
+    useEffect(() => {
+      // Only track the session if it exists and we're not creating a new service
+      if (uploadSession && !isNewService) {
+        trackUploadSession(uploadSession);
+      }
+    }, [uploadSession, isNewService, trackUploadSession]);
+    
     // Handle component unmount - clean up any uncommitted files
     useEffect(() => {
       return () => {
         cleanupUncommittedFiles();
       };
-    }, [uploadSession, isCommitted, pendingImages]);
+    }, []);
     
     // This function handles the file upload but doesn't save to database
     const handleFileUpload = async (urls: string | string[], sessionId?: string) => {
@@ -119,7 +127,10 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
       if (sessionId) {
         setUploadSession(sessionId);
         setIsCommitted(false);
-        trackUploadSession(sessionId);
+        // Only track if not a new service to avoid infinite loops
+        if (!isNewService) {
+          trackUploadSession(sessionId);
+        }
       }
       
       // Check if adding these images would exceed the limit
