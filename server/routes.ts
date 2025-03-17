@@ -1,7 +1,7 @@
 import express, { type Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { FileManager } from "./utils/fileManager";
+import { FileManager, extractUploadThingKeyFromUrl } from "./utils/fileManager";
 import { 
   insertProjectSchema,
   insertProjectGallerySchema,
@@ -1135,23 +1135,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { fileUrl, sessionId, filename } = req.body;
       
       if (!fileUrl || !sessionId) {
-        return res.status(400).json({ message: "File URL and session ID are required" });
+        return res.status(400).json({ 
+          success: false,
+          message: "File URL and session ID are required" 
+        });
       }
       
       console.log(`Tracking file: ${fileUrl} for session: ${sessionId}`);
       
-      // Support both ufsUrl and url properties from UploadThing
+      // Support both URL formats from UploadThing
+      // If the file has both ufsUrl and url properties, prefer ufsUrl
       const fileUrlToTrack = fileUrl;
+      
+      // Track the file with our enhanced FileManager
       const trackedFile = FileManager.trackPendingFile(fileUrlToTrack, sessionId, filename);
       
+      // Get the file key for logging
+      const fileKey = extractUploadThingKeyFromUrl(fileUrlToTrack);
+      console.log(`File tracked with key: ${fileKey || 'N/A'}`);
+      
       return res.status(200).json({ 
+        success: true,
         message: "File tracked successfully", 
         file: trackedFile,
-        filename: filename
+        filename: filename,
+        key: fileKey
       });
     } catch (error) {
       console.error("Error tracking file:", error);
-      return res.status(500).json({ message: "Internal server error" });
+      return res.status(500).json({ 
+        success: false,
+        message: "Error tracking file", 
+        error: error instanceof Error ? error.message : String(error)
+      });
     }
   });
   
@@ -1160,19 +1176,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { sessionId, fileUrls } = req.body;
       
       if (!sessionId) {
-        return res.status(400).json({ message: "Session ID is required" });
+        return res.status(400).json({ 
+          success: false,
+          message: "Session ID is required" 
+        });
       }
       
+      // Mark files as committed (permanently stored in DB)
+      console.log(`Committing files for session ${sessionId}, file count: ${fileUrls?.length || 'all'}`);
       const committedFiles = FileManager.commitFiles(sessionId, fileUrls);
       
-      res.status(200).json({ 
+      return res.status(200).json({ 
         success: true,
         message: `Committed ${committedFiles.length} files`,
         files: committedFiles
       });
     } catch (error) {
       console.error("File commit error:", error);
-      res.status(500).json({ message: "Failed to commit files" });
+      return res.status(500).json({ 
+        success: false,
+        message: "Failed to commit files",
+        error: error instanceof Error ? error.message : String(error)
+      });
     }
   });
   
@@ -1182,7 +1207,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // If no sessionId, fileUrl, or fileUrls array is provided, return an error
       if (!sessionId && !fileUrl && !fileUrls) {
-        return res.status(400).json({ message: "Session ID, fileUrl, or fileUrls array is required" });
+        return res.status(400).json({ 
+          success: false,
+          message: "Session ID, fileUrl, or fileUrls array is required" 
+        });
       }
       
       console.log(`Cleaning up files for session ${sessionId || '*'}`);
@@ -1194,13 +1222,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.log(`Cleaning up ${fileUrls.length} specific files`);
         
         for (const url of fileUrls) {
-          const deleted = await FileManager.cleanupSession(sessionId || '*', url);
-          deletedFiles = [...deletedFiles, ...deleted];
+          try {
+            const deleted = await FileManager.cleanupSession(sessionId || '*', url);
+            deletedFiles = [...deletedFiles, ...deleted];
+          } catch (fileError) {
+            console.error(`Error cleaning up file ${url}:`, fileError);
+            // Continue processing other files even if one fails
+          }
         }
       } 
       // If a single fileUrl is provided, delete just that file
       else if (fileUrl) {
         console.log(`Cleaning up specific file: ${fileUrl}`);
+        // Extract the file key if it's an UploadThing URL for better logging
+        const fileKey = extractUploadThingKeyFromUrl(fileUrl);
+        if (fileKey) {
+          console.log(`File key to delete: ${fileKey}`);
+        }
+        
         // Handle individual file deletion with updated cleanupSession method
         // Use wildcard session ID '*' when deleting a specific file with no session context
         deletedFiles = await FileManager.cleanupSession(sessionId || '*', fileUrl);
@@ -1213,16 +1252,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       console.log(`Cleanup completed: ${deletedFiles.length} files deleted`);
       
-      res.status(200).json({ 
+      return res.status(200).json({ 
         success: true,
         message: fileUrl 
           ? (deletedFiles.length > 0 ? `Deleted file: ${fileUrl}` : `Failed to delete file: ${fileUrl}`)
           : `Cleaned up ${deletedFiles.length} files`,
-        deletedFiles // Return the actual array of deleted files 
+        deletedFiles, // Return the actual array of deleted files
+        deletedCount: deletedFiles.length
       });
     } catch (error) {
       console.error("File cleanup error:", error);
-      res.status(500).json({ 
+      return res.status(500).json({ 
+        success: false,
         message: "Failed to cleanup files",
         error: error instanceof Error ? error.message : String(error)
       });
