@@ -478,26 +478,34 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
 
   // Cancel form and clean up
   const handleCancel = () => {
+    // Log cleanup attempt
+    console.log("Cleaning up files for session:", sessionId);
+    
     // Track any files that might need to be cleaned up
     const filesToCleanup = galleryImages
       .filter(img => img.uploaded && img.imageUrl && !img.id.startsWith('existing-'))
       .map(img => img.imageUrl!);
     
-    // If we have files to clean up, call the API to remove them
-    if (filesToCleanup.length > 0) {
-      fetch('/api/files/cleanup', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          sessionId,
-          fileUrls: filesToCleanup
-        })
-      }).catch(err => {
-        console.error('Error cleaning up files:', err);
-      });
-    }
+    console.log("Files to cleanup:", filesToCleanup);
+    
+    // Always attempt to clean up the session, even if no files are detected
+    // This is to catch any orphaned files tracked on the server
+    fetch('/api/files/cleanup', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        sessionId
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log('Cleanup response:', data);
+    })
+    .catch(err => {
+      console.error('Error cleaning up files:', err);
+    });
     
     // Reset states
     setGalleryImages([]);

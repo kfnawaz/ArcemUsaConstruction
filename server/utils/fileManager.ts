@@ -50,12 +50,23 @@ export class FileManager {
    */
   static trackPendingFile(fileUrl: string, sessionId: string, filename?: string): string {
     const key = fileUrl;
-    this.pendingFiles.set(key, {
-      url: fileUrl,
-      timestamp: Date.now(),
-      sessionId,
-      filename
-    });
+    
+    // Check if this URL is already tracked for this session to avoid duplicates
+    const existing = Array.from(this.pendingFiles.entries())
+      .find(([_, file]) => file.url === fileUrl && file.sessionId === sessionId);
+    
+    if (!existing) {
+      console.log(`Tracking new pending file: ${fileUrl} for session ${sessionId}`);
+      this.pendingFiles.set(key, {
+        url: fileUrl,
+        timestamp: Date.now(),
+        sessionId,
+        filename
+      });
+    } else {
+      console.log(`File already tracked: ${fileUrl} for session ${sessionId}`);
+    }
+    
     return fileUrl;
   }
 
@@ -90,6 +101,8 @@ export class FileManager {
    * @returns Array of deleted file URLs
    */
   static async cleanupSession(sessionId: string, specificFileUrl?: string): Promise<string[]> {
+    console.log(`Cleaning up session ${sessionId}${specificFileUrl ? ` (specific file: ${specificFileUrl})` : ''}`);
+    
     const filesToDelete: string[] = [];
     const keysToDelete: string[] = [];
     
@@ -103,13 +116,44 @@ export class FileManager {
       }
     }
     
-    // Delete files physically if they're from UploadThing
+    console.log(`Found ${filesToDelete.length} files to delete for session ${sessionId}`);
+    
+    // Delete files from their storage locations
     const deletedUrls: string[] = [];
     for (const fileUrl of filesToDelete) {
       try {
-        // For UploadThing, we don't need to physically delete the file
-        // as it's managed by their service
-        deletedUrls.push(fileUrl);
+        // Check if this is an UploadThing file and delete it
+        const uploadThingKey = extractUploadThingKeyFromUrl(fileUrl);
+        
+        if (uploadThingKey) {
+          console.log(`Deleting UploadThing file with key: ${uploadThingKey}`);
+          
+          try {
+            const result = await uploadThingService.deleteFile(uploadThingKey);
+            if (result.success) {
+              console.log(`Successfully deleted UploadThing file: ${uploadThingKey}`);
+              deletedUrls.push(fileUrl);
+            } else {
+              console.log(`Failed to delete UploadThing file: ${uploadThingKey}`);
+            }
+          } catch (err) {
+            console.error(`Error deleting UploadThing file with key ${uploadThingKey}:`, err);
+          }
+        } 
+        // For local files in the filesystem
+        else if (fileUrl.startsWith('/uploads/')) {
+          const filePath = path.join(process.cwd(), 'public', fileUrl);
+          if (await exists(filePath)) {
+            await unlink(filePath);
+            console.log(`Deleted local file: ${filePath}`);
+            deletedUrls.push(fileUrl);
+          }
+        } 
+        else {
+          console.log(`Unknown file format, can't delete: ${fileUrl}`);
+          // Still mark it as deleted for tracking purposes
+          deletedUrls.push(fileUrl);
+        }
       } catch (error) {
         console.error(`Error deleting file ${fileUrl}:`, error);
       }
@@ -120,6 +164,7 @@ export class FileManager {
       this.pendingFiles.delete(key);
     }
     
+    console.log(`Cleanup completed: ${deletedUrls.length} files deleted for session ${sessionId}`);
     return deletedUrls;
   }
 

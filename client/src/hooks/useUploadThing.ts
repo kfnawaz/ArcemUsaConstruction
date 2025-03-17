@@ -24,8 +24,8 @@ export function useFileUpload({
       setIsUploading(false);
       setUploadProgress(100);
       
-      // Extract URLs from response
-      const urls = res ? res.map((file: any) => file.url) : [];
+      // Extract URLs from response, preferring ufsUrl over the deprecated url
+      const urls = res ? res.map((file: any) => file.ufsUrl || file.url) : [];
       
       console.log("Upload complete:", urls);
       
@@ -99,7 +99,7 @@ export function useFileUpload({
     try {
       setIsUploading(true);
       const result = await startUpload(files);
-      return result ? result.map((file) => file.url) : [];
+      return result ? result.map((file) => file.ufsUrl || file.url) : [];
     } catch (error) {
       console.error('Upload failed:', error);
       return [];
