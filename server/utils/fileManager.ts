@@ -14,14 +14,37 @@ const exists = promisify(fs.exists);
 export function extractUploadThingKeyFromUrl(url: string | null): string | null {
   if (!url) return null;
   
-  // Check if this is an UploadThing URL
-  if (url.includes('utfs.io/f/') || url.includes('ufs.sh/f/')) {
-    // Extract the key from the URL
-    // Format: https://utfs.io/f/{key} or https://{tenant}.ufs.sh/f/{key}
-    const parts = url.split('/f/');
-    if (parts.length === 2) {
-      return parts[1];
+  try {
+    // Check if this is an UploadThing URL
+    if (url.includes('utfs.io/f/') || url.includes('ufs.sh/f/') || url.includes('uploadthing.com/f/')) {
+      // Extract the key from the URL
+      // Format: https://utfs.io/f/{key} 
+      // or https://{tenant}.ufs.sh/f/{key}
+      // or https://uploadthing.com/f/{key}
+      
+      // Split by '/f/'
+      const parts = url.split('/f/');
+      if (parts.length === 2) {
+        // Handle any query parameters or hash fragments
+        const keyPart = parts[1].split('?')[0].split('#')[0];
+        return keyPart;
+      }
     }
+    
+    // Alternative method for edge cases
+    if (url.includes('utfs.io') || url.includes('ufs.sh') || url.includes('uploadthing.com')) {
+      try {
+        const urlObj = new URL(url);
+        const pathParts = urlObj.pathname.split('/');
+        if (pathParts.length >= 3 && pathParts[1] === 'f') {
+          return pathParts[2];
+        }
+      } catch (e) {
+        // URL parsing failed, continue with other methods
+      }
+    }
+  } catch (e) {
+    console.error('Error extracting key from URL:', e);
   }
   
   return null;
@@ -49,7 +72,13 @@ export class FileManager {
    * @returns The tracked file URL
    */
   static trackPendingFile(fileUrl: string, sessionId: string, filename?: string): string {
-    const key = fileUrl;
+    if (!fileUrl || !sessionId) {
+      console.error('Invalid parameters for tracking file:', { fileUrl, sessionId });
+      return fileUrl;
+    }
+    
+    // Extract key for UploadThing files or use the URL as key
+    const key = extractUploadThingKeyFromUrl(fileUrl) || fileUrl;
     
     // Check if this URL is already tracked for this session to avoid duplicates
     const existing = Array.from(this.pendingFiles.entries())
@@ -65,6 +94,12 @@ export class FileManager {
       });
     } else {
       console.log(`File already tracked: ${fileUrl} for session ${sessionId}`);
+      // Update the timestamp to keep it fresh
+      const existingKey = existing[0];
+      this.pendingFiles.set(existingKey, {
+        ...this.pendingFiles.get(existingKey)!,
+        timestamp: Date.now()
+      });
     }
     
     return fileUrl;
@@ -77,20 +112,31 @@ export class FileManager {
    * @returns Array of committed file URLs
    */
   static commitFiles(sessionId: string, fileUrls?: string[]): string[] {
+    if (!sessionId) {
+      console.error('Invalid sessionId for committing files');
+      return [];
+    }
+    
+    console.log(`Committing files for session ${sessionId}${fileUrls ? `, count: ${fileUrls.length}` : ''}`);
     const committedFiles: string[] = [];
     
     // Iterate through all pending files
     for (const entry of Array.from(this.pendingFiles.entries())) {
       const [key, pendingFile] = entry;
+      
       // If file belongs to this session and is in the list to commit (or no list provided)
-      if (pendingFile.sessionId === sessionId && 
-          (!fileUrls || fileUrls.includes(pendingFile.url))) {
+      const shouldCommit = pendingFile.sessionId === sessionId && 
+                           (!fileUrls || fileUrls.includes(pendingFile.url));
+      
+      if (shouldCommit) {
         // Remove from pending files since it's now committed
         this.pendingFiles.delete(key);
         committedFiles.push(pendingFile.url);
+        console.log(`Committed file: ${pendingFile.url}`);
       }
     }
     
+    console.log(`Committed ${committedFiles.length} files for session ${sessionId}`);
     return committedFiles;
   }
 
@@ -101,6 +147,11 @@ export class FileManager {
    * @returns Array of deleted file URLs
    */
   static async cleanupSession(sessionId: string, specificFileUrl?: string): Promise<string[]> {
+    if (!sessionId) {
+      console.error('Invalid sessionId for cleanup');
+      return [];
+    }
+    
     console.log(`Cleaning up session ${sessionId}${specificFileUrl ? ` (specific file: ${specificFileUrl})` : ''}`);
     
     const filesToDelete: string[] = [];
@@ -109,8 +160,12 @@ export class FileManager {
     // Find files for deletion
     for (const entry of Array.from(this.pendingFiles.entries())) {
       const [key, pendingFile] = entry;
-      if (pendingFile.sessionId === sessionId && 
-          (!specificFileUrl || pendingFile.url === specificFileUrl)) {
+      
+      // Match session ID and specific file URL if provided
+      const shouldDelete = pendingFile.sessionId === sessionId && 
+                         (!specificFileUrl || pendingFile.url === specificFileUrl);
+      
+      if (shouldDelete) {
         filesToDelete.push(pendingFile.url);
         keysToDelete.push(key);
       }
@@ -118,8 +173,16 @@ export class FileManager {
     
     console.log(`Found ${filesToDelete.length} files to delete for session ${sessionId}`);
     
+    // If specific URLs were provided but not found in tracking, still try to delete them
+    if (specificFileUrl && !filesToDelete.includes(specificFileUrl)) {
+      console.log(`Specific URL ${specificFileUrl} not found in tracking, attempting direct deletion`);
+      filesToDelete.push(specificFileUrl);
+    }
+    
     // Delete files from their storage locations
     const deletedUrls: string[] = [];
+    const failedUrls: string[] = [];
+    
     for (const fileUrl of filesToDelete) {
       try {
         // Check if this is an UploadThing file and delete it
@@ -135,9 +198,11 @@ export class FileManager {
               deletedUrls.push(fileUrl);
             } else {
               console.log(`Failed to delete UploadThing file: ${uploadThingKey}`);
+              failedUrls.push(fileUrl);
             }
           } catch (err) {
             console.error(`Error deleting UploadThing file with key ${uploadThingKey}:`, err);
+            failedUrls.push(fileUrl);
           }
         } 
         // For local files in the filesystem
@@ -146,6 +211,10 @@ export class FileManager {
           if (await exists(filePath)) {
             await unlink(filePath);
             console.log(`Deleted local file: ${filePath}`);
+            deletedUrls.push(fileUrl);
+          } else {
+            console.log(`Local file not found: ${filePath}`);
+            // Still mark as processed
             deletedUrls.push(fileUrl);
           }
         } 
@@ -156,15 +225,17 @@ export class FileManager {
         }
       } catch (error) {
         console.error(`Error deleting file ${fileUrl}:`, error);
+        failedUrls.push(fileUrl);
       }
     }
     
-    // Remove tracking entries
+    // Remove tracking entries for successful deletions and failed attempts
+    // We still remove tracking for failed attempts to prevent accumulation of bad entries
     for (const key of keysToDelete) {
       this.pendingFiles.delete(key);
     }
     
-    console.log(`Cleanup completed: ${deletedUrls.length} files deleted for session ${sessionId}`);
+    console.log(`Cleanup completed: ${deletedUrls.length} files deleted, ${failedUrls.length} failed for session ${sessionId}`);
     return deletedUrls;
   }
 
