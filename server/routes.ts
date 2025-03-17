@@ -1138,7 +1138,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "File URL and session ID are required" });
       }
       
-      const trackedFile = FileManager.trackPendingFile(fileUrl, sessionId, filename);
+      console.log(`Tracking file: ${fileUrl} for session: ${sessionId}`);
+      
+      // Support both ufsUrl and url properties from UploadThing
+      const fileUrlToTrack = fileUrl;
+      const trackedFile = FileManager.trackPendingFile(fileUrlToTrack, sessionId, filename);
+      
       return res.status(200).json({ 
         message: "File tracked successfully", 
         file: trackedFile,
@@ -1173,34 +1178,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.post(`${apiRouter}/files/cleanup`, isAdmin, async (req: Request, res: Response) => {
     try {
-      const { sessionId, fileUrl } = req.body;
+      const { sessionId, fileUrl, fileUrls } = req.body;
       
-      // If no sessionId or fileUrl is provided, return an error
-      if (!sessionId && !fileUrl) {
-        return res.status(400).json({ message: "Session ID or fileUrl is required" });
+      // If no sessionId, fileUrl, or fileUrls array is provided, return an error
+      if (!sessionId && !fileUrl && !fileUrls) {
+        return res.status(400).json({ message: "Session ID, fileUrl, or fileUrls array is required" });
       }
+      
+      console.log(`Cleaning up files for session ${sessionId || '*'}`);
       
       let deletedFiles: string[] = [];
       
-      if (fileUrl) {
+      // If fileUrls array is provided, delete each file in the array
+      if (fileUrls && Array.isArray(fileUrls) && fileUrls.length > 0) {
+        console.log(`Cleaning up ${fileUrls.length} specific files`);
+        
+        for (const url of fileUrls) {
+          const deleted = await FileManager.cleanupSession(sessionId || '*', url);
+          deletedFiles = [...deletedFiles, ...deleted];
+        }
+      } 
+      // If a single fileUrl is provided, delete just that file
+      else if (fileUrl) {
+        console.log(`Cleaning up specific file: ${fileUrl}`);
         // Handle individual file deletion with updated cleanupSession method
         // Use wildcard session ID '*' when deleting a specific file with no session context
         deletedFiles = await FileManager.cleanupSession(sessionId || '*', fileUrl);
-      } else {
-        // Clean up the entire session
+      } 
+      // Otherwise clean up the entire session
+      else if (sessionId) {
+        console.log(`Cleaning up entire session: ${sessionId}`);
         deletedFiles = await FileManager.cleanupSession(sessionId);
       }
       
+      console.log(`Cleanup completed: ${deletedFiles.length} files deleted`);
+      
       res.status(200).json({ 
-        success: deletedFiles.length > 0,
+        success: true,
         message: fileUrl 
           ? (deletedFiles.length > 0 ? `Deleted file: ${fileUrl}` : `Failed to delete file: ${fileUrl}`)
           : `Cleaned up ${deletedFiles.length} files`,
-        files: deletedFiles
+        deletedFiles // Return the actual array of deleted files 
       });
     } catch (error) {
       console.error("File cleanup error:", error);
-      res.status(500).json({ message: "Failed to cleanup files" });
+      res.status(500).json({ 
+        message: "Failed to cleanup files",
+        error: error instanceof Error ? error.message : String(error)
+      });
     }
   });
   

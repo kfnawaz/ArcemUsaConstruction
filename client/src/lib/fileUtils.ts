@@ -41,17 +41,36 @@ export const fileUtils = {
    * 
    * @param sessionId The session ID to clean up
    * @param fileUrl Optional specific file URL to delete
+   * @param fileUrls Optional array of file URLs to delete
    * @returns Promise with the deleted file URLs
    */
-  async cleanupFiles(sessionId: string, fileUrl?: string): Promise<string[]> {
+  async cleanupFiles(
+    sessionId: string, 
+    fileUrl?: string, 
+    fileUrls?: string[]
+  ): Promise<string[]> {
     try {
-      const response = await apiRequest<{ message: string, files: string[] }>({
+      console.log(`Cleaning up files for session: ${sessionId}`);
+      if (fileUrl) {
+        console.log(`Specific file to clean up: ${fileUrl}`);
+      }
+      if (fileUrls && fileUrls.length > 0) {
+        console.log(`Cleaning up ${fileUrls.length} specific files`);
+      }
+      
+      const response = await apiRequest<{ message: string, deletedFiles: string[] }>({
         url: '/api/files/cleanup',
         method: 'POST',
-        body: { sessionId, fileUrl }
+        body: { sessionId, fileUrl, fileUrls }
       });
       
-      return response?.files || [];
+      if (response?.deletedFiles) {
+        console.log(`Successfully cleaned up ${response.deletedFiles.length} files`);
+        return response.deletedFiles;
+      } else {
+        console.log('No files were cleaned up or response format was unexpected');
+        return [];
+      }
     } catch (error) {
       console.error('Error cleaning up files:', error);
       return [];
@@ -69,13 +88,25 @@ export const fileUtils = {
    */
   async trackFile(fileUrl: string, sessionId: string, filename?: string): Promise<string | null> {
     try {
+      console.log(`Tracking file: ${fileUrl} for session: ${sessionId}`);
+      
+      // Support both old and new UploadThing URL formats
+      // Ensure we're tracking the URL format that will be consistent across the application
+      const urlToTrack = fileUrl;
+      
       const response = await apiRequest<{ message: string, file: string, filename?: string }>({
         url: '/api/files/track',
         method: 'POST',
-        body: { fileUrl, sessionId, filename }
+        body: { fileUrl: urlToTrack, sessionId, filename }
       });
       
-      return response?.file || null;
+      if (response?.file) {
+        console.log(`File tracked successfully: ${response.file}`);
+        return response.file;
+      } else {
+        console.warn(`File tracking failed for: ${fileUrl}`);
+        return null;
+      }
     } catch (error) {
       console.error('Error tracking file:', error);
       return null;
