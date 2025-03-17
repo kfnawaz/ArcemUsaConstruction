@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useProject } from '@/hooks/useProject';
 import { InsertProject, insertProjectSchema, ExtendedInsertProject, ProjectGallery } from '@shared/schema';
 import { useQueryClient } from '@tanstack/react-query';
+import { Button } from '@/components/ui/button';
 
 // Helper function to safely handle string or null values
 function safeString(value: string | null | undefined): string {
@@ -15,7 +16,6 @@ function safeString(value: string | null | undefined): string {
 function safeBoolean(value: boolean | null | undefined): boolean {
   return value === true;
 }
-import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Form,
