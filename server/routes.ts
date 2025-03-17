@@ -1209,13 +1209,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!sessionId && !fileUrl && !fileUrls) {
         return res.status(400).json({ 
           success: false,
-          message: "Session ID, fileUrl, or fileUrls array is required" 
+          message: "Session ID, fileUrl, or fileUrls array is required",
+          deletedFiles: [],
+          deletedCount: 0,
+          failedFiles: [],
+          failedCount: 0 
         });
       }
       
       console.log(`Cleaning up files for session ${sessionId || '*'}`);
       
       let deletedFiles: string[] = [];
+      let failedFiles: string[] = [];
       
       // If fileUrls array is provided, delete each file in the array
       if (fileUrls && Array.isArray(fileUrls) && fileUrls.length > 0) {
@@ -1224,9 +1229,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         for (const url of fileUrls) {
           try {
             const deleted = await FileManager.cleanupSession(sessionId || '*', url);
-            deletedFiles = [...deletedFiles, ...deleted];
+            if (deleted.length > 0) {
+              deletedFiles = [...deletedFiles, ...deleted];
+            } else {
+              failedFiles.push(url);
+            }
           } catch (fileError) {
             console.error(`Error cleaning up file ${url}:`, fileError);
+            failedFiles.push(url);
             // Continue processing other files even if one fails
           }
         }
@@ -1240,17 +1250,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log(`File key to delete: ${fileKey}`);
         }
         
-        // Handle individual file deletion with updated cleanupSession method
-        // Use wildcard session ID '*' when deleting a specific file with no session context
-        deletedFiles = await FileManager.cleanupSession(sessionId || '*', fileUrl);
+        try {
+          // Handle individual file deletion with updated cleanupSession method
+          // Use wildcard session ID '*' when deleting a specific file with no session context
+          deletedFiles = await FileManager.cleanupSession(sessionId || '*', fileUrl);
+          
+          if (deletedFiles.length === 0) {
+            failedFiles.push(fileUrl);
+          }
+        } catch (fileError) {
+          console.error(`Error cleaning up file ${fileUrl}:`, fileError);
+          failedFiles.push(fileUrl);
+        }
       } 
       // Otherwise clean up the entire session
       else if (sessionId) {
         console.log(`Cleaning up entire session: ${sessionId}`);
-        deletedFiles = await FileManager.cleanupSession(sessionId);
+        try {
+          deletedFiles = await FileManager.cleanupSession(sessionId);
+        } catch (sessionError) {
+          console.error(`Error cleaning up session ${sessionId}:`, sessionError);
+        }
       }
       
-      console.log(`Cleanup completed: ${deletedFiles.length} files deleted`);
+      console.log(`Cleanup completed: ${deletedFiles.length} files deleted, ${failedFiles.length} failed`);
       
       return res.status(200).json({ 
         success: true,
@@ -1258,14 +1281,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ? (deletedFiles.length > 0 ? `Deleted file: ${fileUrl}` : `Failed to delete file: ${fileUrl}`)
           : `Cleaned up ${deletedFiles.length} files`,
         deletedFiles, // Return the actual array of deleted files
-        deletedCount: deletedFiles.length
+        deletedCount: deletedFiles.length,
+        failedFiles,
+        failedCount: failedFiles.length
       });
     } catch (error) {
       console.error("File cleanup error:", error);
       return res.status(500).json({ 
         success: false,
         message: "Failed to cleanup files",
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
+        deletedFiles: [],
+        deletedCount: 0,
+        failedFiles: [],
+        failedCount: 0
       });
     }
   });
