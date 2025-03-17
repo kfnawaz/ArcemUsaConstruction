@@ -102,13 +102,17 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
       }
     };
     
-    // Track upload session only when needed, not on every render
+    // Track upload session only once to prevent infinite loops
+    const [hasTrackedSession, setHasTrackedSession] = useState(false);
+    
     useEffect(() => {
-      // Only track the session if it exists and we're not creating a new service
-      if (uploadSession && !isNewService) {
+      // Only track the session if it exists, we're not creating a new service, and we haven't tracked it yet
+      if (uploadSession && !isNewService && !hasTrackedSession) {
+        console.log('ServiceGalleryManager: Tracking upload session:', uploadSession);
         trackUploadSession(uploadSession);
+        setHasTrackedSession(true);
       }
-    }, [uploadSession, isNewService, trackUploadSession]);
+    }, [uploadSession, isNewService, trackUploadSession, hasTrackedSession]);
     
     // Handle component unmount - clean up any uncommitted files
     useEffect(() => {
