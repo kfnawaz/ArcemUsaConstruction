@@ -389,16 +389,74 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
       return;
     }
     
+    // Start the submission process
+    setIsSubmitting(true);
+    
     // Check if we need to upload any images
     const hasUnuploadedImages = galleryImages.some(img => !img.uploaded);
     
-    // If we have unuploaded images, start the upload process
-    if (hasUnuploadedImages) {
-      setIsSubmitting(true);
-      await upload(); // This will trigger the onClientUploadComplete callback when done
-    } else {
-      // All images are already uploaded, proceed with submission
-      await submitWithGallery();
+    // Log submission state
+    console.log('Starting form submission', { 
+      hasUnuploadedImages, 
+      galleryImagesCount: galleryImages.length,
+      isSubmitting: true
+    });
+    
+    try {
+      // If we have unuploaded images, start the upload process first
+      if (hasUnuploadedImages) {
+        console.log('Uploading images before form submission');
+        
+        // Directly use the result of upload() instead of relying on callback
+        const urls = await upload();
+        console.log('Upload complete in onSubmit, got URLs:', urls);
+        
+        // After uploads complete, submit the form with uploaded URLs
+        if (urls.length > 0) {
+          // Update gallery images with the new URLs
+          setGalleryImages(prev => {
+            const newGallery = [...prev];
+            
+            // Find unuploaded images and update them with the new URLs
+            let urlIndex = 0;
+            for (let i = 0; i < newGallery.length; i++) {
+              if (!newGallery[i].uploaded && newGallery[i].file) {
+                if (urlIndex < urls.length) {
+                  newGallery[i].imageUrl = urls[urlIndex];
+                  newGallery[i].uploaded = true;
+                  newGallery[i].uploadProgress = 100;
+                  urlIndex++;
+                }
+              }
+            }
+            
+            return newGallery;
+          });
+          
+          // Now proceed with gallery submission
+          await submitWithGallery();
+        } else if (urls.length === 0 && hasUnuploadedImages) {
+          // No URLs returned, handle the error
+          toast({
+            title: "Upload Error",
+            description: "Failed to upload images. Please try again.",
+            variant: "destructive"
+          });
+          setIsSubmitting(false);
+        }
+      } else {
+        // All images are already uploaded, proceed with submission
+        console.log('All images already uploaded, proceeding with form submission');
+        await submitWithGallery();
+      }
+    } catch (error) {
+      console.error("Error during form submission:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save the project. Please try again.",
+        variant: "destructive"
+      });
+      setIsSubmitting(false);
     }
   };
 

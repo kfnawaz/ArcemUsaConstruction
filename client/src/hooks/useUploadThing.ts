@@ -99,12 +99,32 @@ export function useFileUpload({
     try {
       setIsUploading(true);
       const result = await startUpload(files);
-      return result ? result.map((file) => file.ufsUrl || file.url) : [];
+      
+      // Successfully uploaded
+      setIsUploading(false);
+      
+      // Process result before returning
+      const urls = result ? result.map((file) => file.ufsUrl || file.url) : [];
+      
+      // Call the onClientUploadComplete callback with the URLs
+      if (urls.length > 0 && onClientUploadComplete) {
+        console.log('Upload complete! URLs:', urls);
+        onClientUploadComplete(urls);
+      }
+      
+      return urls;
     } catch (error) {
       console.error('Upload failed:', error);
+      setIsUploading(false);
+      
+      // Call the error handler if provided
+      if (onUploadError && error instanceof Error) {
+        onUploadError(error);
+      }
+      
       return [];
     }
-  }, [files, startUpload]);
+  }, [files, startUpload, onClientUploadComplete, onUploadError]);
 
   // Define file size limits and permitted information
   const permittedFileInfo = {
