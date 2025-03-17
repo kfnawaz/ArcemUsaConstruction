@@ -1228,11 +1228,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         for (const url of fileUrls) {
           try {
-            const deleted = await FileManager.cleanupSession(sessionId || '*', url);
-            if (deleted.length > 0) {
-              deletedFiles = [...deletedFiles, ...deleted];
-            } else {
-              failedFiles.push(url);
+            const result = await FileManager.cleanupSession(sessionId || '*', url);
+            if (result.deletedUrls.length > 0) {
+              deletedFiles = [...deletedFiles, ...result.deletedUrls];
+            }
+            if (result.failedUrls.length > 0) {
+              failedFiles = [...failedFiles, ...result.failedUrls];
             }
           } catch (fileError) {
             console.error(`Error cleaning up file ${url}:`, fileError);
@@ -1253,9 +1254,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           // Handle individual file deletion with updated cleanupSession method
           // Use wildcard session ID '*' when deleting a specific file with no session context
-          deletedFiles = await FileManager.cleanupSession(sessionId || '*', fileUrl);
+          const result = await FileManager.cleanupSession(sessionId || '*', fileUrl);
           
-          if (deletedFiles.length === 0) {
+          // Add to our running list of deleted and failed files
+          deletedFiles = [...deletedFiles, ...result.deletedUrls];
+          failedFiles = [...failedFiles, ...result.failedUrls];
+          
+          // If nothing was deleted, make sure we record it as a failure
+          if (result.deletedUrls.length === 0 && result.failedUrls.length === 0) {
             failedFiles.push(fileUrl);
           }
         } catch (fileError) {
@@ -1267,7 +1273,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       else if (sessionId) {
         console.log(`Cleaning up entire session: ${sessionId}`);
         try {
-          deletedFiles = await FileManager.cleanupSession(sessionId);
+          const result = await FileManager.cleanupSession(sessionId);
+          deletedFiles = result.deletedUrls;
+          failedFiles = result.failedUrls;
         } catch (sessionError) {
           console.error(`Error cleaning up session ${sessionId}:`, sessionError);
         }

@@ -156,12 +156,12 @@ export class FileManager {
    * Deletes all pending files for a session (when form is cancelled)
    * @param sessionId The session ID to cleanup
    * @param specificFileUrl Optional specific file URL to delete from the session
-   * @returns Array of deleted file URLs
+   * @returns Object with arrays of deleted and failed file URLs
    */
-  static async cleanupSession(sessionId: string, specificFileUrl?: string): Promise<string[]> {
+  static async cleanupSession(sessionId: string, specificFileUrl?: string): Promise<{ deletedUrls: string[], failedUrls: string[] }> {
     if (!sessionId) {
       console.error('Invalid sessionId for cleanup');
-      return [];
+      return { deletedUrls: [], failedUrls: [] };
     }
     
     console.log(`Cleaning up session ${sessionId}${specificFileUrl ? ` (specific file: ${specificFileUrl})` : ''}`);
@@ -232,8 +232,8 @@ export class FileManager {
         } 
         else {
           console.log(`Unknown file format, can't delete: ${fileUrl}`);
-          // Still mark it as deleted for tracking purposes
-          deletedUrls.push(fileUrl);
+          // Add to failed URLs since we can't properly delete it
+          failedUrls.push(fileUrl);
         }
       } catch (error) {
         console.error(`Error deleting file ${fileUrl}:`, error);
@@ -248,7 +248,7 @@ export class FileManager {
     }
     
     console.log(`Cleanup completed: ${deletedUrls.length} files deleted, ${failedUrls.length} failed for session ${sessionId}`);
-    return deletedUrls;
+    return { deletedUrls, failedUrls };
   }
 
   /**
@@ -271,8 +271,8 @@ export class FileManager {
     // Clean up each old session
     let totalCleaned = 0;
     for (const sessionId of Array.from(oldSessionIds)) {
-      const cleanedFiles = await this.cleanupSession(sessionId);
-      totalCleaned += cleanedFiles.length;
+      const result = await this.cleanupSession(sessionId);
+      totalCleaned += result.deletedUrls.length;
     }
     
     return totalCleaned;
