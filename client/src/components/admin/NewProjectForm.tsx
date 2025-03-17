@@ -249,12 +249,31 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
 
   // Set a gallery image as the feature image
   const setFeatureImage = (id: string) => {
-    setGalleryImages(prev => 
-      prev.map(img => ({
+    console.log("Setting feature image:", id);
+    
+    // Update the gallery images, ensuring only one has isFeature=true
+    setGalleryImages(prev => {
+      // Create a new copy of the gallery
+      const newGallery = prev.map(img => ({
         ...img,
         isFeature: img.id === id
-      }))
-    );
+      }));
+      
+      // Debug log for verification
+      const featureImage = newGallery.find(img => img.isFeature);
+      console.log("New feature image:", featureImage ? 
+        { id: featureImage.id, url: featureImage.imageUrl?.substring(0, 30) + '...' } : 
+        'None selected');
+      
+      return newGallery;
+    });
+    
+    // Show toast notification
+    toast({
+      title: "Feature Image Set",
+      description: "This image will be used as the main project image.",
+      duration: 3000
+    });
   };
 
   // Remove a gallery image
@@ -376,15 +395,26 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
   useEffect(() => {
     // Only load gallery if we have data and haven't already loaded it
     if (projectId && galleryData && galleryData.length > 0 && !galleryLoaded) {
+      console.log("Loading gallery images with feature info:", 
+        galleryData.map(img => ({ id: img.id, isFeature: img.isFeature }))
+      );
+      
       // Convert gallery data to our temporary format
       const tempGallery: TempGalleryImage[] = galleryData.map(img => ({
         id: `existing-${img.id}`, // Prefix to identify existing images
         imageUrl: img.imageUrl,
         caption: img.caption || '',
         displayOrder: img.displayOrder || 0,
-        isFeature: img.isFeature || false,
+        isFeature: img.isFeature === true, // Force boolean evaluation
         uploaded: true // These are already uploaded
       }));
+      
+      // Make sure at least one image is marked as a feature
+      const hasFeatureImage = tempGallery.some(img => img.isFeature);
+      if (!hasFeatureImage && tempGallery.length > 0) {
+        // If no feature image is marked, make the first one the feature
+        tempGallery[0].isFeature = true;
+      }
       
       setGalleryImages(tempGallery);
       setGalleryLoaded(true);
