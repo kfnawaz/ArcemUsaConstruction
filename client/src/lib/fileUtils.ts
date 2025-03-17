@@ -281,12 +281,18 @@ export function isImageFile(urlOrFilename: string): boolean {
  */
 export async function cleanupOldFiles(maxAgeMs: number = 3600000): Promise<number> {
   try {
+    // Create a temporary session ID for cleanup - this is required by the API
+    const tempSessionId = `cleanup-${Date.now()}`;
+    
     const response = await fetch('/api/files/cleanup', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ maxAgeMs }),
+      body: JSON.stringify({ 
+        sessionId: tempSessionId,
+        maxAgeMs 
+      }),
       credentials: 'include'
     });
     
