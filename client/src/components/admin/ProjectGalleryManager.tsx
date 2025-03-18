@@ -171,15 +171,23 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
         // Check if we need to clean up (only if we have sessions and not all were committed)
         if (uploadSessions.size > 0 && cleanupUploads) {
           console.log("Cleaning up uncommitted gallery uploads on unmount");
-          // Clean up each session individually
+          
+          // Get all existing gallery image URLs to preserve
+          const existingImageUrls = projectGallery
+            ? projectGallery.map(img => img.imageUrl).filter(Boolean)
+            : [];
+            
+          console.log(`Will preserve ${existingImageUrls.length} existing gallery images during cleanup`);
+          
+          // Clean up each session individually, preserving existing images
           uploadSessions.forEach(sessionId => {
-            cleanupUploads(sessionId).catch(err => {
+            cleanupUploads(sessionId, existingImageUrls).catch(err => {
               console.error(`Error cleaning up gallery upload session ${sessionId}:`, err);
             });
           });
         }
       };
-    }, [cleanupUploads, uploadSessions]);
+    }, [cleanupUploads, uploadSessions, galleryImages]);
 
     // Calculate the next order value for new images
     const getNextOrderValue = () => {
@@ -393,17 +401,34 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
       
       // If we're tracking this file via sessions, also try to clean it up server-side
       if (pendingImage && pendingImage.url) {
-        // We don't have the specific session ID for this file, so try cleaning up all sessions
-        // This is not ideal but for now, individual files can't be deleted this way
-        // In a future update, we should track which file belongs to which session
+        // Check if this URL might be used in existing gallery images
+        const existingImageUrls = galleryImages 
+          ? galleryImages.map(img => img.imageUrl)
+          : [];
+          
+        // If this URL is in the existing gallery, don't try to delete it
+        if (existingImageUrls.includes(pendingImage.url)) {
+          console.log(`Not deleting file ${pendingImage.url} as it exists in the gallery`);
+          setShowMaxImagesWarning(false);
+          return;
+        }
+        
         try {
-          // Make direct API call to cleanup the specific file
+          // Get list of other pending images to preserve
+          const otherPendingUrls = pendingImages
+            .filter((_, i) => i !== index)
+            .map(img => img.url);
+            
+          // Make direct API call to cleanup the specific file, preserving other files
           const response = await fetch('/api/files/cleanup', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ fileUrl: pendingImage.url }),
+            body: JSON.stringify({ 
+              fileUrl: pendingImage.url,
+              preserveUrls: [...existingImageUrls, ...otherPendingUrls]
+            }),
             credentials: 'include'
           });
           

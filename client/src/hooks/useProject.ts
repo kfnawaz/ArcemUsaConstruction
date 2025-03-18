@@ -329,14 +329,22 @@ export const useProject = (projectId?: number) => {
   };
   
   // Clean up unused files from a session
-  const cleanupUploads = async (sessionId: string): Promise<boolean> => {
+  const cleanupUploads = async (sessionId: string, preserveUrls: string[] = []): Promise<boolean> => {
     try {
+      // Log the cleanup operation with preserve list
+      if (preserveUrls.length > 0) {
+        console.log(`Cleaning up session ${sessionId} while preserving ${preserveUrls.length} files`);
+      }
+
       const response = await fetch('/api/files/cleanup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ sessionId }),
+        body: JSON.stringify({ 
+          sessionId,
+          preserveUrls: preserveUrls.length > 0 ? preserveUrls : undefined
+        }),
         credentials: 'include'
       });
       
@@ -345,6 +353,11 @@ export const useProject = (projectId?: number) => {
       }
       
       const data = await response.json();
+      
+      // Log the result
+      if (data.success) {
+        console.log(`Cleanup result: ${data.deletedCount} deleted, ${data.preservedCount} preserved, ${data.failedCount} failed`);
+      }
       
       // Remove this session from tracked sessions on success
       if (data.success) {
