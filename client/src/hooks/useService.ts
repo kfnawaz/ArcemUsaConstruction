@@ -253,8 +253,13 @@ export const useService = (serviceId?: number) => {
   };
   
   // Cleanup uploads - delete temporary files that weren't committed
-  const cleanupUploads = async (sessionId: string, specificFileUrl?: string): Promise<string[]> => {
+  const cleanupUploads = async (sessionId: string, preserveUrls: string[] = []): Promise<string[]> => {
     try {
+      // Log the cleanup operation with preserve list
+      if (preserveUrls.length > 0) {
+        console.log(`Cleaning up service session ${sessionId} while preserving ${preserveUrls.length} files`);
+      }
+
       const response = await fetch('/api/files/cleanup', {
         method: 'POST',
         headers: {
@@ -262,7 +267,7 @@ export const useService = (serviceId?: number) => {
         },
         body: JSON.stringify({ 
           sessionId,
-          fileUrl: specificFileUrl
+          preserveUrls: preserveUrls.length > 0 ? preserveUrls : undefined
         }),
         credentials: 'include'
       });
@@ -274,14 +279,17 @@ export const useService = (serviceId?: number) => {
       const data = await response.json();
       console.log("Cleaned up files for session:", sessionId, data.deletedFiles);
       
-      // Remove this session from our tracking if not specifying a single file
-      if (!specificFileUrl) {
-        setUploadSessions(prev => {
-          const updated = new Set(prev);
-          updated.delete(sessionId);
-          return updated;
-        });
+      // Log the result
+      if (data.success) {
+        console.log(`Cleanup result: ${data.deletedCount} deleted, ${data.preservedCount} preserved, ${data.failedCount} failed`);
       }
+      
+      // Remove this session from our tracking
+      setUploadSessions(prev => {
+        const updated = new Set(prev);
+        updated.delete(sessionId);
+        return updated;
+      });
       
       return data.deletedFiles;
     } catch (error) {

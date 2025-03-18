@@ -187,7 +187,7 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
           });
         }
       };
-    }, [cleanupUploads, uploadSessions, galleryImages]);
+    }, [cleanupUploads, uploadSessions, projectGallery]);
 
     // Calculate the next order value for new images
     const getNextOrderValue = () => {
@@ -402,8 +402,8 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
       // If we're tracking this file via sessions, also try to clean it up server-side
       if (pendingImage && pendingImage.url) {
         // Check if this URL might be used in existing gallery images
-        const existingImageUrls = galleryImages 
-          ? galleryImages.map(img => img.imageUrl)
+        const existingImageUrls = projectGallery 
+          ? projectGallery.map(img => img.imageUrl)
           : [];
           
         // If this URL is in the existing gallery, don't try to delete it

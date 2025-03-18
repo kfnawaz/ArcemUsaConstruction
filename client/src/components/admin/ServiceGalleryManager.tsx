@@ -90,8 +90,14 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
     const cleanupUncommittedFiles = async () => {
       if (uploadSession && !isCommitted && pendingImages.length > 0) {
         try {
-          console.log('Cleaning up uncommitted files for session:', uploadSession);
-          await cleanupUploads(uploadSession);
+          // Get all existing gallery image URLs to preserve
+          const existingImageUrls = serviceGallery
+            ? serviceGallery.map(img => img.imageUrl).filter(Boolean)
+            : [];
+            
+          console.log(`Cleaning up uncommitted files for session ${uploadSession} while preserving ${existingImageUrls.length} existing gallery images`);
+          
+          await cleanupUploads(uploadSession, existingImageUrls);
           console.log('Successfully cleaned up uncommitted files');
         } catch (err) {
           console.error('Error cleaning up files:', err);
@@ -282,7 +288,20 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
         try {
           console.log('Deleting file:', imageUrl);
           if (uploadSession) {
-            await cleanupUploads(uploadSession, imageUrl);
+            // Get existing gallery images to preserve
+            const existingImageUrls = serviceGallery
+              ? serviceGallery.map(img => img.imageUrl).filter(Boolean)
+              : [];
+              
+            // Filter out the image we're trying to delete
+            const preserveUrls = existingImageUrls.filter(url => url !== imageUrl);
+            
+            // Also preserve other pending images
+            const otherPendingUrls = pendingImages
+              .filter(url => url !== imageUrl)
+              .filter(Boolean);
+              
+            await cleanupUploads(uploadSession, [...preserveUrls, ...otherPendingUrls]);
           } else {
             // Fallback if no session ID (unlikely but possible)
             await fetch('/api/files/cleanup', {

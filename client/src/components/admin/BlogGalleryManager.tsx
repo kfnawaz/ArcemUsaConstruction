@@ -63,8 +63,15 @@ const BlogGalleryManager: React.FC<BlogGalleryManagerProps> = ({ postId }) => {
   const cleanupUncommittedFiles = async () => {
     if (uploadSession && !isCommitted && uploadedFiles.length > 0) {
       try {
-        console.log('Cleaning up uncommitted files for session:', uploadSession);
-        const success = await cleanupUploads(uploadSession);
+        // Get all existing gallery image URLs to preserve
+        const existingImageUrls = galleryImages
+          ? galleryImages.map(img => img.imageUrl).filter(Boolean)
+          : [];
+          
+        console.log(`Cleaning up uncommitted files for session ${uploadSession} while preserving ${existingImageUrls.length} existing gallery images`);
+        
+        // Call cleanupUploads with existing gallery URLs to preserve
+        const success = await cleanupUploads(uploadSession, existingImageUrls);
         
         if (success) {
           console.log('Successfully cleaned up uncommitted files');
