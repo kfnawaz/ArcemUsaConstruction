@@ -55,7 +55,7 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import * as fileUtils from '@/lib/fileUtils';
+import fileUtils from '@/lib/fileUtils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { generateId } from '@/lib/utils';
 import SortableGallery, { GalleryImage } from '@/components/common/SortableGallery';

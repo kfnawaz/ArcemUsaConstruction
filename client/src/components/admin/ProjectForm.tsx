@@ -37,7 +37,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import ProjectGalleryManager, { ProjectGalleryManagerHandle } from './ProjectGalleryManager';
-import * as fileUtils from '@/lib/fileUtils';
+import fileUtils from '@/lib/fileUtils';
 import UploadThingUploader from '@/components/common/UploadThingUploader';
 import {
   Dialog,
