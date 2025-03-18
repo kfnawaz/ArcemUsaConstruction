@@ -16,7 +16,7 @@ import {
   CardContent,
 } from '@/components/ui/card';
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import FileUpload from '@/components/common/FileUpload';
+import UploadThingDropzone from '@/components/common/UploadThingDropzone';
 import fileUtils from '@/lib/fileUtils';
 
 interface ServiceGalleryManagerProps {
@@ -313,13 +313,11 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
           
           {canAddMoreImages ? (
             <div className="mb-4">
-              <FileUpload 
+              <UploadThingDropzone 
                 onUploadComplete={handleFileUpload}
                 multiple={true}
-                accept="image/*"
-                maxSizeMB={5}
-                buttonText="Add Images"
-                helpText={`Add up to ${MAX_GALLERY_IMAGES - currentImageCount} more image${MAX_GALLERY_IMAGES - currentImageCount !== 1 ? 's' : ''}`}
+                endpoint="imageUploader"
+                maxFiles={MAX_GALLERY_IMAGES - currentImageCount}
                 sessionId={uploadSession}
                 onSessionIdCreated={(newSessionId) => {
                   if (newSessionId !== uploadSession) {
@@ -328,6 +326,10 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
                   }
                 }}
               />
+              <p className="text-sm text-muted-foreground mt-2">
+                Add up to {MAX_GALLERY_IMAGES - currentImageCount} more image{MAX_GALLERY_IMAGES - currentImageCount !== 1 ? 's' : ''}.
+                Each image can be up to 4MB.
+              </p>
             </div>
           ) : null}
 
