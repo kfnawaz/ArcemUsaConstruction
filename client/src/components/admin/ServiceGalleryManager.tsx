@@ -238,25 +238,46 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
     };
 
     const confirmDelete = async () => {
-      if (selectedImageId !== null) {
-        try {
-          await deleteGalleryImage(selectedImageId);
-          setShowMaxImagesWarning(false);
-          toast({
-            title: 'Image deleted',
-            description: 'The image has been removed from the gallery.',
-          });
-        } catch (error) {
-          console.error('Error deleting image:', error);
-          toast({
-            title: 'Deletion failed',
-            description: 'Failed to delete the image. Please try again.',
-            variant: 'destructive',
-          });
-        } finally {
-          setIsDeleteDialogOpen(false);
-          setSelectedImageId(null);
-        }
+      if (selectedImageId === null) {
+        setIsDeleteDialogOpen(false);
+        return;
+      }
+      
+      // Store the ID we're about to delete locally, so we don't lose it due to state updates
+      const imageIdToDelete = selectedImageId;
+      
+      // First get the image URL before it's deleted (for error recovery)
+      const imageToDelete = serviceGallery?.find(img => img.id === imageIdToDelete);
+      const imageUrl = imageToDelete?.imageUrl || null;
+      
+      // First close the dialog to improve UI responsiveness
+      setIsDeleteDialogOpen(false);
+      
+      try {
+        console.log(`Deleting gallery image with ID: ${imageIdToDelete}`);
+        
+        // Make API call to delete the image
+        await deleteGalleryImage(imageIdToDelete);
+        
+        // Update UI state after successful deletion
+        setShowMaxImagesWarning(false);
+        setSelectedImageId(null);
+        
+        toast({
+          title: 'Image deleted',
+          description: 'The image has been removed from the gallery.',
+        });
+      } catch (error) {
+        console.error('Error deleting image:', error);
+        
+        // Reset state to allow retry
+        setSelectedImageId(null);
+        
+        toast({
+          title: 'Deletion failed',
+          description: 'Failed to delete the image. Please try again.',
+          variant: 'destructive',
+        });
       }
     };
     
@@ -408,14 +429,26 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
         </div>
 
         {/* Delete Confirmation Dialog */}
-        <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <Dialog 
+          open={isDeleteDialogOpen} 
+          onOpenChange={(open) => {
+            // Only allow closing from Cancel button or X to prevent accidental closures
+            if (!open && !isDeletingGalleryImage) {
+              setIsDeleteDialogOpen(false);
+            }
+          }}
+        >
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Delete Gallery Image</DialogTitle>
             </DialogHeader>
             <p>Are you sure you want to delete this image? This action cannot be undone.</p>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+              <Button 
+                variant="outline" 
+                onClick={() => setIsDeleteDialogOpen(false)}
+                disabled={isDeletingGalleryImage}
+              >
                 Cancel
               </Button>
               <Button

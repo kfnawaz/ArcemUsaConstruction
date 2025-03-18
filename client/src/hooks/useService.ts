@@ -190,25 +190,38 @@ export const useService = (serviceId?: number) => {
   // Delete gallery image mutation
   const deleteGalleryImageMutation = useMutation({
     mutationFn: async (id: number) => {
+      console.log(`Executing DELETE request for gallery image with ID: ${id}`);
       return await apiRequest({
         url: `/api/services/gallery/${id}`,
         method: 'DELETE'
       });
     },
-    onSuccess: () => {
+    onSuccess: (_data, id) => {
+      console.log(`Successfully deleted gallery image with ID: ${id}`);
+      
+      // Show toast notification
       toast({
         title: 'Gallery image deleted',
         description: 'The gallery image has been deleted successfully.',
       });
+      
+      // Invalidate queries to refresh data
       if (serviceId) {
+        // Invalidate gallery data
         queryClient.invalidateQueries({ queryKey: ['/api/services', serviceId, 'gallery'] });
+        
+        // Also invalidate service data since some views may show the gallery as part of the service
+        queryClient.invalidateQueries({ queryKey: ['/api/services', serviceId] });
+        
+        // Invalidate all services list to update counts/thumbnails
+        queryClient.invalidateQueries({ queryKey: ['/api/services'] });
       }
     },
-    onError: (error: Error) => {
-      console.error('Gallery image deletion error:', error);
+    onError: (error: Error, id) => {
+      console.error(`Gallery image deletion error for ID ${id}:`, error);
       toast({
         title: 'Failed to delete gallery image',
-        description: error.message,
+        description: error.message || 'An unexpected error occurred',
         variant: 'destructive',
       });
     },
