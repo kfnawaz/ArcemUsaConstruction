@@ -68,16 +68,29 @@ const RelatedProjects = ({ currentProjectId, category }: { currentProjectId: num
               alt={project.title} 
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               onError={(e) => {
-                console.error(`Failed to load related project image: ${project.image}`);
-                e.currentTarget.src = '';
-                e.currentTarget.parentElement?.classList.add('related-image-error');
-                e.currentTarget.parentElement?.insertAdjacentHTML(
-                  'afterbegin',
-                  `<div class="w-full h-full bg-gray-200 flex flex-col items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400 mb-2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-                    <p class="text-gray-500 text-xs">Image unavailable</p>
-                  </div>`
-                );
+                // If the original URL failed to load, try an alternative format
+                if (e.currentTarget.src === project.image && project.image.includes('utfs.io')) {
+                  // Convert from utfs.io/f/ to ufs.sh/f/ format
+                  const newUrl = project.image.replace('utfs.io/f/', 'ufs.sh/f/');
+                  console.log(`Retrying with alternative URL format for related project: ${newUrl}`);
+                  e.currentTarget.src = newUrl;
+                } else if (e.currentTarget.src === project.image && project.image.includes('ufs.sh')) {
+                  // Convert from ufs.sh/f/ to utfs.io/f/ format
+                  const newUrl = project.image.replace('ufs.sh/f/', 'utfs.io/f/');
+                  console.log(`Retrying with alternative URL format for related project: ${newUrl}`);
+                  e.currentTarget.src = newUrl;
+                } else {
+                  console.error(`Failed to load related project image: ${project.image}`);
+                  e.currentTarget.src = '';
+                  e.currentTarget.parentElement?.classList.add('related-image-error');
+                  e.currentTarget.parentElement?.insertAdjacentHTML(
+                    'afterbegin',
+                    `<div class="w-full h-full bg-gray-200 flex flex-col items-center justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400 mb-2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                      <p class="text-gray-500 text-xs">Image unavailable</p>
+                    </div>`
+                  );
+                }
               }}
             />
             <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
@@ -226,16 +239,29 @@ const ProjectDetail = () => {
               alt={project.title} 
               className="w-full h-auto object-cover mb-8 shadow-lg"
               onError={(e) => {
-                console.error(`Failed to load project main image: ${project.image}`);
-                e.currentTarget.src = '';
-                e.currentTarget.parentElement?.classList.add('image-error');
-                e.currentTarget.parentElement?.insertAdjacentHTML(
-                  'afterbegin',
-                  `<div class="w-full aspect-video bg-gray-200 flex flex-col items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400 mb-2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-                    <p class="text-gray-500 text-sm">Project image unavailable</p>
-                  </div>`
-                );
+                // If the original URL failed to load, try an alternative format
+                if (e.currentTarget.src === project.image && project.image.includes('utfs.io')) {
+                  // Convert from utfs.io/f/ to ufs.sh/f/ format
+                  const newUrl = project.image.replace('utfs.io/f/', 'ufs.sh/f/');
+                  console.log(`Retrying with alternative URL format for main image: ${newUrl}`);
+                  e.currentTarget.src = newUrl;
+                } else if (e.currentTarget.src === project.image && project.image.includes('ufs.sh')) {
+                  // Convert from ufs.sh/f/ to utfs.io/f/ format
+                  const newUrl = project.image.replace('ufs.sh/f/', 'utfs.io/f/');
+                  console.log(`Retrying with alternative URL format for main image: ${newUrl}`);
+                  e.currentTarget.src = newUrl;
+                } else {
+                  console.error(`Failed to load project main image: ${project.image}`);
+                  e.currentTarget.src = '';
+                  e.currentTarget.parentElement?.classList.add('image-error');
+                  e.currentTarget.parentElement?.insertAdjacentHTML(
+                    'afterbegin',
+                    `<div class="w-full aspect-video bg-gray-200 flex flex-col items-center justify-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400 mb-2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                      <p class="text-gray-500 text-sm">Project image unavailable</p>
+                    </div>`
+                  );
+                }
               }}
             />
             
@@ -255,16 +281,29 @@ const ProjectDetail = () => {
                         alt={image.caption || `Gallery image ${index + 1}`}
                         className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                         onError={(e) => {
-                          console.error(`Failed to load gallery image: ${image.imageUrl}`);
-                          e.currentTarget.src = '';
-                          e.currentTarget.parentElement?.classList.add('gallery-image-error');
-                          e.currentTarget.parentElement?.insertAdjacentHTML(
-                            'afterbegin',
-                            `<div class="w-full h-full bg-gray-200 flex flex-col items-center justify-center">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400 mb-2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-                              <p class="text-gray-500 text-xs">Image unavailable</p>
-                            </div>`
-                          );
+                          // If the original URL failed to load, try an alternative format
+                          if (e.currentTarget.src === image.imageUrl && image.imageUrl.includes('utfs.io')) {
+                            // Convert from utfs.io/f/ to ufs.sh/f/ format
+                            const newUrl = image.imageUrl.replace('utfs.io/f/', 'ufs.sh/f/');
+                            console.log(`Retrying with alternative URL format: ${newUrl}`);
+                            e.currentTarget.src = newUrl;
+                          } else if (e.currentTarget.src === image.imageUrl && image.imageUrl.includes('ufs.sh')) {
+                            // Convert from ufs.sh/f/ to utfs.io/f/ format
+                            const newUrl = image.imageUrl.replace('ufs.sh/f/', 'utfs.io/f/');
+                            console.log(`Retrying with alternative URL format: ${newUrl}`);
+                            e.currentTarget.src = newUrl;
+                          } else {
+                            console.error(`Failed to load gallery image: ${image.imageUrl}`);
+                            e.currentTarget.src = '';
+                            e.currentTarget.parentElement?.classList.add('gallery-image-error');
+                            e.currentTarget.parentElement?.insertAdjacentHTML(
+                              'afterbegin',
+                              `<div class="w-full h-full bg-gray-200 flex flex-col items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400 mb-2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                                <p class="text-gray-500 text-xs">Image unavailable</p>
+                              </div>`
+                            );
+                          }
                         }}
                       />
                       <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-opacity duration-300 flex items-center justify-center">
@@ -394,16 +433,30 @@ const ProjectDetail = () => {
                     className="max-h-full max-w-full object-contain"
                     onError={(e) => {
                       const currentImage = sortedGalleryImages[currentImageIndex];
-                      console.error(`Failed to load lightbox image: ${currentImage?.imageUrl}`);
-                      e.currentTarget.src = '';
-                      e.currentTarget.parentElement?.classList.add('lightbox-image-error');
-                      e.currentTarget.parentElement?.insertAdjacentHTML(
-                        'afterbegin',
-                        `<div class="bg-gray-200 flex flex-col items-center justify-center p-10 rounded-lg">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400 mb-4"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-                          <p class="text-gray-500 text-base">Image is not available</p>
-                        </div>`
-                      );
+                      
+                      // If the original URL failed to load, try an alternative format
+                      if (e.currentTarget.src === currentImage?.imageUrl && currentImage?.imageUrl.includes('utfs.io')) {
+                        // Convert from utfs.io/f/ to ufs.sh/f/ format
+                        const newUrl = currentImage.imageUrl.replace('utfs.io/f/', 'ufs.sh/f/');
+                        console.log(`Retrying lightbox with alternative URL format: ${newUrl}`);
+                        e.currentTarget.src = newUrl;
+                      } else if (e.currentTarget.src === currentImage?.imageUrl && currentImage?.imageUrl.includes('ufs.sh')) {
+                        // Convert from ufs.sh/f/ to utfs.io/f/ format
+                        const newUrl = currentImage.imageUrl.replace('ufs.sh/f/', 'utfs.io/f/');
+                        console.log(`Retrying lightbox with alternative URL format: ${newUrl}`);
+                        e.currentTarget.src = newUrl;
+                      } else {
+                        console.error(`Failed to load lightbox image: ${currentImage?.imageUrl}`);
+                        e.currentTarget.src = '';
+                        e.currentTarget.parentElement?.classList.add('lightbox-image-error');
+                        e.currentTarget.parentElement?.insertAdjacentHTML(
+                          'afterbegin',
+                          `<div class="bg-gray-200 flex flex-col items-center justify-center p-10 rounded-lg">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-gray-400 mb-4"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                            <p class="text-gray-500 text-base">Image is not available</p>
+                          </div>`
+                        );
+                      }
                     }}
                   />
                   
