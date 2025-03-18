@@ -246,7 +246,9 @@ export default function UploadThingDropzone({
       });
       
       // Notify parent of change
-      onFilesUploaded(updated);
+      if (onFilesUploaded) {
+        onFilesUploaded(updated);
+      }
       
       return updated;
     });
@@ -261,7 +263,9 @@ export default function UploadThingDropzone({
       }));
       
       // Notify parent of change
-      onFilesUploaded(updated);
+      if (onFilesUploaded) {
+        onFilesUploaded(updated);
+      }
       
       return updated;
     });
@@ -279,7 +283,9 @@ export default function UploadThingDropzone({
       updated[index].caption = caption;
       
       // Notify parent of change
-      onFilesUploaded(updated);
+      if (onFilesUploaded) {
+        onFilesUploaded(updated);
+      }
       
       return updated;
     });
