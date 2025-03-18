@@ -246,38 +246,40 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
       // Store the ID we're about to delete locally, so we don't lose it due to state updates
       const imageIdToDelete = selectedImageId;
       
-      // First get the image URL before it's deleted (for error recovery)
-      const imageToDelete = serviceGallery?.find(img => img.id === imageIdToDelete);
-      const imageUrl = imageToDelete?.imageUrl || null;
-      
-      // First close the dialog to improve UI responsiveness
-      setIsDeleteDialogOpen(false);
-      
       try {
+        // Important: Set state first before making API call to ensure UI responsiveness
+        setIsDeleteDialogOpen(false); // Close dialog
+        setSelectedImageId(null); // Clear selection
+        
         console.log(`Deleting gallery image with ID: ${imageIdToDelete}`);
         
-        // Make API call to delete the image
-        await deleteGalleryImage(imageIdToDelete);
-        
-        // Update UI state after successful deletion
-        setShowMaxImagesWarning(false);
-        setSelectedImageId(null);
-        
-        toast({
-          title: 'Image deleted',
-          description: 'The image has been removed from the gallery.',
-        });
+        // Make API call to delete the image (don't use await here to prevent React state updates during render)
+        // This is the key fix - we're using .then() instead of await to prevent React state batching issues
+        deleteGalleryImage(imageIdToDelete)
+          .then(() => {
+            // Only update UI state after successful deletion
+            setShowMaxImagesWarning(false);
+            
+            console.log(`Successfully deleted gallery image with ID: ${imageIdToDelete}`);
+            
+            toast({
+              title: 'Image deleted',
+              description: 'The image has been removed from the gallery.',
+            });
+          })
+          .catch((error) => {
+            console.error('Error deleting image:', error);
+            
+            toast({
+              title: 'Deletion failed',
+              description: 'Failed to delete the image. Please try again.',
+              variant: 'destructive',
+            });
+          });
       } catch (error) {
-        console.error('Error deleting image:', error);
-        
-        // Reset state to allow retry
+        console.error('Error in image deletion flow:', error);
+        setIsDeleteDialogOpen(false);
         setSelectedImageId(null);
-        
-        toast({
-          title: 'Deletion failed',
-          description: 'Failed to delete the image. Please try again.',
-          variant: 'destructive',
-        });
       }
     };
     
@@ -432,9 +434,14 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
         <Dialog 
           open={isDeleteDialogOpen} 
           onOpenChange={(open) => {
-            // Only allow closing from Cancel button or X to prevent accidental closures
-            if (!open && !isDeletingGalleryImage) {
-              setIsDeleteDialogOpen(false);
+            // Only allow closing via our methods to prevent unmount race conditions
+            if (!open) {
+              // Use setTimeout to delay the closure, avoiding React state update issues
+              if (!isDeletingGalleryImage) {
+                setTimeout(() => {
+                  setIsDeleteDialogOpen(false);
+                }, 0);
+              }
             }
           }}
         >
@@ -446,15 +453,24 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
             <DialogFooter>
               <Button 
                 variant="outline" 
-                onClick={() => setIsDeleteDialogOpen(false)}
+                onClick={() => {
+                  // Programmatically close the dialog with a small delay
+                  if (!isDeletingGalleryImage) {
+                    setIsDeleteDialogOpen(false);
+                  }
+                }}
                 disabled={isDeletingGalleryImage}
               >
                 Cancel
               </Button>
               <Button
                 variant="destructive"
-                onClick={confirmDelete}
-                disabled={isDeletingGalleryImage}
+                onClick={() => {
+                  if (!isDeletingGalleryImage && selectedImageId !== null) {
+                    confirmDelete();
+                  }
+                }}
+                disabled={isDeletingGalleryImage || selectedImageId === null}
               >
                 {isDeletingGalleryImage ? (
                   <>
