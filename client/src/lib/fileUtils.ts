@@ -1,310 +1,157 @@
 /**
- * Utility functions for file handling and uploads
+ * Utility functions for handling files, particularly UploadThing URLs
  */
 
 /**
- * Format file size in bytes to human-readable format
- * @param bytes File size in bytes
- * @returns Formatted string with appropriate unit (B, KB, MB, GB)
+ * Generate a unique session ID for file uploads
+ * @returns A unique string ID
  */
-export function formatFileSize(bytes: number): string {
+export const generateSessionId = (): string => {
+  return `upload_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+};
+
+/**
+ * Format file size in human-readable format
+ * @param bytes File size in bytes
+ * @returns Formatted string (e.g., "1.5 MB")
+ */
+export const formatFileSize = (bytes: number): string => {
   if (bytes === 0) return '0 Bytes';
   
   const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-}
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
+};
 
 /**
- * Generate a unique session ID for tracking uploads
- * @returns A unique string ID 
+ * Handles UploadThing URLs consistently by detecting and using the correct format
+ * prioritizing ufsUrl (new tenant format) over url (legacy format)
+ * 
+ * @param result The UploadThing result object with url and/or ufsUrl
+ * @returns The best URL to use
  */
-export function generateSessionId(): string {
-  return `upload-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-}
-
-/**
- * Check if a file object is an image type
- * @param file The file object to check
- * @returns True if the file is an image
- */
-export function isImageFileObject(file: File): boolean {
-  return file.type.startsWith('image/');
-}
-
-/**
- * Get appropriate icon based on file type
- * @param fileType MIME type of the file
- * @returns Icon type identifier
- */
-export function getFileIconType(fileType: string): 'image' | 'document' | 'video' | 'audio' | 'archive' | 'generic' {
-  if (fileType.startsWith('image/')) return 'image';
-  if (fileType.startsWith('video/')) return 'video';
-  if (fileType.startsWith('audio/')) return 'audio';
-  if (fileType.includes('pdf') || 
-      fileType.includes('document') || 
-      fileType.includes('text/') || 
-      fileType.includes('msword') ||
-      fileType.includes('officedocument')) return 'document';
-  if (fileType.includes('zip') || 
-      fileType.includes('compressed') || 
-      fileType.includes('archive')) return 'archive';
-  return 'generic';
-}
-
-/**
- * Extract the filename from a URL path
- * @param url URL path
- * @returns The extracted filename
- */
-export function getFilenameFromUrl(url: string): string {
-  try {
-    const pathname = new URL(url).pathname;
-    return pathname.split('/').pop() || 'file';
-  } catch (e) {
-    // If URL parsing fails, try to extract the filename from the last segment
-    const segments = url.split('/');
-    return segments[segments.length - 1] || 'file';
+export const getUploadThingUrl = (result: { url?: string; ufsUrl?: string }): string | null => {
+  // If we have the new ufsUrl format, use that
+  if (result.ufsUrl) {
+    console.log("Using ufsUrl (new UploadThing format):", result.ufsUrl);
+    return result.ufsUrl;
   }
-}
+  
+  // Otherwise, fall back to the legacy url
+  if (result.url) {
+    console.log("Using legacy url format:", result.url);
+    return result.url;
+  }
+  
+  // No valid URL found
+  console.warn("No valid URL found in UploadThing result");
+  return null;
+};
 
 /**
- * Clean up files from a session on the server
- * @param sessionId Session ID to clean up
- * @param specificFileUrl Optional specific file URL to clean up
- * @returns Promise with the result of the cleanup
+ * Extracts the best URL from an image object or fallback to a default
+ * 
+ * @param image The image object with imageUrl property
+ * @param defaultUrl Optional default URL to use if no imageUrl is found
+ * @returns The best URL to use, or defaultUrl if provided, or null
  */
-export async function cleanupFiles(
-  sessionId: string, 
-  specificFileUrl?: string
-): Promise<string[]> {
-  try {
-    const response = await fetch('/api/files/cleanup', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ 
-        sessionId,
-        fileUrl: specificFileUrl
-      }),
-      credentials: 'include'
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to cleanup uploaded files');
+export const getBestImageUrl = (
+  image: { imageUrl?: string | null } | null | undefined,
+  defaultUrl?: string
+): string | null => {
+  // If we have a valid image object with an imageUrl
+  if (image && image.imageUrl) {
+    // Check for the new UploadThing format (ufs.sh)
+    if (image.imageUrl.includes("ufs.sh")) {
+      console.log("Using UploadThing UFS URL:", image.imageUrl);
+      return image.imageUrl;
     }
     
-    const data = await response.json();
-    console.log('Cleaned up files:', data.deletedFiles);
-    return data.deletedFiles || [];
-  } catch (error) {
-    console.error('Error cleaning up files:', error);
-    return [];
-  }
-}
-
-/**
- * Commit files from a session on the server (mark as permanently stored)
- * @param sessionId Session ID to commit
- * @param fileUrls Optional specific file URLs to commit
- * @returns Promise with the result of the commit
- */
-export async function commitFiles(
-  sessionId: string, 
-  fileUrls?: string[]
-): Promise<string[]> {
-  try {
-    const response = await fetch('/api/files/commit', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ 
-        sessionId,
-        fileUrls
-      }),
-      credentials: 'include'
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to commit uploaded files');
+    // Check for the legacy UploadThing format (utfs.io)
+    if (image.imageUrl.includes("utfs.io")) {
+      console.log("Using legacy UploadThing URL:", image.imageUrl);
+      return image.imageUrl;
     }
     
-    const data = await response.json();
-    console.log('Committed files:', data.committedFiles);
-    return data.committedFiles || [];
-  } catch (error) {
-    console.error('Error committing files:', error);
-    return [];
+    // Otherwise use the standard URL
+    console.log("Using standard image URL:", image.imageUrl);
+    return image.imageUrl;
   }
-}
+  
+  // Fall back to default if provided
+  if (defaultUrl) {
+    console.log("Using default image URL:", defaultUrl);
+    return defaultUrl;
+  }
+  
+  // No valid URL found
+  return null;
+};
 
 /**
- * Track a file in the pending files system
- * @param fileUrl URL of the file to track
- * @param sessionId Session ID for tracking
+ * Check if a URL is an image file
+ * @param url The URL to check
+ * @returns True if the URL points to an image file
+ */
+export const isImageFile = (url: string): boolean => {
+  if (!url) return false;
+  
+  // Check based on file extension
+  const extension = getFileExtension(url);
+  return ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'bmp', 'avif'].includes(extension.toLowerCase());
+};
+
+/**
+ * Get the file extension from a URL or filename
+ * @param url The URL or filename
+ * @returns The file extension without the dot
+ */
+export const getFileExtension = (url: string): string => {
+  if (!url) return '';
+  
+  const filename = url.split('/').pop() || '';
+  const parts = filename.split('.');
+  
+  if (parts.length === 1) return ''; // No extension
+  return parts.pop()?.toLowerCase() || '';
+};
+
+/**
+ * Track a file for cleanup if needed
+ * @param url The file URL
+ * @param sessionId The session ID for tracking
  * @param filename Optional original filename
- * @returns The tracked file URL
  */
-export async function trackFile(
-  fileUrl: string, 
-  sessionId: string,
-  filename?: string
-): Promise<string> {
+export const trackFile = (url: string, sessionId: string, filename?: string): void => {
   try {
-    const response = await fetch('/api/files/track', {
+    // Make API request to track the file
+    fetch('/api/files/track', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ 
-        fileUrl,
+      body: JSON.stringify({
+        fileUrl: url,
         sessionId,
         filename
       }),
       credentials: 'include'
+    }).catch(err => {
+      console.error('Error tracking file:', err);
     });
-    
-    if (!response.ok) {
-      throw new Error('Failed to track uploaded file');
-    }
-    
-    const data = await response.json();
-    console.log('Tracked file:', data.fileUrl);
-    return data.fileUrl;
   } catch (error) {
     console.error('Error tracking file:', error);
-    return fileUrl; // Return the original URL as fallback
   }
-}
+};
 
-/**
- * Extract the UploadThing key from a URL
- * @param url The file URL to extract the key from
- * @returns The file key or null if not an UploadThing URL
- */
-export function extractUploadThingKeyFromUrl(url: string | null): string | null {
-  if (!url) return null;
-  
-  // First, check if it's a UFS URL (new format)
-  try {
-    const ufsUrlMatch = url.match(/\/ufs\/(.+?)(?:\/|$)/);
-    if (ufsUrlMatch && ufsUrlMatch[1]) {
-      return ufsUrlMatch[1];
-    }
-    
-    // Then check if it's the old format URL
-    const urlObj = new URL(url);
-    const pathname = urlObj.pathname;
-    const segments = pathname.split('/');
-    
-    // Old UploadThing URLs have the format /ut/.../filename or /file/something/.../filename
-    // We need the key portion
-    if (pathname.includes('/ut/') || pathname.includes('/file/')) {
-      // Return the second-to-last segment which should be the key
-      const keyIndex = segments.length - 2;
-      return keyIndex >= 0 ? segments[keyIndex] : null;
-    }
-  } catch (e) {
-    console.error('Error extracting UploadThing key from URL:', e);
-  }
-  
-  return null;
-}
-
-/**
- * Check if a URL is an UploadThing URL
- * @param url URL to check
- * @returns True if it's an UploadThing URL
- */
-export function isUploadThingUrl(url: string | null): boolean {
-  if (!url) return false;
-  try {
-    const urlObj = new URL(url);
-    return urlObj.hostname.includes('uploadthing') || 
-           urlObj.pathname.includes('/ut/') || 
-           urlObj.pathname.includes('/ufs/') ||
-           urlObj.pathname.includes('/file/');
-  } catch (e) {
-    return false;
-  }
-}
-
-/**
- * Get the file extension from a URL or filename
- * @param urlOrFilename The URL or filename to extract extension from
- * @returns The file extension without the dot, or empty string if none
- */
-export function getFileExtension(urlOrFilename: string): string {
-  if (!urlOrFilename) return '';
-  
-  try {
-    // Extract the filename from URL if needed
-    let filename: string;
-    if (urlOrFilename.startsWith('http')) {
-      // Extract filename from URL
-      filename = getFilenameFromUrl(urlOrFilename);
-    } else {
-      filename = urlOrFilename;
-    }
-    
-    // Get the extension
-    const parts = filename.split('.');
-    if (parts.length > 1) {
-      return parts[parts.length - 1].toLowerCase();
-    }
-  } catch (e) {
-    console.error('Error getting file extension:', e);
-  }
-  
-  return '';
-}
-
-/**
- * Check if a URL or filename is an image file based on extension
- * @param urlOrFilename The URL or filename to check
- * @returns True if it's an image file
- */
-export function isImageFile(urlOrFilename: string): boolean {
-  const extension = getFileExtension(urlOrFilename);
-  const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'];
-  return imageExtensions.includes(extension.toLowerCase());
-}
-
-/**
- * Clean up old pending files from the server
- * @param maxAgeMs Maximum age in milliseconds (default: 1 hour)
- * @returns Promise with the number of files cleaned up
- */
-export async function cleanupOldFiles(maxAgeMs: number = 3600000): Promise<number> {
-  try {
-    // Create a temporary session ID for cleanup - this is required by the API
-    const tempSessionId = `cleanup-${Date.now()}`;
-    
-    const response = await fetch('/api/files/cleanup', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ 
-        sessionId: tempSessionId,
-        maxAgeMs 
-      }),
-      credentials: 'include'
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to cleanup old files');
-    }
-    
-    const data = await response.json();
-    console.log('Cleaned up old files:', data.deletedCount);
-    return data.deletedCount || 0;
-  } catch (error) {
-    console.error('Error cleaning up old files:', error);
-    return 0;
-  }
-}
+export default {
+  generateSessionId,
+  formatFileSize,
+  getUploadThingUrl,
+  getBestImageUrl,
+  isImageFile,
+  getFileExtension,
+  trackFile
+};

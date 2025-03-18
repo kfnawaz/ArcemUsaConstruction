@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useRoute, Link } from "wouter";
 import { Service, ServiceGallery } from "@shared/schema";
 import { scrollToTop } from "@/lib/utils";
+import fileUtils from "@/lib/fileUtils";
 import {
   Building,
   Home,
@@ -72,8 +73,11 @@ const ServiceDetail = () => {
     if (serviceGallery && serviceGallery.length > 0) {
       console.log("Service gallery images:", serviceGallery);
       
-      // Make sure we have valid image URLs before setting gallery
-      const validGallery = serviceGallery.filter(img => !!img.imageUrl);
+      // Handle both old URL format and new UploadThing URL format
+      const validGallery = serviceGallery.filter(img => {
+        // Check if there's a valid URL in either imageUrl or a URL that follows the UploadThing pattern
+        return !!img.imageUrl && img.imageUrl.trim() !== '';
+      });
       console.log("Valid gallery images:", validGallery);
       
       setGalleryImages(validGallery as ServiceGallery[]);
@@ -329,7 +333,10 @@ const ServiceDetail = () => {
     // Use gallery images from the API if available, otherwise fall back to hardcoded images
     const serviceImages =
       galleryImages.length > 0
-        ? galleryImages.map((image) => image.imageUrl)
+        ? galleryImages.map((image) => {
+            // Use the fileUtils utility to get the best image URL
+            return fileUtils.getBestImageUrl(image);
+          }).filter(url => url !== null) // Filter out any null URLs
         : getServiceImages(service.title);
 
     return (

@@ -284,8 +284,17 @@ const ServiceManager: React.FC<ServiceManagerProps> = ({ service, onSuccess }) =
       const uploadedUrls = uploadResults.map(result => {
         // Always prefer ufsUrl, then fallback to url for legacy compatibility
         console.log("Upload result:", result);
+        
+        // Detailed logging for debugging
+        if (result.ufsUrl) {
+          console.log("Found ufsUrl (new UploadThing format):", result.ufsUrl);
+        }
+        if (result.url) {
+          console.log("Found url (legacy UploadThing format):", result.url);
+        }
+        
         const fileUrl = result.ufsUrl || result.url;
-        console.log("Using image URL:", fileUrl);
+        console.log("Using final image URL:", fileUrl);
         return fileUrl;
       });
       

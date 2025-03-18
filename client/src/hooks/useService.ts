@@ -15,6 +15,10 @@ export const useService = (serviceId?: number) => {
     error: servicesError,
   } = useQuery<Service[]>({
     queryKey: ['/api/services'],
+    queryFn: async () => {
+      const res = await fetch('/api/services');
+      return await res.json();
+    },
   });
 
   // Query to fetch single service if serviceId is provided
@@ -24,6 +28,11 @@ export const useService = (serviceId?: number) => {
     error: serviceError,
   } = useQuery<Service>({
     queryKey: ['/api/services', serviceId],
+    queryFn: async () => {
+      if (!serviceId) throw new Error("No service ID provided");
+      const res = await fetch(`/api/services/${serviceId}`);
+      return await res.json();
+    },
     enabled: !!serviceId,
   });
 
@@ -34,6 +43,11 @@ export const useService = (serviceId?: number) => {
     error: galleryError,
   } = useQuery<ServiceGallery[]>({
     queryKey: ['/api/services', serviceId, 'gallery'],
+    queryFn: async () => {
+      if (!serviceId) return [];
+      const res = await fetch(`/api/services/${serviceId}/gallery`);
+      return await res.json();
+    },
     enabled: !!serviceId,
   });
 

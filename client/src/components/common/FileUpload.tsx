@@ -137,10 +137,14 @@ export default function FileUpload({
         // Log each result to debug
         console.log("Result item:", result);
         
-        // IMPORTANT: Always prefer the new ufsUrl format
-        const fileUrl = result.ufsUrl || result.url;
-        console.log("URL to use:", fileUrl);
+        // Use our utility function to get the best URL to use
+        const fileUrl = fileUtils.getUploadThingUrl(result);
+        if (!fileUrl) {
+          console.error("No valid URL found in result:", result);
+          throw new Error("Failed to extract URL from upload result");
+        }
         
+        console.log("URL to use:", fileUrl);
         return fileUrl;
       });
       

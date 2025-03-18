@@ -90,10 +90,7 @@ const SERVICE_ICONS = [
   { value: "hard-hat", label: "Construction Consultation", icon: HardHat }
 ];
 
-// Helper to generate session ID
-const generateSessionId = () => {
-  return fileUtils.generateSessionId();
-};
+// Using fileUtils.generateSessionId() directly in the component
 
 const ServiceForm: React.FC<ServiceFormProps> = ({ serviceId, onClose }) => {
   const { toast } = useToast();
@@ -116,7 +113,7 @@ const ServiceForm: React.FC<ServiceFormProps> = ({ serviceId, onClose }) => {
   const [pendingImages, setPendingImages] = useState<PendingGalleryImage[]>([]);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadSessionId] = useState<string>(generateSessionId());
+  const [uploadSessionId] = useState<string>(fileUtils.generateSessionId());
   const [isDragging, setIsDragging] = useState(false);
   const [showImageLimitWarning, setShowImageLimitWarning] = useState(false);
   const [pendingFormData, setPendingFormData] = useState<InsertService | null>(null);
@@ -336,7 +333,16 @@ const ServiceForm: React.FC<ServiceFormProps> = ({ serviceId, onClose }) => {
       // Extract the URLs from the upload results
       const uploadedUrls = uploadResults.map(result => {
         // Always use ufsUrl when available to avoid deprecation warnings
-        return result.ufsUrl || result.url;
+        console.log("UploadThing result:", result);
+        
+        // Use our utility function to get the best URL to use
+        const finalUrl = fileUtils.getUploadThingUrl(result);
+        if (finalUrl) {
+          return finalUrl;
+        } else {
+          console.error("No valid URL found in upload result:", result);
+          throw new Error("Failed to extract URL from upload result");
+        }
       });
       
       // Clear the pending images
