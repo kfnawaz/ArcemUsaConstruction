@@ -1265,7 +1265,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   app.post(`${apiRouter}/files/cleanup`, isAdmin, async (req: Request, res: Response) => {
     try {
-      const { sessionId, fileUrl, fileUrls } = req.body;
+      const { sessionId, fileUrl, fileUrls, preserveUrls } = req.body;
       
       // If no sessionId, fileUrl, or fileUrls array is provided, return an error
       if (!sessionId && !fileUrl && !fileUrls) {
@@ -1275,14 +1275,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
           deletedFiles: [],
           deletedCount: 0,
           failedFiles: [],
-          failedCount: 0 
+          failedCount: 0,
+          preservedFiles: [],
+          preservedCount: 0
         });
       }
       
       console.log(`Cleaning up files for session ${sessionId || '*'}`);
+      if (preserveUrls && Array.isArray(preserveUrls) && preserveUrls.length > 0) {
+        console.log(`With ${preserveUrls.length} files to preserve`);
+      }
       
       let deletedFiles: string[] = [];
       let failedFiles: string[] = [];
+      let preservedFiles: string[] = [];
       
       // If fileUrls array is provided, delete each file in the array
       if (fileUrls && Array.isArray(fileUrls) && fileUrls.length > 0) {
@@ -1290,12 +1296,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         
         for (const url of fileUrls) {
           try {
-            const result = await FileManager.cleanupSession(sessionId || '*', url);
+            // Skip if this URL is in the preserve list
+            if (preserveUrls && Array.isArray(preserveUrls) && preserveUrls.includes(url)) {
+              console.log(`Skipping preserved file: ${url}`);
+              preservedFiles.push(url);
+              continue;
+            }
+            
+            const result = await FileManager.cleanupSession(sessionId || '*', url, preserveUrls);
             if (result.deletedUrls.length > 0) {
               deletedFiles = [...deletedFiles, ...result.deletedUrls];
             }
             if (result.failedUrls.length > 0) {
               failedFiles = [...failedFiles, ...result.failedUrls];
+            }
+            if (result.preservedUrls.length > 0) {
+              preservedFiles = [...preservedFiles, ...result.preservedUrls];
             }
           } catch (fileError) {
             console.error(`Error cleaning up file ${url}:`, fileError);
@@ -1307,53 +1323,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // If a single fileUrl is provided, delete just that file
       else if (fileUrl) {
         console.log(`Cleaning up specific file: ${fileUrl}`);
-        // Extract the file key if it's an UploadThing URL for better logging
-        const fileKey = extractUploadThingKeyFromUrl(fileUrl);
-        if (fileKey) {
-          console.log(`File key to delete: ${fileKey}`);
-        }
         
-        try {
-          // Handle individual file deletion with updated cleanupSession method
-          // Use wildcard session ID '*' when deleting a specific file with no session context
-          const result = await FileManager.cleanupSession(sessionId || '*', fileUrl);
+        // Skip if this URL is in the preserve list
+        if (preserveUrls && Array.isArray(preserveUrls) && preserveUrls.includes(fileUrl)) {
+          console.log(`Skipping preserved file: ${fileUrl}`);
+          preservedFiles.push(fileUrl);
+        } else {
+          // Extract the file key if it's an UploadThing URL for better logging
+          const fileKey = extractUploadThingKeyFromUrl(fileUrl);
+          if (fileKey) {
+            console.log(`File key to delete: ${fileKey}`);
+          }
           
-          // Add to our running list of deleted and failed files
-          deletedFiles = [...deletedFiles, ...result.deletedUrls];
-          failedFiles = [...failedFiles, ...result.failedUrls];
-          
-          // If nothing was deleted, make sure we record it as a failure
-          if (result.deletedUrls.length === 0 && result.failedUrls.length === 0) {
+          try {
+            // Handle individual file deletion with updated cleanupSession method
+            // Use wildcard session ID '*' when deleting a specific file with no session context
+            const result = await FileManager.cleanupSession(sessionId || '*', fileUrl, preserveUrls);
+            
+            // Add to our running list of deleted and failed files
+            deletedFiles = [...deletedFiles, ...result.deletedUrls];
+            failedFiles = [...failedFiles, ...result.failedUrls];
+            preservedFiles = [...preservedFiles, ...result.preservedUrls];
+            
+            // If nothing was deleted or preserved, mark as failure
+            if (result.deletedUrls.length === 0 && result.preservedUrls.length === 0) {
+              failedFiles.push(fileUrl);
+            }
+          } catch (fileError) {
+            console.error(`Error cleaning up file ${fileUrl}:`, fileError);
             failedFiles.push(fileUrl);
           }
-        } catch (fileError) {
-          console.error(`Error cleaning up file ${fileUrl}:`, fileError);
-          failedFiles.push(fileUrl);
         }
       } 
       // Otherwise clean up the entire session
       else if (sessionId) {
         console.log(`Cleaning up entire session: ${sessionId}`);
         try {
-          const result = await FileManager.cleanupSession(sessionId);
+          const result = await FileManager.cleanupSession(sessionId, undefined, preserveUrls);
           deletedFiles = result.deletedUrls;
           failedFiles = result.failedUrls;
+          preservedFiles = result.preservedUrls;
         } catch (sessionError) {
           console.error(`Error cleaning up session ${sessionId}:`, sessionError);
         }
       }
       
-      console.log(`Cleanup completed: ${deletedFiles.length} files deleted, ${failedFiles.length} failed`);
+      console.log(`Cleanup completed: ${deletedFiles.length} files deleted, ${failedFiles.length} failed, ${preservedFiles.length} preserved`);
       
       return res.status(200).json({ 
         success: true,
         message: fileUrl 
-          ? (deletedFiles.length > 0 ? `Deleted file: ${fileUrl}` : `Failed to delete file: ${fileUrl}`)
-          : `Cleaned up ${deletedFiles.length} files`,
+          ? (deletedFiles.length > 0 ? `Deleted file: ${fileUrl}` : 
+             preservedFiles.includes(fileUrl) ? `Preserved file: ${fileUrl}` : 
+             `Failed to delete file: ${fileUrl}`)
+          : `Cleaned up ${deletedFiles.length} files (${preservedFiles.length} preserved)`,
         deletedFiles, // Return the actual array of deleted files
         deletedCount: deletedFiles.length,
         failedFiles,
-        failedCount: failedFiles.length
+        failedCount: failedFiles.length,
+        preservedFiles,
+        preservedCount: preservedFiles.length
       });
     } catch (error) {
       console.error("File cleanup error:", error);
@@ -1364,7 +1393,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         deletedFiles: [],
         deletedCount: 0,
         failedFiles: [],
-        failedCount: 0
+        failedCount: 0,
+        preservedFiles: [],
+        preservedCount: 0
       });
     }
   });

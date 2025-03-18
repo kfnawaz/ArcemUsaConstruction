@@ -156,37 +156,53 @@ export class FileManager {
    * Deletes all pending files for a session (when form is cancelled)
    * @param sessionId The session ID to cleanup
    * @param specificFileUrl Optional specific file URL to delete from the session
+   * @param preserveUrls Optional array of URLs to preserve (not delete)
    * @returns Object with arrays of deleted and failed file URLs
    */
-  static async cleanupSession(sessionId: string, specificFileUrl?: string): Promise<{ deletedUrls: string[], failedUrls: string[] }> {
+  static async cleanupSession(sessionId: string, specificFileUrl?: string, preserveUrls: string[] = []): Promise<{ deletedUrls: string[], failedUrls: string[], preservedUrls: string[] }> {
     if (!sessionId) {
       console.error('Invalid sessionId for cleanup');
-      return { deletedUrls: [], failedUrls: [] };
+      return { deletedUrls: [], failedUrls: [], preservedUrls: [] };
     }
     
     console.log(`Cleaning up session ${sessionId}${specificFileUrl ? ` (specific file: ${specificFileUrl})` : ''}`);
+    if (preserveUrls.length > 0) {
+      console.log(`Preserving ${preserveUrls.length} files during cleanup`);
+    }
     
     const filesToDelete: string[] = [];
     const keysToDelete: string[] = [];
+    const preservedFiles: string[] = [];
     
     // Find files for deletion
     for (const entry of Array.from(this.pendingFiles.entries())) {
       const [key, pendingFile] = entry;
       
       // Match session ID and specific file URL if provided
-      const shouldDelete = pendingFile.sessionId === sessionId && 
-                         (!specificFileUrl || pendingFile.url === specificFileUrl);
+      const matchesSession = pendingFile.sessionId === sessionId;
+      const matchesSpecificUrl = !specificFileUrl || pendingFile.url === specificFileUrl;
+      const shouldPreserve = preserveUrls.includes(pendingFile.url);
       
-      if (shouldDelete) {
-        filesToDelete.push(pendingFile.url);
-        keysToDelete.push(key);
+      // Only delete if it matches the criteria and is not in the preserve list
+      if (matchesSession && matchesSpecificUrl) {
+        if (shouldPreserve) {
+          preservedFiles.push(pendingFile.url);
+          console.log(`Preserving file: ${pendingFile.url}`);
+        } else {
+          filesToDelete.push(pendingFile.url);
+          keysToDelete.push(key);
+        }
       }
     }
     
-    console.log(`Found ${filesToDelete.length} files to delete for session ${sessionId}`);
+    console.log(`Found ${filesToDelete.length} files to delete and ${preservedFiles.length} files to preserve for session ${sessionId}`);
     
-    // If specific URLs were provided but not found in tracking, still try to delete them
-    if (specificFileUrl && !filesToDelete.includes(specificFileUrl)) {
+    // If specific URL was provided but not found in tracking, still try to delete it
+    // But only if it's not in the preserve list
+    if (specificFileUrl && 
+        !filesToDelete.includes(specificFileUrl) && 
+        !preservedFiles.includes(specificFileUrl) &&
+        !preserveUrls.includes(specificFileUrl)) {
       console.log(`Specific URL ${specificFileUrl} not found in tracking, attempting direct deletion`);
       filesToDelete.push(specificFileUrl);
     }
@@ -196,6 +212,13 @@ export class FileManager {
     const failedUrls: string[] = [];
     
     for (const fileUrl of filesToDelete) {
+      // Extra check to make sure we don't delete preserved files
+      if (preserveUrls.includes(fileUrl)) {
+        console.log(`Skipping deletion of preserved file: ${fileUrl}`);
+        preservedFiles.push(fileUrl);
+        continue;
+      }
+      
       try {
         // Check if this is an UploadThing file and delete it
         const uploadThingKey = extractUploadThingKeyFromUrl(fileUrl);
@@ -247,8 +270,13 @@ export class FileManager {
       this.pendingFiles.delete(key);
     }
     
-    console.log(`Cleanup completed: ${deletedUrls.length} files deleted, ${failedUrls.length} failed for session ${sessionId}`);
-    return { deletedUrls, failedUrls };
+    console.log(`Cleanup completed: ${deletedUrls.length} files deleted, ${failedUrls.length} failed, ${preservedFiles.length} preserved for session ${sessionId}`);
+    
+    return {
+      deletedUrls,
+      failedUrls,
+      preservedUrls: preservedFiles
+    };
   }
 
   /**
