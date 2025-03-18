@@ -27,6 +27,8 @@ interface ServiceGalleryManagerProps {
 export interface ServiceGalleryManagerHandle {
   saveGalleryImages: () => Promise<void>;
   hasUnsavedChanges: () => boolean;
+  hasPendingImages: () => boolean;
+  getUnsavedChangesCount: () => number;
 }
 
 const MAX_GALLERY_IMAGES = 3;
@@ -42,6 +44,7 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
     const [uploadSession, setUploadSession] = useState<string>(fileUtils.generateSessionId());
     const [isCommitted, setIsCommitted] = useState(false);
     const [hasTrackedSession, setHasTrackedSession] = useState(false);
+    const [lastModifiedTimestamp, setLastModifiedTimestamp] = useState<number>(0);
 
     const {
       serviceGallery,
@@ -58,6 +61,16 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
     const currentImageCount = (serviceGallery?.length || 0) + pendingImages.length;
     const canAddMoreImages = currentImageCount < MAX_GALLERY_IMAGES;
 
+    // Flag an edit has occurred in the last 3 seconds
+    const hasRecentEdit = () => {
+      return Date.now() - lastModifiedTimestamp < 3000; // 3 seconds
+    };
+    
+    // Mark an edit as happening now
+    const markEdited = () => {
+      setLastModifiedTimestamp(Date.now());
+    };
+
     // Expose the saveGalleryImages method and hasUnsavedChanges via ref
     useImperativeHandle(ref, () => ({
       saveGalleryImages: async () => {
@@ -65,6 +78,12 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
       },
       hasUnsavedChanges: () => {
         return pendingImages.length > 0;
+      },
+      hasPendingImages: () => {
+        return pendingImages.length > 0;
+      },
+      getUnsavedChangesCount: () => {
+        return pendingImages.length;
       }
     }));
 
@@ -103,19 +122,16 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
     
     // Handle component unmount - clean up any uncommitted files
     useEffect(() => {
-      // Store current values to avoid stale closure issues
-      const currentSession = uploadSession;
-      const currentCommitStatus = isCommitted;
-      const currentCleanupFn = cleanupUploads;
-      
       return () => {
-        if (currentSession && !currentCommitStatus && pendingImages.length > 0) {
-          console.log('Cleaning up uncommitted files for session:', currentSession);
-          currentCleanupFn(currentSession);
+        // Check if we need to clean up (only if we have an uploadSession and files weren't committed)
+        if (uploadSession && !isCommitted && pendingImages.length > 0) {
+          console.log("Cleaning up uncommitted gallery uploads on unmount");
+          cleanupUploads(uploadSession).catch(err => {
+            console.error(`Error cleaning up gallery upload session ${uploadSession}:`, err);
+          });
         }
       };
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [cleanupUploads, uploadSession, isCommitted, pendingImages]);
     
     // This function handles the file upload but doesn't save to database
     const handleFileUpload = async (urls: string | string[], sessionId?: string) => {
@@ -146,6 +162,7 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
           // Only add the allowed number of images
           const limitedUrls = urls.slice(0, allowedToAdd);
           setPendingImages(prev => [...prev, ...limitedUrls]);
+          markEdited();
           
           toast({
             title: 'Maximum images reached',
@@ -165,6 +182,7 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
       } else {
         // We can add all the images
         setPendingImages(prev => [...prev, ...urls]);
+        markEdited();
         
         toast({
           title: 'Images added',
@@ -180,17 +198,26 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
       setIsUploading(true);
       
       try {
-        // Mark files as committed so they don't get cleaned up
-        setIsCommitted(true);
-        
-        // If we have a session ID, mark the files as committed on the server
-        if (uploadSession) {
-          try {
-            await commitUploads(uploadSession, pendingImages);
-          } catch (err) {
-            console.error('Error committing files:', err);
-            // Continue anyway since we've already marked them as committed client-side
+        // For new services, we don't save the gallery images yet - we'll do it after service creation
+        if (isNewService) {
+          // Just commit the uploads to prevent cleanup of saved files
+          if (uploadSession) {
+            // Get all file URLs to commit - ensure we're tracking these files
+            try {
+              await commitUploads(uploadSession, pendingImages);
+              console.log(`Committed gallery upload session for new service: ${uploadSession}`);
+              setIsCommitted(true);
+            } catch (err) {
+              console.error('Error committing files:', err);
+            }
           }
+          
+          toast({
+            title: 'Images saved',
+            description: `${pendingImages.length} image${pendingImages.length > 1 ? 's' : ''} will be added after service creation.`,
+          });
+          
+          return;
         }
         
         // Calculate next display order
@@ -199,6 +226,8 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
           : 1;
         
         // Add each image to the gallery with sequential display order
+        console.log(`Adding ${pendingImages.length} gallery images to service ${serviceId}`);
+        
         for (let i = 0; i < pendingImages.length; i++) {
           const galleryImage: InsertServiceGallery = {
             serviceId,
@@ -207,7 +236,19 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
             order: nextOrder + i,
           };
           
+          console.log("Saving gallery image to database:", galleryImage);
           await addGalleryImage(serviceId, galleryImage);
+        }
+        
+        // Commit the uploads to prevent cleanup of saved files
+        if (uploadSession) {
+          try {
+            await commitUploads(uploadSession, pendingImages);
+            console.log(`Committed gallery upload session: ${uploadSession}`);
+            setIsCommitted(true);
+          } catch (err) {
+            console.error('Error committing files:', err);
+          }
         }
         
         toast({
@@ -243,14 +284,9 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
       }
       
       try {
-        // Important: Keep dialog open during the API call, following ProjectGalleryManager pattern
-        // First make the API call using await
+        // Important: Wait for the API call to complete before closing the dialog
         await deleteGalleryImage(selectedImageId);
-        
-        // Only after successful deletion, update UI state
         setShowMaxImagesWarning(false);
-        
-        console.log(`Successfully deleted gallery image with ID: ${selectedImageId}`);
         
         toast({
           title: 'Image deleted',
@@ -265,7 +301,7 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
           variant: 'destructive',
         });
       } finally {
-        // Only close dialog and clear selection after operation completes (success or failure)
+        // Close dialog and clear selection after operation completes (success or failure)
         setIsDeleteDialogOpen(false);
         setSelectedImageId(null);
       }
@@ -283,27 +319,28 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
         return newPendingImages;
       });
       setShowMaxImagesWarning(false);
+      markEdited();
       
       // If there's a valid URL, try to delete the file from the server
       if (imageUrl) {
         try {
           console.log('Deleting file:', imageUrl);
-          if (uploadSession) {
-            await cleanupUploads(uploadSession, imageUrl);
-          } else {
-            // Fallback if no session ID (unlikely but possible)
-            await fetch('/api/files/cleanup', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ fileUrl: imageUrl }),
-              credentials: 'include'
-            });
+          
+          // Make direct API call to cleanup the specific file
+          const response = await fetch('/api/files/cleanup', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ fileUrl: imageUrl }),
+            credentials: 'include'
+          });
+          
+          if (response.ok) {
+            console.log(`Successfully removed unused file: ${imageUrl}`);
           }
-          console.log('Successfully deleted file:', imageUrl);
         } catch (err) {
-          console.error('Error deleting file:', err);
+          console.error('Error cleaning up deleted pending image:', err);
         }
       }
     };
@@ -410,20 +447,19 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
                 <div className="col-span-full border rounded-md p-6 text-center bg-muted/30">
                   <Image className="h-10 w-10 mx-auto text-muted-foreground" />
                   <p className="mt-2 text-sm text-muted-foreground">
-                    Add up to {MAX_GALLERY_IMAGES} images to showcase this service.
+                    Add images to showcase this service. Images will appear in your service details.
                   </p>
                 </div>
               )}
             </div>
           )}
         </div>
-
-        {/* Delete Confirmation Dialog */}
+      
+        {/* Confirmation dialog for deleting saved images */}
         <Dialog 
-          open={isDeleteDialogOpen} 
+          open={isDeleteDialogOpen}
           onOpenChange={(open) => {
-            // Only allow closing via the buttons we provide
-            // This prevents the escape key or clicking outside from closing the dialog during deletion
+            // Only allow closing via the buttons we provide when not actively deleting
             if (!open && !isDeletingGalleryImage) {
               setIsDeleteDialogOpen(false);
               setSelectedImageId(null);
@@ -439,7 +475,6 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
               <Button 
                 variant="outline" 
                 onClick={() => {
-                  // Simply close the dialog if we're not in the process of deleting
                   if (!isDeletingGalleryImage) {
                     setIsDeleteDialogOpen(false);
                     setSelectedImageId(null);
@@ -451,11 +486,7 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
               </Button>
               <Button
                 variant="destructive"
-                onClick={() => {
-                  if (!isDeletingGalleryImage && selectedImageId !== null) {
-                    confirmDelete();
-                  }
-                }}
+                onClick={confirmDelete}
                 disabled={isDeletingGalleryImage || selectedImageId === null}
               >
                 {isDeletingGalleryImage ? (
