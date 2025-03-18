@@ -319,7 +319,7 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
                 endpoint="imageUploader"
                 maxFiles={MAX_GALLERY_IMAGES - currentImageCount}
                 sessionId={uploadSession}
-                onSessionIdCreated={(newSessionId) => {
+                onSessionIdCreated={(newSessionId: string) => {
                   if (newSessionId !== uploadSession) {
                     setUploadSession(newSessionId);
                     setHasTrackedSession(false);

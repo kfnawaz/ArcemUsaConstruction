@@ -32,18 +32,35 @@ export interface UploadedFile {
 }
 
 interface UploadThingDropzoneProps {
-  onFilesUploaded: (files: UploadedFile[]) => void;
+  onFilesUploaded?: (files: UploadedFile[]) => void;
+  onUploadComplete?: (urls: string | string[], sessionId?: string) => Promise<void> | void;
   sessionId: string;
   existingFiles?: UploadedFile[];
   maxFiles?: number;
+  multiple?: boolean;
+  endpoint?: string;
+  onSessionIdCreated?: (sessionId: string) => void;
 }
 
 export default function UploadThingDropzone({ 
   onFilesUploaded, 
-  sessionId, 
+  onUploadComplete,
+  sessionId: initialSessionId, 
   existingFiles = [],
-  maxFiles = 10 
+  maxFiles = 10,
+  multiple = true,
+  endpoint = "imageUploader",
+  onSessionIdCreated
 }: UploadThingDropzoneProps) {
+  // Generate a session ID if none was provided
+  const [sessionId, setSessionId] = useState<string>(initialSessionId || fileUtils.generateSessionId());
+  
+  // If the session ID was generated, notify the parent
+  useEffect(() => {
+    if (sessionId !== initialSessionId && onSessionIdCreated) {
+      onSessionIdCreated(sessionId);
+    }
+  }, [sessionId, initialSessionId, onSessionIdCreated]);
   const { toast } = useToast();
   const [dragActive, setDragActive] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>(existingFiles);
@@ -82,7 +99,16 @@ export default function UploadThingDropzone({
       });
       
       // Call the parent component callback
-      onFilesUploaded([...uploadedFiles, ...newFiles]);
+      // Call the appropriate callback
+      if (onFilesUploaded) {
+        onFilesUploaded([...uploadedFiles, ...newFiles]);
+      }
+      
+      // For backward compatibility with the old FileUpload component
+      if (onUploadComplete) {
+        const fileUrls = files.map(file => file.ufsUrl || file.url);
+        onUploadComplete(fileUrls.length === 1 && !multiple ? fileUrls[0] : fileUrls, sessionId);
+      }
       
       setUploadProgress(0);
       toast({
