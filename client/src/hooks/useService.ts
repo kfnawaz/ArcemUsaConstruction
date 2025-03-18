@@ -253,7 +253,7 @@ export const useService = (serviceId?: number) => {
   };
   
   // Cleanup uploads - delete temporary files that weren't committed
-  const cleanupUploads = async (sessionId: string, preserveUrls: string[] = []): Promise<string[]> => {
+  const cleanupUploads = async (sessionId: string, preserveUrls: string[] = []): Promise<boolean> => {
     try {
       // Log the cleanup operation with preserve list
       if (preserveUrls.length > 0) {
@@ -291,10 +291,10 @@ export const useService = (serviceId?: number) => {
         return updated;
       });
       
-      return data.deletedFiles;
+      return data.success;
     } catch (error) {
       console.error('Error cleaning uploads:', error);
-      throw error;
+      return false;
     }
   };
 
