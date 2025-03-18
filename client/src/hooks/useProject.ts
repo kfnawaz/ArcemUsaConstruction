@@ -297,20 +297,11 @@ export const useProject = (projectId?: number) => {
   // Commit the uploads associated with a session
   const commitUploads = async (sessionId: string, fileUrls?: string[]): Promise<boolean> => {
     try {
-      const response = await fetch('/api/files/commit', {
+      const data = await apiRequest({
+        url: '/api/files/commit',
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ sessionId, fileUrls }),
-        credentials: 'include'
+        body: { sessionId, fileUrls }
       });
-      
-      if (!response.ok) {
-        throw new Error('Failed to commit uploads');
-      }
-      
-      const data = await response.json();
       
       // Remove this session from tracked sessions on success
       if (data.success) {
@@ -336,23 +327,14 @@ export const useProject = (projectId?: number) => {
         console.log(`Cleaning up session ${sessionId} while preserving ${preserveUrls.length} files`);
       }
 
-      const response = await fetch('/api/files/cleanup', {
+      const data = await apiRequest({
+        url: '/api/files/cleanup',
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
+        body: { 
           sessionId,
           preserveUrls: preserveUrls.length > 0 ? preserveUrls : undefined
-        }),
-        credentials: 'include'
+        }
       });
-      
-      if (!response.ok) {
-        throw new Error('Failed to cleanup uploads');
-      }
-      
-      const data = await response.json();
       
       // Log the result
       if (data.success) {

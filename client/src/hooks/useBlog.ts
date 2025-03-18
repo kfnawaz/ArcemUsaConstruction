@@ -40,8 +40,10 @@ export const useBlog = (postId?: number) => {
   // Fetch categories for a post
   const getPostCategoryIds = async (postId: number): Promise<number[]> => {
     try {
-      const res = await apiRequest('GET', `/api/blog/${postId}/categories`);
-      const categories = await res.json();
+      const categories = await apiRequest({
+        url: `/api/blog/${postId}/categories`,
+        method: 'GET'
+      });
       return categories.map((cat: any) => cat.id);
     } catch (error) {
       console.error("Error fetching post categories:", error);
@@ -52,8 +54,10 @@ export const useBlog = (postId?: number) => {
   // Fetch tags for a post
   const getPostTagIds = async (postId: number): Promise<number[]> => {
     try {
-      const res = await apiRequest('GET', `/api/blog/${postId}/tags`);
-      const tags = await res.json();
+      const tags = await apiRequest({
+        url: `/api/blog/${postId}/tags`,
+        method: 'GET'
+      });
       return tags.map((tag: any) => tag.id);
     } catch (error) {
       console.error("Error fetching post tags:", error);
@@ -68,7 +72,11 @@ export const useBlog = (postId?: number) => {
       if (!data.slug) {
         data.slug = generateSlug(data.title);
       }
-      return apiRequest('POST', '/api/blog', data);
+      return apiRequest({
+        url: '/api/blog',
+        method: 'POST',
+        body: data
+      });
     },
     onSuccess: () => {
       setIsSubmitting(false);
@@ -98,7 +106,11 @@ export const useBlog = (postId?: number) => {
       if (data.title && !data.slug) {
         data.slug = generateSlug(data.title);
       }
-      return apiRequest('PUT', `/api/blog/${id}`, data);
+      return apiRequest({
+        url: `/api/blog/${id}`,
+        method: 'PUT',
+        body: data
+      });
     },
     onSuccess: () => {
       setIsSubmitting(false);
@@ -136,7 +148,11 @@ export const useBlog = (postId?: number) => {
   // Add gallery image mutation
   const addGalleryImageMutation = useMutation({
     mutationFn: async ({ postId, data }: { postId: number, data: { imageUrl: string, caption: string | null, order: number } }) => {
-      return apiRequest('POST', `/api/blog/${postId}/gallery`, data);
+      return apiRequest({
+        url: `/api/blog/${postId}/gallery`,
+        method: 'POST',
+        body: data
+      });
     },
     onSuccess: () => {
       setIsAddingGalleryImage(false);
@@ -162,7 +178,10 @@ export const useBlog = (postId?: number) => {
   // Delete gallery image mutation
   const deleteGalleryImageMutation = useMutation({
     mutationFn: async (galleryImageId: number) => {
-      return apiRequest('DELETE', `/api/blog/gallery/${galleryImageId}`);
+      return apiRequest({
+        url: `/api/blog/gallery/${galleryImageId}`,
+        method: 'DELETE'
+      });
     },
     onSuccess: () => {
       setIsDeletingGalleryImage(false);
