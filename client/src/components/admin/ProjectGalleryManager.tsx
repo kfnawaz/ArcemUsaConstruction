@@ -619,6 +619,11 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
               <UploadThingFileUpload 
                 endpoint="imageUploader"
                 onClientUploadComplete={(files) => {
+                  // Create a session ID for this upload batch
+                  const sessionId = `session_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+                  trackUploadSession(sessionId);
+                  console.log(`Created new upload session ID: ${sessionId}`);
+                  
                   // Extract URLs from the response files - use ONLY ufsUrl to avoid deprecation warnings
                   const urls = files.map(file => {
                     // Access ufsUrl directly to avoid triggering deprecation warning with file.url
@@ -626,18 +631,29 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
                     return imageUrl;
                   });
                   
-                  // Track these files in the database
+                  // Track these files in the database and register them with the session
                   if (projectId) {
                     files.forEach(file => {
                       // Use the new URL format exclusively to avoid deprecation warnings
                       if (file.ufsUrl) {
-                        console.log(`Adding image to gallery: ${file.ufsUrl}`);
+                        console.log(`Adding image to gallery: ${file.ufsUrl} (Session: ${sessionId})`);
                       }
                     });
                   }
                   
-                  // Process the selected files
-                  handleFileUpload(urls);
+                  // Process the selected files and pass the session ID
+                  console.log(`Passing ${urls.length} URLs to handleFileUpload with sessionId: ${sessionId}`);
+                  
+                  // First, immediately commit these files to prevent them from being deleted
+                  commitUploads(sessionId, urls).then(() => {
+                    console.log(`Successfully committed files for session ${sessionId}`);
+                    // Then handle the file upload with the URLs
+                    handleFileUpload(urls);
+                  }).catch(error => {
+                    console.error(`Error committing files for session ${sessionId}:`, error);
+                    // Still try to handle the file upload in case of error
+                    handleFileUpload(urls);
+                  });
                 }}
                 onUploadError={(error) => {
                   console.error("UploadThing error:", error);
