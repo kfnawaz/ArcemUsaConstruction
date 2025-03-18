@@ -35,8 +35,7 @@ export const useService = (serviceId?: number) => {
   } = useQuery<ServiceGallery[]>({
     queryKey: ['/api/services', serviceId, 'gallery'],
     queryFn: async () => {
-      const res = await apiRequest('GET', `/api/services/${serviceId}/gallery`);
-      return await res.json();
+      return apiRequest({ url: `/api/services/${serviceId}/gallery` });
     },
     enabled: !!serviceId,
   });
@@ -44,8 +43,11 @@ export const useService = (serviceId?: number) => {
   // Create service mutation
   const createServiceMutation = useMutation({
     mutationFn: async (data: InsertService) => {
-      const res = await apiRequest('POST', '/api/services', data);
-      return await res.json();
+      return apiRequest({
+        url: '/api/services',
+        method: 'POST',
+        body: data
+      });
     },
     onSuccess: () => {
       toast({
@@ -66,8 +68,11 @@ export const useService = (serviceId?: number) => {
   // Update service mutation
   const updateServiceMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<InsertService> }) => {
-      const res = await apiRequest('PUT', `/api/services/${id}`, data);
-      return await res.json();
+      return apiRequest({
+        url: `/api/services/${id}`,
+        method: 'PUT',
+        body: data
+      });
     },
     onSuccess: () => {
       toast({
@@ -91,7 +96,10 @@ export const useService = (serviceId?: number) => {
   // Delete service mutation
   const deleteServiceMutation = useMutation({
     mutationFn: async (id: number) => {
-      await apiRequest('DELETE', `/api/services/${id}`);
+      return apiRequest({
+        url: `/api/services/${id}`,
+        method: 'DELETE'
+      });
     },
     onSuccess: () => {
       toast({
@@ -112,8 +120,11 @@ export const useService = (serviceId?: number) => {
   // Add gallery image mutation
   const addGalleryImageMutation = useMutation({
     mutationFn: async ({ serviceId, data }: { serviceId: number; data: InsertServiceGallery }) => {
-      const res = await apiRequest('POST', `/api/services/${serviceId}/gallery`, data);
-      return await res.json();
+      return apiRequest({
+        url: `/api/services/${serviceId}/gallery`,
+        method: 'POST',
+        body: data
+      });
     },
     onSuccess: () => {
       toast({
@@ -136,8 +147,11 @@ export const useService = (serviceId?: number) => {
   // Update gallery image mutation
   const updateGalleryImageMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<InsertServiceGallery> }) => {
-      const res = await apiRequest('PUT', `/api/services/gallery/${id}`, data);
-      return await res.json();
+      return apiRequest({
+        url: `/api/services/gallery/${id}`,
+        method: 'PUT',
+        body: data
+      });
     },
     onSuccess: () => {
       toast({
@@ -160,7 +174,10 @@ export const useService = (serviceId?: number) => {
   // Delete gallery image mutation
   const deleteGalleryImageMutation = useMutation({
     mutationFn: async (id: number) => {
-      await apiRequest('DELETE', `/api/services/gallery/${id}`);
+      return apiRequest({
+        url: `/api/services/gallery/${id}`,
+        method: 'DELETE'
+      });
     },
     onSuccess: () => {
       toast({
