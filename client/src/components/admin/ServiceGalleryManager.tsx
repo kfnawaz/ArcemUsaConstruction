@@ -15,7 +15,8 @@ import {
   CardContent,
 } from '@/components/ui/card';
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import FileUpload from '@/components/common/FileUpload';
+import UploadThingFileUpload from '@/components/common/UploadThingFileUpload';
+import * as fileUtils from '@/lib/fileUtils';
 
 interface ServiceGalleryManagerProps {
   serviceId: number;
@@ -166,37 +167,57 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
         // Mark files as committed so they don't get cleaned up
         setIsCommitted(true);
         
-        // If we have a session ID, mark the files as committed on the server
+        // First, identify which images are truly new (not already in the gallery)
+        // We'll use the image URL as the unique identifier
+        const existingImageUrls = serviceGallery?.map(img => img.imageUrl) || [];
+        const newPendingImages = pendingImages.filter(url => 
+          !existingImageUrls.includes(url)
+        );
+        
+        console.log(`Found ${newPendingImages.length} new images to add (filtered from ${pendingImages.length} total pending)`);
+        
+        // If we have a session ID, mark ALL files as committed on the server (both existing and new)
+        // This ensures we don't accidentally delete any existing images
         if (uploadSession) {
           try {
-            await commitUploads(uploadSession, pendingImages);
+            // Include both new pending images and existing images in commit
+            const allImageUrls = [...pendingImages, ...existingImageUrls];
+            await commitUploads(uploadSession, allImageUrls);
           } catch (err) {
             console.error('Error committing files:', err);
             // Continue anyway since we've already marked them as committed client-side
           }
         }
         
-        // Calculate next display order
-        const nextOrder = serviceGallery && serviceGallery.length > 0 
-          ? Math.max(...serviceGallery.map(img => img.order !== null ? img.order : 0)) + 1 
-          : 1;
-        
-        // Add each image to the gallery with sequential display order
-        for (let i = 0; i < pendingImages.length; i++) {
-          const galleryImage: InsertServiceGallery = {
-            serviceId,
-            imageUrl: pendingImages[i],
-            alt: `Gallery image ${i + 1}`,
-            order: nextOrder + i,
-          };
+        // Only proceed with adding new images that don't already exist
+        if (newPendingImages.length > 0) {
+          // Calculate next display order
+          const nextOrder = serviceGallery && serviceGallery.length > 0 
+            ? Math.max(...serviceGallery.map(img => img.order !== null ? img.order : 0)) + 1 
+            : 1;
           
-          await addGalleryImage(serviceId, galleryImage);
+          // Add each new image to the gallery with sequential display order
+          for (let i = 0; i < newPendingImages.length; i++) {
+            const galleryImage: InsertServiceGallery = {
+              serviceId,
+              imageUrl: newPendingImages[i],
+              alt: `Gallery image ${i + 1}`,
+              order: nextOrder + i,
+            };
+            
+            await addGalleryImage(serviceId, galleryImage);
+          }
+          
+          toast({
+            title: 'Gallery updated',
+            description: `${newPendingImages.length} image${newPendingImages.length > 1 ? 's' : ''} added to the gallery successfully.`,
+          });
+        } else {
+          toast({
+            title: 'Gallery unchanged',
+            description: 'No new images were added to the gallery.',
+          });
         }
-        
-        toast({
-          title: 'Gallery updated',
-          description: `${pendingImages.length} image${pendingImages.length > 1 ? 's' : ''} added to the gallery successfully.`,
-        });
         
         // Clear pending images after successful save
         setPendingImages([]);
@@ -296,15 +317,37 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
           
           {canAddMoreImages ? (
             <div className="mb-4">
-              <FileUpload 
-                onUploadComplete={handleFileUpload}
+              <UploadThingFileUpload 
+                endpoint="imageUploader"
+                onClientUploadComplete={(files) => {
+                  // Extract URLs from the response files
+                  const urls = files.map(file => {
+                    // Access ufsUrl directly to avoid triggering deprecation warning with file.url
+                    const imageUrl = file.ufsUrl || '';
+                    return imageUrl;
+                  });
+                  
+                  // Process the selected files
+                  if (urls.length > 0) {
+                    handleFileUpload(urls, fileUtils.generateSessionId());
+                  }
+                }}
+                onUploadError={(error) => {
+                  console.error("UploadThing error:", error);
+                  toast({
+                    title: "Upload failed",
+                    description: error.message || "There was an error uploading your images.",
+                    variant: "destructive"
+                  });
+                }}
+                onUploadBegin={() => {
+                  // You can add loading state here if needed
+                }}
                 multiple={true}
-                accept="image/*"
+                accept="image/jpeg, image/png, image/webp"
                 maxSizeMB={5}
                 buttonText="Add Images"
                 helpText={`Add up to ${MAX_GALLERY_IMAGES - currentImageCount} more image${MAX_GALLERY_IMAGES - currentImageCount !== 1 ? 's' : ''}`}
-                sessionId={uploadSession || undefined}
-                onSessionIdCreated={(newSessionId) => setUploadSession(newSessionId)}
               />
             </div>
           ) : null}

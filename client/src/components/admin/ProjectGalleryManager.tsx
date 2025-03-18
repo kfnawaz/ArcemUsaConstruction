@@ -272,7 +272,17 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
         // For existing projects, add each image to the gallery with caption and display order
         console.log(`Adding ${pendingImages.length} gallery images to project ${projectId}`);
         
-        for (const pendingImage of pendingImages) {
+        // First, identify which images are truly new (not already in the gallery)
+        // We'll use the image URL as the unique identifier
+        const existingImageUrls = projectGallery?.map(img => img.imageUrl) || [];
+        const newPendingImages = pendingImages.filter(pendingImg => 
+          !existingImageUrls.includes(pendingImg.url)
+        );
+        
+        console.log(`Found ${newPendingImages.length} new images to add (filtered from ${pendingImages.length} total pending)`);
+        
+        // Only add truly new images to the database
+        for (const pendingImage of newPendingImages) {
           // Make sure we have the URL before proceeding
           if (!pendingImage.url) {
             console.error("Missing URL for pending image:", pendingImage);
@@ -290,21 +300,25 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
           await addProjectGalleryImage(galleryImage);
         }
         
-        // Commit the uploads to prevent cleanup of saved files
+        // Commit all pending uploads to prevent cleanup of saved files
+        // This includes both new and existing images to ensure nothing gets deleted
         if (commitUploads && uploadSessions.size > 0) {
-          // Get all file URLs to commit
-          const fileUrls = pendingImages.map(img => img.url);
+          // Get all file URLs to commit - both new and existing
+          const allImageUrls = [
+            ...pendingImages.map(img => img.url),
+            ...existingImageUrls
+          ];
           
-          // Commit each session
+          // Commit each session with all image URLs to preserve everything
           for (const sessionId of Array.from(uploadSessions)) {
-            await commitUploads(sessionId, fileUrls);
+            await commitUploads(sessionId, allImageUrls);
             console.log(`Committed gallery upload session: ${sessionId}`);
           }
         }
         
         toast({
           title: 'Gallery updated',
-          description: `${pendingImages.length} image${pendingImages.length > 1 ? 's' : ''} added to the gallery successfully.`,
+          description: `${newPendingImages.length} image${newPendingImages.length > 1 || newPendingImages.length === 0 ? 's' : ''} added to the gallery successfully.`,
         });
         
         // Clear pending images after successful save
