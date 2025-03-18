@@ -15,10 +15,6 @@ export const useService = (serviceId?: number) => {
     error: servicesError,
   } = useQuery<Service[]>({
     queryKey: ['/api/services'],
-    queryFn: async () => {
-      const res = await fetch('/api/services');
-      return await res.json();
-    },
   });
 
   // Query to fetch single service if serviceId is provided
@@ -28,11 +24,6 @@ export const useService = (serviceId?: number) => {
     error: serviceError,
   } = useQuery<Service>({
     queryKey: ['/api/services', serviceId],
-    queryFn: async () => {
-      if (!serviceId) throw new Error("No service ID provided");
-      const res = await fetch(`/api/services/${serviceId}`);
-      return await res.json();
-    },
     enabled: !!serviceId,
   });
 
@@ -44,8 +35,7 @@ export const useService = (serviceId?: number) => {
   } = useQuery<ServiceGallery[]>({
     queryKey: ['/api/services', serviceId, 'gallery'],
     queryFn: async () => {
-      if (!serviceId) return [];
-      const res = await fetch(`/api/services/${serviceId}/gallery`);
+      const res = await apiRequest('GET', `/api/services/${serviceId}/gallery`);
       return await res.json();
     },
     enabled: !!serviceId,
@@ -54,11 +44,8 @@ export const useService = (serviceId?: number) => {
   // Create service mutation
   const createServiceMutation = useMutation({
     mutationFn: async (data: InsertService) => {
-      return await apiRequest({
-        url: '/api/services',
-        method: 'POST',
-        body: data
-      });
+      const res = await apiRequest('POST', '/api/services', data);
+      return await res.json();
     },
     onSuccess: () => {
       toast({
@@ -68,7 +55,6 @@ export const useService = (serviceId?: number) => {
       queryClient.invalidateQueries({ queryKey: ['/api/services'] });
     },
     onError: (error: Error) => {
-      console.error('Service creation error:', error);
       toast({
         title: 'Failed to create service',
         description: error.message,
@@ -80,11 +66,8 @@ export const useService = (serviceId?: number) => {
   // Update service mutation
   const updateServiceMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<InsertService> }) => {
-      return await apiRequest({
-        url: `/api/services/${id}`,
-        method: 'PUT',
-        body: data
-      });
+      const res = await apiRequest('PUT', `/api/services/${id}`, data);
+      return await res.json();
     },
     onSuccess: () => {
       toast({
@@ -97,7 +80,6 @@ export const useService = (serviceId?: number) => {
       }
     },
     onError: (error: Error) => {
-      console.error('Service update error:', error);
       toast({
         title: 'Failed to update service',
         description: error.message,
@@ -109,10 +91,7 @@ export const useService = (serviceId?: number) => {
   // Delete service mutation
   const deleteServiceMutation = useMutation({
     mutationFn: async (id: number) => {
-      return await apiRequest({
-        url: `/api/services/${id}`,
-        method: 'DELETE'
-      });
+      await apiRequest('DELETE', `/api/services/${id}`);
     },
     onSuccess: () => {
       toast({
@@ -122,7 +101,6 @@ export const useService = (serviceId?: number) => {
       queryClient.invalidateQueries({ queryKey: ['/api/services'] });
     },
     onError: (error: Error) => {
-      console.error('Service deletion error:', error);
       toast({
         title: 'Failed to delete service',
         description: error.message,
@@ -134,11 +112,8 @@ export const useService = (serviceId?: number) => {
   // Add gallery image mutation
   const addGalleryImageMutation = useMutation({
     mutationFn: async ({ serviceId, data }: { serviceId: number; data: InsertServiceGallery }) => {
-      return await apiRequest({
-        url: `/api/services/${serviceId}/gallery`,
-        method: 'POST',
-        body: data
-      });
+      const res = await apiRequest('POST', `/api/services/${serviceId}/gallery`, data);
+      return await res.json();
     },
     onSuccess: () => {
       toast({
@@ -150,7 +125,6 @@ export const useService = (serviceId?: number) => {
       }
     },
     onError: (error: Error) => {
-      console.error('Gallery image add error:', error);
       toast({
         title: 'Failed to add gallery image',
         description: error.message,
@@ -162,11 +136,8 @@ export const useService = (serviceId?: number) => {
   // Update gallery image mutation
   const updateGalleryImageMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<InsertServiceGallery> }) => {
-      return await apiRequest({
-        url: `/api/services/gallery/${id}`,
-        method: 'PUT',
-        body: data
-      });
+      const res = await apiRequest('PUT', `/api/services/gallery/${id}`, data);
+      return await res.json();
     },
     onSuccess: () => {
       toast({
@@ -178,7 +149,6 @@ export const useService = (serviceId?: number) => {
       }
     },
     onError: (error: Error) => {
-      console.error('Gallery image update error:', error);
       toast({
         title: 'Failed to update gallery image',
         description: error.message,
@@ -190,38 +160,21 @@ export const useService = (serviceId?: number) => {
   // Delete gallery image mutation
   const deleteGalleryImageMutation = useMutation({
     mutationFn: async (id: number) => {
-      console.log(`Executing DELETE request for gallery image with ID: ${id}`);
-      return await apiRequest({
-        url: `/api/services/gallery/${id}`,
-        method: 'DELETE'
-      });
+      await apiRequest('DELETE', `/api/services/gallery/${id}`);
     },
-    onSuccess: (_data, id) => {
-      console.log(`Successfully deleted gallery image with ID: ${id}`);
-      
-      // Show toast notification
+    onSuccess: () => {
       toast({
         title: 'Gallery image deleted',
         description: 'The gallery image has been deleted successfully.',
       });
-      
-      // Invalidate queries to refresh data
       if (serviceId) {
-        // Invalidate gallery data
         queryClient.invalidateQueries({ queryKey: ['/api/services', serviceId, 'gallery'] });
-        
-        // Also invalidate service data since some views may show the gallery as part of the service
-        queryClient.invalidateQueries({ queryKey: ['/api/services', serviceId] });
-        
-        // Invalidate all services list to update counts/thumbnails
-        queryClient.invalidateQueries({ queryKey: ['/api/services'] });
       }
     },
-    onError: (error: Error, id) => {
-      console.error(`Gallery image deletion error for ID ${id}:`, error);
+    onError: (error: Error) => {
       toast({
         title: 'Failed to delete gallery image',
-        description: error.message || 'An unexpected error occurred',
+        description: error.message,
         variant: 'destructive',
       });
     },

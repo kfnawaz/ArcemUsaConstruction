@@ -1,213 +1,111 @@
 /**
- * Utility functions for handling files, particularly UploadThing URLs
+ * File utilities for managing uploads and cleanup
  */
+import { cleanElectronFiles } from './electronCleanup';
 
 /**
- * Generate a unique session ID for file uploads
- * @returns A unique string ID
+ * Interface for tracking uploaded files
  */
-export const generateSessionId = (): string => {
-  return `upload_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-};
+interface TrackedFile {
+  url: string;
+  timestamp: number;
+  sessionId: string;
+  key?: string;
+}
 
 /**
- * Format file size in human-readable format
- * @param bytes File size in bytes
- * @returns Formatted string (e.g., "1.5 MB")
+ * Tracks a file that's been uploaded and needs to be monitored for potential cleanup
+ * @param fileUrl The URL of the uploaded file (from UploadThing or other source)
+ * @param sessionId A unique ID for this upload session (form instance)
+ * @param fileKey Optional UploadThing key associated with the file
  */
-export const formatFileSize = (bytes: number): string => {
-  if (bytes === 0) return '0 Bytes';
+export const trackUploadedFile = (fileUrl: string, sessionId: string, fileKey?: string): void => {
+  if (!fileUrl) return;
   
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
-};
-
-/**
- * Handles UploadThing URLs consistently by detecting and using the correct format
- * prioritizing ufsUrl (new tenant format) over url (legacy format)
- * 
- * @param result The UploadThing result object with url and/or ufsUrl
- * @returns The best URL to use
- */
-export const getUploadThingUrl = (result: { url?: string; ufsUrl?: string }): string | null => {
-  // If we have the new ufsUrl format, use that
-  if (result.ufsUrl) {
-    console.log("Using ufsUrl (new UploadThing format):", result.ufsUrl);
-    return result.ufsUrl;
-  }
-  
-  // Otherwise, fall back to the legacy url
-  if (result.url) {
-    console.log("Using legacy url format:", result.url);
-    return result.url;
-  }
-  
-  // No valid URL found
-  console.warn("No valid URL found in UploadThing result");
-  return null;
-};
-
-/**
- * Extracts the best URL from an image object or fallback to a default
- * 
- * @param image The image object with imageUrl property
- * @param defaultUrl Optional default URL to use if no imageUrl is found
- * @returns The best URL to use, or defaultUrl if provided, or null
- */
-export const getBestImageUrl = (
-  image: { imageUrl?: string | null } | null | undefined,
-  defaultUrl?: string
-): string | null => {
-  // If we have a valid image object with an imageUrl
-  if (image && image.imageUrl) {
-    // Check for the new UploadThing format (ufs.sh)
-    if (image.imageUrl.includes("ufs.sh")) {
-      console.log("Using UploadThing UFS URL:", image.imageUrl);
-      return image.imageUrl;
-    }
-    
-    // Check for the legacy UploadThing format (utfs.io)
-    if (image.imageUrl.includes("utfs.io")) {
-      console.log("Using legacy UploadThing URL:", image.imageUrl);
-      return image.imageUrl;
-    }
-    
-    // Otherwise use the standard URL
-    console.log("Using standard image URL:", image.imageUrl);
-    return image.imageUrl;
-  }
-  
-  // Fall back to default if provided
-  if (defaultUrl) {
-    console.log("Using default image URL:", defaultUrl);
-    return defaultUrl;
-  }
-  
-  // No valid URL found
-  return null;
-};
-
-/**
- * Check if a URL is an image file
- * @param url The URL to check
- * @returns True if the URL points to an image file
- */
-export const isImageFile = (url: string): boolean => {
-  if (!url) return false;
-  
-  // Check based on file extension
-  const extension = getFileExtension(url);
-  return ['jpg', 'jpeg', 'png', 'gif', 'svg', 'webp', 'bmp', 'avif'].includes(extension.toLowerCase());
-};
-
-/**
- * Get the file extension from a URL or filename
- * @param url The URL or filename
- * @returns The file extension without the dot
- */
-export const getFileExtension = (url: string): string => {
-  if (!url) return '';
-  
-  const filename = url.split('/').pop() || '';
-  const parts = filename.split('.');
-  
-  if (parts.length === 1) return ''; // No extension
-  return parts.pop()?.toLowerCase() || '';
-};
-
-/**
- * Track a file for cleanup if needed
- * @param url The file URL
- * @param sessionId The session ID for tracking
- * @param filename Optional original filename
- */
-export const trackFile = (url: string, sessionId: string, filename?: string): void => {
   try {
-    // Make API request to track the file
-    fetch('/api/files/track', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        fileUrl: url,
-        sessionId,
-        filename
-      }),
-      credentials: 'include'
-    }).catch(err => {
-      console.error('Error tracking file:', err);
-    });
-  } catch (error) {
-    console.error('Error tracking file:', error);
-  }
-};
-
-/**
- * Cleanup old files that were uploaded but never committed to the database
- * @param maxAgeMs Maximum age in milliseconds (default: 1 hour)
- * @returns A promise that resolves when the cleanup is complete
- */
-export const cleanupOldFiles = async (maxAgeMs: number = 3600000): Promise<void> => {
-  try {
-    console.log(`Requesting old file cleanup (older than ${maxAgeMs}ms)`);
+    // Store in localStorage for tracking
+    const storedFilesStr = localStorage.getItem('uploaded_files');
+    const storedFiles: TrackedFile[] = storedFilesStr ? JSON.parse(storedFilesStr) : [];
     
-    // Make API request to cleanup old files using a special case for system cleanup
-    await fetch('/api/files/cleanup', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ 
-        maxAgeMs,
-        systemCleanup: true // Flag to indicate this is a system-wide cleanup, not a session-specific one
-      }),
-      credentials: 'include'
+    // Add the new file
+    storedFiles.push({
+      url: fileUrl,
+      timestamp: Date.now(),
+      sessionId,
+      key: fileKey
     });
-    console.log('Old file cleanup requested successfully');
+    
+    // Save back to localStorage
+    localStorage.setItem('uploaded_files', JSON.stringify(storedFiles));
+    console.log(`Tracked file: ${fileUrl} for session ${sessionId}`);
+    
+    // Also track this file for Electron cleanup if needed
+    if (fileUrl.startsWith('file://') || fileUrl.includes('/uploads/')) {
+      // Extract just the filename or path for Electron cleanup
+      let filePath = fileUrl;
+      if (fileUrl.includes('/uploads/')) {
+        filePath = fileUrl.split('/uploads/')[1];
+      } else if (fileUrl.startsWith('file://')) {
+        filePath = fileUrl.replace('file://', '');
+      }
+      
+      cleanElectronFiles([filePath]);
+    }
   } catch (error) {
-    console.error('Error cleaning up old files:', error);
+    console.error('Error tracking uploaded file:', error);
   }
 };
 
 /**
- * Commit files for a specific session, marking them as used and preventing cleanup
- * @param sessionId The session ID to commit files for
- * @param fileUrls Optional array of specific file URLs to commit (if not provided, all files in the session will be committed)
- * @returns A promise that resolves with an array of committed file URLs
+ * Commits files for a session, marking them as permanently stored
+ * @param sessionId The session ID to commit
+ * @param fileUrls Optional specific file URLs to commit (if not provided, commits all for the session)
  */
 export const commitFiles = async (sessionId: string, fileUrls?: string[]): Promise<string[]> => {
   try {
-    if (!sessionId) {
-      console.warn('No session ID provided for file commit');
-      return [];
-    }
-
-    console.log(`Committing files for session ${sessionId}${fileUrls ? ` (${fileUrls.length} specific files)` : ''}`);
+    // Get the existing tracked files
+    const storedFilesStr = localStorage.getItem('uploaded_files');
+    if (!storedFilesStr) return [];
     
-    const response = await fetch('/api/files/commit', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ 
-        sessionId,
-        fileUrls
-      }),
-      credentials: 'include'
+    const storedFiles: TrackedFile[] = JSON.parse(storedFilesStr);
+    const remainingFiles: TrackedFile[] = [];
+    const committedFiles: string[] = [];
+    
+    // Process each file
+    storedFiles.forEach(file => {
+      // If this file is from this session and either no specific URLs were provided,
+      // or this file's URL is in the provided URLs
+      const shouldCommit = file.sessionId === sessionId && 
+        (!fileUrls || fileUrls.includes(file.url));
+      
+      if (shouldCommit) {
+        committedFiles.push(file.url);
+      } else {
+        remainingFiles.push(file);
+      }
     });
     
-    if (!response.ok) {
-      throw new Error(`Failed to commit files: ${response.status} ${response.statusText}`);
+    // Save the remaining files
+    localStorage.setItem('uploaded_files', JSON.stringify(remainingFiles));
+    
+    // Tell the server to commit these files
+    if (committedFiles.length > 0) {
+      try {
+        await fetch('/api/files/commit', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            sessionId,
+            fileUrls: committedFiles
+          })
+        });
+      } catch (error) {
+        console.error('Error committing files on server:', error);
+      }
     }
     
-    const data = await response.json();
-    console.log('Files committed successfully:', data.files || data.committedFiles || []);
-    
-    return data.files || data.committedFiles || [];
+    console.log(`Committed ${committedFiles.length} files for session ${sessionId}`);
+    return committedFiles;
   } catch (error) {
     console.error('Error committing files:', error);
     return [];
@@ -215,55 +113,281 @@ export const commitFiles = async (sessionId: string, fileUrls?: string[]): Promi
 };
 
 /**
- * Cleanup files for a specific session, deleting any that weren't committed
- * @param sessionId The session ID to cleanup files for
- * @param specificFileUrl Optional specific file URL to delete (if provided, only this file will be deleted)
- * @returns A promise that resolves with an array of deleted file URLs
+ * Cleans up temporary files for a session
+ * @param sessionId The session ID to clean up
+ * @param specificFileUrl Optional specific file URL to clean up
  */
 export const cleanupFiles = async (sessionId: string, specificFileUrl?: string): Promise<string[]> => {
   try {
-    if (!sessionId && !specificFileUrl) {
-      console.warn('No session ID or file URL provided for file cleanup');
-      return [];
-    }
+    // Get the existing tracked files
+    const storedFilesStr = localStorage.getItem('uploaded_files');
+    if (!storedFilesStr) return [];
     
-    console.log(`Cleaning up files for session ${sessionId}${specificFileUrl ? ` (specific file: ${specificFileUrl})` : ''}`);
+    const storedFiles: TrackedFile[] = JSON.parse(storedFilesStr);
+    const remainingFiles: TrackedFile[] = [];
+    const filesToClean: TrackedFile[] = [];
     
-    const response = await fetch('/api/files/cleanup', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ 
-        sessionId,
-        fileUrl: specificFileUrl
-      }),
-      credentials: 'include'
+    // Identify which files to clean
+    storedFiles.forEach(file => {
+      // If this file is from this session and either no specific URL was provided,
+      // or this file's URL matches the provided URL
+      const shouldClean = file.sessionId === sessionId && 
+        (!specificFileUrl || file.url === specificFileUrl);
+      
+      if (shouldClean) {
+        filesToClean.push(file);
+      } else {
+        remainingFiles.push(file);
+      }
     });
     
-    if (!response.ok) {
-      throw new Error(`Failed to cleanup files: ${response.status} ${response.statusText}`);
+    // Save the remaining files before attempting any cleanup
+    localStorage.setItem('uploaded_files', JSON.stringify(remainingFiles));
+    
+    // Clean up each file
+    const cleanedUrls: string[] = [];
+    const electronFiles: string[] = [];
+    
+    for (const file of filesToClean) {
+      // If it's a blob URL, revoke it
+      if (file.url.startsWith('blob:')) {
+        URL.revokeObjectURL(file.url);
+      }
+      
+      // If it's a file URL or uploads path, track for Electron cleanup
+      if (file.url.startsWith('file://') || file.url.includes('/uploads/')) {
+        let filePath = file.url;
+        if (file.url.includes('/uploads/')) {
+          filePath = file.url.split('/uploads/')[1];
+        } else if (file.url.startsWith('file://')) {
+          filePath = file.url.replace('file://', '');
+        }
+        
+        electronFiles.push(filePath);
+      }
+      
+      cleanedUrls.push(file.url);
     }
     
-    const data = await response.json();
-    console.log('Files cleaned up successfully:', data.deletedFiles || []);
+    // If we have Electron files, clean them
+    if (electronFiles.length > 0) {
+      await cleanElectronFiles(electronFiles);
+    }
     
-    return data.deletedFiles || [];
+    // Tell the server to clean up these files
+    if (cleanedUrls.length > 0) {
+      try {
+        const response = await fetch('/api/files/cleanup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            sessionId,
+            fileUrls: specificFileUrl ? [specificFileUrl] : cleanedUrls
+          })
+        });
+        
+        const result = await response.json();
+        console.log('Server cleanup response:', result);
+        
+        if (result.success) {
+          console.log(`Server successfully cleaned up ${result.deletedCount} files`);
+        } else {
+          console.error('Server cleanup failed:', result.message);
+        }
+      } catch (error) {
+        console.error('Error cleaning up files on server:', error);
+      }
+    }
+    
+    console.log(`Cleaned up ${cleanedUrls.length} files for session ${sessionId}`);
+    return cleanedUrls;
   } catch (error) {
     console.error('Error cleaning up files:', error);
     return [];
   }
 };
 
-export default {
-  generateSessionId,
-  formatFileSize,
-  getUploadThingUrl,
-  getBestImageUrl,
-  isImageFile,
-  getFileExtension,
-  trackFile,
-  cleanupOldFiles,
-  commitFiles,
-  cleanupFiles
+/**
+ * Cleans up old temporary files that are older than a specified age
+ * @param maxAgeMs Maximum age in milliseconds (default: 1 hour)
+ */
+export const cleanupOldFiles = async (maxAgeMs: number = 3600000): Promise<string[]> => {
+  try {
+    // Get the existing tracked files
+    const storedFilesStr = localStorage.getItem('uploaded_files');
+    if (!storedFilesStr) return [];
+    
+    const storedFiles: TrackedFile[] = JSON.parse(storedFilesStr);
+    const now = Date.now();
+    const remainingFiles: TrackedFile[] = [];
+    const filesToClean: TrackedFile[] = [];
+    
+    // Identify which files to clean
+    storedFiles.forEach(file => {
+      const age = now - file.timestamp;
+      if (age > maxAgeMs) {
+        filesToClean.push(file);
+      } else {
+        remainingFiles.push(file);
+      }
+    });
+    
+    // Save the remaining files before attempting any cleanup
+    localStorage.setItem('uploaded_files', JSON.stringify(remainingFiles));
+    
+    // Clean up each file
+    const cleanedUrls: string[] = [];
+    const electronFiles: string[] = [];
+    
+    for (const file of filesToClean) {
+      // If it's a blob URL, revoke it
+      if (file.url.startsWith('blob:')) {
+        URL.revokeObjectURL(file.url);
+      }
+      
+      // If it's a file URL or uploads path, track for Electron cleanup
+      if (file.url.startsWith('file://') || file.url.includes('/uploads/')) {
+        let filePath = file.url;
+        if (file.url.includes('/uploads/')) {
+          filePath = file.url.split('/uploads/')[1];
+        } else if (file.url.startsWith('file://')) {
+          filePath = file.url.replace('file://', '');
+        }
+        
+        electronFiles.push(filePath);
+      }
+      
+      cleanedUrls.push(file.url);
+    }
+    
+    // If we have Electron files, clean them
+    if (electronFiles.length > 0) {
+      await cleanElectronFiles(electronFiles);
+    }
+    
+    // Group files by session
+    const sessionFiles: Record<string, string[]> = {};
+    filesToClean.forEach(file => {
+      if (!sessionFiles[file.sessionId]) {
+        sessionFiles[file.sessionId] = [];
+      }
+      sessionFiles[file.sessionId].push(file.url);
+    });
+    
+    // Tell the server to clean up these files, grouped by session
+    for (const [sessionId, urls] of Object.entries(sessionFiles)) {
+      if (urls.length > 0) {
+        try {
+          await fetch('/api/files/cleanup', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              sessionId,
+              fileUrls: urls
+            })
+          });
+        } catch (error) {
+          console.error(`Error cleaning up files for session ${sessionId}:`, error);
+        }
+      }
+    }
+    
+    console.log(`Cleaned up ${cleanedUrls.length} old files`);
+    return cleanedUrls;
+  } catch (error) {
+    console.error('Error cleaning up old files:', error);
+    return [];
+  }
 };
+
+/**
+ * Extracts an UploadThing file key from a URL
+ * @param url The file URL to extract the key from
+ */
+export const extractUploadThingKeyFromUrl = (url: string | null): string | null => {
+  if (!url) return null;
+
+  // Check if it's an UploadThing URL
+  const isUploadThingUrl = url.includes("utfs.io") || url.includes("uploadthing.com");
+  if (!isUploadThingUrl) return null;
+
+  // Extract the key from the URL
+  const urlParts = url.split("/");
+  return urlParts[urlParts.length - 1] || null;
+};
+
+/**
+ * Extracts a filename from a URL or path
+ * @param url The URL or path to extract the filename from
+ */
+export const extractFilenameFromUrl = (url: string | null): string | null => {
+  if (!url) return null;
+  
+  // Extract the filename
+  const urlParts = url.split("/");
+  const filename = urlParts[urlParts.length - 1] || null;
+  
+  // Remove any query parameters
+  if (filename && filename.includes('?')) {
+    return filename.split('?')[0];
+  }
+  
+  return filename;
+};
+
+/**
+ * Format file size in bytes to human-readable format (KB, MB, etc.)
+ * @param bytes File size in bytes
+ * @param decimals Number of decimal places to show
+ */
+export const formatFileSize = (bytes: number, decimals: number = 2): string => {
+  if (bytes === 0) return '0 Bytes';
+  
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(decimals)) + ' ' + sizes[i];
+};
+
+/**
+ * Get file extension from a URL or filename
+ * @param url The URL or filename
+ */
+export const getFileExtension = (url: string): string => {
+  if (!url) return '';
+  
+  const filename = extractFilenameFromUrl(url) || url;
+  const parts = filename.split('.');
+  
+  if (parts.length === 1 || (parts[0] === '' && parts.length === 2)) {
+    return '';
+  }
+  
+  return parts.pop()?.toLowerCase() || '';
+};
+
+/**
+ * Check if a URL points to an image file
+ * @param url The URL to check
+ */
+export const isImageFile = (url: string): boolean => {
+  if (!url) return false;
+  
+  const extension = getFileExtension(url);
+  const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'];
+  
+  return imageExtensions.includes(extension);
+};
+
+/**
+ * Generate a unique session ID for tracking uploads
+ */
+export const generateSessionId = (): string => {
+  return `session_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+};
+
+/**
+ * Alias for trackUploadedFile for backward compatibility
+ */
+export const trackFile = trackUploadedFile;

@@ -15,7 +15,6 @@ import {
 // Using AutoplayType to avoid TypeScript errors
 import Autoplay, { type AutoplayType } from 'embla-carousel-autoplay';
 import { apiRequest } from '@/lib/queryClient';
-import fileUtils from '@/lib/fileUtils';
 
 const Services = () => {
   useEffect(() => {
@@ -62,9 +61,8 @@ const Services = () => {
         
         for (const service of services) {
           try {
-            const response = await fetch(`/api/services/${service.id}/gallery`);
+            const response = await apiRequest('GET', `/api/services/${service.id}/gallery`);
             const galleryData = await response.json();
-            console.log(`Gallery data for service ${service.id}:`, galleryData);
             galleries[service.id] = galleryData;
           } catch (error) {
             console.error(`Error fetching gallery for service ${service.id}:`, error);
@@ -83,11 +81,7 @@ const Services = () => {
   const getServiceImages = (service: Service) => {
     // If we have gallery images for this service, use them
     if (serviceGalleries[service.id] && serviceGalleries[service.id].length > 0) {
-      return serviceGalleries[service.id].map(image => {
-        // Use our utility function to get the best image URL
-        const imageUrl = fileUtils.getBestImageUrl(image);
-        return imageUrl;
-      }).filter(url => url !== null); // Filter out any null URLs
+      return serviceGalleries[service.id].map(image => image.imageUrl);
     }
     
     // Otherwise use default images based on service type

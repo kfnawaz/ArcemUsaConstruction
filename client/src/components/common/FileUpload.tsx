@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useUploadThing } from '@/lib/uploadthing';
-import fileUtils from '@/lib/fileUtils';
+import * as fileUtils from '@/lib/fileUtils';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Loader2, Upload, X, FileIcon, ImageIcon } from 'lucide-react';
@@ -72,11 +72,6 @@ interface FileUploadProps {
    */
   sessionId?: string;
   /**
-   * Function called when a new session ID is created
-   * @param sessionId The newly created session ID
-   */
-  onSessionIdCreated?: (sessionId: string) => void;
-  /**
    * Maximum file size in MB
    */
   maxSizeMB?: number;
@@ -107,7 +102,6 @@ export default function FileUpload({
   multiple = true,
   imagesOnly = false,
   sessionId: externalSessionId,
-  onSessionIdCreated,
   maxSizeMB = 8,
   accept,
   buttonText,
@@ -117,14 +111,7 @@ export default function FileUpload({
   const [fileUrls, setFileUrls] = useState<string[]>(initialFiles || []);
   const [isDragging, setIsDragging] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
-  const [sessionId, setSessionId] = useState<string>(() => {
-    const newSessionId = externalSessionId || fileUtils.generateSessionId();
-    // Notify parent component of the session ID if not externally provided
-    if (!externalSessionId && onSessionIdCreated) {
-      onSessionIdCreated(newSessionId);
-    }
-    return newSessionId;
-  });
+  const [sessionId, setSessionId] = useState<string>(externalSessionId || fileUtils.generateSessionId());
   const { toast } = useToast();
   
   const { startUpload, isUploading } = useUploadThing("imageUploader", {
@@ -137,14 +124,10 @@ export default function FileUpload({
         // Log each result to debug
         console.log("Result item:", result);
         
-        // Use our utility function to get the best URL to use
-        const fileUrl = fileUtils.getUploadThingUrl(result);
-        if (!fileUrl) {
-          console.error("No valid URL found in result:", result);
-          throw new Error("Failed to extract URL from upload result");
-        }
-        
+        // IMPORTANT: Always prefer the new ufsUrl format
+        const fileUrl = result.ufsUrl || result.url;
         console.log("URL to use:", fileUrl);
+        
         return fileUrl;
       });
       

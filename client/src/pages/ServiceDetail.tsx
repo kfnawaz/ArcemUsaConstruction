@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useRoute, Link } from "wouter";
 import { Service, ServiceGallery } from "@shared/schema";
 import { scrollToTop } from "@/lib/utils";
-import fileUtils from "@/lib/fileUtils";
 import {
   Building,
   Home,
@@ -27,7 +26,7 @@ import {
 } from "@/components/ui/carousel";
 // Using AutoplayType to avoid TypeScript errors
 import Autoplay, { type AutoplayType } from "embla-carousel-autoplay";
-// Using fetch directly instead of apiRequest
+import { apiRequest } from "@/lib/queryClient";
 import { useService } from "@/hooks/useService";
 
 const ServiceDetail = () => {
@@ -59,7 +58,7 @@ const ServiceDetail = () => {
     queryKey: ["/api/services", serviceId, "gallery"],
     queryFn: async () => {
       if (!serviceId) return [];
-      const res = await fetch(`/api/services/${serviceId}/gallery`);
+      const res = await apiRequest("GET", `/api/services/${serviceId}/gallery`);
       return await res.json();
     },
     enabled: !!serviceId,
@@ -72,15 +71,7 @@ const ServiceDetail = () => {
   useEffect(() => {
     if (serviceGallery && serviceGallery.length > 0) {
       console.log("Service gallery images:", serviceGallery);
-      
-      // Handle both old URL format and new UploadThing URL format
-      const validGallery = serviceGallery.filter(img => {
-        // Check if there's a valid URL in either imageUrl or a URL that follows the UploadThing pattern
-        return !!img.imageUrl && img.imageUrl.trim() !== '';
-      });
-      console.log("Valid gallery images:", validGallery);
-      
-      setGalleryImages(validGallery as ServiceGallery[]);
+      setGalleryImages(serviceGallery as ServiceGallery[]);
     }
   }, [serviceGallery]);
 
@@ -333,10 +324,7 @@ const ServiceDetail = () => {
     // Use gallery images from the API if available, otherwise fall back to hardcoded images
     const serviceImages =
       galleryImages.length > 0
-        ? galleryImages.map((image) => {
-            // Use the fileUtils utility to get the best image URL
-            return fileUtils.getBestImageUrl(image);
-          }).filter(url => url !== null) // Filter out any null URLs
+        ? galleryImages.map((image) => image.imageUrl)
         : getServiceImages(service.title);
 
     return (

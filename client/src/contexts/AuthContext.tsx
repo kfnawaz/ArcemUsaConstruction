@@ -34,10 +34,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const checkAuth = useCallback(async (): Promise<boolean> => {
     try {
-      // For development mode, provide a default admin user when authentication fails
-      // This simplifies testing admin routes in development
-      const isDevelopmentMode = import.meta.env.DEV;
-      
       const userData = await apiRequest<AuthUser>({
         url: '/api/user',
         method: 'GET',
@@ -47,35 +43,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (userData) {
         setUser(userData);
         return true;
-      } else if (isDevelopmentMode) {
-        // In development, create a mock admin user for ease of testing
-        console.log('⚠️ [DEV MODE] Using development admin user');
-        setUser({
-          id: 1,
-          username: 'admin',
-          role: 'admin'
-        });
-        return true;
       } else {
         setUser(null);
         return false;
       }
     } catch (error) {
       console.error('Auth check error:', error);
-      
-      // For development mode, provide a default admin user when authentication fails
-      if (import.meta.env.DEV) {
-        console.log('⚠️ [DEV MODE] Using development admin user after error');
-        setUser({
-          id: 1,
-          username: 'admin',
-          role: 'admin'
-        });
-        return true;
-      } else {
-        setUser(null);
-        return false;
-      }
+      setUser(null);
+      return false;
     } finally {
       setIsLoading(false);
     }

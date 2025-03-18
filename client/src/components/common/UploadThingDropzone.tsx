@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useUploadThing } from '@/lib/uploadthing';
 import { useToast } from '@/hooks/use-toast';
-import fileUtils from '@/lib/fileUtils';
+import * as fileUtils from '@/lib/fileUtils';
 import { 
   UploadCloud, 
   X, 
@@ -32,35 +32,18 @@ export interface UploadedFile {
 }
 
 interface UploadThingDropzoneProps {
-  onFilesUploaded?: (files: UploadedFile[]) => void;
-  onUploadComplete?: (urls: string | string[], sessionId?: string) => Promise<void> | void;
+  onFilesUploaded: (files: UploadedFile[]) => void;
   sessionId: string;
   existingFiles?: UploadedFile[];
   maxFiles?: number;
-  multiple?: boolean;
-  endpoint?: string;
-  onSessionIdCreated?: (sessionId: string) => void;
 }
 
 export default function UploadThingDropzone({ 
   onFilesUploaded, 
-  onUploadComplete,
-  sessionId: initialSessionId, 
+  sessionId, 
   existingFiles = [],
-  maxFiles = 10,
-  multiple = true,
-  endpoint = "imageUploader",
-  onSessionIdCreated
+  maxFiles = 10 
 }: UploadThingDropzoneProps) {
-  // Generate a session ID if none was provided
-  const [sessionId, setSessionId] = useState<string>(initialSessionId || fileUtils.generateSessionId());
-  
-  // If the session ID was generated, notify the parent
-  useEffect(() => {
-    if (sessionId !== initialSessionId && onSessionIdCreated) {
-      onSessionIdCreated(sessionId);
-    }
-  }, [sessionId, initialSessionId, onSessionIdCreated]);
   const { toast } = useToast();
   const [dragActive, setDragActive] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>(existingFiles);
@@ -99,16 +82,7 @@ export default function UploadThingDropzone({
       });
       
       // Call the parent component callback
-      // Call the appropriate callback
-      if (onFilesUploaded) {
-        onFilesUploaded([...uploadedFiles, ...newFiles]);
-      }
-      
-      // For backward compatibility with the old FileUpload component
-      if (onUploadComplete) {
-        const fileUrls = files.map(file => file.ufsUrl || file.url);
-        onUploadComplete(fileUrls.length === 1 && !multiple ? fileUrls[0] : fileUrls, sessionId);
-      }
+      onFilesUploaded([...uploadedFiles, ...newFiles]);
       
       setUploadProgress(0);
       toast({
@@ -246,9 +220,7 @@ export default function UploadThingDropzone({
       });
       
       // Notify parent of change
-      if (onFilesUploaded) {
-        onFilesUploaded(updated);
-      }
+      onFilesUploaded(updated);
       
       return updated;
     });
@@ -263,9 +235,7 @@ export default function UploadThingDropzone({
       }));
       
       // Notify parent of change
-      if (onFilesUploaded) {
-        onFilesUploaded(updated);
-      }
+      onFilesUploaded(updated);
       
       return updated;
     });
@@ -283,9 +253,7 @@ export default function UploadThingDropzone({
       updated[index].caption = caption;
       
       // Notify parent of change
-      if (onFilesUploaded) {
-        onFilesUploaded(updated);
-      }
+      onFilesUploaded(updated);
       
       return updated;
     });

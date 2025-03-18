@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import fileUtils from '@/lib/fileUtils';
+import { cleanupOldFiles } from '@/lib/fileUtils';
 
 /**
  * Global handler component for cleaning up temporary files
@@ -9,19 +9,20 @@ export default function GlobalCleanupHandler() {
   useEffect(() => {
     console.log('GlobalCleanupHandler: Initializing');
     
-    // Run initial cleanup on startup with the correct parameter format
-    fileUtils.cleanupOldFiles(3600000); // 1 hour old files
+    // Run initial cleanup on startup
+    cleanupOldFiles();
     
     // Setup periodic cleanup (every 5 minutes)
     const intervalId = setInterval(() => {
       console.log('GlobalCleanupHandler: Running periodic cleanup');
-      fileUtils.cleanupOldFiles(1800000); // 30 minutes old files
-    }, 300000); // Every 5 minutes (300,000 ms)
+      cleanupOldFiles(30 * 60 * 1000); // 30 minutes old files
+    }, 5 * 60 * 1000); // Every 5 minutes
     
     // Cleanup before unmounting
     return () => {
       console.log('GlobalCleanupHandler: Shutting down');
       clearInterval(intervalId);
+      cleanupOldFiles(); // Final cleanup
     };
   }, []);
   
