@@ -28,7 +28,7 @@ import {
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import * as fileUtils from '@/lib/fileUtils';
+import fileUtils from '@/lib/fileUtils';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import UploadThingFileUpload from '@/components/common/UploadThingFileUpload';

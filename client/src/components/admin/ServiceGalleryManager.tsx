@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/card';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import FileUpload from '@/components/common/FileUpload';
-import * as fileUtils from '@/lib/fileUtils';
+import fileUtils from '@/lib/fileUtils';
 
 interface ServiceGalleryManagerProps {
   serviceId: number;

@@ -146,6 +146,28 @@ export const trackFile = (url: string, sessionId: string, filename?: string): vo
   }
 };
 
+/**
+ * Cleanup old files that were uploaded but never committed to the database
+ * @param maxAgeMs Maximum age in milliseconds (default: 1 hour)
+ * @returns A promise that resolves when the cleanup is complete
+ */
+export const cleanupOldFiles = async (maxAgeMs: number = 3600000): Promise<void> => {
+  try {
+    // Make API request to cleanup old files
+    await fetch('/api/files/cleanup', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ maxAgeMs }),
+      credentials: 'include'
+    });
+    console.log('Old file cleanup requested successfully');
+  } catch (error) {
+    console.error('Error cleaning up old files:', error);
+  }
+};
+
 export default {
   generateSessionId,
   formatFileSize,
@@ -153,5 +175,6 @@ export default {
   getBestImageUrl,
   isImageFile,
   getFileExtension,
-  trackFile
+  trackFile,
+  cleanupOldFiles
 };

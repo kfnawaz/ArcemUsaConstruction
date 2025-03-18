@@ -47,7 +47,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import ServiceGalleryManager from './ServiceGalleryManager';
-import * as fileUtils from '@/lib/fileUtils';
+import fileUtils from '@/lib/fileUtils';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useUploadThing } from '@/lib/uploadthing';

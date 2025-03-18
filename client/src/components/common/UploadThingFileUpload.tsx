@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Loader2, Upload, X, ImagePlus, File, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import * as fileUtils from '@/lib/fileUtils';
+import fileUtils from '@/lib/fileUtils';
 
 interface UploadThingFileUploadProps {
   onUploaded: (urls: string[]) => void;
