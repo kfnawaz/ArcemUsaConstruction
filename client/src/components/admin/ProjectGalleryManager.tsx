@@ -43,6 +43,7 @@ export interface ProjectGalleryManagerHandle {
   hasRecentlyModified: () => boolean;
   getUnsavedChangesCount: () => number;
   getPendingImages: () => PendingImage[];
+  updateProjectId: (newProjectId: number) => void;
 }
 
 const MAX_GALLERY_IMAGES = 10;
@@ -107,6 +108,14 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
       setLastModifiedTimestamp(Date.now());
     };
     
+    // State to track the dynamic project ID (useful for newly created projects)
+    const [dynamicProjectId, setDynamicProjectId] = useState<number>(projectId);
+    
+    // Update the dynamic project ID when the prop changes
+    useEffect(() => {
+      setDynamicProjectId(projectId);
+    }, [projectId]);
+    
     // Expose methods via ref
     useImperativeHandle(ref, () => ({
       saveGalleryImages: async () => {
@@ -126,6 +135,10 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
       },
       getPendingImages: () => {
         return [...pendingImages];
+      },
+      updateProjectId: (newProjectId: number) => {
+        console.log(`Updating project ID from ${dynamicProjectId} to ${newProjectId}`);
+        setDynamicProjectId(newProjectId);
       }
     }));
 
@@ -270,7 +283,8 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
         }
         
         // For existing projects, add each image to the gallery with caption and display order
-        console.log(`Adding ${pendingImages.length} gallery images to project ${projectId}`);
+        // Use dynamicProjectId instead of projectId to handle cases where the ID was updated after project creation
+        console.log(`Adding ${pendingImages.length} gallery images to project ${dynamicProjectId}`);
         
         // First, identify which images are truly new (not already in the gallery)
         // We'll use the image URL as the unique identifier
@@ -290,7 +304,7 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
           }
 
           const galleryImage: InsertProjectGallery = {
-            projectId,
+            projectId: dynamicProjectId, // Use the dynamic project ID which may have been updated
             imageUrl: pendingImage.url,
             caption: pendingImage.caption,
             displayOrder: pendingImage.displayOrder,

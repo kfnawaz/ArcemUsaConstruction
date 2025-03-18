@@ -208,24 +208,44 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
       console.log("Creating new project with data:", data);
       setIsSubmitting(true);
       
-      // First, save any pending gallery images if they exist
-      if (galleryManagerRef.current && galleryManagerRef.current.hasPendingImages()) {
-        console.log("Saving pending gallery images with project creation");
-      }
-      
-      // Save the project data
+      // Save the project data first to get the project ID
       const createdProject = await saveProject(data);
-      
-      toast({
-        title: "Success!",
-        description: "Project created successfully",
-      });
       
       // Check if we received a valid project response with an ID
       if (createdProject && typeof createdProject === 'object' && 'id' in createdProject) {
-        const projectId = createdProject.id;
+        const newProjectId = createdProject.id;
+        console.log("New project created with ID:", newProjectId);
+        
+        // Now save any pending gallery images if they exist
+        if (galleryManagerRef.current && galleryManagerRef.current.hasPendingImages()) {
+          console.log("Saving pending gallery images for newly created project:", newProjectId);
+          try {
+            // The gallery manager's projectId is initially 0 (for new projects)
+            // We need to update it with the real project ID before saving
+            if (galleryManagerRef.current.updateProjectId) {
+              galleryManagerRef.current.updateProjectId(newProjectId);
+            }
+            
+            // Now save the gallery images with the correct project ID
+            await galleryManagerRef.current.saveGalleryImages();
+            console.log("Successfully saved gallery images for new project");
+          } catch (error) {
+            console.error("Error saving gallery images for new project:", error);
+            toast({
+              title: "Warning",
+              description: "Project was created but there was an error saving some gallery images.",
+              variant: "destructive"
+            });
+          }
+        }
+        
+        toast({
+          title: "Success!",
+          description: "Project created successfully",
+        });
+        
         // Refresh the page with the new project ID to convert to edit mode using the correct URL format
-        window.location.href = `/admin/projects?edit=${projectId}`;
+        window.location.href = `/admin/projects?edit=${newProjectId}`;
       } else {
         // Fallback in case we don't get a proper ID back
         console.warn("No project ID returned after creation, falling back to close");
