@@ -607,7 +607,7 @@ export default function NewProjectForm({ projectId, onClose }: NewProjectFormPro
     // Register each file with our tracking system
     if (filesToCleanup.length > 0) {
       filesToCleanup.forEach(fileUrl => {
-        fileUtils.trackUploadedFile(fileUrl, sessionId);
+        fileUtils.trackFile(fileUrl, sessionId);
       });
     }
     

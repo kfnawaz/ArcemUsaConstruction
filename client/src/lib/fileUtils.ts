@@ -153,18 +153,105 @@ export const trackFile = (url: string, sessionId: string, filename?: string): vo
  */
 export const cleanupOldFiles = async (maxAgeMs: number = 3600000): Promise<void> => {
   try {
-    // Make API request to cleanup old files
+    console.log(`Requesting old file cleanup (older than ${maxAgeMs}ms)`);
+    
+    // Make API request to cleanup old files using a special case for system cleanup
     await fetch('/api/files/cleanup', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ maxAgeMs }),
+      body: JSON.stringify({ 
+        maxAgeMs,
+        systemCleanup: true // Flag to indicate this is a system-wide cleanup, not a session-specific one
+      }),
       credentials: 'include'
     });
     console.log('Old file cleanup requested successfully');
   } catch (error) {
     console.error('Error cleaning up old files:', error);
+  }
+};
+
+/**
+ * Commit files for a specific session, marking them as used and preventing cleanup
+ * @param sessionId The session ID to commit files for
+ * @param fileUrls Optional array of specific file URLs to commit (if not provided, all files in the session will be committed)
+ * @returns A promise that resolves with an array of committed file URLs
+ */
+export const commitFiles = async (sessionId: string, fileUrls?: string[]): Promise<string[]> => {
+  try {
+    if (!sessionId) {
+      console.warn('No session ID provided for file commit');
+      return [];
+    }
+
+    console.log(`Committing files for session ${sessionId}${fileUrls ? ` (${fileUrls.length} specific files)` : ''}`);
+    
+    const response = await fetch('/api/files/commit', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        sessionId,
+        fileUrls
+      }),
+      credentials: 'include'
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to commit files: ${response.status} ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    console.log('Files committed successfully:', data.files || data.committedFiles || []);
+    
+    return data.files || data.committedFiles || [];
+  } catch (error) {
+    console.error('Error committing files:', error);
+    return [];
+  }
+};
+
+/**
+ * Cleanup files for a specific session, deleting any that weren't committed
+ * @param sessionId The session ID to cleanup files for
+ * @param specificFileUrl Optional specific file URL to delete (if provided, only this file will be deleted)
+ * @returns A promise that resolves with an array of deleted file URLs
+ */
+export const cleanupFiles = async (sessionId: string, specificFileUrl?: string): Promise<string[]> => {
+  try {
+    if (!sessionId && !specificFileUrl) {
+      console.warn('No session ID or file URL provided for file cleanup');
+      return [];
+    }
+    
+    console.log(`Cleaning up files for session ${sessionId}${specificFileUrl ? ` (specific file: ${specificFileUrl})` : ''}`);
+    
+    const response = await fetch('/api/files/cleanup', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        sessionId,
+        fileUrl: specificFileUrl
+      }),
+      credentials: 'include'
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to cleanup files: ${response.status} ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    console.log('Files cleaned up successfully:', data.deletedFiles || []);
+    
+    return data.deletedFiles || [];
+  } catch (error) {
+    console.error('Error cleaning up files:', error);
+    return [];
   }
 };
 
@@ -176,5 +263,7 @@ export default {
   isImageFile,
   getFileExtension,
   trackFile,
-  cleanupOldFiles
+  cleanupOldFiles,
+  commitFiles,
+  cleanupFiles
 };
