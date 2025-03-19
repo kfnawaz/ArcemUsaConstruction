@@ -22,7 +22,7 @@ export const useProjects = (projectId?: number) => {
   });
 
   // Get a specific project
-  const { data: project, isLoading: isLoadingProject } = useQuery<Project | null>({
+  const { data: project, isLoading: isLoadingProject } = useQuery<Project | null, Error, Project | null>({
     queryKey: ["/api/projects", projectId],
     queryFn: getQueryFn({ on401: "returnNull" }),
     enabled: !!projectId,

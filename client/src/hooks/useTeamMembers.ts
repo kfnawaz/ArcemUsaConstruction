@@ -1,35 +1,33 @@
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { TeamMember, InsertTeamMember } from '@shared/schema';
-import { apiRequest, queryClient } from '@/lib/queryClient';
+import { apiRequest, getQueryFn } from '@/lib/queryClient';
 import { useToast } from '@/hooks/use-toast';
 
-export function useTeamMembers() {
-  return useQuery<TeamMember[]>({
+export function useTeamMembers(teamMemberId?: number) {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  
+  // Get active team members (public)
+  const { data: activeTeamMembers = [], isLoading: isLoadingActive } = useQuery<TeamMember[], Error, TeamMember[]>({
     queryKey: ['/api/team-members'],
-    retry: 1,
-    initialData: []
+    queryFn: getQueryFn({ on401: "returnNull" }),
+    enabled: !teamMemberId
   });
-}
-
-export function useAllTeamMembers() {
-  return useQuery<TeamMember[]>({
+  
+  // Get all team members (admin)
+  const { data: allTeamMembers = [], isLoading: isLoadingAll } = useQuery<TeamMember[], Error, TeamMember[]>({
     queryKey: ['/api/admin/team-members'],
-    retry: 1,
-    initialData: []
+    queryFn: getQueryFn({ on401: "returnNull" }),
+    enabled: !teamMemberId
   });
-}
-
-export function useTeamMember(id: number) {
-  return useQuery<TeamMember | null>({
-    queryKey: ['/api/admin/team-members', id],
-    enabled: !!id,
-    retry: 1,
+  
+  // Get specific team member
+  const { data: teamMember, isLoading: isLoadingTeamMember } = useQuery<TeamMember | null, Error, TeamMember | null>({
+    queryKey: ['/api/admin/team-members', teamMemberId],
+    queryFn: getQueryFn({ on401: "returnNull" }),
+    enabled: !!teamMemberId,
     initialData: null
   });
-}
-
-export function useTeamMembersActions() {
-  const { toast } = useToast();
 
   // Create a team member
   const createTeamMemberMutation = useMutation({
@@ -160,6 +158,17 @@ export function useTeamMembersActions() {
   });
 
   return {
+    // Data
+    activeTeamMembers,
+    allTeamMembers,
+    teamMember: teamMemberId ? (teamMember as TeamMember) : null,
+    
+    // Loading states
+    isLoadingActive,
+    isLoadingAll,
+    isLoadingTeamMember,
+    
+    // Mutations
     createTeamMember: (data: InsertTeamMember) => createTeamMemberMutation.mutate(data),
     updateTeamMember: (id: number, data: Partial<InsertTeamMember>) => 
       updateTeamMemberMutation.mutate({ id, data }),
@@ -167,6 +176,7 @@ export function useTeamMembersActions() {
     updateOrder: (id: number, order: number) => updateOrderMutation.mutate({ id, order }),
     deleteTeamMember: (id: number) => deleteTeamMemberMutation.mutate(id),
     
+    // Mutation states
     isCreating: createTeamMemberMutation.isPending,
     isUpdating: updateTeamMemberMutation.isPending,
     isTogglingActive: toggleActiveStatusMutation.isPending,
