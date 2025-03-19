@@ -45,7 +45,11 @@ export const useCareers = (jobId?: number) => {
   // Create a new job posting
   const createJobPostingMutation = useMutation({
     mutationFn: async (data: InsertJobPosting) => {
-      return await apiRequest(`/api/admin/careers`, "POST", data);
+      return await apiRequest({
+        url: `/api/admin/careers`,
+        method: "POST",
+        body: data
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/careers"] });
@@ -68,7 +72,11 @@ export const useCareers = (jobId?: number) => {
   // Update a job posting
   const updateJobPostingMutation = useMutation({
     mutationFn: async ({ id, data }: { id: number; data: Partial<InsertJobPosting> }) => {
-      return await apiRequest(`/api/admin/careers/${id}`, "PUT", data);
+      return await apiRequest({
+        url: `/api/admin/careers/${id}`,
+        method: "PUT",
+        body: data
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/careers"] });
@@ -94,7 +102,10 @@ export const useCareers = (jobId?: number) => {
   // Toggle active status
   const toggleActiveStatusMutation = useMutation({
     mutationFn: async (id: number) => {
-      return await apiRequest(`/api/admin/careers/${id}/toggle-active`, "PUT");
+      return await apiRequest({
+        url: `/api/admin/careers/${id}/toggle-active`,
+        method: "PUT"
+      });
     },
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/careers"] });
@@ -120,7 +131,10 @@ export const useCareers = (jobId?: number) => {
   // Toggle featured status
   const toggleFeaturedStatusMutation = useMutation({
     mutationFn: async (id: number) => {
-      return await apiRequest(`/api/admin/careers/${id}/toggle-featured`, "PUT");
+      return await apiRequest({
+        url: `/api/admin/careers/${id}/toggle-featured`,
+        method: "PUT"
+      });
     },
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/careers"] });
@@ -146,7 +160,10 @@ export const useCareers = (jobId?: number) => {
   // Delete a job posting
   const deleteJobPostingMutation = useMutation({
     mutationFn: async (id: number) => {
-      return await apiRequest(`/api/admin/careers/${id}`, "DELETE");
+      return await apiRequest({
+        url: `/api/admin/careers/${id}`,
+        method: "DELETE"
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/careers"] });
