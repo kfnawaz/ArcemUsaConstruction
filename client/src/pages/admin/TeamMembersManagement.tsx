@@ -77,155 +77,23 @@ export default function TeamMembersManagement() {
 
   const { toast } = useToast();
   const { data: teamMembers, isLoading } = useAllTeamMembers();
-  
-  const [isCreatingTeamMember, setIsCreatingTeamMember] = useState(false);
-  const [isUpdatingTeamMember, setIsUpdatingTeamMember] = useState(false);
-  const [isTogglingActiveStatus, setIsTogglingActiveStatus] = useState(false);
-  const [isUpdatingOrder, setIsUpdatingOrder] = useState(false);
-  const [isDeletingTeamMember, setIsDeletingTeamMember] = useState(false);
+  const {
+    createTeamMember,
+    updateTeamMember,
+    toggleActiveStatus,
+    updateOrder,
+    deleteTeamMember,
+    isCreating,
+    isUpdating,
+    isTogglingActive,
+    isUpdatingOrder,
+    isDeleting
+  } = useTeamMembersActions();
 
   useEffect(() => {
     scrollToTop();
     document.title = 'Team Members Management - ARCEM';
   }, []);
-  
-  const createTeamMember = async (data: InsertTeamMember) => {
-    setIsCreatingTeamMember(true);
-    try {
-      await apiRequest({
-        url: '/api/admin/team-members',
-        method: 'POST',
-        body: data
-      });
-      
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/team-members'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/team-members'] });
-      
-      toast({
-        title: "Success",
-        description: "Team member created successfully.",
-      });
-    } catch (error) {
-      console.error("Error creating team member:", error);
-      toast({
-        title: "Error",
-        description: "Failed to create team member. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsCreatingTeamMember(false);
-    }
-  };
-  
-  const updateTeamMember = async (id: number, data: Partial<InsertTeamMember>) => {
-    setIsUpdatingTeamMember(true);
-    try {
-      await apiRequest({
-        url: `/api/admin/team-members/${id}`,
-        method: 'PUT',
-        body: data
-      });
-      
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/team-members'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/team-members'] });
-      
-      toast({
-        title: "Success",
-        description: "Team member updated successfully.",
-      });
-    } catch (error) {
-      console.error("Error updating team member:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update team member. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsUpdatingTeamMember(false);
-    }
-  };
-  
-  const toggleActiveStatus = async (id: number) => {
-    setIsTogglingActiveStatus(true);
-    try {
-      await apiRequest({
-        url: `/api/admin/team-members/${id}/toggle-active`,
-        method: 'PUT'
-      });
-      
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/team-members'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/team-members'] });
-      
-      toast({
-        title: "Success",
-        description: "Team member status updated.",
-      });
-    } catch (error) {
-      console.error("Error toggling active status:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update status. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsTogglingActiveStatus(false);
-    }
-  };
-  
-  const updateOrder = async (id: number, order: number) => {
-    setIsUpdatingOrder(true);
-    try {
-      await apiRequest({
-        url: `/api/admin/team-members/${id}/order`,
-        method: 'PUT',
-        body: { order }
-      });
-      
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/team-members'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/team-members'] });
-      
-      toast({
-        title: "Success",
-        description: "Display order updated.",
-      });
-    } catch (error) {
-      console.error("Error updating order:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update display order. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsUpdatingOrder(false);
-    }
-  };
-  
-  const deleteTeamMember = async (id: number) => {
-    setIsDeletingTeamMember(true);
-    try {
-      await apiRequest({
-        url: `/api/admin/team-members/${id}`,
-        method: 'DELETE'
-      });
-      
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/team-members'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/team-members'] });
-      
-      toast({
-        title: "Success",
-        description: "Team member deleted successfully.",
-      });
-    } catch (error) {
-      console.error("Error deleting team member:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete team member. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsDeletingTeamMember(false);
-    }
-  };
   
   const uploadFile = async (file: File): Promise<string | undefined> => {
     try {
@@ -339,7 +207,7 @@ export default function TeamMembersManagement() {
       
       // If photo was removed in the UI, set it to null
       if (photoRemoved) {
-        photoUrl = null;
+        photoUrl = undefined;
       }
       
       await updateTeamMember(selectedMember.id, {
@@ -538,7 +406,7 @@ export default function TeamMembersManagement() {
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handleToggleActive(member)}
-                                disabled={isTogglingActiveStatus}
+                                disabled={isTogglingActive}
                                 title={member.active ? "Deactivate" : "Activate"}
                                 className="text-slate-600 hover:text-slate-900 mr-1"
                               >
@@ -766,8 +634,8 @@ export default function TeamMembersManagement() {
               />
 
               <DialogFooter>
-                <Button type="submit" disabled={isCreatingTeamMember || isUploading}>
-                  {isCreatingTeamMember || isUploading ? "Creating..." : "Add Team Member"}
+                <Button type="submit" disabled={isCreating || isUploading}>
+                  {isCreating || isUploading ? "Creating..." : "Add Team Member"}
                 </Button>
               </DialogFooter>
             </form>
@@ -975,8 +843,8 @@ export default function TeamMembersManagement() {
               />
 
               <DialogFooter>
-                <Button type="submit" disabled={isUpdatingTeamMember || isUploading}>
-                  {isUpdatingTeamMember || isUploading ? "Updating..." : "Update Team Member"}
+                <Button type="submit" disabled={isUpdating || isUploading}>
+                  {isUpdating || isUploading ? "Updating..." : "Update Team Member"}
                 </Button>
               </DialogFooter>
             </form>
@@ -1000,9 +868,9 @@ export default function TeamMembersManagement() {
             <Button 
               variant="destructive" 
               onClick={confirmDelete}
-              disabled={isDeletingTeamMember}
+              disabled={isDeleting}
             >
-              {isDeletingTeamMember ? "Deleting..." : "Delete Team Member"}
+              {isDeleting ? "Deleting..." : "Delete Team Member"}
             </Button>
           </DialogFooter>
         </DialogContent>
