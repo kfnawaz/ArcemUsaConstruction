@@ -155,10 +155,10 @@ export default function CareersManagement() {
   };
 
   const handleExportToExcel = () => {
-    if (allJobPostings.length === 0) return;
+    if (jobPostingsArray.length === 0) return;
     
     const formattedData = formatDataForExport(
-      allJobPostings, 
+      jobPostingsArray, 
       ['id', 'updatedAt'], 
       ['createdAt']
     );
@@ -171,8 +171,11 @@ export default function CareersManagement() {
     setSearchQuery(e.target.value);
   };
 
+  // Convert to array and count job postings by status
+  const jobPostingsArray = Array.isArray(allJobPostings) ? allJobPostings : [];
+
   // Filter job postings based on search and active tab
-  const filteredJobPostings = allJobPostings.filter((job: JobPosting) => {
+  const filteredJobPostings = jobPostingsArray.filter((job: JobPosting) => {
     const searchMatches = 
       job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       job.department.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -185,12 +188,10 @@ export default function CareersManagement() {
     
     return searchMatches && statusMatches;
   });
-
-  // Count job postings by status
-  const activeCount = allJobPostings.filter((job: JobPosting) => job.active === true).length;
-  const inactiveCount = allJobPostings.filter((job: JobPosting) => job.active === false).length;
-  const featuredCount = allJobPostings.filter((job: JobPosting) => job.featured === true).length;
-  const totalCount = allJobPostings.length;
+  const activeCount = jobPostingsArray.filter((job: JobPosting) => job.active === true).length;
+  const inactiveCount = jobPostingsArray.filter((job: JobPosting) => job.active === false).length;
+  const featuredCount = jobPostingsArray.filter((job: JobPosting) => job.featured === true).length;
+  const totalCount = jobPostingsArray.length;
 
   return (
     <div className="min-h-screen pt-32 pb-20 bg-gray-50">
@@ -208,7 +209,7 @@ export default function CareersManagement() {
                   <Button 
                     variant="outline" 
                     onClick={handleExportToExcel}
-                    disabled={allJobPostings.length === 0}
+                    disabled={jobPostingsArray.length === 0}
                   >
                     <Upload className="h-4 w-4 mr-2" />
                     Export to Excel
