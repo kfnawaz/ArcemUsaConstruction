@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import { scrollToTop } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -21,7 +21,7 @@ import {
 } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Project, ProjectGallery } from '@shared/schema';
-import { apiRequest } from '@/lib/queryClient';
+import { useProjects } from '@/hooks/useProjects';
 
 const ProjectManagement = () => {
   const [location, setLocation] = useLocation();
@@ -100,66 +100,15 @@ const ProjectManagement = () => {
     document.title = 'Project Management - ARCEM';
   }, []);
 
-  // Fetch projects
-  const { data: projects, isLoading } = useQuery<Project[]>({
-    queryKey: ['/api/projects'],
-  });
-
-  // Delete project mutation
-  const deleteMutation = useMutation({
-    mutationFn: async (id: number) => {
-      return apiRequest({
-        url: `/api/projects/${id}`,
-        method: 'DELETE'
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
-      toast({
-        title: "Project deleted",
-        description: "The project has been successfully deleted.",
-        variant: "default"
-      });
-      setShowDeleteDialog(false);
-      setProjectToDelete(null);
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "Failed to delete project. Please try again.",
-        variant: "destructive"
-      });
-      console.error("Error deleting project:", error);
-    }
-  });
-
-  // Toggle featured status mutation
-  const toggleFeaturedMutation = useMutation({
-    mutationFn: async ({ id, featured }: { id: number; featured: boolean }) => {
-      // Converting to newer format using object parameter
-      return apiRequest({
-        url: `/api/projects/${id}`,
-        method: 'PUT',
-        body: { featured }
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
-      toast({
-        title: "Project updated",
-        description: "Featured status has been updated.",
-        variant: "default"
-      });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: "Failed to update project. Please try again.",
-        variant: "destructive"
-      });
-      console.error("Error updating project:", error);
-    }
-  });
+  // Use the standardized hook
+  const { 
+    projects, 
+    isLoadingProjects: isLoading,
+    deleteProject,
+    toggleFeatured,
+    isDeleting,
+    isTogglingFeatured
+  } = useProjects();
 
   // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -167,7 +116,7 @@ const ProjectManagement = () => {
   };
 
   // Filter projects based on search query
-  const filteredProjects = projects?.filter(project => 
+  const filteredProjects = projects.filter((project: Project) => 
     project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     project.category.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -215,18 +164,17 @@ const ProjectManagement = () => {
   // Confirm delete project
   const confirmDelete = () => {
     if (projectToDelete) {
-      deleteMutation.mutate(projectToDelete.id);
+      deleteProject(projectToDelete.id);
       // Reset gallery state after deletion
       setProjectGallery([]);
+      setShowDeleteDialog(false);
+      setProjectToDelete(null);
     }
   };
 
-  // Toggle featured status
-  const toggleFeatured = (project: Project) => {
-    toggleFeaturedMutation.mutate({
-      id: project.id,
-      featured: !project.featured
-    });
+  // Handle toggle featured status
+  const handleToggleFeatured = (project: Project) => {
+    toggleFeatured(project.id, !project.featured);
   };
 
   // Close form and return to list
@@ -345,8 +293,8 @@ const ProjectManagement = () => {
                                 <Button
                                   variant="ghost"
                                   size="sm"
-                                  onClick={() => toggleFeatured(project)}
-                                  disabled={toggleFeaturedMutation.isPending}
+                                  onClick={() => handleToggleFeatured(project)}
+                                  disabled={isTogglingFeatured}
                                   title={project.featured ? "Remove from featured" : "Add to featured"}
                                 >
                                   {project.featured ? (
@@ -424,9 +372,9 @@ const ProjectManagement = () => {
             <Button 
               variant="destructive" 
               onClick={confirmDelete}
-              disabled={deleteMutation.isPending || isLoadingGallery}
+              disabled={isDeleting || isLoadingGallery}
             >
-              {deleteMutation.isPending ? "Deleting..." : "Delete"}
+              {isDeleting ? "Deleting..." : "Delete"}
             </Button>
           </DialogFooter>
         </DialogContent>
