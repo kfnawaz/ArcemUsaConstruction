@@ -23,12 +23,13 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { scrollToTop, cn } from "@/lib/utils";
+import { scrollToTop, cn, initializeRevealEffects } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLocation } from "wouter";
 import { Badge } from "@/components/ui/badge";
-import { X } from "lucide-react";
+import { X, ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
 import { useSubcontractors } from "@/hooks/useSubcontractors";
 
 // Form schema with comprehensive validations
@@ -172,6 +173,7 @@ const Subcontractors = () => {
 
     scrollToTop();
     document.title = "Subcontractors & Vendors - ARCEM";
+    initializeRevealEffects();
   }, [location]);
 
   const form = useForm<FormValues>({
@@ -444,22 +446,33 @@ const Subcontractors = () => {
     <div className="flex flex-col">
       {/* Hero Section */}
       <div
-        className="relative h-96 flex items-center justify-center"
+        className="relative h-[350px] flex items-center justify-center"
         style={{
-          backgroundImage: "url('/uploads/images/our-passion-led-us-here.jpg')",
+          backgroundImage: "url('/images/our-passion-led-us-here.jpg')",
           backgroundSize: "cover",
           backgroundPosition: "center",
         }}
       >
-        <div className="absolute inset-0 bg-black opacity-60"></div>
-        <div className="relative z-10 text-center px-4">
+        <div className="absolute inset-0 bg-black opacity-70"></div>
+        <motion.div 
+          className="relative z-10 text-center px-4 py-20"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
           <h1 className="text-white text-5xl md:text-6xl font-montserrat font-bold mb-6">
             Subcontractors & Vendors
           </h1>
-          <p className="text-white text-xl md:text-2xl font-light max-w-3xl mx-auto">
+          <p className="text-white text-xl md:text-2xl font-light max-w-3xl mx-auto mb-8">
             Partner with ARCEM for construction excellence
           </p>
-        </div>
+          <Button size="lg" className="bg-[#1E90DB] hover:bg-[#1670B0] text-lg" onClick={() => {
+            const element = document.querySelector('#registration-form');
+            if (element) element.scrollIntoView({ behavior: 'smooth' });
+          }}>
+            Register Now <ArrowRight className="ml-2 h-5 w-5" />
+          </Button>
+        </motion.div>
       </div>
 
       {/* Main Content */}
