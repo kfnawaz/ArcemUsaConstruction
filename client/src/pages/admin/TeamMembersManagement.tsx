@@ -76,8 +76,9 @@ export default function TeamMembersManagement() {
   const [activeTab, setActiveTab] = useState("all"); // all, active, inactive
 
   const { toast } = useToast();
-  const { data: teamMembers, isLoading } = useAllTeamMembers();
   const {
+    allTeamMembers: teamMembers,
+    isLoadingAll: isLoading,
     createTeamMember,
     updateTeamMember,
     toggleActiveStatus,
@@ -88,7 +89,7 @@ export default function TeamMembersManagement() {
     isTogglingActive,
     isUpdatingOrder,
     isDeleting
-  } = useTeamMembersActions();
+  } = useTeamMembers();
 
   useEffect(() => {
     scrollToTop();
