@@ -36,7 +36,7 @@ const Projects = () => {
       <div 
         className="relative h-[350px] flex items-center justify-center" 
         style={{
-          backgroundImage: "url('/uploads/images/services/industrial/industrial1.jpg')",
+          backgroundImage: "url('/attached_assets/construction-projects.jpg')",
           backgroundSize: 'cover',
           backgroundPosition: 'center'
         }}

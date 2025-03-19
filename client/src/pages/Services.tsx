@@ -133,7 +133,7 @@ const Services = () => {
       <div 
         className="relative h-[350px] flex items-center justify-center" 
         style={{
-          backgroundImage: "url('/uploads/images/services/silvia-brazzoduro-YSxcf6C_SEg-unsplash.jpg')",
+          backgroundImage: "url('/attached_assets/services.jpg')",
           backgroundSize: 'cover',
           backgroundPosition: 'center'
         }}
