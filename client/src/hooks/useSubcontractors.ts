@@ -94,16 +94,11 @@ export const useSubcontractors = () => {
       
       // Submit application with proper error handling
       try {
-        const res = await apiRequest("POST", "/api/subcontractors/apply", subcontractorData);
-        // Check response status
-        if (!res.ok) {
-          const errorData = await res.json().catch(() => null);
-          throw new Error(
-            errorData?.message || 
-            `Server error: ${res.status} ${res.statusText}`
-          );
-        }
-        return await res.json();
+        return await apiRequest({
+          url: "/api/subcontractors/apply",
+          method: "POST",
+          body: subcontractorData
+        });
       } catch (err) {
         console.error("API request failed:", err);
         if (err instanceof Error) {
@@ -237,8 +232,11 @@ export const useSubcontractors = () => {
   // Admin: Update subcontractor status
   const updateSubcontractorStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: number; status: string }) => {
-      const res = await apiRequest("PUT", `/api/admin/subcontractors/${id}/status`, { status });
-      return await res.json();
+      return await apiRequest({
+        url: `/api/admin/subcontractors/${id}/status`,
+        method: "PUT",
+        body: { status }
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/subcontractors"] });
@@ -259,8 +257,11 @@ export const useSubcontractors = () => {
   // Admin: Update subcontractor notes
   const updateSubcontractorNotesMutation = useMutation({
     mutationFn: async ({ id, notes }: { id: number; notes: string }) => {
-      const res = await apiRequest("PUT", `/api/admin/subcontractors/${id}/notes`, { notes });
-      return await res.json();
+      return await apiRequest({
+        url: `/api/admin/subcontractors/${id}/notes`,
+        method: "PUT",
+        body: { notes }
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/subcontractors"] });
@@ -281,7 +282,10 @@ export const useSubcontractors = () => {
   // Admin: Delete subcontractor application
   const deleteSubcontractorMutation = useMutation({
     mutationFn: async (id: number) => {
-      await apiRequest("DELETE", `/api/admin/subcontractors/${id}`);
+      return await apiRequest({
+        url: `/api/admin/subcontractors/${id}`,
+        method: "DELETE"
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/subcontractors"] });
@@ -302,8 +306,11 @@ export const useSubcontractors = () => {
   // Admin: Update vendor status
   const updateVendorStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: number; status: string }) => {
-      const res = await apiRequest("PUT", `/api/admin/vendors/${id}/status`, { status });
-      return await res.json();
+      return await apiRequest({
+        url: `/api/admin/vendors/${id}/status`,
+        method: "PUT",
+        body: { status }
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/vendors"] });
@@ -324,8 +331,11 @@ export const useSubcontractors = () => {
   // Admin: Update vendor notes
   const updateVendorNotesMutation = useMutation({
     mutationFn: async ({ id, notes }: { id: number; notes: string }) => {
-      const res = await apiRequest("PUT", `/api/admin/vendors/${id}/notes`, { notes });
-      return await res.json();
+      return await apiRequest({
+        url: `/api/admin/vendors/${id}/notes`,
+        method: "PUT",
+        body: { notes }
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/vendors"] });
@@ -346,7 +356,10 @@ export const useSubcontractors = () => {
   // Admin: Delete vendor application
   const deleteVendorMutation = useMutation({
     mutationFn: async (id: number) => {
-      await apiRequest("DELETE", `/api/admin/vendors/${id}`);
+      return await apiRequest({
+        url: `/api/admin/vendors/${id}`,
+        method: "DELETE"
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/vendors"] });
