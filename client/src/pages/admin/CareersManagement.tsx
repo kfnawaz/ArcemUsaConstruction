@@ -155,7 +155,7 @@ export default function CareersManagement() {
   };
 
   const handleExportToExcel = () => {
-    if (!allJobPostings || allJobPostings.length === 0) return;
+    if (allJobPostings.length === 0) return;
     
     const formattedData = formatDataForExport(
       allJobPostings, 
@@ -172,7 +172,7 @@ export default function CareersManagement() {
   };
 
   // Filter job postings based on search and active tab
-  const filteredJobPostings = allJobPostings ? allJobPostings.filter((job: JobPosting) => {
+  const filteredJobPostings = allJobPostings.filter((job: JobPosting) => {
     const searchMatches = 
       job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       job.department.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -184,13 +184,13 @@ export default function CareersManagement() {
     if (activeTab === "featured") statusMatches = job.featured === true;
     
     return searchMatches && statusMatches;
-  }) : [];
+  });
 
   // Count job postings by status
-  const activeCount = allJobPostings ? allJobPostings.filter((job: JobPosting) => job.active === true).length : 0;
-  const inactiveCount = allJobPostings ? allJobPostings.filter((job: JobPosting) => job.active === false).length : 0;
-  const featuredCount = allJobPostings ? allJobPostings.filter((job: JobPosting) => job.featured === true).length : 0;
-  const totalCount = allJobPostings ? allJobPostings.length : 0;
+  const activeCount = allJobPostings.filter((job: JobPosting) => job.active === true).length;
+  const inactiveCount = allJobPostings.filter((job: JobPosting) => job.active === false).length;
+  const featuredCount = allJobPostings.filter((job: JobPosting) => job.featured === true).length;
+  const totalCount = allJobPostings.length;
 
   return (
     <div className="min-h-screen pt-32 pb-20 bg-gray-50">

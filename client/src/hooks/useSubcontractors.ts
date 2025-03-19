@@ -187,16 +187,11 @@ export const useSubcontractors = () => {
       
       // Submit application with proper error handling
       try {
-        const res = await apiRequest("POST", "/api/vendors/apply", vendorData);
-        // Check response status
-        if (!res.ok) {
-          const errorData = await res.json().catch(() => null);
-          throw new Error(
-            errorData?.message || 
-            `Server error: ${res.status} ${res.statusText}`
-          );
-        }
-        return await res.json();
+        return await apiRequest({
+          url: "/api/vendors/apply",
+          method: "POST",
+          body: vendorData
+        });
       } catch (err) {
         console.error("API request failed:", err);
         if (err instanceof Error) {
