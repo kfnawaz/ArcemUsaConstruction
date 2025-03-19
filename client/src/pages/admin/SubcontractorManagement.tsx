@@ -28,12 +28,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+
 import {
   Select,
   SelectContent,
@@ -45,13 +40,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
-import { Loader2, Eye, Trash2, Mail, Phone, ExternalLink, Building, MapPin, MoreHorizontal } from 'lucide-react';
+import { Loader2, Eye, Trash2, Mail, Phone, ExternalLink, Building, MapPin } from 'lucide-react';
 import { Label } from '@/components/ui/label';
 import { Subcontractor, Vendor } from '@shared/schema';
 
 export default function SubcontractorManagement() {
   const [location, setLocation] = useLocation();
-  const { user, loading: isLoadingAuth } = useAuth();
+  const { user, isLoading: isLoadingAuth } = useAuth();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('subcontractors');
   const [selectedSubcontractor, setSelectedSubcontractor] = useState<Subcontractor | null>(null);
@@ -480,28 +475,30 @@ export default function SubcontractorManagement() {
                             <TableCell>{getStatusBadge(vendor.status || 'pending')}</TableCell>
                             <TableCell>{vendor.createdAt ? formatDate(vendor.createdAt) : 'N/A'}</TableCell>
                             <TableCell className="text-right">
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                                  <Button variant="ghost" size="sm">
-                                    <MoreHorizontal className="h-4 w-4" />
-                                    <span className="sr-only">Actions</span>
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem onClick={() => viewVendorDetails(vendor)}>
-                                    View Details
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem 
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleDeleteVendor(vendor.id);
-                                    }} 
-                                    className="text-red-600 hover:text-red-600 focus:text-red-600"
-                                  >
-                                    Delete
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                title="View Details"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  viewVendorDetails(vendor);
+                                }}
+                                className="text-blue-600 hover:text-blue-900 mr-1"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                title="Delete"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteVendor(vendor.id);
+                                }}
+                                className="text-red-600 hover:text-red-900"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
                             </TableCell>
                           </TableRow>
                         ))}
