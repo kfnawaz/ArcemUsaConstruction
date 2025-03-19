@@ -377,7 +377,7 @@ const Subcontractors = () => {
       {/* Hero Section */}
       <div className="relative h-96 flex items-center justify-center" 
         style={{
-          backgroundImage: "url('/attached_assets/our-passion-led-us-here.jpg')",
+          backgroundImage: "url('/images/our-passion-led-us-here.jpg')",
           backgroundSize: 'cover',
           backgroundPosition: 'center'
         }}>

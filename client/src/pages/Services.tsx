@@ -133,7 +133,7 @@ const Services = () => {
       <div 
         className="relative h-[350px] flex items-center justify-center" 
         style={{
-          backgroundImage: "url('/attached_assets/services.jpg')",
+          backgroundImage: "url('/images/services.jpg')",
           backgroundSize: 'cover',
           backgroundPosition: 'center'
         }}
