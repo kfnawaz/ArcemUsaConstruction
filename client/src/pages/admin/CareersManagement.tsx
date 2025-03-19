@@ -208,7 +208,7 @@ export default function CareersManagement() {
                   <Button 
                     variant="outline" 
                     onClick={handleExportToExcel}
-                    disabled={!allJobPostings || allJobPostings.length === 0}
+                    disabled={allJobPostings.length === 0}
                   >
                     <Upload className="h-4 w-4 mr-2" />
                     Export to Excel

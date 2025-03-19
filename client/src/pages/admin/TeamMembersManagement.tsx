@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { useAllTeamMembers } from "@/hooks/useTeamMembers";
+import { useAllTeamMembers, useTeamMembersActions } from "@/hooks/useTeamMembers";
 import { TeamMember, InsertTeamMember } from "@shared/schema";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useForm } from "react-hook-form";
 import { scrollToTop } from '@/lib/utils';
