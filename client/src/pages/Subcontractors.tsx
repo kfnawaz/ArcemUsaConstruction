@@ -479,7 +479,7 @@ const Subcontractors = () => {
       <div className="bg-white py-16">
         <div className="container mx-auto px-4 md:px-8">
           <div className="max-w-4xl mx-auto">
-            <Tabs defaultValue={activeTab} className="mb-12">
+            <Tabs id="registration-form" defaultValue={activeTab} className="mb-12">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger
                   value="subcontractor"
