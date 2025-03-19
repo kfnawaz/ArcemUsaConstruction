@@ -1,94 +1,152 @@
-import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
-import { scrollToTop, cn } from '@/lib/utils';
-import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useLocation } from 'wouter';
-import { Badge } from '@/components/ui/badge';
-import { X } from 'lucide-react';
-import { useSubcontractors } from '@/hooks/useSubcontractors';
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { scrollToTop, cn } from "@/lib/utils";
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useLocation } from "wouter";
+import { Badge } from "@/components/ui/badge";
+import { X } from "lucide-react";
+import { useSubcontractors } from "@/hooks/useSubcontractors";
 
 // Form schema with comprehensive validations
 const formSchema = z.object({
-  companyName: z.string()
-    .min(2, { message: 'Company name is required and must be at least 2 characters long' })
-    .max(100, { message: 'Company name must be less than 100 characters' }),
-  
-  contactName: z.string()
-    .min(2, { message: 'Contact name is required and must be at least 2 characters long' })
-    .max(100, { message: 'Contact name must be less than 100 characters' }),
-  
-  email: z.string()
-    .email({ message: 'Please enter a valid email address' })
-    .min(5, { message: 'Email is required' })
-    .max(100, { message: 'Email must be less than 100 characters' }),
-  
-  phone: z.string()
-    .min(10, { message: 'Phone number must be at least 10 digits' })
-    .max(20, { message: 'Phone number must be less than 20 characters' })
-    .refine(val => /^[0-9()\-\s+]+$/.test(val), { 
-      message: 'Phone number can only contain digits, spaces, and the characters ()+-' 
+  companyName: z
+    .string()
+    .min(2, {
+      message:
+        "Company name is required and must be at least 2 characters long",
+    })
+    .max(100, { message: "Company name must be less than 100 characters" }),
+
+  contactName: z
+    .string()
+    .min(2, {
+      message:
+        "Contact name is required and must be at least 2 characters long",
+    })
+    .max(100, { message: "Contact name must be less than 100 characters" }),
+
+  email: z
+    .string()
+    .email({ message: "Please enter a valid email address" })
+    .min(5, { message: "Email is required" })
+    .max(100, { message: "Email must be less than 100 characters" }),
+
+  phone: z
+    .string()
+    .min(10, { message: "Phone number must be at least 10 digits" })
+    .max(20, { message: "Phone number must be less than 20 characters" })
+    .refine((val) => /^[0-9()\-\s+]+$/.test(val), {
+      message:
+        "Phone number can only contain digits, spaces, and the characters ()+-",
     }),
-  
-  address: z.string()
-    .min(5, { message: 'Address is required and must be at least 5 characters long' })
-    .max(200, { message: 'Address must be less than 200 characters' }),
-  
-  city: z.string()
-    .min(2, { message: 'City is required and must be at least 2 characters long' })
-    .max(100, { message: 'City must be less than 100 characters' }),
-  
-  state: z.string()
-    .min(2, { message: 'State is required and must be at least 2 characters long' })
-    .max(50, { message: 'State must be less than 50 characters' }),
-  
-  zip: z.string()
-    .min(5, { message: 'ZIP code is required and must be at least 5 characters' })
-    .max(15, { message: 'ZIP code must be less than 15 characters' })
-    .refine(val => /^[0-9\-\s]+$/.test(val), { 
-      message: 'ZIP code can only contain digits, hyphens, and spaces' 
+
+  address: z
+    .string()
+    .min(5, {
+      message: "Address is required and must be at least 5 characters long",
+    })
+    .max(200, { message: "Address must be less than 200 characters" }),
+
+  city: z
+    .string()
+    .min(2, {
+      message: "City is required and must be at least 2 characters long",
+    })
+    .max(100, { message: "City must be less than 100 characters" }),
+
+  state: z
+    .string()
+    .min(2, {
+      message: "State is required and must be at least 2 characters long",
+    })
+    .max(50, { message: "State must be less than 50 characters" }),
+
+  zip: z
+    .string()
+    .min(5, {
+      message: "ZIP code is required and must be at least 5 characters",
+    })
+    .max(15, { message: "ZIP code must be less than 15 characters" })
+    .refine((val) => /^[0-9\-\s]+$/.test(val), {
+      message: "ZIP code can only contain digits, hyphens, and spaces",
     }),
-  
-  website: z.string().optional()
-    .transform(val => val === undefined || val === null || val === "" ? undefined : val)
-    .refine(val => !val || /^(https?:\/\/)?(www\.)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\/.*)?$/.test(val), {
-      message: 'Please enter a valid website URL (e.g., https://example.com)'
-    }),
-  
-  serviceTypes: z.array(z.string())
-    .min(1, { message: 'Please select at least one service type' }),
-  
-  supplyTypes: z.array(z.string())
-    .min(1, { message: 'Please select at least one product/supply type' }),
-  
-  serviceDescription: z.string()
-    .min(10, { message: 'Please provide a description of your services (minimum 10 characters)' })
-    .max(2000, { message: 'Description must be less than 2000 characters' }),
-  
-  yearsInBusiness: z.string()
-    .min(1, { message: 'Please select years in business' }),
-  
+
+  website: z
+    .string()
+    .optional()
+    .transform((val) =>
+      val === undefined || val === null || val === "" ? undefined : val,
+    )
+    .refine(
+      (val) =>
+        !val ||
+        /^(https?:\/\/)?(www\.)?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(\/.*)?$/.test(val),
+      {
+        message: "Please enter a valid website URL (e.g., https://example.com)",
+      },
+    ),
+
+  serviceTypes: z
+    .array(z.string())
+    .min(1, { message: "Please select at least one service type" }),
+
+  supplyTypes: z
+    .array(z.string())
+    .min(1, { message: "Please select at least one product/supply type" }),
+
+  serviceDescription: z
+    .string()
+    .min(10, {
+      message:
+        "Please provide a description of your services (minimum 10 characters)",
+    })
+    .max(2000, { message: "Description must be less than 2000 characters" }),
+
+  yearsInBusiness: z
+    .string()
+    .min(1, { message: "Please select years in business" }),
+
   insurance: z.boolean().default(false),
   bondable: z.boolean().default(false),
-  
-  licenses: z.string().optional()
-    .transform(val => val === undefined || val === null ? "" : val),
-  
-  references: z.string().optional()
-    .transform(val => val === undefined || val === null ? "" : val),
-  
-  howDidYouHear: z.string().optional()
-    .transform(val => val === undefined || val === null ? "" : val),
+
+  licenses: z
+    .string()
+    .optional()
+    .transform((val) => (val === undefined || val === null ? "" : val)),
+
+  references: z
+    .string()
+    .optional()
+    .transform((val) => (val === undefined || val === null ? "" : val)),
+
+  howDidYouHear: z
+    .string()
+    .optional()
+    .transform((val) => (val === undefined || val === null ? "" : val)),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -98,44 +156,45 @@ const Subcontractors = () => {
   const [activeTab, setActiveTab] = useState("subcontractor");
   const { toast } = useToast();
   const [location] = useLocation();
-  const { submitSubcontractorApplication, submitVendorApplication } = useSubcontractors();
+  const { submitSubcontractorApplication, submitVendorApplication } =
+    useSubcontractors();
 
   // Check for tab parameter in URL
   useEffect(() => {
     // Parse URL query parameters
     const params = new URLSearchParams(window.location.search);
-    const tabParam = params.get('tab');
-    
+    const tabParam = params.get("tab");
+
     // Set active tab if parameter exists and is valid
-    if (tabParam === 'vendor') {
-      setActiveTab('vendor');
+    if (tabParam === "vendor") {
+      setActiveTab("vendor");
     }
-    
+
     scrollToTop();
-    document.title = 'Subcontractors & Vendors - ARCEM';
+    document.title = "Subcontractors & Vendors - ARCEM";
   }, [location]);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      companyName: '',
-      contactName: '',
-      email: '',
-      phone: '',
-      address: '',
-      city: '',
-      state: '',
-      zip: '',
-      website: '',
+      companyName: "",
+      contactName: "",
+      email: "",
+      phone: "",
+      address: "",
+      city: "",
+      state: "",
+      zip: "",
+      website: "",
       serviceTypes: [],
       supplyTypes: [],
-      serviceDescription: '',
-      yearsInBusiness: '',
+      serviceDescription: "",
+      yearsInBusiness: "",
       insurance: false,
       bondable: false,
-      licenses: '',
-      references: '',
-      howDidYouHear: '',
+      licenses: "",
+      references: "",
+      howDidYouHear: "",
     },
   });
 
@@ -144,78 +203,85 @@ const Subcontractors = () => {
     // Get all error messages in a readable format
     const errorMessages = Object.entries(form.formState.errors)
       .map(([field, error]) => `${field}: ${error?.message}`)
-      .join('\n');
-      
+      .join("\n");
+
     // Log for debugging
     console.error("Form validation errors:", form.formState.errors);
-    
+
     // Show toast with error summary
     toast({
       title: "Please Fix Form Errors",
-      description: "There are issues with your form submission. Check highlighted fields for details.",
+      description:
+        "There are issues with your form submission. Check highlighted fields for details.",
       variant: "destructive",
     });
-    
+
     // Scroll to the first field with an error
     const firstErrorField = Object.keys(form.formState.errors)[0];
     if (firstErrorField) {
-      const errorElement = document.querySelector(`[name="${firstErrorField}"]`);
+      const errorElement = document.querySelector(
+        `[name="${firstErrorField}"]`,
+      );
       if (errorElement) {
-        errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
       }
     }
-    
+
     return false;
   };
-  
+
   // Enhanced form submission function
   const onSubmit = async (data: FormValues) => {
     console.log("Form submission started", { data, activeTab });
-    
+
     // Pre-validation check
     const hasErrors = Object.keys(form.formState.errors).length > 0;
     if (hasErrors) {
       return showFormErrors();
     }
-    
+
     // Block duplicate submissions
     if (isSubmitting) {
       console.log("Submission already in progress, ignoring duplicate request");
       return false;
     }
-    
+
     // Start submission process
     setIsSubmitting(true);
-    
+
     // User feedback - submission started
     toast({
       title: "Submitting Application",
       description: `Your ${activeTab} application is being submitted...`,
     });
-    
+
     // Progress indicator for better UX
     const progressToastId = setTimeout(() => {
       if (isSubmitting) {
         toast({
           title: "Still Processing",
-          description: "Your application is still being processed. Please wait...",
+          description:
+            "Your application is still being processed. Please wait...",
         });
       }
     }, 3000);
-    
+
     try {
       // Prepare submission data based on active tab
       if (activeTab === "subcontractor") {
         // Validate service types array
-        if (!Array.isArray(data.serviceTypes) || data.serviceTypes.length === 0) {
-          form.setError("serviceTypes", { 
-            type: "manual", 
-            message: "Please select at least one service type" 
+        if (
+          !Array.isArray(data.serviceTypes) ||
+          data.serviceTypes.length === 0
+        ) {
+          form.setError("serviceTypes", {
+            type: "manual",
+            message: "Please select at least one service type",
           });
           clearTimeout(progressToastId);
           return showFormErrors();
         }
-        
+
         // Build subcontractor data object with proper handling of optional fields
         const subcontractorData = {
           companyName: data.companyName.trim(),
@@ -236,43 +302,44 @@ const Subcontractors = () => {
           references: data.references ? data.references.trim() : "",
           howDidYouHear: data.howDidYouHear ? data.howDidYouHear.trim() : "",
         };
-        
+
         console.log("Submitting subcontractor application", subcontractorData);
-        
+
         // Submit with promise handling for proper success/failure states
         await new Promise<void>((resolve, reject) => {
           try {
             submitSubcontractorApplication(subcontractorData);
-            
+
             // Success case
             toast({
               title: "Application Submitted Successfully",
-              description: "Thank you for submitting your subcontractor application. We'll review your information and contact you soon.",
-              variant: "default"
+              description:
+                "Thank you for submitting your subcontractor application. We'll review your information and contact you soon.",
+              variant: "default",
             });
-            
+
             // Reset form to initial state
             form.reset({
-              companyName: '',
-              contactName: '',
-              email: '',
-              phone: '',
-              address: '',
-              city: '',
-              state: '',
-              zip: '',
-              website: '',
+              companyName: "",
+              contactName: "",
+              email: "",
+              phone: "",
+              address: "",
+              city: "",
+              state: "",
+              zip: "",
+              website: "",
               serviceTypes: [],
               supplyTypes: [],
-              serviceDescription: '',
-              yearsInBusiness: '',
+              serviceDescription: "",
+              yearsInBusiness: "",
               insurance: false,
               bondable: false,
-              licenses: '',
-              references: '',
-              howDidYouHear: '',
+              licenses: "",
+              references: "",
+              howDidYouHear: "",
             });
-            
+
             resolve();
           } catch (error) {
             reject(error);
@@ -280,17 +347,17 @@ const Subcontractors = () => {
         });
       } else {
         // Vendor tab selected
-        
+
         // Validate supply types array
         if (!Array.isArray(data.supplyTypes) || data.supplyTypes.length === 0) {
-          form.setError("supplyTypes", { 
-            type: "manual", 
-            message: "Please select at least one product/supply type" 
+          form.setError("supplyTypes", {
+            type: "manual",
+            message: "Please select at least one product/supply type",
           });
           clearTimeout(progressToastId);
           return showFormErrors();
         }
-        
+
         // Build vendor data object with proper handling of optional fields
         const vendorData = {
           companyName: data.companyName.trim(),
@@ -308,61 +375,62 @@ const Subcontractors = () => {
           references: data.references ? data.references.trim() : "",
           howDidYouHear: data.howDidYouHear ? data.howDidYouHear.trim() : "",
         };
-        
+
         console.log("Submitting vendor application", vendorData);
-        
+
         // Submit with promise handling for proper success/failure states
         await new Promise<void>((resolve, reject) => {
           try {
             submitVendorApplication(vendorData);
-            
+
             // Success case
             toast({
               title: "Application Submitted Successfully",
-              description: "Thank you for submitting your vendor application. We'll review your information and contact you soon.",
-              variant: "default"
+              description:
+                "Thank you for submitting your vendor application. We'll review your information and contact you soon.",
+              variant: "default",
             });
-            
+
             // Reset form to initial state
             form.reset({
-              companyName: '',
-              contactName: '',
-              email: '',
-              phone: '',
-              address: '',
-              city: '',
-              state: '',
-              zip: '',
-              website: '',
+              companyName: "",
+              contactName: "",
+              email: "",
+              phone: "",
+              address: "",
+              city: "",
+              state: "",
+              zip: "",
+              website: "",
               serviceTypes: [],
               supplyTypes: [],
-              serviceDescription: '',
-              yearsInBusiness: '',
+              serviceDescription: "",
+              yearsInBusiness: "",
               insurance: false,
               bondable: false,
-              licenses: '',
-              references: '',
-              howDidYouHear: '',
+              licenses: "",
+              references: "",
+              howDidYouHear: "",
             });
-            
+
             resolve();
           } catch (error) {
             reject(error);
           }
         });
       }
-      
+
       // Scroll to top after successful submission
       scrollToTop();
-      
     } catch (error) {
       // Comprehensive error handling
       console.error("Error submitting application:", error);
       toast({
         title: "Submission Failed",
-        description: error instanceof Error 
-          ? error.message 
-          : "There was a problem submitting your application. Please try again later.",
+        description:
+          error instanceof Error
+            ? error.message
+            : "There was a problem submitting your application. Please try again later.",
         variant: "destructive",
       });
     } finally {
@@ -371,16 +439,18 @@ const Subcontractors = () => {
       setIsSubmitting(false);
     }
   };
-  
+
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
-      <div className="relative h-96 flex items-center justify-center" 
+      <div
+        className="relative h-96 flex items-center justify-center"
         style={{
-          backgroundImage: "url('/images/our-passion-led-us-here.jpg')",
-          backgroundSize: 'cover',
-          backgroundPosition: 'center'
-        }}>
+          backgroundImage: "url('/uploads/images/our-passion-led-us-here.jpg')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
         <div className="absolute inset-0 bg-black opacity-60"></div>
         <div className="relative z-10 text-center px-4">
           <h1 className="text-white text-5xl md:text-6xl font-montserrat font-bold mb-6">
@@ -398,8 +468,8 @@ const Subcontractors = () => {
           <div className="max-w-4xl mx-auto">
             <Tabs defaultValue={activeTab} className="mb-12">
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger 
-                  value="subcontractor" 
+                <TabsTrigger
+                  value="subcontractor"
                   onClick={() => {
                     console.log("Switching to subcontractor tab");
                     setActiveTab("subcontractor");
@@ -412,8 +482,8 @@ const Subcontractors = () => {
                 >
                   Subcontractor Registration
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="vendor" 
+                <TabsTrigger
+                  value="vendor"
                   onClick={() => {
                     console.log("Switching to vendor tab");
                     setActiveTab("vendor");
@@ -431,14 +501,23 @@ const Subcontractors = () => {
                 <Card>
                   <CardContent className="pt-6">
                     <div className="mb-8">
-                      <h2 className="text-2xl font-montserrat font-bold mb-4">Subcontractor Registration</h2>
+                      <h2 className="text-2xl font-montserrat font-bold mb-4">
+                        Subcontractor Registration
+                      </h2>
                       <p className="text-gray-600">
-                        Thank you for your interest in working with ARCEM. Please complete the form below to register as a subcontractor. We will review your information and contact you if there are opportunities that match your services.
+                        Thank you for your interest in working with ARCEM.
+                        Please complete the form below to register as a
+                        subcontractor. We will review your information and
+                        contact you if there are opportunities that match your
+                        services.
                       </p>
                     </div>
-                    
+
                     <Form {...form}>
-                      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                      <form
+                        onSubmit={form.handleSubmit(onSubmit)}
+                        className="space-y-8"
+                      >
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <FormField
                             control={form.control}
@@ -447,13 +526,16 @@ const Subcontractors = () => {
                               <FormItem>
                                 <FormLabel>Company Name *</FormLabel>
                                 <FormControl>
-                                  <Input placeholder="Your company name" {...field} />
+                                  <Input
+                                    placeholder="Your company name"
+                                    {...field}
+                                  />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
                             )}
                           />
-                          
+
                           <FormField
                             control={form.control}
                             name="contactName"
@@ -477,13 +559,17 @@ const Subcontractors = () => {
                               <FormItem>
                                 <FormLabel>Email *</FormLabel>
                                 <FormControl>
-                                  <Input type="email" placeholder="your@email.com" {...field} />
+                                  <Input
+                                    type="email"
+                                    placeholder="your@email.com"
+                                    {...field}
+                                  />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
                             )}
                           />
-                          
+
                           <FormField
                             control={form.control}
                             name="phone"
@@ -491,7 +577,10 @@ const Subcontractors = () => {
                               <FormItem>
                                 <FormLabel>Phone Number *</FormLabel>
                                 <FormControl>
-                                  <Input placeholder="(xxx) xxx-xxxx" {...field} />
+                                  <Input
+                                    placeholder="(xxx) xxx-xxxx"
+                                    {...field}
+                                  />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -507,7 +596,10 @@ const Subcontractors = () => {
                               <FormItem>
                                 <FormLabel>Address *</FormLabel>
                                 <FormControl>
-                                  <Input placeholder="Street address" {...field} />
+                                  <Input
+                                    placeholder="Street address"
+                                    {...field}
+                                  />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -529,7 +621,7 @@ const Subcontractors = () => {
                               </FormItem>
                             )}
                           />
-                          
+
                           <FormField
                             control={form.control}
                             name="state"
@@ -543,7 +635,7 @@ const Subcontractors = () => {
                               </FormItem>
                             )}
                           />
-                          
+
                           <FormField
                             control={form.control}
                             name="zip"
@@ -566,7 +658,10 @@ const Subcontractors = () => {
                             <FormItem>
                               <FormLabel>Website (optional)</FormLabel>
                               <FormControl>
-                                <Input placeholder="https://www.yourcompany.com" {...field} />
+                                <Input
+                                  placeholder="https://www.yourcompany.com"
+                                  {...field}
+                                />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -582,15 +677,21 @@ const Subcontractors = () => {
                               <div className="flex flex-col space-y-4">
                                 <div className="flex flex-wrap gap-2">
                                   {field.value.map((service) => (
-                                    <Badge key={service} className="py-1.5 px-2 flex items-center gap-1">
-                                      {service.charAt(0).toUpperCase() + service.slice(1)}
+                                    <Badge
+                                      key={service}
+                                      className="py-1.5 px-2 flex items-center gap-1"
+                                    >
+                                      {service.charAt(0).toUpperCase() +
+                                        service.slice(1)}
                                       <Button
                                         type="button"
                                         variant="ghost"
                                         size="sm"
                                         className="h-4 w-4 p-0 hover:bg-transparent"
                                         onClick={() => {
-                                          const newValue = field.value.filter((s) => s !== service);
+                                          const newValue = field.value.filter(
+                                            (s) => s !== service,
+                                          );
                                           field.onChange(newValue);
                                         }}
                                       >
@@ -612,20 +713,46 @@ const Subcontractors = () => {
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
-                                    <SelectItem value="concrete">Concrete</SelectItem>
-                                    <SelectItem value="carpentry">Carpentry</SelectItem>
-                                    <SelectItem value="electrical">Electrical</SelectItem>
-                                    <SelectItem value="plumbing">Plumbing</SelectItem>
+                                    <SelectItem value="concrete">
+                                      Concrete
+                                    </SelectItem>
+                                    <SelectItem value="carpentry">
+                                      Carpentry
+                                    </SelectItem>
+                                    <SelectItem value="electrical">
+                                      Electrical
+                                    </SelectItem>
+                                    <SelectItem value="plumbing">
+                                      Plumbing
+                                    </SelectItem>
                                     <SelectItem value="hvac">HVAC</SelectItem>
-                                    <SelectItem value="roofing">Roofing</SelectItem>
-                                    <SelectItem value="drywall">Drywall</SelectItem>
-                                    <SelectItem value="painting">Painting</SelectItem>
-                                    <SelectItem value="flooring">Flooring</SelectItem>
-                                    <SelectItem value="landscaping">Landscaping</SelectItem>
-                                    <SelectItem value="masonry">Masonry</SelectItem>
-                                    <SelectItem value="glazing">Glazing</SelectItem>
-                                    <SelectItem value="steel">Steel/Metal Work</SelectItem>
-                                    <SelectItem value="other">Other (Please specify)</SelectItem>
+                                    <SelectItem value="roofing">
+                                      Roofing
+                                    </SelectItem>
+                                    <SelectItem value="drywall">
+                                      Drywall
+                                    </SelectItem>
+                                    <SelectItem value="painting">
+                                      Painting
+                                    </SelectItem>
+                                    <SelectItem value="flooring">
+                                      Flooring
+                                    </SelectItem>
+                                    <SelectItem value="landscaping">
+                                      Landscaping
+                                    </SelectItem>
+                                    <SelectItem value="masonry">
+                                      Masonry
+                                    </SelectItem>
+                                    <SelectItem value="glazing">
+                                      Glazing
+                                    </SelectItem>
+                                    <SelectItem value="steel">
+                                      Steel/Metal Work
+                                    </SelectItem>
+                                    <SelectItem value="other">
+                                      Other (Please specify)
+                                    </SelectItem>
                                   </SelectContent>
                                 </Select>
                               </div>
@@ -641,10 +768,10 @@ const Subcontractors = () => {
                             <FormItem>
                               <FormLabel>Description of Services *</FormLabel>
                               <FormControl>
-                                <Textarea 
+                                <Textarea
                                   placeholder="Please provide details about the services your company offers"
                                   className="min-h-[120px]"
-                                  {...field} 
+                                  {...field}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -658,8 +785,8 @@ const Subcontractors = () => {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Years in Business *</FormLabel>
-                              <Select 
-                                onValueChange={field.onChange} 
+                              <Select
+                                onValueChange={field.onChange}
                                 defaultValue={field.value}
                               >
                                 <FormControl>
@@ -668,10 +795,14 @@ const Subcontractors = () => {
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  <SelectItem value="0-1">Less than 1 year</SelectItem>
+                                  <SelectItem value="0-1">
+                                    Less than 1 year
+                                  </SelectItem>
                                   <SelectItem value="1-3">1-3 years</SelectItem>
                                   <SelectItem value="3-5">3-5 years</SelectItem>
-                                  <SelectItem value="5-10">5-10 years</SelectItem>
+                                  <SelectItem value="5-10">
+                                    5-10 years
+                                  </SelectItem>
                                   <SelectItem value="10+">10+ years</SelectItem>
                                 </SelectContent>
                               </Select>
@@ -681,8 +812,10 @@ const Subcontractors = () => {
                         />
 
                         <div className="space-y-4">
-                          <h3 className="text-lg font-medium">Additional Information</h3>
-                          
+                          <h3 className="text-lg font-medium">
+                            Additional Information
+                          </h3>
+
                           <div className="flex items-center space-x-2">
                             <FormField
                               control={form.control}
@@ -697,14 +830,15 @@ const Subcontractors = () => {
                                   </FormControl>
                                   <div className="space-y-1 leading-none">
                                     <FormLabel>
-                                      We carry general liability and workers' compensation insurance
+                                      We carry general liability and workers'
+                                      compensation insurance
                                     </FormLabel>
                                   </div>
                                 </FormItem>
                               )}
                             />
                           </div>
-                          
+
                           <div className="flex items-center space-x-2">
                             <FormField
                               control={form.control}
@@ -718,9 +852,7 @@ const Subcontractors = () => {
                                     />
                                   </FormControl>
                                   <div className="space-y-1 leading-none">
-                                    <FormLabel>
-                                      We are bondable
-                                    </FormLabel>
+                                    <FormLabel>We are bondable</FormLabel>
                                   </div>
                                 </FormItem>
                               )}
@@ -733,12 +865,14 @@ const Subcontractors = () => {
                           name="licenses"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Licenses & Certifications (optional)</FormLabel>
+                              <FormLabel>
+                                Licenses & Certifications (optional)
+                              </FormLabel>
                               <FormControl>
-                                <Textarea 
+                                <Textarea
                                   placeholder="Please list any relevant licenses or certifications"
                                   className="min-h-[100px]"
-                                  {...field} 
+                                  {...field}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -753,10 +887,10 @@ const Subcontractors = () => {
                             <FormItem>
                               <FormLabel>References (optional)</FormLabel>
                               <FormControl>
-                                <Textarea 
+                                <Textarea
                                   placeholder="Please provide references from past projects"
                                   className="min-h-[100px]"
-                                  {...field} 
+                                  {...field}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -769,9 +903,14 @@ const Subcontractors = () => {
                           name="howDidYouHear"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>How did you hear about us? (optional)</FormLabel>
+                              <FormLabel>
+                                How did you hear about us? (optional)
+                              </FormLabel>
                               <FormControl>
-                                <Input placeholder="Google, Referral, Social Media, etc." {...field} />
+                                <Input
+                                  placeholder="Google, Referral, Social Media, etc."
+                                  {...field}
+                                />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -779,12 +918,14 @@ const Subcontractors = () => {
                         />
 
                         <div className="pt-4">
-                          <Button 
-                            type="submit" 
+                          <Button
+                            type="submit"
                             className="w-full sm:w-auto bg-[#1E90DB] hover:bg-[#1670B0]"
                             disabled={isSubmitting}
                           >
-                            {isSubmitting ? 'Submitting...' : 'Submit Registration'}
+                            {isSubmitting
+                              ? "Submitting..."
+                              : "Submit Registration"}
                           </Button>
                         </div>
                       </form>
@@ -792,21 +933,27 @@ const Subcontractors = () => {
                   </CardContent>
                 </Card>
               </TabsContent>
-              
+
               <TabsContent value="vendor" className="mt-6">
                 <Card>
                   <CardContent className="pt-6">
                     <div className="mb-8">
-                      <h2 className="text-2xl font-montserrat font-bold mb-4">Vendor Registration</h2>
+                      <h2 className="text-2xl font-montserrat font-bold mb-4">
+                        Vendor Registration
+                      </h2>
                       <p className="text-gray-600">
-                        We're always looking for reliable vendors to join our network. Please complete this form to register as a vendor with ARCEM. We will review your information and contact you regarding potential partnerships.
+                        We're always looking for reliable vendors to join our
+                        network. Please complete this form to register as a
+                        vendor with ARCEM. We will review your information and
+                        contact you regarding potential partnerships.
                       </p>
                     </div>
-                    
+
                     <Form {...form}>
-                      <form 
-                        onSubmit={form.handleSubmit(onSubmit)} 
-                        className="space-y-8">
+                      <form
+                        onSubmit={form.handleSubmit(onSubmit)}
+                        className="space-y-8"
+                      >
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           <FormField
                             control={form.control}
@@ -815,13 +962,16 @@ const Subcontractors = () => {
                               <FormItem>
                                 <FormLabel>Company Name *</FormLabel>
                                 <FormControl>
-                                  <Input placeholder="Your company name" {...field} />
+                                  <Input
+                                    placeholder="Your company name"
+                                    {...field}
+                                  />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
                             )}
                           />
-                          
+
                           <FormField
                             control={form.control}
                             name="contactName"
@@ -845,13 +995,17 @@ const Subcontractors = () => {
                               <FormItem>
                                 <FormLabel>Email *</FormLabel>
                                 <FormControl>
-                                  <Input type="email" placeholder="your@email.com" {...field} />
+                                  <Input
+                                    type="email"
+                                    placeholder="your@email.com"
+                                    {...field}
+                                  />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
                             )}
                           />
-                          
+
                           <FormField
                             control={form.control}
                             name="phone"
@@ -859,7 +1013,10 @@ const Subcontractors = () => {
                               <FormItem>
                                 <FormLabel>Phone Number *</FormLabel>
                                 <FormControl>
-                                  <Input placeholder="(xxx) xxx-xxxx" {...field} />
+                                  <Input
+                                    placeholder="(xxx) xxx-xxxx"
+                                    {...field}
+                                  />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -875,7 +1032,10 @@ const Subcontractors = () => {
                               <FormItem>
                                 <FormLabel>Address *</FormLabel>
                                 <FormControl>
-                                  <Input placeholder="Street address" {...field} />
+                                  <Input
+                                    placeholder="Street address"
+                                    {...field}
+                                  />
                                 </FormControl>
                                 <FormMessage />
                               </FormItem>
@@ -897,7 +1057,7 @@ const Subcontractors = () => {
                               </FormItem>
                             )}
                           />
-                          
+
                           <FormField
                             control={form.control}
                             name="state"
@@ -911,7 +1071,7 @@ const Subcontractors = () => {
                               </FormItem>
                             )}
                           />
-                          
+
                           <FormField
                             control={form.control}
                             name="zip"
@@ -934,7 +1094,10 @@ const Subcontractors = () => {
                             <FormItem>
                               <FormLabel>Website (optional)</FormLabel>
                               <FormControl>
-                                <Input placeholder="https://www.yourcompany.com" {...field} />
+                                <Input
+                                  placeholder="https://www.yourcompany.com"
+                                  {...field}
+                                />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -950,15 +1113,27 @@ const Subcontractors = () => {
                               <div className="flex flex-col space-y-4">
                                 <div className="flex flex-wrap gap-2">
                                   {field.value.map((supply) => (
-                                    <Badge key={supply} className="py-1.5 px-2 flex items-center gap-1">
-                                      {supply.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                                    <Badge
+                                      key={supply}
+                                      className="py-1.5 px-2 flex items-center gap-1"
+                                    >
+                                      {supply
+                                        .split("-")
+                                        .map(
+                                          (word) =>
+                                            word.charAt(0).toUpperCase() +
+                                            word.slice(1),
+                                        )
+                                        .join(" ")}
                                       <Button
                                         type="button"
                                         variant="ghost"
                                         size="sm"
                                         className="h-4 w-4 p-0 hover:bg-transparent"
                                         onClick={() => {
-                                          const newValue = field.value.filter((s) => s !== supply);
+                                          const newValue = field.value.filter(
+                                            (s) => s !== supply,
+                                          );
                                           field.onChange(newValue);
                                         }}
                                       >
@@ -980,18 +1155,42 @@ const Subcontractors = () => {
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
-                                    <SelectItem value="building-materials">Building Materials</SelectItem>
-                                    <SelectItem value="lumber">Lumber</SelectItem>
-                                    <SelectItem value="electrical">Electrical Supplies</SelectItem>
-                                    <SelectItem value="plumbing">Plumbing Supplies</SelectItem>
-                                    <SelectItem value="hvac">HVAC Equipment</SelectItem>
-                                    <SelectItem value="tools">Tools & Equipment</SelectItem>
-                                    <SelectItem value="hardware">Hardware</SelectItem>
-                                    <SelectItem value="concrete">Concrete & Masonry</SelectItem>
-                                    <SelectItem value="paint">Paint & Finishes</SelectItem>
-                                    <SelectItem value="flooring">Flooring Materials</SelectItem>
-                                    <SelectItem value="safety">Safety Equipment</SelectItem>
-                                    <SelectItem value="other">Other (Please specify)</SelectItem>
+                                    <SelectItem value="building-materials">
+                                      Building Materials
+                                    </SelectItem>
+                                    <SelectItem value="lumber">
+                                      Lumber
+                                    </SelectItem>
+                                    <SelectItem value="electrical">
+                                      Electrical Supplies
+                                    </SelectItem>
+                                    <SelectItem value="plumbing">
+                                      Plumbing Supplies
+                                    </SelectItem>
+                                    <SelectItem value="hvac">
+                                      HVAC Equipment
+                                    </SelectItem>
+                                    <SelectItem value="tools">
+                                      Tools & Equipment
+                                    </SelectItem>
+                                    <SelectItem value="hardware">
+                                      Hardware
+                                    </SelectItem>
+                                    <SelectItem value="concrete">
+                                      Concrete & Masonry
+                                    </SelectItem>
+                                    <SelectItem value="paint">
+                                      Paint & Finishes
+                                    </SelectItem>
+                                    <SelectItem value="flooring">
+                                      Flooring Materials
+                                    </SelectItem>
+                                    <SelectItem value="safety">
+                                      Safety Equipment
+                                    </SelectItem>
+                                    <SelectItem value="other">
+                                      Other (Please specify)
+                                    </SelectItem>
                                   </SelectContent>
                                 </Select>
                               </div>
@@ -1005,12 +1204,14 @@ const Subcontractors = () => {
                           name="serviceDescription"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Description of Products/Services *</FormLabel>
+                              <FormLabel>
+                                Description of Products/Services *
+                              </FormLabel>
                               <FormControl>
-                                <Textarea 
+                                <Textarea
                                   placeholder="Please provide details about the products or services your company offers"
                                   className="min-h-[120px]"
-                                  {...field} 
+                                  {...field}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -1024,8 +1225,8 @@ const Subcontractors = () => {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Years in Business *</FormLabel>
-                              <Select 
-                                onValueChange={field.onChange} 
+                              <Select
+                                onValueChange={field.onChange}
                                 defaultValue={field.value}
                               >
                                 <FormControl>
@@ -1034,10 +1235,14 @@ const Subcontractors = () => {
                                   </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
-                                  <SelectItem value="0-1">Less than 1 year</SelectItem>
+                                  <SelectItem value="0-1">
+                                    Less than 1 year
+                                  </SelectItem>
                                   <SelectItem value="1-3">1-3 years</SelectItem>
                                   <SelectItem value="3-5">3-5 years</SelectItem>
-                                  <SelectItem value="5-10">5-10 years</SelectItem>
+                                  <SelectItem value="5-10">
+                                    5-10 years
+                                  </SelectItem>
                                   <SelectItem value="10+">10+ years</SelectItem>
                                 </SelectContent>
                               </Select>
@@ -1051,12 +1256,14 @@ const Subcontractors = () => {
                           name="references"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Client References (optional)</FormLabel>
+                              <FormLabel>
+                                Client References (optional)
+                              </FormLabel>
                               <FormControl>
-                                <Textarea 
+                                <Textarea
                                   placeholder="Please provide references from past clients or projects"
                                   className="min-h-[100px]"
-                                  {...field} 
+                                  {...field}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -1069,9 +1276,14 @@ const Subcontractors = () => {
                           name="howDidYouHear"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>How did you hear about us? (optional)</FormLabel>
+                              <FormLabel>
+                                How did you hear about us? (optional)
+                              </FormLabel>
                               <FormControl>
-                                <Input placeholder="Google, Referral, Social Media, etc." {...field} />
+                                <Input
+                                  placeholder="Google, Referral, Social Media, etc."
+                                  {...field}
+                                />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -1079,12 +1291,14 @@ const Subcontractors = () => {
                         />
 
                         <div className="pt-4">
-                          <Button 
-                            type="submit" 
+                          <Button
+                            type="submit"
                             className="w-full sm:w-auto bg-[#1E90DB] hover:bg-[#1670B0]"
                             disabled={isSubmitting}
                           >
-                            {isSubmitting ? 'Submitting...' : 'Submit Registration'}
+                            {isSubmitting
+                              ? "Submitting..."
+                              : "Submit Registration"}
                           </Button>
                         </div>
                       </form>
@@ -1104,7 +1318,8 @@ const Subcontractors = () => {
             Join Our Network Today
           </h2>
           <p className="text-white text-lg mb-0 max-w-3xl mx-auto">
-            Become a part of ARCEM's trusted network of subcontractors and vendors.
+            Become a part of ARCEM's trusted network of subcontractors and
+            vendors.
           </p>
         </div>
       </div>
