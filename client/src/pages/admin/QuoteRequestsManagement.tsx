@@ -67,7 +67,10 @@ const QuoteRequestsManagement = () => {
   // Delete quote request mutation
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      return apiRequest("DELETE", `/api/admin/quote/requests/${id}`);
+      return apiRequest({
+        url: `/api/admin/quote/requests/${id}`,
+        method: 'DELETE'
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/quote/requests"] });
@@ -92,8 +95,11 @@ const QuoteRequestsManagement = () => {
   // Update status mutation
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: number; status: string }) => {
-      const res = await apiRequest("PUT", `/api/admin/quote/requests/${id}/status`, { status });
-      return res.json();
+      return apiRequest({
+        url: `/api/admin/quote/requests/${id}/status`,
+        method: 'PUT',
+        body: { status }
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/quote/requests"] });
@@ -120,8 +126,11 @@ const QuoteRequestsManagement = () => {
   // Mark as reviewed mutation
   const markAsReviewedMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await apiRequest("PUT", `/api/admin/quote/requests/${id}/reviewed`, {});
-      return res.json();
+      return apiRequest({
+        url: `/api/admin/quote/requests/${id}/reviewed`,
+        method: 'PUT',
+        body: {}
+      });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/quote/requests"] });
