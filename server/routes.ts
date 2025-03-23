@@ -490,28 +490,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post(`${apiRouter}/blog/:postId/gallery`, isAdmin, async (req: Request, res: Response) => {
     try {
+      console.log(`[BLOG GALLERY] Received add gallery image request for blog post:`, req.params.postId);
+      console.log(`[BLOG GALLERY] Request body:`, req.body);
+      
       const postId = parseInt(req.params.postId);
       if (isNaN(postId)) {
+        console.log(`[BLOG GALLERY ERROR] Invalid post ID: ${req.params.postId}`);
         return res.status(400).json({ message: "Invalid blog post ID" });
       }
       
       // Check if blog post exists
       const post = await storage.getBlogPost(postId);
       if (!post) {
+        console.log(`[BLOG GALLERY ERROR] Blog post not found with ID: ${postId}`);
         return res.status(404).json({ message: "Blog post not found" });
       }
+      
+      console.log(`[BLOG GALLERY] Found blog post:`, post.title);
       
       const galleryData = insertBlogGallerySchema.parse({
         ...req.body,
         postId
       });
       
+      console.log(`[BLOG GALLERY] Validated gallery data:`, galleryData);
+      
       const galleryImage = await storage.addBlogGalleryImage(galleryData);
+      console.log(`[BLOG GALLERY] Successfully added gallery image:`, galleryImage);
+      
       res.status(201).json(galleryImage);
     } catch (error) {
+      console.error(`[BLOG GALLERY ERROR] Failed to add gallery image:`, error);
+      
       if (error instanceof z.ZodError) {
+        console.log(`[BLOG GALLERY ERROR] Validation errors:`, error.errors);
         return res.status(400).json({ message: "Invalid gallery data", errors: error.errors });
       }
+      
       res.status(500).json({ message: "Failed to add gallery image" });
     }
   });

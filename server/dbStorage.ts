@@ -219,8 +219,15 @@ export class DBStorage implements IStorage {
   }
 
   async addBlogGalleryImage(galleryImage: InsertBlogGallery): Promise<BlogGallery> {
-    const result = await db.insert(blogGallery).values(galleryImage).returning();
-    return result[0];
+    console.log(`[DB STORAGE] Attempting to add blog gallery image:`, galleryImage);
+    try {
+      const result = await db.insert(blogGallery).values(galleryImage).returning();
+      console.log(`[DB STORAGE] Successfully added blog gallery image:`, result[0]);
+      return result[0];
+    } catch (error) {
+      console.error(`[DB STORAGE ERROR] Failed to add blog gallery image:`, error);
+      throw error;
+    }
   }
 
   async updateBlogGalleryImage(id: number, galleryImageUpdate: Partial<InsertBlogGallery>): Promise<BlogGallery | undefined> {
