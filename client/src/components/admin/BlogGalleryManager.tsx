@@ -64,8 +64,8 @@ const BlogGalleryManager: React.FC<BlogGalleryManagerProps> = ({ postId }) => {
     if (uploadSession && !isCommitted && uploadedFiles.length > 0) {
       try {
         // Get all existing gallery image URLs to preserve
-        const existingImageUrls = galleryImages
-          ? galleryImages.map(img => img.imageUrl).filter(Boolean)
+        const existingImageUrls: string[] = Array.isArray(galleryImages)
+          ? galleryImages.map((img: BlogGallery) => img.imageUrl).filter(Boolean)
           : [];
           
         console.log(`Cleaning up uncommitted files for session ${uploadSession} while preserving ${existingImageUrls.length} existing gallery images`);
@@ -172,7 +172,7 @@ const BlogGalleryManager: React.FC<BlogGalleryManagerProps> = ({ postId }) => {
                 multiple={true}
                 maxSizeMB={5}
                 sessionId={uploadSession || undefined}
-                onSessionIdCreated={(newSessionId) => setUploadSession(newSessionId)}
+                onSessionIdCreated={(newSessionId: string) => setUploadSession(newSessionId)}
               />
             </div>
             <DialogFooter className="sm:justify-end">

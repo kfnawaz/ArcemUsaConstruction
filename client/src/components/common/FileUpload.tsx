@@ -34,7 +34,7 @@ interface FileUploadProps {
    * @param sessionId Optional session ID used for tracking
    * @param fileNames Optional array of original file names
    */
-  onUploadComplete?: (fileUrls: string[], sessionId?: string, fileNames?: string[]) => void;
+  onUploadComplete?: (fileUrls: string | string[], sessionId?: string, fileNames?: string[]) => void;
   /**
    * Function called when a file is removed from the list
    */
@@ -87,6 +87,11 @@ interface FileUploadProps {
    * Help text to display below the upload button
    */
   helpText?: string;
+  /**
+   * Function called when a new session ID is created
+   * @param sessionId The new session ID
+   */
+  onSessionIdCreated?: (sessionId: string) => void;
 }
 
 export default function FileUpload({
@@ -106,6 +111,7 @@ export default function FileUpload({
   accept,
   buttonText,
   helpText,
+  onSessionIdCreated,
 }: FileUploadProps) {
   const [files, setFiles] = useState<File[]>([]);
   const [fileUrls, setFileUrls] = useState<string[]>(initialFiles || []);
@@ -174,6 +180,13 @@ export default function FileUpload({
       setFileUrls(initialFiles);
     }
   }, [initialFiles]);
+  
+  // Call onSessionIdCreated when sessionId is updated or initialized
+  useEffect(() => {
+    if (sessionId && onSessionIdCreated) {
+      onSessionIdCreated(sessionId);
+    }
+  }, [sessionId, onSessionIdCreated]);
   
   // Handle drag events
   const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
