@@ -117,7 +117,11 @@ export default function FileUpload({
   const [fileUrls, setFileUrls] = useState<string[]>(initialFiles || []);
   const [isDragging, setIsDragging] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
-  const [sessionId, setSessionId] = useState<string>(externalSessionId || fileUtils.generateSessionId());
+  // Initialize sessionId from props or generate a new one
+  const generatedSessionId = fileUtils.generateSessionId();
+  const initialSessionId = externalSessionId || generatedSessionId;
+  console.log(`[FileUpload] Initializing with sessionId: ${initialSessionId} (${externalSessionId ? 'from props' : 'newly generated'})`);
+  const [sessionId, setSessionId] = useState<string>(initialSessionId);
   const { toast } = useToast();
   
   const { startUpload, isUploading } = useUploadThing("imageUploader", {
@@ -184,7 +188,10 @@ export default function FileUpload({
   // Call onSessionIdCreated when sessionId is updated or initialized
   useEffect(() => {
     if (sessionId && onSessionIdCreated) {
+      console.log(`[FileUpload] Calling onSessionIdCreated with sessionId: ${sessionId}`);
       onSessionIdCreated(sessionId);
+    } else {
+      console.log(`[FileUpload] Not calling onSessionIdCreated: sessionId=${!!sessionId}, callback=${!!onSessionIdCreated}`);
     }
   }, [sessionId, onSessionIdCreated]);
   

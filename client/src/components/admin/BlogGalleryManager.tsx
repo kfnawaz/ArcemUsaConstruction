@@ -49,6 +49,8 @@ const BlogGalleryManager: React.FC<BlogGalleryManagerProps> = ({ postId }) => {
   // Handle component unmount - clean up any uncommitted files
   useEffect(() => {
     return () => {
+      console.log(`[BlogGalleryManager] Component unmounting, cleaning up uncommitted files.`);
+      console.log(`[BlogGalleryManager] Cleanup state: uploadSession=${uploadSession}, isCommitted=${isCommitted}, files=${uploadedFiles.length}`);
       cleanupUncommittedFiles();
     };
   }, [uploadSession, isCommitted, uploadedFiles, cleanupUploads]);
@@ -56,11 +58,21 @@ const BlogGalleryManager: React.FC<BlogGalleryManagerProps> = ({ postId }) => {
   // Clean up uncommitted files when dialog is closed without saving
   useEffect(() => {
     if (!isAddDialogOpen && uploadSession && !isCommitted && uploadedFiles.length > 0) {
+      console.log(`[BlogGalleryManager] Dialog closed without committing, cleaning up files.`);
+      console.log(`[BlogGalleryManager] Cleanup state: uploadSession=${uploadSession}, files=${uploadedFiles.length}`);
       cleanupUncommittedFiles();
     }
   }, [isAddDialogOpen, uploadSession, isCommitted, uploadedFiles, cleanupUploads]);
 
   const cleanupUncommittedFiles = async () => {
+    console.log(`[BlogGalleryManager] cleanupUncommittedFiles called with state:`, {
+      hasUploadSession: !!uploadSession,
+      sessionId: uploadSession,
+      isCommitted,
+      uploadedFilesCount: uploadedFiles.length,
+      uploadedFiles
+    });
+    
     if (uploadSession && !isCommitted && uploadedFiles.length > 0) {
       try {
         // Get all existing gallery image URLs to preserve
@@ -68,24 +80,36 @@ const BlogGalleryManager: React.FC<BlogGalleryManagerProps> = ({ postId }) => {
           ? galleryImages.map((img: BlogGallery) => img.imageUrl).filter(Boolean)
           : [];
           
-        console.log(`Cleaning up uncommitted files for session ${uploadSession} while preserving ${existingImageUrls.length} existing gallery images`);
+        console.log(`[BlogGalleryManager] Cleaning up uncommitted files for session ${uploadSession}`);
+        console.log(`[BlogGalleryManager] Files to clean up:`, uploadedFiles);
+        console.log(`[BlogGalleryManager] Preserving ${existingImageUrls.length} existing gallery images:`, existingImageUrls);
         
         // Call cleanupUploads with existing gallery URLs to preserve
         const success = await cleanupUploads(uploadSession, existingImageUrls);
         
         if (success) {
-          console.log('Successfully cleaned up uncommitted files');
+          console.log('[BlogGalleryManager] Successfully cleaned up uncommitted files');
           setUploadedFiles([]);
+        } else {
+          console.log('[BlogGalleryManager] Failed to clean up uncommitted files');
         }
       } catch (err) {
-        console.error('Error cleaning up files:', err);
+        console.error('[BlogGalleryManager] Error cleaning up files:', err);
       }
+    } else {
+      console.log(`[BlogGalleryManager] Skipping cleanup - conditions not met: hasSession=${!!uploadSession}, isCommitted=${isCommitted}, filesCount=${uploadedFiles.length}`);
     }
   };
 
   const handleFileUploadComplete = async (fileUrl: string | string[], sessionId?: string) => {
     try {
+      console.log(`[BlogGalleryManager] handleFileUploadComplete called with:`, 
+        { fileUrlType: typeof fileUrl, isArray: Array.isArray(fileUrl), count: Array.isArray(fileUrl) ? fileUrl.length : 1 });
+      console.log(`[BlogGalleryManager] Session ID from upload:`, sessionId);
+      console.log(`[BlogGalleryManager] Current upload session:`, uploadSession);
+      
       if (sessionId) {
+        console.log(`[BlogGalleryManager] Setting new upload session:`, sessionId);
         setUploadSession(sessionId);
       }
       
@@ -93,30 +117,39 @@ const BlogGalleryManager: React.FC<BlogGalleryManagerProps> = ({ postId }) => {
       
       // Store the current session ID to use for commitment
       const currentSessionId = sessionId || uploadSession;
+      console.log(`[BlogGalleryManager] Using session ID for commitment:`, currentSessionId);
       
       if (typeof fileUrl === 'string') {
+        console.log(`[BlogGalleryManager] Processing single file URL:`, fileUrl);
         // Track for potential cleanup
         setUploadedFiles([fileUrl]);
         
         // Single file upload
+        console.log(`[BlogGalleryManager] Adding gallery image to database:`, { url: fileUrl, caption: captionInput });
         await addGalleryImage(fileUrl, captionInput || null);
         
         // Commit the file
-        await commitUploads(currentSessionId, [fileUrl]);
+        console.log(`[BlogGalleryManager] Committing file with session:`, currentSessionId);
+        const commitResult = await commitUploads(currentSessionId, [fileUrl]);
+        console.log(`[BlogGalleryManager] Commit result:`, commitResult);
         
         // Mark as committed
         setIsCommitted(true);
       } else if (Array.isArray(fileUrl) && fileUrl.length > 0) {
+        console.log(`[BlogGalleryManager] Processing ${fileUrl.length} files:`, fileUrl);
         // Track for potential cleanup
         setUploadedFiles(fileUrl);
         
         // Multiple files upload - process each file
         for (const url of fileUrl) {
+          console.log(`[BlogGalleryManager] Adding gallery image to database:`, { url, caption: captionInput });
           await addGalleryImage(url, captionInput || null);
         }
         
         // Commit all files
-        await commitUploads(currentSessionId, fileUrl);
+        console.log(`[BlogGalleryManager] Committing files with session:`, currentSessionId);
+        const commitResult = await commitUploads(currentSessionId, fileUrl);
+        console.log(`[BlogGalleryManager] Commit result:`, commitResult);
         
         // Mark as committed
         setIsCommitted(true);
@@ -124,8 +157,9 @@ const BlogGalleryManager: React.FC<BlogGalleryManagerProps> = ({ postId }) => {
       
       setCaptionInput('');
       setIsAddDialogOpen(false);
+      console.log(`[BlogGalleryManager] Upload process completed successfully`);
     } catch (error) {
-      console.error('Error adding gallery image(s):', error);
+      console.error('[BlogGalleryManager] Error adding gallery image(s):', error);
       // Clean up files on error
       cleanupUncommittedFiles();
     }
@@ -172,7 +206,11 @@ const BlogGalleryManager: React.FC<BlogGalleryManagerProps> = ({ postId }) => {
                 multiple={true}
                 maxSizeMB={5}
                 sessionId={uploadSession || undefined}
-                onSessionIdCreated={(newSessionId: string) => setUploadSession(newSessionId)}
+                onSessionIdCreated={(newSessionId: string) => {
+                  console.log(`[BlogGalleryManager] onSessionIdCreated callback received new session ID: ${newSessionId}`);
+                  console.log(`[BlogGalleryManager] Previous upload session: ${uploadSession}`);
+                  setUploadSession(newSessionId);
+                }}
               />
             </div>
             <DialogFooter className="sm:justify-end">
