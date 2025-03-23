@@ -91,6 +91,9 @@ const BlogGalleryManager: React.FC<BlogGalleryManagerProps> = ({ postId }) => {
       
       setIsCommitted(false);
       
+      // Store the current session ID to use for commitment
+      const currentSessionId = sessionId || uploadSession;
+      
       if (typeof fileUrl === 'string') {
         // Track for potential cleanup
         setUploadedFiles([fileUrl]);
@@ -99,7 +102,7 @@ const BlogGalleryManager: React.FC<BlogGalleryManagerProps> = ({ postId }) => {
         await addGalleryImage(fileUrl, captionInput || null);
         
         // Commit the file
-        await commitUploads(uploadSession, [fileUrl]);
+        await commitUploads(currentSessionId, [fileUrl]);
         
         // Mark as committed
         setIsCommitted(true);
@@ -113,7 +116,7 @@ const BlogGalleryManager: React.FC<BlogGalleryManagerProps> = ({ postId }) => {
         }
         
         // Commit all files
-        await commitUploads(uploadSession, fileUrl);
+        await commitUploads(currentSessionId, fileUrl);
         
         // Mark as committed
         setIsCommitted(true);

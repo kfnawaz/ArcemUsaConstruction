@@ -148,13 +148,15 @@ export const useBlog = (postId?: number) => {
   // Add gallery image mutation
   const addGalleryImageMutation = useMutation({
     mutationFn: async ({ postId, data }: { postId: number, data: { imageUrl: string, caption: string | null, order: number } }) => {
+      console.log(`[DEBUG] Adding gallery image for post ID ${postId} with URL: ${data.imageUrl}`);
       return apiRequest({
         url: `/api/blog/${postId}/gallery`,
         method: 'POST',
         body: data
       });
     },
-    onSuccess: () => {
+    onSuccess: (response) => {
+      console.log(`[DEBUG] Successfully added gallery image:`, response);
       setIsAddingGalleryImage(false);
       queryClient.invalidateQueries({ queryKey: [`/api/blog/${postId}/gallery`] });
       
