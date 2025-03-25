@@ -110,12 +110,39 @@ export class DBStorage implements IStorage {
     const imageToDelete = await db.select().from(projectGallery).where(eq(projectGallery.id, id));
     
     if (imageToDelete.length > 0) {
-      // Delete image from UploadThing if applicable
-      await FileManager.deleteFile(imageToDelete[0].imageUrl);
+      const imageUrl = imageToDelete[0].imageUrl;
+      const projectId = imageToDelete[0].projectId;
       
-      // Then delete from database
-      const result = await db.delete(projectGallery).where(eq(projectGallery.id, id)).returning();
-      return result.length > 0;
+      console.log(`[dbStorage] Processing deletion of project gallery image (ID: ${id}, project: ${projectId})`);
+      
+      // IMPORTANT: When updating projects, we're reusing the same image URLs
+      // We need to check if any other gallery items have the same URL before deleting it
+      const otherImagesWithSameUrl = await db.select().from(projectGallery)
+        .where(and(
+          ne(projectGallery.id, id),
+          eq(projectGallery.imageUrl, imageUrl)
+        ));
+      
+      // Also check if the image is used as a main project image
+      const projectsWithSameImage = await db.select().from(projects)
+        .where(eq(projects.image, imageUrl));
+      
+      const isImageUsedElsewhere = otherImagesWithSameUrl.length > 0 || projectsWithSameImage.length > 0;
+      
+      if (isImageUsedElsewhere) {
+        console.log(`[dbStorage] Preserving file ${imageUrl} as it's used elsewhere in the system`);
+        // Only delete from database but preserve the file
+        const result = await db.delete(projectGallery).where(eq(projectGallery.id, id)).returning();
+        return result.length > 0;
+      } else {
+        console.log(`[dbStorage] File ${imageUrl} is not used elsewhere, deleting from storage`);
+        // Delete image from UploadThing if applicable
+        await FileManager.deleteFile(imageUrl);
+        
+        // Then delete from database
+        const result = await db.delete(projectGallery).where(eq(projectGallery.id, id)).returning();
+        return result.length > 0;
+      }
     }
     
     return false;
@@ -243,12 +270,38 @@ export class DBStorage implements IStorage {
     const imageToDelete = await db.select().from(blogGallery).where(eq(blogGallery.id, id));
     
     if (imageToDelete.length > 0) {
-      // Delete image from UploadThing if applicable
-      await FileManager.deleteFile(imageToDelete[0].imageUrl);
+      const imageUrl = imageToDelete[0].imageUrl;
+      const postId = imageToDelete[0].postId;
       
-      // Then delete from database
-      const result = await db.delete(blogGallery).where(eq(blogGallery.id, id)).returning();
-      return result.length > 0;
+      console.log(`[dbStorage] Processing deletion of blog gallery image (ID: ${id}, post: ${postId})`);
+      
+      // Check if any other gallery items have the same URL before deleting it
+      const otherImagesWithSameUrl = await db.select().from(blogGallery)
+        .where(and(
+          ne(blogGallery.id, id),
+          eq(blogGallery.imageUrl, imageUrl)
+        ));
+      
+      // Also check if the image is used as a featured image in blog posts
+      const postsWithSameImage = await db.select().from(blogPosts)
+        .where(eq(blogPosts.featuredImage, imageUrl));
+      
+      const isImageUsedElsewhere = otherImagesWithSameUrl.length > 0 || postsWithSameImage.length > 0;
+      
+      if (isImageUsedElsewhere) {
+        console.log(`[dbStorage] Preserving file ${imageUrl} as it's used elsewhere in the system`);
+        // Only delete from database but preserve the file
+        const result = await db.delete(blogGallery).where(eq(blogGallery.id, id)).returning();
+        return result.length > 0;
+      } else {
+        console.log(`[dbStorage] File ${imageUrl} is not used elsewhere, deleting from storage`);
+        // Delete image from UploadThing if applicable
+        await FileManager.deleteFile(imageUrl);
+        
+        // Then delete from database
+        const result = await db.delete(blogGallery).where(eq(blogGallery.id, id)).returning();
+        return result.length > 0;
+      }
     }
     
     return false;
