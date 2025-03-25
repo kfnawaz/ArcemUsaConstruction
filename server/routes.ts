@@ -1297,13 +1297,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       console.log(`[routes] Cleaning up files for session ${sessionId || '*'}`);
-      if (preserveUrls && Array.isArray(preserveUrls) && preserveUrls.length > 0) {
-        console.log(`[routes] With ${preserveUrls.length} files to preserve`);
+      
+      // Get all project URLs to preserve from the database
+      // This is critical to prevent deletion of images in uploadthing
+      let allProjectUrls: string[] = [];
+      try {
+        // Query all projects to get their main images
+        const allProjects = await storage.getProjects();
+        const projectMainImages = allProjects
+          .map(p => p.image)
+          .filter(Boolean) as string[];
+          
+        console.log(`[routes] Found ${projectMainImages.length} project main images to preserve`);
+        allProjectUrls = [...allProjectUrls, ...projectMainImages];
+        
+        // Also get all gallery images
+        for (const project of allProjects) {
+          if (project.id) {
+            const galleryImages = await storage.getProjectGallery(project.id);
+            const galleryUrls = galleryImages
+              .map(g => g.imageUrl)
+              .filter(Boolean) as string[];
+              
+            console.log(`[routes] Found ${galleryUrls.length} gallery images for project ID ${project.id} to preserve`);
+            allProjectUrls = [...allProjectUrls, ...galleryUrls];
+          }
+        }
+        
+        // Remove duplicates
+        allProjectUrls = Array.from(new Set(allProjectUrls));
+        console.log(`[routes] Total ${allProjectUrls.length} unique project URLs to preserve from database`);
+      } catch (dbError) {
+        console.error(`[routes] Error getting project URLs to preserve:`, dbError);
+      }
+      
+      // Combine user-provided preserveUrls with database URLs
+      const combinedPreserveUrls = [
+        ...(preserveUrls && Array.isArray(preserveUrls) ? preserveUrls : []),
+        ...allProjectUrls
+      ];
+      
+      // Remove duplicates again
+      const finalPreserveUrls = Array.from(new Set(combinedPreserveUrls));
+      
+      console.log(`[routes] Final total of ${finalPreserveUrls.length} unique URLs to preserve during cleanup`);
+      
+      if (finalPreserveUrls.length > 0) {
         // Log a sample of preserve URLs for debugging (first 5)
-        const previewUrls = preserveUrls.slice(0, 5);
+        const previewUrls = finalPreserveUrls.slice(0, 5);
         console.log(`[routes] Sample URLs to preserve:`, previewUrls);
-        if (preserveUrls.length > 5) {
-          console.log(`[routes] ...and ${preserveUrls.length - 5} more`);
+        if (finalPreserveUrls.length > 5) {
+          console.log(`[routes] ...and ${finalPreserveUrls.length - 5} more`);
         }
       }
       
@@ -1313,18 +1357,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // If fileUrls array is provided, delete each file in the array
       if (fileUrls && Array.isArray(fileUrls) && fileUrls.length > 0) {
-        console.log(`Cleaning up ${fileUrls.length} specific files`);
+        console.log(`[routes] Cleaning up ${fileUrls.length} specific files`);
         
         for (const url of fileUrls) {
           try {
             // Skip if this URL is in the preserve list
-            if (preserveUrls && Array.isArray(preserveUrls) && preserveUrls.includes(url)) {
-              console.log(`Skipping preserved file: ${url}`);
+            if (finalPreserveUrls.includes(url)) {
+              console.log(`[routes] Skipping preserved file: ${url}`);
               preservedFiles.push(url);
               continue;
             }
             
-            const result = await FileManager.cleanupSession(sessionId || '*', url, preserveUrls);
+            const result = await FileManager.cleanupSession(sessionId || '*', url, finalPreserveUrls);
             if (result.deletedUrls.length > 0) {
               deletedFiles = [...deletedFiles, ...result.deletedUrls];
             }
@@ -1343,23 +1387,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } 
       // If a single fileUrl is provided, delete just that file
       else if (fileUrl) {
-        console.log(`Cleaning up specific file: ${fileUrl}`);
+        console.log(`[routes] Cleaning up specific file: ${fileUrl}`);
         
         // Skip if this URL is in the preserve list
-        if (preserveUrls && Array.isArray(preserveUrls) && preserveUrls.includes(fileUrl)) {
-          console.log(`Skipping preserved file: ${fileUrl}`);
+        if (finalPreserveUrls.includes(fileUrl)) {
+          console.log(`[routes] Skipping preserved file: ${fileUrl}`);
           preservedFiles.push(fileUrl);
         } else {
           // Extract the file key if it's an UploadThing URL for better logging
           const fileKey = extractUploadThingKeyFromUrl(fileUrl);
           if (fileKey) {
-            console.log(`File key to delete: ${fileKey}`);
+            console.log(`[routes] File key to delete: ${fileKey}`);
           }
           
           try {
             // Handle individual file deletion with updated cleanupSession method
             // Use wildcard session ID '*' when deleting a specific file with no session context
-            const result = await FileManager.cleanupSession(sessionId || '*', fileUrl, preserveUrls);
+            const result = await FileManager.cleanupSession(sessionId || '*', fileUrl, finalPreserveUrls);
             
             // Add to our running list of deleted and failed files
             deletedFiles = [...deletedFiles, ...result.deletedUrls];
@@ -1378,9 +1422,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } 
       // Otherwise clean up the entire session
       else if (sessionId) {
-        console.log(`Cleaning up entire session: ${sessionId}`);
+        console.log(`[routes] Cleaning up entire session: ${sessionId}`);
         try {
-          const result = await FileManager.cleanupSession(sessionId, undefined, preserveUrls);
+          const result = await FileManager.cleanupSession(sessionId, undefined, finalPreserveUrls);
           deletedFiles = result.deletedUrls;
           failedFiles = result.failedUrls;
           preservedFiles = result.preservedUrls;
@@ -1396,7 +1440,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Session information
         sessionId,
         specificFileUrl: fileUrl,
-        preserveUrlsCount: preserveUrls ? preserveUrls.length : 0,
+        originalPreserveUrlsCount: preserveUrls ? preserveUrls.length : 0,
+        finalPreserveUrlsCount: finalPreserveUrls.length,
         
         // Statistics
         deletedCount: deletedFiles.length,
