@@ -178,23 +178,16 @@ export class DBStorage implements IStorage {
       
       console.log(`[dbStorage] Processing deletion of project gallery image (ID: ${id}, project: ${projectId})`);
       
-      // Check if this image is used elsewhere before deleting it
-      const isImageUsedElsewhere = await this.isImageUsedElsewhere(imageUrl, id);
+      // IMPORTANT CHANGE: Always preserve files when deleting individual entries
+      // This is safer because we can't reliably know if the file is shared elsewhere
+      // in scenarios where we've deleted other entries already
+      // Only permanently delete files via dedicated cleanup jobs
       
-      if (isImageUsedElsewhere) {
-        console.log(`[dbStorage] Preserving file ${imageUrl} as it's used elsewhere in the system`);
-        // Only delete from database but preserve the file
-        const result = await db.delete(projectGallery).where(eq(projectGallery.id, id)).returning();
-        return result.length > 0;
-      } else {
-        console.log(`[dbStorage] File ${imageUrl} is not used elsewhere, deleting from storage`);
-        // Delete image from UploadThing if applicable
-        await FileManager.deleteFile(imageUrl);
-        
-        // Then delete from database
-        const result = await db.delete(projectGallery).where(eq(projectGallery.id, id)).returning();
-        return result.length > 0;
-      }
+      console.log(`[dbStorage] Preserving file ${imageUrl} as it could potentially be referenced elsewhere`);
+      
+      // Only delete from database but preserve the file
+      const result = await db.delete(projectGallery).where(eq(projectGallery.id, id)).returning();
+      return result.length > 0;
     }
     
     return false;
@@ -339,33 +332,16 @@ export class DBStorage implements IStorage {
       
       console.log(`[dbStorage] Processing deletion of blog gallery image (ID: ${id}, post: ${postId})`);
       
-      // Check if any other gallery items have the same URL before deleting it
-      const otherImagesWithSameUrl = await db.select().from(blogGallery)
-        .where(and(
-          ne(blogGallery.id, id),
-          eq(blogGallery.imageUrl, imageUrl)
-        ));
+      // IMPORTANT CHANGE: Always preserve files when deleting individual entries
+      // This is safer because we can't reliably know if the file is shared elsewhere
+      // in scenarios where we've deleted other entries already
+      // Only permanently delete files via dedicated cleanup jobs
       
-      // Also check if the image is used as a main image in blog posts
-      const postsWithSameImage = await db.select().from(blogPosts)
-        .where(eq(blogPosts.image, imageUrl));
+      console.log(`[dbStorage] Preserving file ${imageUrl} as it could potentially be referenced elsewhere`);
       
-      const isImageUsedElsewhere = otherImagesWithSameUrl.length > 0 || postsWithSameImage.length > 0;
-      
-      if (isImageUsedElsewhere) {
-        console.log(`[dbStorage] Preserving file ${imageUrl} as it's used elsewhere in the system`);
-        // Only delete from database but preserve the file
-        const result = await db.delete(blogGallery).where(eq(blogGallery.id, id)).returning();
-        return result.length > 0;
-      } else {
-        console.log(`[dbStorage] File ${imageUrl} is not used elsewhere, deleting from storage`);
-        // Delete image from UploadThing if applicable
-        await FileManager.deleteFile(imageUrl);
-        
-        // Then delete from database
-        const result = await db.delete(blogGallery).where(eq(blogGallery.id, id)).returning();
-        return result.length > 0;
-      }
+      // Only delete from database but preserve the file
+      const result = await db.delete(blogGallery).where(eq(blogGallery.id, id)).returning();
+      return result.length > 0;
     }
     
     return false;
@@ -643,33 +619,16 @@ export class DBStorage implements IStorage {
       
       console.log(`[dbStorage] Processing deletion of service gallery image (ID: ${id}, service: ${serviceId})`);
       
-      // Check if any other gallery items have the same URL before deleting it
-      const otherImagesWithSameUrl = await db.select().from(serviceGallery)
-        .where(and(
-          ne(serviceGallery.id, id),
-          eq(serviceGallery.imageUrl, imageUrl)
-        ));
+      // IMPORTANT CHANGE: Always preserve files when deleting individual entries
+      // This is safer because we can't reliably know if the file is shared elsewhere
+      // in scenarios where we've deleted other entries already
+      // Only permanently delete files via dedicated cleanup jobs
       
-      // The services table doesn't have a main image field, so we only need to check
-      // for other gallery images with the same URL
-      const servicesWithSameImage = [];
+      console.log(`[dbStorage] Preserving file ${imageUrl} as it could potentially be referenced elsewhere`);
       
-      const isImageUsedElsewhere = otherImagesWithSameUrl.length > 0 || servicesWithSameImage.length > 0;
-      
-      if (isImageUsedElsewhere) {
-        console.log(`[dbStorage] Preserving file ${imageUrl} as it's used elsewhere in the system`);
-        // Only delete from database but preserve the file
-        const result = await db.delete(serviceGallery).where(eq(serviceGallery.id, id)).returning();
-        return result.length > 0;
-      } else {
-        console.log(`[dbStorage] File ${imageUrl} is not used elsewhere, deleting from storage`);
-        // Delete image from UploadThing if applicable
-        await FileManager.deleteFile(imageUrl);
-        
-        // Then delete from database
-        const result = await db.delete(serviceGallery).where(eq(serviceGallery.id, id)).returning();
-        return result.length > 0;
-      }
+      // Only delete from database but preserve the file
+      const result = await db.delete(serviceGallery).where(eq(serviceGallery.id, id)).returning();
+      return result.length > 0;
     }
     
     return false;

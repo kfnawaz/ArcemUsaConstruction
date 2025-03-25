@@ -102,16 +102,29 @@ async function testImagePreservation() {
     // 8. Use our storage methods for all operations to test the logic
     const storage = new DBStorage();
 
-    // 9. Test deleting a unique image from project 1 first
-    console.log("\nTEST 1: Delete unique image from project 1");
+    // First test: delete directly one of the shared images, it should preserve the file
+    console.log("\nTEST 1: Delete shared image from project 1 (should preserve the file)");
+    await storage.deleteProjectGalleryImage(project1Gallery1.id);
+    
+    // Recreate the deleted gallery image for project 1
+    console.log("\nRecreating shared image for project 1");
+    project1Gallery1 = await db.insert(schema.projectGallery).values({
+      projectId: project1.id,
+      imageUrl: sharedImageUrl,
+      alt: "Shared Test Image",
+      displayOrder: 0
+    }).returning().then(results => results[0]);
+    
+    // Now test in a different order: delete unique image from project 1 first
+    console.log("\nTEST 2: Delete unique image from project 1");
     await storage.deleteProjectGalleryImage(project1Gallery2.id);
     
-    // 10. Test deleting all galleries from project 2
-    console.log("\nTEST 2: Delete all gallery images from project 2");
+    // Next delete all galleries from project 2
+    console.log("\nTEST 3: Delete all galleries from project 2");
     await storage.deleteAllProjectGalleryImages(project2.id);
     
-    // 11. Finally, delete shared image from project 1
-    console.log("\nTEST 3: Delete shared image from project 1");
+    // Finally, delete shared image from project 1 again, it should NOT delete the file
+    console.log("\nTEST 4: Delete shared image from project 1 again (after project 2's gallery is gone)");
     await storage.deleteProjectGalleryImage(project1Gallery1.id);
 
     // 12. Check what files would have been deleted
