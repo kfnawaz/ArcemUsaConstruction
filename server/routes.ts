@@ -808,12 +808,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Update gallery images if provided
-      if (galleryImages) {
-        console.log(`[BLOG] Processing ${galleryImages.length} gallery images for blog post ${id}`);
+      if (galleryImages && Array.isArray(galleryImages)) {
+        console.log(`[BLOG UPDATE] Processing ${galleryImages.length} gallery images for blog post ${id}`);
         
         // Get existing gallery for comparison
         const existingGallery = await storage.getBlogGallery(id);
-        console.log(`[BLOG] Existing gallery has ${existingGallery.length} images`);
+        console.log(`[BLOG UPDATE] Existing gallery has ${existingGallery.length} images`);
         
         // Map existing images by ID and URL for quick lookup
         const existingImagesById = new Map();
@@ -866,7 +866,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           .filter(img => !keptImageIds.has(img.id))
           .map(img => img.id);
         
-        console.log(`[BLOG] Found ${imagesToDelete.length} images to delete and ${imagesToAdd.length} images to add`);
+        console.log(`[BLOG UPDATE] Found ${imagesToDelete.length} images to delete and ${imagesToAdd.length} images to add`);
         
         // Delete images that are no longer needed
         for (const idToDelete of imagesToDelete) {
@@ -889,7 +889,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             
             // Only update if something has changed
             if (existingImage.caption !== caption || existingImage.order !== order) {
-              console.log(`[BLOG] Updating image ${image.id} with new caption or order`);
+              console.log(`[BLOG UPDATE] Updating image ${image.id} with new caption or order`);
               
               await storage.updateBlogGalleryImage(image.id, {
                 caption,
@@ -903,7 +903,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             
             // Only update if something has changed
             if (existingImage.caption !== caption || existingImage.order !== order) {
-              console.log(`[BLOG] Updating image with URL ${image.imageUrl.substring(0, 30)}... with new caption or order`);
+              console.log(`[BLOG UPDATE] Updating image with URL ${image.imageUrl.substring(0, 30)}... with new caption or order`);
               
               await storage.updateBlogGalleryImage(existingImage.id, {
                 caption,
