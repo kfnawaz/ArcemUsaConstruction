@@ -159,10 +159,30 @@ export class FileManager {
    * @param preserveUrls Optional array of URLs to preserve (not delete)
    * @returns Object with arrays of deleted and failed file URLs
    */
-  static async cleanupSession(sessionId: string, specificFileUrl?: string, preserveUrls: string[] = []): Promise<{ deletedUrls: string[], failedUrls: string[], preservedUrls: string[] }> {
+  static async cleanupSession(sessionId: string, specificFileUrl?: string, preserveUrls: string[] = []): Promise<{ 
+    deletedUrls: string[], 
+    failedUrls: string[], 
+    preservedUrls: string[],
+    deletedCount: number,
+    failedCount: number,
+    preservedCount: number,
+    deletedFiles: string[],
+    preservedFiles: string[],
+    preservedReasons: Record<string, string>
+  }> {
     if (!sessionId) {
       console.error('[FileManager] Invalid sessionId for cleanup');
-      return { deletedUrls: [], failedUrls: [], preservedUrls: [] };
+      return { 
+        deletedUrls: [], 
+        failedUrls: [], 
+        preservedUrls: [],
+        deletedCount: 0,
+        failedCount: 0,
+        preservedCount: 0,
+        deletedFiles: [],
+        preservedFiles: [],
+        preservedReasons: {}
+      };
     }
     
     console.log(`[FileManager] Cleaning up session ${sessionId}${specificFileUrl ? ` (specific file: ${specificFileUrl})` : ''}`);

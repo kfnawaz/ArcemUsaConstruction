@@ -1296,9 +1296,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      console.log(`Cleaning up files for session ${sessionId || '*'}`);
+      console.log(`[routes] Cleaning up files for session ${sessionId || '*'}`);
       if (preserveUrls && Array.isArray(preserveUrls) && preserveUrls.length > 0) {
-        console.log(`With ${preserveUrls.length} files to preserve`);
+        console.log(`[routes] With ${preserveUrls.length} files to preserve`);
+        // Log a sample of preserve URLs for debugging (first 5)
+        const previewUrls = preserveUrls.slice(0, 5);
+        console.log(`[routes] Sample URLs to preserve:`, previewUrls);
+        if (preserveUrls.length > 5) {
+          console.log(`[routes] ...and ${preserveUrls.length - 5} more`);
+        }
       }
       
       let deletedFiles: string[] = [];
@@ -1383,7 +1389,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      console.log(`Cleanup completed: ${deletedFiles.length} files deleted, ${failedFiles.length} failed, ${preservedFiles.length} preserved`);
+      console.log(`[routes] Cleanup completed: ${deletedFiles.length} files deleted, ${failedFiles.length} failed, ${preservedFiles.length} preserved`);
+      
+      // Extended debug information to help diagnose file deletion issues
+      const debugInfo = {
+        // Session information
+        sessionId,
+        specificFileUrl: fileUrl,
+        preserveUrlsCount: preserveUrls ? preserveUrls.length : 0,
+        
+        // Statistics
+        deletedCount: deletedFiles.length,
+        failedCount: failedFiles.length,
+        preservedCount: preservedFiles.length,
+        
+        // Sample of first few files in each category (to avoid huge responses)
+        deletedSample: deletedFiles.slice(0, 5),
+        preservedSample: preservedFiles.slice(0, 5),
+        failedSample: failedFiles.slice(0, 5),
+        
+        // Full lists for smaller responses, samples for larger ones
+        deletedFiles: deletedFiles.length <= 20 ? deletedFiles : `${deletedFiles.length} files (first 5 shown in deletedSample)`,
+        preservedFiles: preservedFiles.length <= 20 ? preservedFiles : `${preservedFiles.length} files (first 5 shown in preservedSample)`,
+        failedFiles: failedFiles.length <= 20 ? failedFiles : `${failedFiles.length} files (first 5 shown in failedSample)`,
+      };
       
       return res.status(200).json({ 
         success: true,
@@ -1392,12 +1421,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
              preservedFiles.includes(fileUrl) ? `Preserved file: ${fileUrl}` : 
              `Failed to delete file: ${fileUrl}`)
           : `Cleaned up ${deletedFiles.length} files (${preservedFiles.length} preserved)`,
-        deletedFiles, // Return the actual array of deleted files
+        // Core file lists
+        deletedFiles, 
         deletedCount: deletedFiles.length,
         failedFiles,
         failedCount: failedFiles.length,
         preservedFiles,
-        preservedCount: preservedFiles.length
+        preservedCount: preservedFiles.length,
+        // Add extended debugging information
+        debug: debugInfo
       });
     } catch (error) {
       console.error("File cleanup error:", error);
