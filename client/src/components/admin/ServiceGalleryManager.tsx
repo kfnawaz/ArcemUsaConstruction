@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useService } from '@/hooks/useService';
 import { ServiceGallery, InsertServiceGallery } from '@shared/schema';
-import { Trash2, Image, Loader2, AlertCircle } from 'lucide-react';
+import { Trash2, Image, Loader2, AlertCircle, ImagePlus } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -332,7 +332,46 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
         )}
         
         <div className="p-4 border rounded-md bg-muted/20">
-          <h4 className="font-medium mb-3">Service Images ({currentImageCount}/{MAX_GALLERY_IMAGES})</h4>
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="font-medium">Service Images ({currentImageCount}/{MAX_GALLERY_IMAGES})</h4>
+            <div className="flex items-center gap-3">
+              {pendingImages.length > 0 && (
+                <div className="flex items-center">
+                  {pendingImages.length > 0 && (
+                    <div className="flex items-center text-amber-600 text-sm mr-3">
+                      <AlertCircle className="h-4 w-4 mr-1" />
+                      <span>Unsaved gallery changes</span>
+                    </div>
+                  )}
+                  <Button 
+                    size="sm" 
+                    variant="secondary"
+                    onClick={async (e) => {
+                      e.preventDefault();
+                      try {
+                        await saveGalleryImages();
+                      } catch (error) {
+                        console.error("Error saving gallery images:", error);
+                      }
+                    }}
+                    disabled={isUploading}
+                  >
+                    {isUploading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <ImagePlus className="h-4 w-4 mr-1" />
+                        Save Images
+                      </>
+                    )}
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
           
           {canAddMoreImages ? (
             <div className="mb-4">
