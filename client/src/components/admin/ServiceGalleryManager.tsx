@@ -357,39 +357,42 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
           <div className="flex items-center justify-between mb-3">
             <h4 className="font-medium">Service Images ({currentImageCount}/{MAX_GALLERY_IMAGES})</h4>
             <div className="flex items-center gap-3">
+              {/* Warning indicator for unsaved changes */}
               {pendingImages.length > 0 && (
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center text-amber-600 text-sm">
-                    <AlertCircle className="h-4 w-4 mr-1" />
-                    <span>Unsaved gallery changes</span>
-                  </div>
-                  <Button 
-                    size="sm" 
-                    variant="secondary"
-                    onClick={async (e) => {
-                      e.preventDefault();
-                      try {
-                        console.log("Save Images button clicked. pendingImages:", pendingImages.length);
-                        await saveGalleryImages();
-                      } catch (error) {
-                        console.error("Error saving gallery images:", error);
-                      }
-                    }}
-                    disabled={isUploading}
-                  >
-                    {isUploading ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        <ImagePlus className="h-4 w-4 mr-1" />
-                        Save Images
-                      </>
-                    )}
-                  </Button>
+                <div className="flex items-center text-amber-600 text-sm">
+                  <AlertCircle className="h-4 w-4 mr-1" />
+                  <span>Unsaved gallery changes</span>
                 </div>
+              )}
+              
+              {/* IMPORTANT: Always show "Save Images" button separately from the warning */}
+              {pendingImages.length > 0 && (
+                <Button 
+                  size="sm" 
+                  variant="secondary"
+                  onClick={async (e) => {
+                    e.preventDefault();
+                    try {
+                      console.log("Save Images button clicked. pendingImages:", pendingImages.length);
+                      await saveGalleryImages();
+                    } catch (error) {
+                      console.error("Error saving gallery images:", error);
+                    }
+                  }}
+                  disabled={isUploading}
+                >
+                  {isUploading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <ImagePlus className="h-4 w-4 mr-1" />
+                      Save Images ({pendingImages.length})
+                    </>
+                  )}
+                </Button>
               )}
             </div>
           </div>
