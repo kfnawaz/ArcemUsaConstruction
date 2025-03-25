@@ -1,4 +1,4 @@
-import { eq, ne, and, inArray } from "drizzle-orm";
+import { eq, ne, and, inArray, count } from "drizzle-orm";
 import { db } from "./db";
 import { 
   users, projects, projectGallery, blogCategories, blogTags, blogPosts, 
@@ -105,6 +105,69 @@ export class DBStorage implements IStorage {
     return result[0];
   }
   
+  // Helper method to check if an image URL is used in any other entity
+  private async isImageUsedElsewhere(imageUrl: string, excludeProjectGalleryId?: number, excludeProjectId?: number): Promise<boolean> {
+    // Build an array of conditions to check across multiple tables
+    const queries = [];
+    
+    // Check project gallery
+    if (excludeProjectGalleryId) {
+      queries.push(
+        db.select({ count: count() }).from(projectGallery)
+          .where(and(
+            ne(projectGallery.id, excludeProjectGalleryId),
+            eq(projectGallery.imageUrl, imageUrl)
+          ))
+      );
+    } else if (excludeProjectId) {
+      queries.push(
+        db.select({ count: count() }).from(projectGallery)
+          .where(and(
+            ne(projectGallery.projectId, excludeProjectId),
+            eq(projectGallery.imageUrl, imageUrl)
+          ))
+      );
+    } else {
+      queries.push(
+        db.select({ count: count() }).from(projectGallery)
+          .where(eq(projectGallery.imageUrl, imageUrl))
+      );
+    }
+    
+    // Check project main images
+    if (excludeProjectId) {
+      queries.push(
+        db.select({ count: count() }).from(projects)
+          .where(and(
+            ne(projects.id, excludeProjectId),
+            eq(projects.image, imageUrl)
+          ))
+      );
+    } else {
+      queries.push(
+        db.select({ count: count() }).from(projects)
+          .where(eq(projects.image, imageUrl))
+      );
+    }
+    
+    // Also check service gallery and blog gallery tables
+    queries.push(
+      db.select({ count: count() }).from(serviceGallery).where(eq(serviceGallery.imageUrl, imageUrl)),
+      db.select({ count: count() }).from(blogGallery).where(eq(blogGallery.imageUrl, imageUrl))
+    );
+    
+    // Check image columns in blog posts (using correct column name)
+    queries.push(
+      db.select({ count: count() }).from(blogPosts).where(eq(blogPosts.image, imageUrl))
+    );
+    
+    // Execute all queries concurrently
+    const results = await Promise.all(queries);
+    
+    // If any query returns a count > 0, the image is used elsewhere
+    return results.some(result => result[0]?.count > 0);
+  }
+
   async deleteProjectGalleryImage(id: number): Promise<boolean> {
     // First fetch the image to get its URL
     const imageToDelete = await db.select().from(projectGallery).where(eq(projectGallery.id, id));
@@ -115,19 +178,8 @@ export class DBStorage implements IStorage {
       
       console.log(`[dbStorage] Processing deletion of project gallery image (ID: ${id}, project: ${projectId})`);
       
-      // IMPORTANT: When updating projects, we're reusing the same image URLs
-      // We need to check if any other gallery items have the same URL before deleting it
-      const otherImagesWithSameUrl = await db.select().from(projectGallery)
-        .where(and(
-          ne(projectGallery.id, id),
-          eq(projectGallery.imageUrl, imageUrl)
-        ));
-      
-      // Also check if the image is used as a main project image
-      const projectsWithSameImage = await db.select().from(projects)
-        .where(eq(projects.image, imageUrl));
-      
-      const isImageUsedElsewhere = otherImagesWithSameUrl.length > 0 || projectsWithSameImage.length > 0;
+      // Check if this image is used elsewhere before deleting it
+      const isImageUsedElsewhere = await this.isImageUsedElsewhere(imageUrl, id);
       
       if (isImageUsedElsewhere) {
         console.log(`[dbStorage] Preserving file ${imageUrl} as it's used elsewhere in the system`);
@@ -154,24 +206,17 @@ export class DBStorage implements IStorage {
     
     console.log(`[dbStorage] Processing deletion of all gallery images for project ${projectId} (${imagesToDelete.length} images)`);
     
-    // Check and delete each image safely
+    // First delete all images from the database to avoid race conditions
+    const result = await db.delete(projectGallery)
+      .where(eq(projectGallery.projectId, projectId))
+      .returning();
+    
+    // Then check and delete each image file safely
     for (const image of imagesToDelete) {
       const imageUrl = image.imageUrl;
       
-      // Check if this image is used elsewhere (other projects, or as main image)
-      const otherImagesWithSameUrl = await db.select().from(projectGallery)
-        .where(and(
-          ne(projectGallery.projectId, projectId),
-          eq(projectGallery.imageUrl, imageUrl)
-        ));
-      
-      const projectsWithSameImage = await db.select().from(projects)
-        .where(and(
-          ne(projects.id, projectId),
-          eq(projects.image, imageUrl)
-        ));
-      
-      const isImageUsedElsewhere = otherImagesWithSameUrl.length > 0 || projectsWithSameImage.length > 0;
+      // Check if this image is used elsewhere (now that we've deleted the gallery entries)
+      const isImageUsedElsewhere = await this.isImageUsedElsewhere(imageUrl);
       
       if (isImageUsedElsewhere) {
         console.log(`[dbStorage] Preserving file ${imageUrl} as it's used elsewhere in the system`);
@@ -180,11 +225,6 @@ export class DBStorage implements IStorage {
         await FileManager.deleteFile(imageUrl);
       }
     }
-    
-    // Delete all gallery entries from database
-    const result = await db.delete(projectGallery)
-      .where(eq(projectGallery.projectId, projectId))
-      .returning();
     
     return result.length > 0 || imagesToDelete.length > 0;
   }
