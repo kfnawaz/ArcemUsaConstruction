@@ -170,24 +170,46 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
       return () => {
         // Check if we need to clean up (only if we have sessions and not all were committed)
         if (uploadSessions.size > 0 && cleanupUploads) {
-          console.log("Cleaning up uncommitted gallery uploads on unmount");
+          console.log("[ProjectGalleryManager] Cleaning up uncommitted gallery uploads on unmount");
+          console.log("[ProjectGalleryManager] Upload sessions to clean:", Array.from(uploadSessions));
           
-          // Get all existing gallery image URLs to preserve
-          const existingImageUrls = projectGallery
+          // Get all existing gallery image URLs to preserve - THIS IS CRITICAL!
+          // We need to preserve all current gallery images to prevent deletion
+          const existingImageUrls = projectGallery && Array.isArray(projectGallery)
             ? projectGallery.map(img => img.imageUrl).filter(Boolean)
             : [];
             
-          console.log(`Will preserve ${existingImageUrls.length} existing gallery images during cleanup`);
+          console.log(`[ProjectGalleryManager] PRESERVING ${existingImageUrls.length} existing gallery images during cleanup:`);
+          console.log("[ProjectGalleryManager] Images to preserve:", existingImageUrls);
+          
+          // Get any pending image URLs to also preserve
+          const pendingImageUrls = pendingImages.map(img => img.url);
+          
+          // Combined URLs to preserve (both existing in database and pending)
+          const allUrlsToPreserve = [...existingImageUrls, ...pendingImageUrls];
+          console.log(`[ProjectGalleryManager] Total URLs to preserve: ${allUrlsToPreserve.length} (gallery: ${existingImageUrls.length}, pending: ${pendingImageUrls.length})`);
           
           // Clean up each session individually, preserving existing images
           uploadSessions.forEach(sessionId => {
-            cleanupUploads(sessionId, existingImageUrls).catch(err => {
-              console.error(`Error cleaning up gallery upload session ${sessionId}:`, err);
-            });
+            console.log(`[ProjectGalleryManager] Cleaning up session ${sessionId} with ${allUrlsToPreserve.length} URLs to preserve`);
+            
+            // IMPORTANT: Pass ALL URLs to preserve to prevent deletion
+            cleanupUploads(sessionId, allUrlsToPreserve)
+              .then(success => {
+                console.log(`[ProjectGalleryManager] Cleanup result for session ${sessionId}: ${success ? 'success' : 'failed'}`);
+              })
+              .catch(err => {
+                console.error(`[ProjectGalleryManager] Error cleaning up gallery upload session ${sessionId}:`, err);
+              });
+          });
+        } else {
+          console.log("[ProjectGalleryManager] No cleanup needed on unmount:", {
+            hasUploadSessions: uploadSessions.size > 0,
+            hasCleanupFunction: !!cleanupUploads
           });
         }
       };
-    }, [cleanupUploads, uploadSessions, projectGallery]);
+    }, [cleanupUploads, uploadSessions, projectGallery, pendingImages]);
 
     // Calculate the next order value for new images
     const getNextOrderValue = () => {

@@ -322,9 +322,30 @@ export const useProject = (projectId?: number) => {
   // Clean up unused files from a session
   const cleanupUploads = async (sessionId: string, preserveUrls: string[] = []): Promise<boolean> => {
     try {
-      // Log the cleanup operation with preserve list
-      if (preserveUrls.length > 0) {
-        console.log(`Cleaning up session ${sessionId} while preserving ${preserveUrls.length} files`);
+      // Get all existing gallery image URLs to always preserve
+      const existingGalleryImages = Array.isArray(projectGallery) 
+        ? projectGallery.map(img => img.imageUrl).filter(Boolean)
+        : [];
+      
+      // Combine with provided preserveUrls to ensure we NEVER delete existing gallery images
+      // Combine arrays and remove duplicates using a regular array approach to avoid Set iteration issues
+      const combinedUrls = [...existingGalleryImages, ...preserveUrls];
+      const uniqueUrls: string[] = [];
+      
+      // Manually deduplicate
+      combinedUrls.forEach(url => {
+        if (url && !uniqueUrls.includes(url)) {
+          uniqueUrls.push(url);
+        }
+      });
+      
+      const allUrlsToPreserve = uniqueUrls;
+      
+      console.log(`[useProject] Cleaning up session ${sessionId}`);
+      console.log(`[useProject] Preserving ${allUrlsToPreserve.length} files (${existingGalleryImages.length} from gallery, ${preserveUrls.length} from params)`);
+      
+      if (allUrlsToPreserve.length > 0) {
+        console.log(`[useProject] URLs being preserved during cleanup:`, allUrlsToPreserve);
       }
 
       const data = await apiRequest({
@@ -332,13 +353,23 @@ export const useProject = (projectId?: number) => {
         method: 'POST',
         body: { 
           sessionId,
-          preserveUrls: preserveUrls.length > 0 ? preserveUrls : undefined
+          preserveUrls: allUrlsToPreserve.length > 0 ? allUrlsToPreserve : undefined
         }
       });
       
-      // Log the result
+      // Log the result with detailed information
       if (data.success) {
-        console.log(`Cleanup result: ${data.deletedCount} deleted, ${data.preservedCount} preserved, ${data.failedCount} failed`);
+        console.log(`[useProject] Cleanup result for session ${sessionId}: ${data.deletedCount} deleted, ${data.preservedCount} preserved, ${data.failedCount} failed`);
+        
+        if (data.deletedCount > 0 && data.deletedFiles) {
+          console.log(`[useProject] Deleted files:`, data.deletedFiles);
+        }
+        
+        if (data.preservedCount > 0 && data.preservedFiles) {
+          console.log(`[useProject] Preserved files:`, data.preservedFiles);
+        }
+      } else {
+        console.log(`[useProject] Cleanup failed for session ${sessionId}`);
       }
       
       // Remove this session from tracked sessions on success
@@ -352,7 +383,7 @@ export const useProject = (projectId?: number) => {
       
       return data.success;
     } catch (error) {
-      console.error('Error cleaning up uploads:', error);
+      console.error('[useProject] Error cleaning up uploads:', error);
       return false;
     }
   };
