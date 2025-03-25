@@ -713,37 +713,38 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
             <h4 className="font-medium">Project Images ({currentImageCount}/{MAX_GALLERY_IMAGES})</h4>
             <div className="flex items-center gap-3">
               {(pendingImages.length > 0 || modifiedCaptions.size > 0 || modifiedOrders.size > 0) && (
-                <div className="flex items-center text-amber-600 text-sm">
-                  <AlertCircle className="h-4 w-4 mr-1" />
-                  <span>Unsaved gallery changes</span>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center text-amber-600 text-sm">
+                    <AlertCircle className="h-4 w-4 mr-1" />
+                    <span>Unsaved gallery changes</span>
+                  </div>
+                  <Button 
+                    size="sm" 
+                    variant="secondary"
+                    onClick={async (e) => {
+                      e.preventDefault();
+                      try {
+                        console.log("Save Images button clicked. pendingImages:", pendingImages.length);
+                        await saveGalleryImages();
+                      } catch (error) {
+                        console.error("Error saving gallery images:", error);
+                      }
+                    }}
+                    disabled={isUploading}
+                  >
+                    {isUploading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <ImagePlus className="h-4 w-4 mr-1" />
+                        Save Images
+                      </>
+                    )}
+                  </Button>
                 </div>
-              )}
-              {pendingImages.length > 0 && (
-                <Button 
-                  size="sm" 
-                  variant="secondary"
-                  onClick={async (e) => {
-                    e.preventDefault();
-                    try {
-                      await saveGalleryImages();
-                    } catch (error) {
-                      console.error("Error saving gallery images:", error);
-                    }
-                  }}
-                  disabled={isUploading}
-                >
-                  {isUploading ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    <>
-                      <ImagePlus className="h-4 w-4 mr-1" />
-                      Save Images
-                    </>
-                  )}
-                </Button>
               )}
             </div>
           </div>
@@ -777,12 +778,14 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
                   
                   // Process the selected files and pass the session ID
                   console.log(`Passing ${urls.length} URLs to handleFileUpload with sessionId: ${sessionId}`);
+                  console.log(`Current pendingImages count: ${pendingImages.length}`);
                   
                   // First, immediately commit these files to prevent them from being deleted
                   commitUploads(sessionId, urls).then(() => {
                     console.log(`Successfully committed files for session ${sessionId}`);
                     // Then handle the file upload with the URLs
                     handleFileUpload(urls);
+                    console.log(`After handleFileUpload, pendingImages count should be updated. Current state: ${pendingImages.length}`);
                   }).catch(error => {
                     console.error(`Error committing files for session ${sessionId}:`, error);
                     // Still try to handle the file upload in case of error
