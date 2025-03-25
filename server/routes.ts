@@ -773,19 +773,107 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Update gallery images if provided
       if (galleryImages) {
-        // First remove all existing gallery images
-        await storage.deleteAllBlogGalleryImages(id);
+        console.log(`[BLOG] Processing ${galleryImages.length} gallery images for blog post ${id}`);
         
-        // Then add the new gallery images
-        if (galleryImages.length > 0) {
-          for (let i = 0; i < galleryImages.length; i++) {
-            const galleryImage = {
+        // Get existing gallery for comparison
+        const existingGallery = await storage.getBlogGallery(id);
+        console.log(`[BLOG] Existing gallery has ${existingGallery.length} images`);
+        
+        // Map existing images by ID and URL for quick lookup
+        const existingImagesById = new Map();
+        const existingImagesByUrl = new Map();
+        
+        existingGallery.forEach(img => {
+          if (img.id) {
+            existingImagesById.set(img.id, img);
+          }
+          if (img.imageUrl) {
+            existingImagesByUrl.set(img.imageUrl, img);
+          }
+        });
+        
+        // Track which existing images are being kept
+        const keptImageIds = new Set();
+        
+        // First pass: identify which images to keep and which to add
+        const imagesToAdd = [];
+        
+        for (let i = 0; i < galleryImages.length; i++) {
+          const image = galleryImages[i];
+          
+          // Check if this is an existing image by ID
+          if (image.id && existingImagesById.has(image.id)) {
+            keptImageIds.add(image.id);
+            continue;
+          }
+          
+          // Check if this is an existing image by URL
+          if (image.imageUrl && existingImagesByUrl.has(image.imageUrl)) {
+            const existingImage = existingImagesByUrl.get(image.imageUrl);
+            keptImageIds.add(existingImage.id);
+            continue;
+          }
+          
+          // This is a new image to add
+          if (image.imageUrl) {
+            imagesToAdd.push({
               postId: id,
-              imageUrl: galleryImages[i].imageUrl,
-              caption: galleryImages[i].caption || null,
-              order: galleryImages[i].order || i // Use provided order or index as default
-            };
-            await storage.addBlogGalleryImage(galleryImage);
+              imageUrl: image.imageUrl,
+              caption: image.caption || null,
+              order: image.order || i // Use provided order or index as default
+            });
+          }
+        }
+        
+        // Identify images to delete (those not being kept)
+        const imagesToDelete = existingGallery
+          .filter(img => !keptImageIds.has(img.id))
+          .map(img => img.id);
+        
+        console.log(`[BLOG] Found ${imagesToDelete.length} images to delete and ${imagesToAdd.length} images to add`);
+        
+        // Delete images that are no longer needed
+        for (const idToDelete of imagesToDelete) {
+          await storage.deleteBlogGalleryImage(idToDelete);
+        }
+        
+        // Add new images
+        for (const imageToAdd of imagesToAdd) {
+          await storage.addBlogGalleryImage(imageToAdd);
+        }
+        
+        // Update existing images if needed
+        for (let i = 0; i < galleryImages.length; i++) {
+          const image = galleryImages[i];
+          
+          if (image.id && existingImagesById.has(image.id)) {
+            const existingImage = existingImagesById.get(image.id);
+            const caption = image.caption || null;
+            const order = image.order || i;
+            
+            // Only update if something has changed
+            if (existingImage.caption !== caption || existingImage.order !== order) {
+              console.log(`[BLOG] Updating image ${image.id} with new caption or order`);
+              
+              await storage.updateBlogGalleryImage(image.id, {
+                caption,
+                order
+              });
+            }
+          } else if (image.imageUrl && existingImagesByUrl.has(image.imageUrl)) {
+            const existingImage = existingImagesByUrl.get(image.imageUrl);
+            const caption = image.caption || null;
+            const order = image.order || i;
+            
+            // Only update if something has changed
+            if (existingImage.caption !== caption || existingImage.order !== order) {
+              console.log(`[BLOG] Updating image with URL ${image.imageUrl.substring(0, 30)}... with new caption or order`);
+              
+              await storage.updateBlogGalleryImage(existingImage.id, {
+                caption,
+                order
+              });
+            }
           }
         }
       }
@@ -879,11 +967,122 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid service ID" });
       }
       
-      const serviceData = insertServiceSchema.partial().parse(req.body);
-      const updatedService = await storage.updateService(id, serviceData);
+      // Extract gallery images from the request body
+      const { galleryImages, ...serviceData } = req.body;
+      
+      // Update the service data
+      const validatedServiceData = insertServiceSchema.partial().parse(serviceData);
+      const updatedService = await storage.updateService(id, validatedServiceData);
       
       if (!updatedService) {
         return res.status(404).json({ message: "Service not found" });
+      }
+      
+      // Process gallery images if provided
+      if (galleryImages && Array.isArray(galleryImages)) {
+        console.log(`[SERVICE] Processing ${galleryImages.length} gallery images for service ${id}`);
+        
+        // Get existing gallery for comparison
+        const existingGallery = await storage.getServiceGallery(id);
+        console.log(`[SERVICE] Existing gallery has ${existingGallery.length} images`);
+        
+        // Map existing images by ID and URL for quick lookup
+        const existingImagesById = new Map();
+        const existingImagesByUrl = new Map();
+        
+        existingGallery.forEach(img => {
+          if (img.id) {
+            existingImagesById.set(img.id, img);
+          }
+          if (img.imageUrl) {
+            existingImagesByUrl.set(img.imageUrl, img);
+          }
+        });
+        
+        // Track which existing images are being kept
+        const keptImageIds = new Set();
+        
+        // First pass: identify which images to keep and which to add
+        const imagesToAdd = [];
+        
+        for (let i = 0; i < galleryImages.length; i++) {
+          const image = galleryImages[i];
+          
+          // Check if this is an existing image by ID
+          if (image.id && existingImagesById.has(image.id)) {
+            keptImageIds.add(image.id);
+            continue;
+          }
+          
+          // Check if this is an existing image by URL
+          if (image.imageUrl && existingImagesByUrl.has(image.imageUrl)) {
+            const existingImage = existingImagesByUrl.get(image.imageUrl);
+            keptImageIds.add(existingImage.id);
+            continue;
+          }
+          
+          // This is a new image to add
+          if (image.imageUrl) {
+            imagesToAdd.push({
+              serviceId: id,
+              imageUrl: image.imageUrl,
+              alt: image.alt || '',
+              order: image.order || i + 1 // Use provided order or index as default
+            });
+          }
+        }
+        
+        // Identify images to delete (those not being kept)
+        const imagesToDelete = existingGallery
+          .filter(img => !keptImageIds.has(img.id))
+          .map(img => img.id);
+        
+        console.log(`[SERVICE] Found ${imagesToDelete.length} images to delete and ${imagesToAdd.length} images to add`);
+        
+        // Delete images that are no longer needed
+        for (const idToDelete of imagesToDelete) {
+          await storage.deleteServiceGalleryImage(idToDelete);
+        }
+        
+        // Add new images
+        for (const imageToAdd of imagesToAdd) {
+          await storage.addServiceGalleryImage(imageToAdd);
+        }
+        
+        // Update existing images if needed
+        for (let i = 0; i < galleryImages.length; i++) {
+          const image = galleryImages[i];
+          
+          if (image.id && existingImagesById.has(image.id)) {
+            const existingImage = existingImagesById.get(image.id);
+            const alt = image.alt || '';
+            const order = image.order || i + 1;
+            
+            // Only update if something has changed
+            if (existingImage.alt !== alt || existingImage.order !== order) {
+              console.log(`[SERVICE] Updating image ${image.id} with new alt or order`);
+              
+              await storage.updateServiceGalleryImage(image.id, {
+                alt,
+                order
+              });
+            }
+          } else if (image.imageUrl && existingImagesByUrl.has(image.imageUrl)) {
+            const existingImage = existingImagesByUrl.get(image.imageUrl);
+            const alt = image.alt || '';
+            const order = image.order || i + 1;
+            
+            // Only update if something has changed
+            if (existingImage.alt !== alt || existingImage.order !== order) {
+              console.log(`[SERVICE] Updating image with URL ${image.imageUrl.substring(0, 30)}... with new alt or order`);
+              
+              await storage.updateServiceGalleryImage(existingImage.id, {
+                alt,
+                order
+              });
+            }
+          }
+        }
       }
       
       res.json(updatedService);
@@ -891,6 +1090,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid service data", errors: error.errors });
       }
+      console.error("Error updating service:", error);
       res.status(500).json({ message: "Failed to update service" });
     }
   });
