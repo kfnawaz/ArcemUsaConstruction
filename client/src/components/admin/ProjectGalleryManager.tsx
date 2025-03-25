@@ -711,12 +711,41 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
         <div className="p-4 border rounded-md bg-muted/20">
           <div className="flex items-center justify-between mb-3">
             <h4 className="font-medium">Project Images ({currentImageCount}/{MAX_GALLERY_IMAGES})</h4>
-            {(pendingImages.length > 0 || modifiedCaptions.size > 0 || modifiedOrders.size > 0) && (
-              <div className="flex items-center text-amber-600 text-sm">
-                <AlertCircle className="h-4 w-4 mr-1" />
-                <span>Unsaved gallery changes</span>
-              </div>
-            )}
+            <div className="flex items-center gap-3">
+              {(pendingImages.length > 0 || modifiedCaptions.size > 0 || modifiedOrders.size > 0) && (
+                <div className="flex items-center text-amber-600 text-sm">
+                  <AlertCircle className="h-4 w-4 mr-1" />
+                  <span>Unsaved gallery changes</span>
+                </div>
+              )}
+              {pendingImages.length > 0 && (
+                <Button 
+                  size="sm" 
+                  variant="secondary"
+                  onClick={async (e) => {
+                    e.preventDefault();
+                    try {
+                      await saveGalleryImages();
+                    } catch (error) {
+                      console.error("Error saving gallery images:", error);
+                    }
+                  }}
+                  disabled={isUploading}
+                >
+                  {isUploading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <ImagePlus className="h-4 w-4 mr-1" />
+                      Save Images
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
           </div>
           
           {canAddMoreImages ? (
