@@ -335,12 +335,36 @@ export class DBStorage implements IStorage {
     // First get all gallery images for this post
     const imagesToDelete = await db.select().from(blogGallery).where(eq(blogGallery.postId, postId));
     
-    // Delete each image from UploadThing if applicable
+    console.log(`[dbStorage] Processing deletion of all gallery images for blog post ${postId} (${imagesToDelete.length} images)`);
+    
+    // Check and delete each image safely
     for (const image of imagesToDelete) {
-      await FileManager.deleteFile(image.imageUrl);
+      const imageUrl = image.imageUrl;
+      
+      // Check if this image is used elsewhere (other blog posts, or as main image)
+      const otherImagesWithSameUrl = await db.select().from(blogGallery)
+        .where(and(
+          ne(blogGallery.postId, postId),
+          eq(blogGallery.imageUrl, imageUrl)
+        ));
+      
+      const postsWithSameImage = await db.select().from(blogPosts)
+        .where(and(
+          ne(blogPosts.id, postId),
+          eq(blogPosts.image, imageUrl)
+        ));
+      
+      const isImageUsedElsewhere = otherImagesWithSameUrl.length > 0 || postsWithSameImage.length > 0;
+      
+      if (isImageUsedElsewhere) {
+        console.log(`[dbStorage] Preserving file ${imageUrl} as it's used elsewhere in the system`);
+      } else {
+        console.log(`[dbStorage] File ${imageUrl} is not used elsewhere, deleting from storage`);
+        await FileManager.deleteFile(imageUrl);
+      }
     }
     
-    // Then delete from database
+    // Delete all gallery entries from database
     const result = await db.delete(blogGallery)
       .where(eq(blogGallery.postId, postId))
       .returning();
@@ -615,12 +639,40 @@ export class DBStorage implements IStorage {
     // First get all gallery images for this service
     const imagesToDelete = await db.select().from(serviceGallery).where(eq(serviceGallery.serviceId, serviceId));
     
-    // Delete each image from UploadThing if applicable
+    console.log(`[dbStorage] Processing deletion of all gallery images for service ${serviceId} (${imagesToDelete.length} images)`);
+    
+    // Check and delete each image safely
     for (const image of imagesToDelete) {
-      await FileManager.deleteFile(image.imageUrl);
+      const imageUrl = image.imageUrl;
+      
+      // Check if this image is used elsewhere in other service galleries
+      const otherImagesWithSameUrl = await db.select().from(serviceGallery)
+        .where(and(
+          ne(serviceGallery.serviceId, serviceId),
+          eq(serviceGallery.imageUrl, imageUrl)
+        ));
+      
+      // Also check if this image is used in other galleries (projects, blogs)
+      const projectGalleryWithSameUrl = await db.select().from(projectGallery)
+        .where(eq(projectGallery.imageUrl, imageUrl));
+        
+      const blogGalleryWithSameUrl = await db.select().from(blogGallery)
+        .where(eq(blogGallery.imageUrl, imageUrl));
+      
+      const isImageUsedElsewhere = 
+        otherImagesWithSameUrl.length > 0 || 
+        projectGalleryWithSameUrl.length > 0 || 
+        blogGalleryWithSameUrl.length > 0;
+      
+      if (isImageUsedElsewhere) {
+        console.log(`[dbStorage] Preserving file ${imageUrl} as it's used elsewhere in the system`);
+      } else {
+        console.log(`[dbStorage] File ${imageUrl} is not used elsewhere, deleting from storage`);
+        await FileManager.deleteFile(imageUrl);
+      }
     }
     
-    // Then delete from database
+    // Delete all gallery entries from database
     const result = await db.delete(serviceGallery)
       .where(eq(serviceGallery.serviceId, serviceId))
       .returning();
