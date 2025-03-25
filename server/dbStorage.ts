@@ -24,7 +24,7 @@ import {
   type TeamMember, type InsertTeamMember
 } from "../shared/schema";
 import { IStorage } from "./storage";
-import { FileManager } from './utils/fileManager';
+import { FileManager, extractUploadThingKeyFromUrl } from './utils/fileManager';
 
 export class DBStorage implements IStorage {
   // Users
@@ -178,14 +178,26 @@ export class DBStorage implements IStorage {
       
       console.log(`[dbStorage] Processing deletion of project gallery image (ID: ${id}, project: ${projectId})`);
       
-      // IMPORTANT CHANGE: Always preserve files when deleting individual entries
-      // This is safer because we can't reliably know if the file is shared elsewhere
-      // in scenarios where we've deleted other entries already
-      // Only permanently delete files via dedicated cleanup jobs
+      // Check if this image is used elsewhere before deleting it from UploadThing
+      const isUsedElsewhere = await this.isImageUsedElsewhere(imageUrl, id, projectId);
       
-      console.log(`[dbStorage] Preserving file ${imageUrl} as it could potentially be referenced elsewhere`);
+      if (isUsedElsewhere) {
+        console.log(`[dbStorage] Preserving file ${imageUrl} as it is referenced elsewhere`);
+      } else {
+        console.log(`[dbStorage] Image not used elsewhere, deleting from UploadThing: ${imageUrl}`);
+        // Extract UploadThing key and delete the file
+        const key = extractUploadThingKeyFromUrl(imageUrl);
+        if (key) {
+          try {
+            console.log(`[dbStorage] Deleting UploadThing file with key: ${key}`);
+            await FileManager.deleteFile(imageUrl);
+          } catch (error) {
+            console.error(`[dbStorage] Error deleting file from UploadThing:`, error);
+          }
+        }
+      }
       
-      // Only delete from database but preserve the file
+      // Delete from database
       const result = await db.delete(projectGallery).where(eq(projectGallery.id, id)).returning();
       return result.length > 0;
     }
@@ -332,14 +344,26 @@ export class DBStorage implements IStorage {
       
       console.log(`[dbStorage] Processing deletion of blog gallery image (ID: ${id}, post: ${postId})`);
       
-      // IMPORTANT CHANGE: Always preserve files when deleting individual entries
-      // This is safer because we can't reliably know if the file is shared elsewhere
-      // in scenarios where we've deleted other entries already
-      // Only permanently delete files via dedicated cleanup jobs
+      // Check if this image is used elsewhere before deleting it from UploadThing
+      const isUsedElsewhere = await this.isImageUsedElsewhere(imageUrl, id);
       
-      console.log(`[dbStorage] Preserving file ${imageUrl} as it could potentially be referenced elsewhere`);
+      if (isUsedElsewhere) {
+        console.log(`[dbStorage] Preserving file ${imageUrl} as it is referenced elsewhere`);
+      } else {
+        console.log(`[dbStorage] Image not used elsewhere, deleting from UploadThing: ${imageUrl}`);
+        // Extract UploadThing key and delete the file
+        const key = extractUploadThingKeyFromUrl(imageUrl);
+        if (key) {
+          try {
+            console.log(`[dbStorage] Deleting UploadThing file with key: ${key}`);
+            await FileManager.deleteFile(imageUrl);
+          } catch (error) {
+            console.error(`[dbStorage] Error deleting file from UploadThing:`, error);
+          }
+        }
+      }
       
-      // Only delete from database but preserve the file
+      // Delete from database
       const result = await db.delete(blogGallery).where(eq(blogGallery.id, id)).returning();
       return result.length > 0;
     }
@@ -619,14 +643,26 @@ export class DBStorage implements IStorage {
       
       console.log(`[dbStorage] Processing deletion of service gallery image (ID: ${id}, service: ${serviceId})`);
       
-      // IMPORTANT CHANGE: Always preserve files when deleting individual entries
-      // This is safer because we can't reliably know if the file is shared elsewhere
-      // in scenarios where we've deleted other entries already
-      // Only permanently delete files via dedicated cleanup jobs
+      // Check if this image is used elsewhere before deleting it from UploadThing
+      const isUsedElsewhere = await this.isImageUsedElsewhere(imageUrl, id);
       
-      console.log(`[dbStorage] Preserving file ${imageUrl} as it could potentially be referenced elsewhere`);
+      if (isUsedElsewhere) {
+        console.log(`[dbStorage] Preserving file ${imageUrl} as it is referenced elsewhere`);
+      } else {
+        console.log(`[dbStorage] Image not used elsewhere, deleting from UploadThing: ${imageUrl}`);
+        // Extract UploadThing key and delete the file
+        const key = extractUploadThingKeyFromUrl(imageUrl);
+        if (key) {
+          try {
+            console.log(`[dbStorage] Deleting UploadThing file with key: ${key}`);
+            await FileManager.deleteFile(imageUrl);
+          } catch (error) {
+            console.error(`[dbStorage] Error deleting file from UploadThing:`, error);
+          }
+        }
+      }
       
-      // Only delete from database but preserve the file
+      // Delete from database
       const result = await db.delete(serviceGallery).where(eq(serviceGallery.id, id)).returning();
       return result.length > 0;
     }
