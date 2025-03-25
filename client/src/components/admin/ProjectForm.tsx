@@ -266,11 +266,43 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
   const saveProject = async (data: InsertProject) => {
     try {
       if (projectId) {
-        // Update existing project
+        console.log("Updating existing project:", projectId);
+        
+        // For existing projects, we need to make sure existing images aren't deleted
+        
+        // 1. Get the current project data to preserve its images
+        if (project) {
+          const existingImageUrl = project.image;
+          
+          // If the project has an existing feature image, make sure it's preserved
+          // (unless it's being explicitly replaced)
+          if (existingImageUrl && existingImageUrl !== data.image) {
+            console.log(`[ProjectForm] Preserving existing project feature image: ${existingImageUrl}`);
+            
+            // Commit all sessions to preserve this image
+            uploadSessions.forEach(sessionId => {
+              fileUtils.commitFiles(sessionId, [existingImageUrl]);
+            });
+          }
+        }
+        
+        // 2. Get any existing gallery images to preserve
+        if (projectGallery && projectGallery.length > 0) {
+          const galleryUrls = projectGallery.map(img => img.imageUrl).filter(Boolean);
+          console.log(`[ProjectForm] Preserving ${galleryUrls.length} existing gallery images`);
+          
+          // Commit all sessions with these gallery URLs to make sure they aren't deleted
+          uploadSessions.forEach(sessionId => {
+            fileUtils.commitFiles(sessionId, galleryUrls);
+          });
+        }
+        
+        // 3. Update the project
         await updateProject(projectId, data);
         return { id: projectId }; // Return project id for consistency
       } else {
         // Create new project
+        console.log("Creating new project");
         let createdProject;
 
         // Check if we have pending gallery images to include with the project
