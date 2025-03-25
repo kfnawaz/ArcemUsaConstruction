@@ -418,20 +418,42 @@ export const useProject = (projectId?: number) => {
   // Create a separate function for updateProject
   const updateProject = async (id: number, data: Partial<InsertProject>): Promise<any> => {
     // First, extract the existing image URLs that need to be preserved
-    const currentProject = await querySingleProject.refetch();
-    const projectData = currentProject.data;
-    
-    // Make sure we have the current project data before proceeding
-    if (!projectData) {
-      console.error("[useProject] Error: Cannot find current project data for preservation");
-    } else {
-      // If we have an existing image, make sure it gets preserved during cleanup
-      if (projectData.image) {
-        console.log(`[useProject] Will preserve current feature image during update: ${projectData.image}`);
-        // Ensure the current image is preserved across sessions
-        for (const sessionId of Array.from(uploadSessions)) {
-          await commitUploads(sessionId, [projectData.image]);
+    // Use the getProject query we already have
+    if (id === projectId) {
+      // If the current project ID matches the requested one, use the existing project data
+      const projectData = project;
+      
+      // Make sure we have the current project data before proceeding
+      if (!projectData) {
+        console.error("[useProject] Error: Cannot find current project data for preservation");
+      } else {
+        // If we have an existing image, make sure it gets preserved during cleanup
+        if (projectData.image) {
+          console.log(`[useProject] Will preserve current feature image during update: ${projectData.image}`);
+          // Ensure the current image is preserved across sessions
+          for (const sessionId of Array.from(uploadSessions)) {
+            await commitUploads(sessionId, [projectData.image]);
+          }
         }
+      }
+    } else {
+      // For a different project ID, we need to fetch its data
+      console.log(`[useProject] Fetching project ${id} data for image preservation`);
+      try {
+        // Direct API call to get the project data
+        const fetchedProject = await apiRequest({
+          url: `/api/projects/${id}`,
+          method: 'GET'
+        });
+        
+        if (fetchedProject && fetchedProject.image) {
+          console.log(`[useProject] Will preserve fetched project image: ${fetchedProject.image}`);
+          for (const sessionId of Array.from(uploadSessions)) {
+            await commitUploads(sessionId, [fetchedProject.image]);
+          }
+        }
+      } catch (error) {
+        console.error(`[useProject] Error fetching project ${id} data:`, error);
       }
     }
     
