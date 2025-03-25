@@ -164,108 +164,144 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Process gallery images if provided
       if (galleryImages && Array.isArray(galleryImages)) {
-        console.log(`Processing ${galleryImages.length} gallery images for project ${id}`);
+        console.log(`[PROJECT UPDATE] Processing ${galleryImages.length} gallery images for project ${id}`);
         
         // Get existing gallery for comparison
         const existingGallery = await storage.getProjectGallery(id);
-        console.log(`Existing gallery has ${existingGallery.length} images`);
+        console.log(`[PROJECT UPDATE] Existing gallery has ${existingGallery.length} images`);
         
-        // Extract IDs from images that have 'existing-' prefix in their ID
-        const existingIds = existingGallery.map(img => img.id);
-        const updatedIds = galleryImages
-          .filter(img => img.id && img.id.toString().startsWith('existing-'))
-          .map(img => parseInt(img.id.toString().replace('existing-', '')));
-        
-        // Keep track of changed images to avoid unnecessary updates
-        const updatedImageMap = new Map();
-        galleryImages.forEach((img, index) => {
-          if (img.id && img.id.toString().startsWith('existing-')) {
-            const imageId = parseInt(img.id.toString().replace('existing-', ''));
-            updatedImageMap.set(imageId, {
-              caption: img.caption || '',
-              displayOrder: index + 1,
-              isFeature: img.isFeature === true
-            });
+        // Create a map of existing gallery images by URL for efficient lookups
+        const existingImagesByUrl = new Map();
+        existingGallery.forEach(img => {
+          if (img.imageUrl) {
+            existingImagesByUrl.set(img.imageUrl, img);
           }
         });
         
-        // Find existing images that need to be deleted (no longer included)
-        const idsToDelete = existingIds.filter(existingId => !updatedIds.includes(existingId));
-        console.log(`Found ${idsToDelete.length} images to delete`);
+        // Filter out existing images based on ID ('existing-' prefix) and really new images by URL
+        const updatedExistingImages = [];
+        const trulyNewImages = [];
         
-        // Delete removed images
+        // First pass - categorize images as existing or truly new
+        for (let i = 0; i < galleryImages.length; i++) {
+          const image = galleryImages[i];
+          const displayOrder = i + 1; // Maintain ordering by position in array
+          
+          if (image.id && image.id.toString().startsWith('existing-')) {
+            // This is an existing image with an existing-ID format
+            const imageId = parseInt(image.id.toString().replace('existing-', ''));
+            updatedExistingImages.push({
+              id: imageId,
+              caption: image.caption || '',
+              displayOrder,
+              isFeature: image.isFeature === true
+            });
+          } else if (image.imageUrl) {
+            // Check if this image URL is already in the existing gallery
+            const existingImage = existingImagesByUrl.get(image.imageUrl);
+            
+            if (existingImage) {
+              // This is an existing image by URL, not ID
+              console.log(`[PROJECT UPDATE] Found existing image by URL: ${image.imageUrl.substring(0, 30)}...`);
+              updatedExistingImages.push({
+                id: existingImage.id,
+                caption: image.caption || '',
+                displayOrder,
+                isFeature: image.isFeature === true
+              });
+            } else {
+              // This is truly a new image that needs to be created
+              console.log(`[PROJECT UPDATE] Identified new image: ${image.imageUrl.substring(0, 30)}...`);
+              trulyNewImages.push({
+                imageUrl: image.imageUrl,
+                caption: image.caption || '',
+                displayOrder,
+                isFeature: image.isFeature === true
+              });
+            }
+          }
+        }
+        
+        console.log(`[PROJECT UPDATE] Found ${updatedExistingImages.length} existing images to update and ${trulyNewImages.length} new images to add`);
+        
+        // Create a set of existing image IDs to keep
+        const existingIdsToKeep = new Set(updatedExistingImages.map(img => img.id));
+        
+        // Find IDs to delete (images that are no longer included)
+        const idsToDelete = existingGallery
+          .filter(img => !existingIdsToKeep.has(img.id))
+          .map(img => img.id);
+        
+        console.log(`[PROJECT UPDATE] Found ${idsToDelete.length} images to delete`);
+        
+        // Step 1: Delete removed images
         for (const idToDelete of idsToDelete) {
+          console.log(`[PROJECT UPDATE] Deleting image ${idToDelete}`);
           await storage.deleteProjectGalleryImage(idToDelete);
         }
         
-        // Update only if necessary and add new images
+        // Step 2: Update existing images
         let hasFeatureImage = false;
         
-        for (let i = 0; i < galleryImages.length; i++) {
-          const image = galleryImages[i];
+        for (const image of updatedExistingImages) {
+          const existingImage = existingGallery.find(img => img.id === image.id);
           
-          // Check if this is an existing image that needs to be updated
-          if (image.id && image.id.toString().startsWith('existing-')) {
-            const imageId = parseInt(image.id.toString().replace('existing-', ''));
-            const existingImage = existingGallery.find(img => img.id === imageId);
+          if (existingImage) {
+            // Check if any properties have actually changed
+            const captionChanged = existingImage.caption !== image.caption;
+            const orderChanged = existingImage.displayOrder !== image.displayOrder;
+            const featureChanged = existingImage.isFeature !== image.isFeature;
             
-            if (existingImage) {
-              // Check if any properties have actually changed
-              const caption = image.caption || '';
-              const displayOrder = i + 1;
-              const isFeature = image.isFeature === true;
+            // Only update if something has changed
+            if (captionChanged || orderChanged || featureChanged) {
+              console.log(`[PROJECT UPDATE] Updating image ${image.id} - changes: caption=${captionChanged}, order=${orderChanged}, feature=${featureChanged}`);
               
-              const captionChanged = existingImage.caption !== caption;
-              const orderChanged = existingImage.displayOrder !== displayOrder;
-              const featureChanged = existingImage.isFeature !== isFeature;
-              
-              // Only update if something has changed
-              if (captionChanged || orderChanged || featureChanged) {
-                console.log(`Updating image ${imageId} - changes: caption=${captionChanged}, order=${orderChanged}, feature=${featureChanged}`);
-                
-                await storage.updateProjectGalleryImage(imageId, {
-                  caption,
-                  displayOrder,
-                  isFeature
-                });
-              } else {
-                console.log(`No changes for image ${imageId}, skipping update`);
-              }
-              
-              // Set as feature image if marked
-              if (isFeature) {
-                hasFeatureImage = true;
-                
-                if (!existingImage.isFeature) {
-                  console.log(`Setting image ${imageId} as feature image`);
-                  await storage.setProjectFeatureImage(id, imageId);
-                }
-              }
+              await storage.updateProjectGalleryImage(image.id, {
+                caption: image.caption,
+                displayOrder: image.displayOrder,
+                isFeature: image.isFeature
+              });
+            } else {
+              console.log(`[PROJECT UPDATE] No changes for image ${image.id}, skipping update`);
             }
-          } else if (image.imageUrl) {
-            // This is a new image to add
-            console.log(`Adding new image: ${image.imageUrl.substring(0, 50)}...`);
             
-            const newImage = await storage.addProjectGalleryImage({
-              projectId: id,
-              imageUrl: image.imageUrl,
-              caption: image.caption || '',
-              displayOrder: i + 1,
-              isFeature: image.isFeature === true
-            });
-            
-            if (image.isFeature === true) {
+            // Set as feature image if marked
+            if (image.isFeature) {
               hasFeatureImage = true;
+              
+              if (!existingImage.isFeature) {
+                console.log(`[PROJECT UPDATE] Setting image ${image.id} as feature image`);
+                await storage.setProjectFeatureImage(id, image.id);
+              }
             }
+          }
+        }
+        
+        // Step 3: Add new images
+        for (const newImage of trulyNewImages) {
+          console.log(`[PROJECT UPDATE] Adding new image: ${newImage.imageUrl.substring(0, 50)}...`);
+          
+          const addedImage = await storage.addProjectGalleryImage({
+            projectId: id,
+            imageUrl: newImage.imageUrl,
+            caption: newImage.caption,
+            displayOrder: newImage.displayOrder,
+            isFeature: newImage.isFeature
+          });
+          
+          if (newImage.isFeature) {
+            hasFeatureImage = true;
+            console.log(`[PROJECT UPDATE] Setting new image ${addedImage.id} as feature image`);
+            await storage.setProjectFeatureImage(id, addedImage.id);
           }
         }
         
         // Make sure at least one image is marked as feature
-        if (!hasFeatureImage) {
+        if (!hasFeatureImage && (updatedExistingImages.length > 0 || trulyNewImages.length > 0)) {
           const updatedGallery = await storage.getProjectGallery(id);
           
           if (updatedGallery.length > 0) {
-            console.log(`No feature image set, using first image as feature`);
+            console.log(`[PROJECT UPDATE] No feature image set, using first image as feature`);
             await storage.setProjectFeatureImage(id, updatedGallery[0].id);
           }
         }
@@ -275,7 +311,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const updatedProject = await storage.getProject(id);
       res.json(updatedProject);
     } catch (error) {
-      console.error('Error updating project:', error);
+      console.error('[PROJECT UPDATE ERROR] Error updating project:', error);
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid project data", errors: error.errors });
       }
