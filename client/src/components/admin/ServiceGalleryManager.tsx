@@ -118,6 +118,8 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
         urls = [urls];
       }
       
+      console.log(`[ServiceGalleryManager handleFileUpload] Starting with ${pendingImages.length} pending images`);
+      
       // If we received a session ID, track it for cleanup
       if (sessionId) {
         setUploadSession(sessionId);
@@ -135,7 +137,17 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
         if (allowedToAdd > 0) {
           // Only add the allowed number of images
           const limitedUrls = urls.slice(0, allowedToAdd);
-          setPendingImages(prev => [...prev, ...limitedUrls]);
+          console.log(`[ServiceGalleryManager handleFileUpload] Adding ${limitedUrls.length} of ${urls.length} images (limited by max)`);
+          
+          // Create a new array with all the pending images to ensure state updates properly
+          const newPendingImages = [...pendingImages, ...limitedUrls];
+          setPendingImages(newPendingImages);
+          console.log(`[ServiceGalleryManager handleFileUpload] Updated pendingImages to ${newPendingImages.length} items`);
+          
+          // Force a re-render by scheduling a state update after component processes current updates
+          setTimeout(() => {
+            console.log(`[ServiceGalleryManager handleFileUpload] Forcing re-render check, pendingImages: ${newPendingImages.length}`);
+          }, 100);
           
           toast({
             title: 'Maximum images reached',
@@ -154,7 +166,17 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
         }
       } else {
         // We can add all the images
-        setPendingImages(prev => [...prev, ...urls]);
+        console.log(`[ServiceGalleryManager handleFileUpload] Adding all ${urls.length} images`);
+        
+        // Create a new array with all the pending images to ensure state updates properly
+        const newPendingImages = [...pendingImages, ...urls];
+        setPendingImages(newPendingImages);
+        console.log(`[ServiceGalleryManager handleFileUpload] Updated pendingImages to ${newPendingImages.length} items`);
+        
+        // Force a re-render by scheduling a state update after component processes current updates
+        setTimeout(() => {
+          console.log(`[ServiceGalleryManager handleFileUpload] Forcing re-render check, pendingImages: ${newPendingImages.length}`);
+        }, 100);
         
         toast({
           title: 'Images added',
