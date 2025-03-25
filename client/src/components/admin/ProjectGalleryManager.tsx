@@ -7,6 +7,7 @@ import {
   Trash2, Image, Loader2, AlertCircle, ArrowUp, ArrowDown, 
   GripVertical, Star, Upload, Plus, ImagePlus 
 } from 'lucide-react';
+import { apiRequest } from '@/lib/queryClient';
 import {
   Dialog,
   DialogContent,
@@ -274,7 +275,12 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
           displayOrder: nextOrder + idx
         }));
         
-        setPendingImages(prev => [...prev, ...newPendingImages]);
+        const updatedPendingImages = [...pendingImages, ...newPendingImages];
+        setPendingImages(updatedPendingImages);
+        
+        // Store pending images in localStorage for persistence
+        localStorage.setItem(`pendingImages_project_${projectId}`, JSON.stringify(updatedPendingImages));
+        console.log(`[handleFileUpload] Saved ${updatedPendingImages.length} pending images to localStorage`);
         
         toast({
           title: 'Images added',
@@ -285,7 +291,29 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
     
     // This function will be called by the ProjectManager when the project is saved
     const saveGalleryImages = async () => {
-      if (pendingImages.length === 0) return;
+      // DEBUGGING: Check current state
+      console.log(`[saveGalleryImages] Starting with ${pendingImages.length} pending images:`, 
+        pendingImages.map(img => ({ url: img.url.substring(0, 30) + '...', caption: img.caption }))
+      );
+      
+      // Also try to reload from localStorage in case state was lost
+      let loadedPendingImages = pendingImages;
+      if (pendingImages.length === 0) {
+        const savedPendingImages = localStorage.getItem(`pendingImages_project_${projectId}`);
+        if (savedPendingImages) {
+          try {
+            loadedPendingImages = JSON.parse(savedPendingImages);
+            console.log(`[saveGalleryImages] Loaded ${loadedPendingImages.length} pending images from localStorage`);
+          } catch (e) {
+            console.error("Error parsing saved pending images:", e);
+          }
+        }
+      }
+      
+      if (loadedPendingImages.length === 0) {
+        console.log("[saveGalleryImages] No pending images to save, exiting early");
+        return;
+      }
       
       setIsUploading(true);
       
@@ -295,7 +323,7 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
           // Just commit the uploads to prevent cleanup of saved files
           if (commitUploads && uploadSessions.size > 0) {
             // Get all file URLs to commit - ensure we're tracking these files
-            const fileUrls = pendingImages.map(img => img.url);
+            const fileUrls = loadedPendingImages.map(img => img.url);
             
             // Commit each session
             for (const sessionId of Array.from(uploadSessions)) {
@@ -306,7 +334,7 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
           
           toast({
             title: 'Images saved',
-            description: `${pendingImages.length} image${pendingImages.length > 1 ? 's' : ''} will be added after project creation.`,
+            description: `${loadedPendingImages.length} image${loadedPendingImages.length > 1 ? 's' : ''} will be added after project creation.`,
           });
           
           return;
@@ -314,16 +342,32 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
         
         // For existing projects, add each image to the gallery with caption and display order
         // Use dynamicProjectId instead of projectId to handle cases where the ID was updated after project creation
-        console.log(`Adding ${pendingImages.length} gallery images to project ${dynamicProjectId}`);
+        console.log(`Adding ${loadedPendingImages.length} gallery images to project ${dynamicProjectId}`);
         
-        // First, identify which images are truly new (not already in the gallery)
+        // First, get all existing gallery image URLs for comparison
+        console.log("[saveGalleryImages] Fetch current gallery for comparison");
+        const currentGallery = await apiRequest({
+          url: `/api/projects/${dynamicProjectId}/gallery`,
+          method: 'GET'
+        });
+        
+        const existingImageUrls = (currentGallery && Array.isArray(currentGallery))
+          ? currentGallery.map((img: any) => img.imageUrl || '')
+          : (projectGallery?.map(img => img.imageUrl) || []);
+        
+        console.log(`[saveGalleryImages] Found ${existingImageUrls.length} existing gallery images`);
+        
+        // Identify which images are truly new (not already in the gallery)
         // We'll use the image URL as the unique identifier
-        const existingImageUrls = projectGallery?.map(img => img.imageUrl) || [];
-        const newPendingImages = pendingImages.filter(pendingImg => 
-          !existingImageUrls.includes(pendingImg.url)
-        );
+        const newPendingImages = loadedPendingImages.filter(pendingImg => {
+          const isNew = !existingImageUrls.includes(pendingImg.url);
+          if (!isNew) {
+            console.log(`[saveGalleryImages] Image already exists in gallery: ${pendingImg.url.substring(0, 30)}...`);
+          }
+          return isNew;
+        });
         
-        console.log(`Found ${newPendingImages.length} new images to add (filtered from ${pendingImages.length} total pending)`);
+        console.log(`[saveGalleryImages] Found ${newPendingImages.length} new images to add (filtered from ${loadedPendingImages.length} total pending)`);
         
         // Only add truly new images to the database
         for (const pendingImage of newPendingImages) {
@@ -340,7 +384,7 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
             displayOrder: pendingImage.displayOrder,
           };
           
-          console.log("Saving gallery image to database:", galleryImage);
+          console.log(`[saveGalleryImages] Saving gallery image to database: ${pendingImage.url.substring(0, 30)}...`);
           await addProjectGalleryImage(galleryImage);
         }
         
