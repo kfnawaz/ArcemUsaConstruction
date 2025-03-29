@@ -36,7 +36,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
-import ProjectGalleryManager, { ProjectGalleryManagerHandle } from './ProjectGalleryManager';
+import ProjectGalleryManager, { ProjectGalleryManagerHandle } from './ProjectGalleryManagerFixed';
 import * as fileUtils from '@/lib/fileUtils';
 import UploadThingUploader from '@/components/common/UploadThingUploader';
 import {
