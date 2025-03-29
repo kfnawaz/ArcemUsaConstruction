@@ -38,6 +38,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import ProjectGalleryManager, { ProjectGalleryManagerHandle } from './ProjectGalleryManagerFixed';
+import EmergencyGallerySaveButton from './EmergencyGallerySaveButton';
 import * as fileUtils from '@/lib/fileUtils';
 import UploadThingUploader from '@/components/common/UploadThingUploader';
 import {
@@ -517,6 +518,21 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                 onSetAsPreview={handleSetAsPreview}
                 allowReordering={true}
               />
+              
+              {/* Emergency save button that operates independently from the gallery manager */}
+              {projectId ? (
+                <div className="mt-6 border-t pt-4 flex justify-center">
+                  <div className="bg-red-50 dark:bg-red-950/20 p-4 rounded-lg border border-red-200 dark:border-red-800 max-w-xl">
+                    <h5 className="text-center text-red-700 dark:text-red-400 font-semibold mb-2">Emergency Gallery Recovery</h5>
+                    <p className="text-sm text-red-600 dark:text-red-400 mb-3 text-center">
+                      If your gallery images aren't showing up after uploading, use this button to force-save them.
+                    </p>
+                    <div className="flex justify-center">
+                      <EmergencyGallerySaveButton projectId={projectId} />
+                    </div>
+                  </div>
+                </div>
+              ) : null}
             </div>
           </div>
         </div>
