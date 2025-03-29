@@ -230,6 +230,10 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
         urls = [urls];
       }
       
+      console.log(`[handleFileUpload] Starting upload process with ${urls.length} images`);
+      console.log(`[handleFileUpload] Current project ID: ${projectId}`);
+      console.log(`[handleFileUpload] Current pendingImages: ${pendingImages.length}`);
+      
       // Check if adding these images would exceed the limit
       const totalAfterAdd = currentImageCount + urls.length;
       
@@ -249,7 +253,16 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
             displayOrder: nextOrder + idx
           }));
           
-          setPendingImages(prev => [...prev, ...newPendingImages]);
+          console.log(`[handleFileUpload] Adding ${newPendingImages.length} limited images to pendingImages`);
+          
+          // Use a callback with the current state to ensure we're working with the latest data
+          setPendingImages(prev => {
+            const updatedPendingImages = [...prev, ...newPendingImages];
+            // Save to localStorage inside the callback to ensure we're using the updated state
+            console.log(`[handleFileUpload] Saving ${updatedPendingImages.length} pending images to localStorage (limited case)`);
+            localStorage.setItem(`pendingImages_project_${projectId}`, JSON.stringify(updatedPendingImages));
+            return updatedPendingImages;
+          });
           
           toast({
             title: 'Maximum images reached',
@@ -275,12 +288,16 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
           displayOrder: nextOrder + idx
         }));
         
-        const updatedPendingImages = [...pendingImages, ...newPendingImages];
-        setPendingImages(updatedPendingImages);
+        console.log(`[handleFileUpload] Adding ${newPendingImages.length} new images to pendingImages`);
         
-        // Store pending images in localStorage for persistence
-        localStorage.setItem(`pendingImages_project_${projectId}`, JSON.stringify(updatedPendingImages));
-        console.log(`[handleFileUpload] Saved ${updatedPendingImages.length} pending images to localStorage`);
+        // Use the callback form of setPendingImages to ensure we're working with the most up-to-date state
+        setPendingImages(prev => {
+          const updatedPendingImages = [...prev, ...newPendingImages];
+          // Store pending images in localStorage for persistence
+          console.log(`[handleFileUpload] Saving ${updatedPendingImages.length} pending images to localStorage`);
+          localStorage.setItem(`pendingImages_project_${projectId}`, JSON.stringify(updatedPendingImages));
+          return updatedPendingImages;
+        });
         
         toast({
           title: 'Images added',
@@ -764,12 +781,15 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
                 </div>
               )}
               
+              {/* Debugging message about button visibility */}
+              {console.log(`[RENDER] Save Gallery Images button should be visible: ${pendingImages.length > 0 ? 'YES' : 'NO'} (count: ${pendingImages.length})`)}
+              
               {/* Always show the Save Images button if we have pending images */}
-              {pendingImages.length > 0 && (
+              {pendingImages.length > 0 ? (
                 <Button 
                   size="default" 
                   variant="default"
-                  className="bg-primary hover:bg-primary/90 text-white font-medium px-4 py-2 animate-pulse"
+                  className="bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 animate-pulse border-2 border-green-400"
                   onClick={async (e) => {
                     e.preventDefault();
                     try {
@@ -833,7 +853,12 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
                     console.log(`Successfully committed files for session ${sessionId}`);
                     // Then handle the file upload with the URLs
                     handleFileUpload(urls);
-                    console.log(`After handleFileUpload, pendingImages count should be updated. Current state: ${pendingImages.length}`);
+                    // Add a small delay to check pendingImages after state update has processed
+                    setTimeout(() => {
+                      console.log(`[UPDATED STATE CHECK] pendingImages count after handleFileUpload: ${pendingImages.length}`);
+                      console.log(`[UPDATED STATE CHECK] pendingImages contents:`, pendingImages);
+                      console.log(`[UPDATED STATE CHECK] Save button should be visible: ${pendingImages.length > 0 ? 'YES' : 'NO'}`);
+                    }, 100);
                   }).catch(error => {
                     console.error(`Error committing files for session ${sessionId}:`, error);
                     // Still try to handle the file upload in case of error
