@@ -428,12 +428,50 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
             </div>
             
             {/* Use the gallery manager for both new and existing projects */}
-            <ProjectGalleryManager
-              ref={galleryManagerRef}
-              projectId={projectId || 0}
-              onSetAsPreview={handleSetAsPreview}
-              allowReordering={true}
-            />
+            <div className="space-y-4">
+              <ProjectGalleryManager
+                ref={galleryManagerRef}
+                projectId={projectId || 0}
+                onSetAsPreview={handleSetAsPreview}
+                allowReordering={true}
+              />
+              
+              {/* Explicit gallery save button */}
+              {projectId && (
+                <Button
+                  type="button"
+                  size="default"
+                  variant="default"
+                  className="bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 mt-3 border-2 border-green-400 animate-pulse"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (galleryManagerRef.current) {
+                      console.log("Manual save gallery images button clicked");
+                      galleryManagerRef.current.saveGalleryImages()
+                        .then(() => {
+                          toast({
+                            title: "Gallery images saved",
+                            description: "Your gallery images have been successfully saved.",
+                          });
+                        })
+                        .catch(error => {
+                          console.error("Error saving gallery images:", error);
+                          toast({
+                            title: "Error",
+                            description: "Failed to save gallery images. Please try again.",
+                            variant: "destructive"
+                          });
+                        });
+                    } else {
+                      console.error("Gallery manager ref is not available");
+                    }
+                  }}
+                >
+                  <ImagePlus className="h-5 w-5 mr-2" />
+                  Save Gallery Images
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </div>
