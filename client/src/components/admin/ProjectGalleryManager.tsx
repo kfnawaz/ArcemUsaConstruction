@@ -296,18 +296,43 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
         pendingImages.map(img => ({ url: img.url.substring(0, 30) + '...', caption: img.caption }))
       );
       
-      // Also try to reload from localStorage in case state was lost
-      let loadedPendingImages = pendingImages;
-      if (pendingImages.length === 0) {
-        const savedPendingImages = localStorage.getItem(`pendingImages_project_${projectId}`);
-        if (savedPendingImages) {
-          try {
-            loadedPendingImages = JSON.parse(savedPendingImages);
-            console.log(`[saveGalleryImages] Loaded ${loadedPendingImages.length} pending images from localStorage`);
-          } catch (e) {
-            console.error("Error parsing saved pending images:", e);
+      // Always check for images in localStorage (in case React state was lost)
+      let loadedPendingImages = [...pendingImages]; // Create a copy of the array
+      
+      // Try to load from localStorage regardless of what's in state
+      const savedPendingImages = localStorage.getItem(`pendingImages_project_${projectId}`);
+      if (savedPendingImages) {
+        try {
+          const parsedImages = JSON.parse(savedPendingImages) as PendingImage[];
+          console.log(`[saveGalleryImages] Loaded ${parsedImages.length} pending images from localStorage`);
+          
+          // If we found images in localStorage but not in state, use the localStorage ones
+          if (parsedImages.length > 0 && pendingImages.length === 0) {
+            loadedPendingImages = parsedImages;
+            console.log(`[saveGalleryImages] Using ${loadedPendingImages.length} images from localStorage instead of empty state`);
+          } 
+          // If we have images in both places, combine them (avoiding duplicates)
+          else if (parsedImages.length > 0 && pendingImages.length > 0) {
+            // Create a map of URLs we already have in state
+            const existingUrls = new Set(pendingImages.map(img => img.url));
+            
+            // Add any images from localStorage that aren't already in state
+            const newImages = parsedImages.filter(img => !existingUrls.has(img.url));
+            
+            if (newImages.length > 0) {
+              loadedPendingImages = [...pendingImages, ...newImages];
+              console.log(`[saveGalleryImages] Combined ${pendingImages.length} images from state with ${newImages.length} unique images from localStorage`);
+            }
           }
+        } catch (e) {
+          console.error("Error parsing saved pending images:", e);
         }
+      }
+      
+      // Log the final set of images we'll be working with
+      console.log(`[saveGalleryImages] Final pending images count: ${loadedPendingImages.length}`);
+      if (loadedPendingImages.length > 0) {
+        console.log(`[saveGalleryImages] Image URLs:`, loadedPendingImages.map(img => img.url.substring(0, 30) + '...'));
       }
       
       if (loadedPendingImages.length === 0) {
@@ -351,8 +376,11 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
           method: 'GET'
         });
         
+        // Define a type for the gallery items from the API
+        type GalleryItem = { imageUrl: string, id: number, [key: string]: any };
+        
         const existingImageUrls = (currentGallery && Array.isArray(currentGallery))
-          ? currentGallery.map((img: any) => img.imageUrl || '')
+          ? currentGallery.map((img: GalleryItem) => img.imageUrl || '')
           : (projectGallery?.map(img => img.imageUrl) || []);
         
         console.log(`[saveGalleryImages] Found ${existingImageUrls.length} existing gallery images`);
@@ -360,9 +388,19 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
         // Identify which images are truly new (not already in the gallery)
         // We'll use the image URL as the unique identifier
         const newPendingImages = loadedPendingImages.filter(pendingImg => {
-          const isNew = !existingImageUrls.includes(pendingImg.url);
+          // Convert URLs to a common format for comparison by removing any query parameters
+          const normalizedPendingUrl = pendingImg.url.split('?')[0].trim();
+          
+          // Check if this URL exists in the gallery (also normalize existing URLs)
+          const isNew = !existingImageUrls.some(existingUrl => {
+            const normalizedExistingUrl = existingUrl.split('?')[0].trim();
+            return normalizedExistingUrl === normalizedPendingUrl;
+          });
+          
           if (!isNew) {
             console.log(`[saveGalleryImages] Image already exists in gallery: ${pendingImg.url.substring(0, 30)}...`);
+          } else {
+            console.log(`[saveGalleryImages] New image to be added: ${pendingImg.url.substring(0, 30)}...`);
           }
           return isNew;
         });
@@ -729,8 +767,9 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
               {/* Always show the Save Images button if we have pending images */}
               {pendingImages.length > 0 && (
                 <Button 
-                  size="sm" 
-                  variant="secondary"
+                  size="default" 
+                  variant="default"
+                  className="bg-primary hover:bg-primary/90 text-white font-medium px-4 py-2 animate-pulse"
                   onClick={async (e) => {
                     e.preventDefault();
                     try {
@@ -744,13 +783,13 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
                 >
                   {isUploading ? (
                     <>
-                      <Loader2 className="h-4 w-4 mr-1 animate-spin" />
-                      Saving...
+                      <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                      Saving Images...
                     </>
                   ) : (
                     <>
-                      <ImagePlus className="h-4 w-4 mr-1" />
-                      Save Images ({pendingImages.length})
+                      <ImagePlus className="h-5 w-5 mr-2" />
+                      Save Gallery Images ({pendingImages.length})
                     </>
                   )}
                 </Button>
