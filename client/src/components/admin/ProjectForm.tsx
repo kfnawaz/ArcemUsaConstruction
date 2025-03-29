@@ -28,6 +28,7 @@ import {
   ArrowLeft, 
   CheckCircle2, 
   Images,
+  ImagePlus,
   LayoutDashboard,
   Loader2, 
   Trash2,
@@ -425,6 +426,87 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                   Add additional images to showcase the project (up to 10 images)
                 </p>
               </div>
+              
+              {/* ALWAYS VISIBLE GALLERY SAVE BUTTON - directly at the top level */}
+              {projectId && (
+                <Button
+                  type="button"
+                  size="default"
+                  variant="default"
+                  className="bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 border-2 border-green-400 animate-pulse"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    console.log("TOP LEVEL Save Gallery Images button clicked");
+                    
+                    // Get the project ID from the URL parameter
+                    const projectIdFromUrl = Number(projectId);
+                    console.log("Project ID from URL:", projectIdFromUrl);
+                    
+                    // Try to get pending images from localStorage
+                    const savedPendingImages = localStorage.getItem(`pendingImages_project_${projectIdFromUrl}`);
+                    
+                    if (savedPendingImages) {
+                      try {
+                        const pendingImages = JSON.parse(savedPendingImages);
+                        console.log(`Found ${pendingImages.length} pending images in localStorage:`, pendingImages);
+                        
+                        // Save each image one by one directly with the API
+                        const savePromises = pendingImages.map((img: {url: string, caption?: string, displayOrder?: number}) => {
+                          console.log("Saving image:", img.url);
+                          
+                          return fetch(`/api/projects/${projectIdFromUrl}/gallery`, {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                              projectId: projectIdFromUrl,
+                              imageUrl: img.url,
+                              caption: img.caption || `Project image`,
+                              displayOrder: img.displayOrder || 1
+                            })
+                          });
+                        });
+                        
+                        Promise.all(savePromises)
+                          .then(() => {
+                            // Clear pending images after save
+                            localStorage.removeItem(`pendingImages_project_${projectIdFromUrl}`);
+                            toast({
+                              title: "Gallery images saved",
+                              description: `${pendingImages.length} images saved successfully.`,
+                            });
+                            
+                            // Refresh the page to show the updated gallery
+                            setTimeout(() => {
+                              window.location.reload();
+                            }, 1500);
+                          })
+                          .catch(error => {
+                            console.error("Error saving gallery images:", error);
+                            toast({
+                              title: "Error",
+                              description: "Failed to save some gallery images. Please try again.",
+                              variant: "destructive"
+                            });
+                          });
+                          
+                      } catch (e) {
+                        console.error("Error parsing saved pending images:", e);
+                      }
+                    } else {
+                      console.log("No pending images found in localStorage");
+                      toast({
+                        title: "No images to save",
+                        description: "You haven't uploaded any new images yet.",
+                      });
+                    }
+                  }}
+                >
+                  <ImagePlus className="h-5 w-5 mr-2" />
+                  Save Gallery Images
+                </Button>
+              )}
             </div>
             
             {/* Use the gallery manager for both new and existing projects */}
@@ -435,42 +517,6 @@ const ProjectForm = ({ projectId, onClose }: ProjectFormProps) => {
                 onSetAsPreview={handleSetAsPreview}
                 allowReordering={true}
               />
-              
-              {/* Explicit gallery save button */}
-              {projectId && (
-                <Button
-                  type="button"
-                  size="default"
-                  variant="default"
-                  className="bg-green-600 hover:bg-green-700 text-white font-medium px-4 py-2 mt-3 border-2 border-green-400 animate-pulse"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (galleryManagerRef.current) {
-                      console.log("Manual save gallery images button clicked");
-                      galleryManagerRef.current.saveGalleryImages()
-                        .then(() => {
-                          toast({
-                            title: "Gallery images saved",
-                            description: "Your gallery images have been successfully saved.",
-                          });
-                        })
-                        .catch(error => {
-                          console.error("Error saving gallery images:", error);
-                          toast({
-                            title: "Error",
-                            description: "Failed to save gallery images. Please try again.",
-                            variant: "destructive"
-                          });
-                        });
-                    } else {
-                      console.error("Gallery manager ref is not available");
-                    }
-                  }}
-                >
-                  <ImagePlus className="h-5 w-5 mr-2" />
-                  Save Gallery Images
-                </Button>
-              )}
             </div>
           </div>
         </div>
