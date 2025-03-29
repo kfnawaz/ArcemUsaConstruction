@@ -378,8 +378,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         projectId
       });
       
-      const image = await storage.addProjectGalleryImage(galleryData);
-      res.status(201).json(image);
+      console.log(`[DEBUG] Adding gallery image to project ${projectId}:`, {
+        imageUrl: galleryData.imageUrl ? `${galleryData.imageUrl.substring(0, 30)}...` : 'null',
+        caption: galleryData.caption,
+        displayOrder: galleryData.displayOrder
+      });
+      
+      try {
+        const image = await storage.addProjectGalleryImage(galleryData);
+        console.log(`[DEBUG] Successfully added gallery image:`, image);
+        res.status(201).json(image);
+      } catch (error) {
+        console.error(`[ERROR] Failed to add gallery image:`, error);
+        throw error;
+      }
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid gallery image data", errors: error.errors });

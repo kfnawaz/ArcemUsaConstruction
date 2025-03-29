@@ -385,7 +385,13 @@ const ProjectGalleryManager = forwardRef<ProjectGalleryManagerHandle, ProjectGal
           };
           
           console.log(`[saveGalleryImages] Saving gallery image to database: ${pendingImage.url.substring(0, 30)}...`);
-          await addProjectGalleryImage(galleryImage);
+          try {
+            const savedImage = await addProjectGalleryImage(galleryImage);
+            console.log(`[saveGalleryImages] Successfully saved gallery image:`, savedImage);
+          } catch (error) {
+            console.error(`[saveGalleryImages] Error saving gallery image:`, error);
+            throw error;
+          }
         }
         
         // Commit all pending uploads to prevent cleanup of saved files
