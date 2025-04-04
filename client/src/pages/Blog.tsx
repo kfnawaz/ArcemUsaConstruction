@@ -74,7 +74,7 @@ const Blog = () => {
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4 md:px-8">
           {/* Filter and Search */}
-          <div className="mb-12 reveal">
+          <div className="mb-12 reveal active">
             <div className="flex flex-col md:flex-row gap-6 justify-between items-start md:items-center">
               {/* Category filter */}
               <div className="flex flex-wrap gap-3">
@@ -111,7 +111,7 @@ const Blog = () => {
             // Loading state
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {[1, 2, 3, 4, 5, 6].map(i => (
-                <div key={i} className="bg-white shadow-lg reveal">
+                <div key={i} className="bg-white shadow-lg reveal active">
                   <div className="h-60 bg-gray-200 animate-pulse"></div>
                   <div className="p-6">
                     <div className="h-4 w-32 bg-gray-200 mb-4"></div>
@@ -162,7 +162,7 @@ const Blog = () => {
       {/* Subscribe Section */}
       <section className="py-20 bg-gray-100">
         <div className="container mx-auto px-4 md:px-8 text-center">
-          <div className="max-w-2xl mx-auto reveal">
+          <div className="max-w-2xl mx-auto reveal active">
             <h2 className="text-3xl font-montserrat font-bold mb-4">Subscribe to Our Newsletter</h2>
             <p className="text-gray-600 mb-8">
               Stay updated with our latest projects, industry insights, and company news.

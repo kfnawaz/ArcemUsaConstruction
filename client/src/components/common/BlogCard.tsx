@@ -12,7 +12,7 @@ interface BlogCardProps {
 
 const BlogCard = ({ slug, title, excerpt, imageUrl, date, category }: BlogCardProps) => {
   return (
-    <div className="bg-white shadow-lg hover-scale reveal rounded-lg overflow-hidden blog-card">
+    <div className="bg-white shadow-lg hover-scale reveal active rounded-lg overflow-hidden blog-card">
       <div className="overflow-hidden">
         <img 
           src={imageUrl} 

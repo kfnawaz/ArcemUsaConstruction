@@ -127,7 +127,7 @@ const BlogPost = () => {
             </Link>
 
             <article>
-              <header className="mb-12 reveal">
+              <header className="mb-12 reveal active">
                 <h1 className="text-3xl md:text-4xl font-montserrat font-bold mb-6">{post.title}</h1>
                 
                 <div className="flex flex-wrap gap-4 mb-8 text-gray-500">
@@ -215,7 +215,7 @@ const BlogPost = () => {
                 </div>
               </header>
 
-              <div className="prose max-w-none reveal">
+              <div className="prose max-w-none reveal active">
                 {/* This would render rich content in a real implementation */}
                 <p className="text-gray-700 leading-relaxed mb-6">
                   {post.content}
@@ -243,7 +243,7 @@ const BlogPost = () => {
               </div>
             </article>
 
-            <div className="border-t border-gray-200 mt-16 pt-12 reveal">
+            <div className="border-t border-gray-200 mt-16 pt-12 reveal active">
               <h3 className="text-2xl font-montserrat font-bold mb-8">Related Articles</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* This would use actual related posts from the API in a real implementation */}
