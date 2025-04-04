@@ -62,6 +62,12 @@ const BlogPost = () => {
     queryKey: [`/api/blog/${post?.id}/gallery`],
     enabled: !!post?.id,
   });
+  
+  // Fetch related blog posts
+  const { data: relatedPosts, isLoading: isLoadingRelated } = useQuery<BlogPostType[]>({
+    queryKey: [`/api/blog/${post?.id}/related`],
+    enabled: !!post?.id,
+  });
 
   // SEO metadata is now handled by BlogPostSeo component
 
@@ -248,21 +254,46 @@ const BlogPost = () => {
             <div className="border-t border-gray-200 mt-16 pt-12 reveal active">
               <h3 className="text-2xl font-montserrat font-bold mb-8">Related Articles</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* This would use actual related posts from the API in a real implementation */}
-                {[1, 2, 3].map((_, index) => (
-                  <Link key={index} href={`/blog/related-article-${index + 1}`} className="group block overflow-hidden shadow-lg">
+                {/* Show skeleton loaders while loading related posts */}
+                {isLoadingRelated && (
+                  Array(3).fill(0).map((_, index) => (
+                    <div key={index} className="group block overflow-hidden shadow-lg">
+                      <div className="relative h-48 bg-gray-200 animate-pulse"></div>
+                      <div className="p-4">
+                        <div className="h-5 bg-gray-200 w-3/4 mb-2 animate-pulse"></div>
+                        <div className="h-4 bg-gray-200 w-1/2 animate-pulse"></div>
+                      </div>
+                    </div>
+                  ))
+                )}
+                
+                {/* Show related posts when loaded */}
+                {!isLoadingRelated && relatedPosts && relatedPosts.length > 0 ? (
+                  relatedPosts.map((relatedPost) => (
+                    <Link 
+                      key={relatedPost.id} 
+                      href={`/blog/${relatedPost.slug}`} 
+                      className="group block overflow-hidden shadow-lg"
+                    >
                       <div className="relative h-48 overflow-hidden">
                         <img 
-                          src={`https://images.unsplash.com/photo-158157873${index}348-c64695cc6952?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80`} 
-                          alt={`Related Article about Construction Trends ${index + 1}`} 
+                          src={relatedPost.image} 
+                          alt={relatedPost.title} 
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                         />
                       </div>
                       <div className="p-4">
-                        <h4 className="font-montserrat font-bold line-clamp-2">Related Article about Construction Trends</h4>
-                        <p className="text-gray-500 text-sm mt-2">June 1, 2023</p>
+                        <h4 className="font-montserrat font-bold line-clamp-2">{relatedPost.title}</h4>
+                        <p className="text-gray-500 text-sm mt-2">
+                          {formatDate(relatedPost.createdAt || new Date())}
+                        </p>
                       </div>
-                  </Link>
+                    </Link>
+                  ))
+                ) : (!isLoadingRelated && (
+                  <div className="col-span-3 text-center py-8">
+                    <p className="text-gray-500">No related articles found</p>
+                  </div>
                 ))}
               </div>
             </div>

@@ -744,6 +744,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Get related blog posts based on category
+  app.get(`${apiRouter}/blog/:id/related`, async (req: Request, res: Response) => {
+    try {
+      const postId = parseInt(req.params.id);
+      if (isNaN(postId)) {
+        return res.status(400).json({ message: "Invalid blog post ID" });
+      }
+      
+      // Get the post to find its category
+      const post = await storage.getBlogPost(postId);
+      if (!post) {
+        return res.status(404).json({ message: "Blog post not found" });
+      }
+      
+      // Get all published blog posts
+      const allPosts = await storage.getPublishedBlogPosts();
+      
+      // Find posts with the same category, excluding the current post
+      const relatedPosts = allPosts
+        .filter(p => p.id !== postId && p.category === post.category)
+        .slice(0, 3); // Limit to 3 related posts
+      
+      res.json(relatedPosts);
+    } catch (error) {
+      console.error("Error fetching related blog posts:", error);
+      res.status(500).json({ message: "Failed to fetch related blog posts" });
+    }
+  });
+  
   // Admin-only endpoints for blog management
   app.post(`${apiRouter}/blog`, isAdmin, async (req: Request, res: Response) => {
     try {
