@@ -94,9 +94,15 @@ const Projects = () => {
 
           {isLoading ? (
             // Loading state
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {[1, 2, 3, 4, 5, 6].map((i) => (
-                <div key={i} className="h-80 bg-gray-200 animate-pulse"></div>
+                <div key={i} className="flex flex-col">
+                  <div className="h-72 bg-gray-200 animate-pulse rounded-lg"></div>
+                  <div className="p-4 border border-t-0 border-gray-200 rounded-b-lg">
+                    <div className="h-5 bg-gray-200 animate-pulse rounded w-3/4 mb-2"></div>
+                    <div className="h-4 bg-gray-200 animate-pulse rounded w-1/2"></div>
+                  </div>
+                </div>
               ))}
             </div>
           ) : error ? (
@@ -104,7 +110,7 @@ const Projects = () => {
               Failed to load projects. Please try again later.
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredProjects?.map((project) => (
                 <ProjectCard
                   key={project.id}
