@@ -69,7 +69,7 @@ const Projects = () => {
       {/* Projects Gallery */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-4 md:px-8">
-          <div className="mb-12 reveal">
+          <div className="mb-12 reveal active">
             <h2 className="text-3xl font-montserrat font-bold mb-8 text-center">
               Our Featured Work
             </h2>
@@ -128,7 +128,7 @@ const Projects = () => {
       {/* Call to Action */}
       <section className="py-20 bg-black text-white text-center">
         <div className="container mx-auto px-4 md:px-8">
-          <div className="max-w-3xl mx-auto reveal">
+          <div className="max-w-3xl mx-auto reveal active">
             <h2 className="text-3xl md:text-4xl font-montserrat font-bold mb-6">
               Ready to Build Your Vision?
             </h2>

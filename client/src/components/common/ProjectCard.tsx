@@ -18,7 +18,7 @@ const ProjectCard = ({ id, title, category, imageUrl }: ProjectCardProps) => {
   };
 
   return (
-    <div className="flex flex-col reveal">
+    <div className="flex flex-col reveal active">
       <div className="project-card relative overflow-hidden group shadow-lg rounded-lg">
         {imageError ? (
           <div className="w-full h-72 bg-gray-200 flex flex-col items-center justify-center">
