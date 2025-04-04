@@ -20,7 +20,7 @@ const Services = () => {
   useEffect(() => {
     scrollToTop();
     document.title = 'Services - ARCEM';
-    const cleanup = initializeRevealEffects();
+    const cleanup = initializeRevealEffects(true);
     return cleanup;
   }, []);
 

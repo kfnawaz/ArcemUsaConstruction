@@ -33,7 +33,7 @@ const Contact = () => {
   useEffect(() => {
     scrollToTop();
     document.title = 'Contact Us - ARCEM';
-    const cleanup = initializeRevealEffects();
+    const cleanup = initializeRevealEffects(true);
     return cleanup;
   }, []);
   

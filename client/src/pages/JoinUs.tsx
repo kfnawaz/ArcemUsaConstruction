@@ -44,7 +44,7 @@ const JoinUs = () => {
   useEffect(() => {
     scrollToTop();
     document.title = "Join Our Team - ARCEM";
-    initializeRevealEffects();
+    initializeRevealEffects(true);
   }, []);
 
   return (

@@ -121,7 +121,7 @@ const ProjectDetail = () => {
 
   useEffect(() => {
     scrollToTop();
-    const cleanup = initializeRevealEffects();
+    const cleanup = initializeRevealEffects(true);
     return cleanup;
   }, [projectId]);
 

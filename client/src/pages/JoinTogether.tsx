@@ -33,7 +33,7 @@ const JoinTogether = () => {
   useEffect(() => {
     scrollToTop();
     document.title = 'Grow With Us - ARCEM';
-    initializeRevealEffects();
+    initializeRevealEffects(true);
   }, []);
 
   return (
