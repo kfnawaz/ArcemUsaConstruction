@@ -39,7 +39,7 @@ export default function UploadThingFileUpload({
   onUploadError,
   onUploadBegin,
   buttonText = "Upload files",
-  helpText = "Upload images (JPG, PNG) up to 8MB each",
+  helpText = "Upload images (JPG, PNG) up to 16MB each",
   accept = "image/jpeg, image/png, image/webp",
   multiple = true,
   maxSizeMB = 8

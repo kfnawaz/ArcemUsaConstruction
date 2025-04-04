@@ -126,11 +126,11 @@ const SimpleProjectGallery: React.FC<SimpleProjectGalleryProps> = ({
         return false;
       }
       
-      // Check file size (max 8MB)
-      if (file.size > 8 * 1024 * 1024) {
+      // Check file size (max 16MB)
+      if (file.size > 15 * 1024 * 1024) {
         toast({
           title: 'File too large',
-          description: `${file.name} exceeds the 8MB size limit.`,
+          description: `${file.name} exceeds the 16MB size limit.`,
           variant: 'destructive'
         });
         return false;
@@ -178,11 +178,11 @@ const SimpleProjectGallery: React.FC<SimpleProjectGalleryProps> = ({
         return false;
       }
       
-      // Check file size (max 8MB)
-      if (file.size > 8 * 1024 * 1024) {
+      // Check file size (max 16MB)
+      if (file.size > 15 * 1024 * 1024) {
         toast({
           title: 'File too large',
-          description: `${file.name} exceeds the 8MB size limit.`,
+          description: `${file.name} exceeds the 16MB size limit.`,
           variant: 'destructive'
         });
         return false;
@@ -274,7 +274,7 @@ const SimpleProjectGallery: React.FC<SimpleProjectGalleryProps> = ({
               Drag & drop files here, or click to browse
             </h3>
             <p className="text-sm text-muted-foreground">
-              Upload images (JPG, PNG, WebP) up to 8MB each
+              Upload images (JPG, PNG, WebP) up to 16MB each
             </p>
           </div>
           

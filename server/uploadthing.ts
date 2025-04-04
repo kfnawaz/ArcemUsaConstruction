@@ -47,7 +47,7 @@ const isAuthenticated = (req: Request) => {
 // Define the file router with authentication and validation
 export const uploadRouter = {
   // Define a route for image upload
-  imageUploader: f({ image: { maxFileSize: "8MB", maxFileCount: 10 } })
+  imageUploader: f({ image: { maxFileSize: "16MB", maxFileCount: 10 } })
     // Set permissions and get metadata to identify the user
     .middleware(({ req }) => {
       try {

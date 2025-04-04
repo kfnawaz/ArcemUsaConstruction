@@ -825,7 +825,7 @@ export default function NewProjectForm({
                   <p className="text-sm text-muted-foreground mb-2">
                     Upload up to 10 images in JPG, PNG, or WebP format
                     <br />
-                    Maximum size: 8MB per image
+                    Maximum size: 16MB per image
                   </p>
                   <Button
                     type="button"
