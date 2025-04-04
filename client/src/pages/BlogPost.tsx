@@ -192,16 +192,18 @@ const BlogPost = () => {
                         onClick={scrollPrev}
                         disabled={!prevBtnEnabled}
                         aria-label="Previous image"
+                        tabIndex={0}
                       >
-                        <ChevronLeft className="h-6 w-6" />
+                        <ChevronLeft className="h-6 w-6" aria-hidden="true" />
                       </button>
                       <button 
                         className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/80 p-2 rounded-full shadow-md hover:bg-white transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                         onClick={scrollNext}
                         disabled={!nextBtnEnabled}
                         aria-label="Next image"
+                        tabIndex={0}
                       >
-                        <ChevronRight className="h-6 w-6" />
+                        <ChevronRight className="h-6 w-6" aria-hidden="true" />
                       </button>
                     </>
                   ) : (
@@ -248,12 +250,11 @@ const BlogPost = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* This would use actual related posts from the API in a real implementation */}
                 {[1, 2, 3].map((_, index) => (
-                  <Link key={index} href={`/blog/related-article-${index + 1}`}>
-                    <a className="group block overflow-hidden shadow-lg">
+                  <Link key={index} href={`/blog/related-article-${index + 1}`} className="group block overflow-hidden shadow-lg">
                       <div className="relative h-48 overflow-hidden">
                         <img 
                           src={`https://images.unsplash.com/photo-158157873${index}348-c64695cc6952?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80`} 
-                          alt="Related Article" 
+                          alt={`Related Article about Construction Trends ${index + 1}`} 
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                         />
                       </div>
@@ -261,7 +262,6 @@ const BlogPost = () => {
                         <h4 className="font-montserrat font-bold line-clamp-2">Related Article about Construction Trends</h4>
                         <p className="text-gray-500 text-sm mt-2">June 1, 2023</p>
                       </div>
-                    </a>
                   </Link>
                 ))}
               </div>
@@ -283,8 +283,9 @@ const BlogPost = () => {
                 variant="ghost" 
                 size="icon"
                 className="absolute top-2 right-2 rounded-full"
+                aria-label="Close gallery image"
               >
-                <X className="h-5 w-5" />
+                <X className="h-5 w-5" aria-hidden="true" />
               </Button>
             </DialogHeader>
             {selectedImage && (

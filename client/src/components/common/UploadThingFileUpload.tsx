@@ -292,21 +292,24 @@ export default function UploadThingFileUpload({
             </p>
           </div>
           
-          <label className="cursor-pointer">
+          <label className="cursor-pointer" htmlFor="file-upload">
             <Button 
               type="button" 
               variant="outline"
               disabled={isUploading}
               className="relative"
+              aria-label={isUploading ? "Uploading files..." : `${buttonText}`}
             >
               {isUploading ? "Uploading..." : buttonText}
               <input
+                id="file-upload"
                 type="file"
                 className="sr-only"
                 onChange={handleFileChange}
                 accept={accept}
                 multiple={multiple}
                 disabled={isUploading}
+                aria-label="File upload input"
               />
             </Button>
           </label>
@@ -362,6 +365,7 @@ export default function UploadThingFileUpload({
                         setSelectedFiles(prev => prev.filter((_, i) => i !== index));
                       }}
                       disabled={isUploading}
+                      aria-label={`Remove file ${file.name}`}
                     >
                       <XCircle className="h-5 w-5" />
                       <span className="sr-only">Remove file</span>
@@ -381,14 +385,25 @@ export default function UploadThingFileUpload({
             <Loader2 className="animate-spin h-4 w-4 mr-2 text-primary" />
             <span className="text-sm font-medium">Uploading...</span>
           </div>
-          <Progress value={45} className="h-2" />
+          <Progress 
+            value={45} 
+            className="h-2" 
+            aria-label="Upload progress" 
+            aria-valuemin={0} 
+            aria-valuemax={100} 
+            aria-valuenow={45} 
+          />
         </div>
       )}
 
       {/* Error message display */}
       {(errorMessage || fileSelectionError) && (
-        <div className="mt-4 p-3 rounded bg-destructive/10 text-destructive flex items-start">
-          <AlertTriangle className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" />
+        <div 
+          className="mt-4 p-3 rounded bg-destructive/10 text-destructive flex items-start"
+          role="alert"
+          aria-live="assertive"
+        >
+          <AlertTriangle className="h-5 w-5 mr-2 flex-shrink-0 mt-0.5" aria-hidden="true" />
           <div>
             <p className="text-sm font-medium">Upload Error</p>
             <p className="text-xs">{errorMessage || fileSelectionError}</p>
