@@ -528,13 +528,13 @@ export class DBStorage implements IStorage {
   async getApprovedTestimonials(): Promise<Testimonial[]> {
     return db.select()
       .from(testimonials)
-      .where(eq(testimonials.active, true));
+      .where(eq(testimonials.approved, true));
   }
 
   async getPendingTestimonials(): Promise<Testimonial[]> {
     return db.select()
       .from(testimonials)
-      .where(eq(testimonials.active, false));
+      .where(eq(testimonials.approved, false));
   }
 
   async getTestimonial(id: number): Promise<Testimonial | undefined> {
@@ -561,7 +561,7 @@ export class DBStorage implements IStorage {
 
   async approveTestimonial(id: number): Promise<Testimonial | undefined> {
     const results = await db.update(testimonials)
-      .set({ active: true })
+      .set({ approved: true })
       .where(eq(testimonials.id, id))
       .returning();
     return results[0];
@@ -569,7 +569,7 @@ export class DBStorage implements IStorage {
   
   async revokeTestimonialApproval(id: number): Promise<Testimonial | undefined> {
     const results = await db.update(testimonials)
-      .set({ active: false })
+      .set({ approved: false })
       .where(eq(testimonials.id, id))
       .returning();
     return results[0];
@@ -618,7 +618,7 @@ export class DBStorage implements IStorage {
     return db.select()
       .from(serviceGallery)
       .where(eq(serviceGallery.serviceId, serviceId))
-      .orderBy(serviceGallery.displayOrder);
+      .orderBy(serviceGallery.order);
   }
   
   async addServiceGalleryImage(galleryImage: InsertServiceGallery): Promise<ServiceGallery> {

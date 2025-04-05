@@ -214,9 +214,10 @@ export const testimonials = pgTable("testimonials", {
   position: text("position").notNull(),
   company: text("company"),
   content: text("content").notNull(),
+  email: text("email"),
   rating: integer("rating").default(5),
   image: text("image"),
-  active: boolean("active").default(true),
+  approved: boolean("approved").default(true),
   featured: boolean("featured").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -227,7 +228,7 @@ export const insertTestimonialSchema = createInsertSchema(testimonials).omit({
 });
 
 export const publicTestimonialSchema = insertTestimonialSchema
-  .omit({ active: true, featured: true });
+  .omit({ approved: true, featured: true });
 
 export const services = pgTable("services", {
   id: serial("id").primaryKey(),
@@ -246,8 +247,9 @@ export const serviceGallery = pgTable("service_gallery", {
   serviceId: integer("service_id").notNull().references(() => services.id, { onDelete: 'cascade' }),
   imageUrl: text("image_url").notNull(),
   caption: text("caption"),
-  displayOrder: integer("display_order").default(0),
-  isFeature: boolean("is_feature").default(false),
+  order: integer("order").default(0),
+  alt: text("alt"),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const insertServiceSchema = createInsertSchema(services).omit({
@@ -256,7 +258,8 @@ export const insertServiceSchema = createInsertSchema(services).omit({
 });
 
 export const insertServiceGallerySchema = createInsertSchema(serviceGallery).omit({
-  id: true
+  id: true,
+  createdAt: true
 });
 
 export const extendedInsertServiceSchema = insertServiceSchema.extend({
@@ -264,7 +267,8 @@ export const extendedInsertServiceSchema = insertServiceSchema.extend({
     z.object({
       imageUrl: z.string().url(),
       caption: z.string().optional(),
-      displayOrder: z.number().optional(),
+      order: z.number().optional(),
+      alt: z.string().optional(),
     })
   ).optional(),
 });
