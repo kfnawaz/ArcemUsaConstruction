@@ -281,17 +281,15 @@ export const messages = pgTable("messages", {
   name: text("name").notNull(),
   email: text("email").notNull(),
   phone: text("phone"),
-  subject: text("subject").notNull(),
+  service: text("service"),
   message: text("message").notNull(),
   read: boolean("read").default(false),
-  archived: boolean("archived").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const insertMessageSchema = createInsertSchema(messages).omit({
   id: true,
   read: true,
-  archived: true,
   createdAt: true
 });
 
