@@ -53,14 +53,11 @@ const JoinUs = () => {
       {/* Hero Section */}
       <PageHeader
         title="Join Our Team"
-        subtitle="We're committed to building relationships.\nAs sturdy as our constructions."
+        subtitle="We're committed to building relationships\nas sturdy as our constructions."
         backgroundImage="/uploads/images/join-us/jesse-orrico-L94dWXNKwrY-unsplash.jpg"
       >
         <Link href="/subcontractors">
-          <Button
-            size="lg"
-            className="bg-[#1E90DB] hover:bg-[#1670B0] text-lg"
-          >
+          <Button size="lg" className="bg-[#1E90DB] hover:bg-[#1670B0] text-lg">
             Let's Build Together <ArrowRight className="ml-2 h-5 w-5" />
           </Button>
         </Link>

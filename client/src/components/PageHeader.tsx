@@ -16,7 +16,7 @@ export default function PageHeader({ title, subtitle, backgroundImage, children 
         backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        minHeight: '400px',
+        height: '450px',
       }}
     >
       {/* Overlay for dark background images */}
