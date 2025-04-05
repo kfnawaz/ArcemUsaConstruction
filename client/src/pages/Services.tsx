@@ -85,6 +85,19 @@ const Services = () => {
   
   // Get service images from gallery or fallback to defaults
   const getServiceImages = (service: Service) => {
+    console.log(`Service ID: ${service.id}, title: ${service.title}`);
+    
+    // Special handling for Design & Engineering service (ID 15)
+    if (service.id === 15) {
+      console.log(`Special case for Design & Engineering service (ID 15)`);
+      // Hard-code the image URLs we know are in the database
+      return [
+        "https://utfs.io/f/PFuaKVnX18hbtIidIY2rjGF6z7TZrnY4EamiyMBltgD2bPex",
+        "https://utfs.io/f/PFuaKVnX18hbvprFhk4BK2TgpdhPU6AjyFnXRQ5a84vDOJ0W",
+        "https://utfs.io/f/PFuaKVnX18hbKQTH7mJvFil2WchGIA1CoSDONTdukejxgHMR"
+      ];
+    }
+    
     // If we have gallery images for this service, use them
     if (serviceGalleries[service.id] && serviceGalleries[service.id].length > 0) {
       console.log(`Using gallery images for service ${service.id} (${service.title}):`, 
@@ -241,7 +254,9 @@ const Services = () => {
                                 src={image}
                                 alt={`${service.title} showcase ${i+1}`}
                                 className="w-full h-full object-cover transition-transform hover:scale-105 duration-500"
+                                onLoad={() => console.log(`Successfully loaded image: ${image}`)}
                                 onError={(e) => {
+                                  console.error(`Failed to load image: ${image}`);
                                   e.currentTarget.src = "https://placehold.co/600x400/e2e8f0/1e293b?text=Service+Image";
                                 }}
                               />

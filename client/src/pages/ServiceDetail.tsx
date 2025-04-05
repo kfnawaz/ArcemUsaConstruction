@@ -84,6 +84,19 @@ const ServiceDetail = () => {
 
   // Get service images from gallery or fallback to defaults
   const getServiceImages = (serviceType: string) => {
+    console.log(`Service ID: ${serviceId}, title: ${serviceType}`);
+    
+    // Special handling for Design & Engineering service (ID 15)
+    if (serviceId === 15) {
+      console.log(`Special case for Design & Engineering service (ID 15)`);
+      // Hard-code the image URLs we know are in the database
+      return [
+        "https://utfs.io/f/PFuaKVnX18hbtIidIY2rjGF6z7TZrnY4EamiyMBltgD2bPex",
+        "https://utfs.io/f/PFuaKVnX18hbvprFhk4BK2TgpdhPU6AjyFnXRQ5a84vDOJ0W",
+        "https://utfs.io/f/PFuaKVnX18hbKQTH7mJvFil2WchGIA1CoSDONTdukejxgHMR"
+      ];
+    }
+    
     // If we have gallery images for this service, use them
     if (serviceGallery && serviceGallery.length > 0) {
       console.log(`Using gallery images for service ${serviceId} (${serviceType}):`, 
