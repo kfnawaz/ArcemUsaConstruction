@@ -22,7 +22,9 @@ import {
   insertServiceGallerySchema,
   insertSubcontractorSchema,
   insertVendorSchema,
-  blogPosts
+  blogPosts,
+  fileAttachmentSchema,
+  quoteRequestWithAttachmentsSchema
 } from "@shared/schema";
 import { eq, sql } from "drizzle-orm";
 import { z } from "zod";
@@ -2179,41 +2181,94 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Quote Request Routes
   app.post(`${apiRouter}/quote/request`, async (req: Request, res: Response) => {
     try {
-      // Validate the input data
-      const quoteData = insertQuoteRequestSchema.parse(req.body);
+      console.log("[QUOTE REQUEST] Received quote request submission");
       
-      // Create the quote request
-      const quote = await storage.createQuoteRequest(quoteData);
+      // Log sanitized request data (exclude sensitive information)
+      const sanitizedBody = { 
+        ...req.body,
+        email: req.body.email ? "***@***.***" : undefined, 
+        phone: req.body.phone ? "***-***-****" : undefined,
+        attachments: req.body.attachments ? 
+          `${req.body.attachments.length} attachments` : 
+          "no attachments"
+      };
+      console.log("[QUOTE REQUEST] Request data:", JSON.stringify(sanitizedBody));
       
-      // Check if there are file attachments to save
-      if (req.body.attachments && Array.isArray(req.body.attachments)) {
-        const attachments = req.body.attachments;
+      try {
+        console.log("[QUOTE REQUEST] Validating input data with extended schema");
         
-        // Save each attachment
-        for (const attachment of attachments) {
-          await storage.createQuoteRequestAttachment({
-            quoteRequestId: quote.id,
-            fileName: attachment.fileName,
-            fileUrl: attachment.fileUrl,
-            fileKey: attachment.fileKey,
-            fileSize: attachment.fileSize,
-            fileType: attachment.fileType
+        // First validate with the extended schema that includes attachments
+        const { attachments, ...quoteData } = quoteRequestWithAttachmentsSchema.parse(req.body);
+        
+        console.log("[QUOTE REQUEST] Data validation passed");
+        
+        // Create the quote request
+        const quote = await storage.createQuoteRequest(quoteData);
+        console.log(`[QUOTE REQUEST] Created quote request with ID: ${quote.id}`);
+        
+        // Check if there are file attachments to save
+        if (attachments && Array.isArray(attachments) && attachments.length > 0) {
+          console.log(`[QUOTE REQUEST] Processing ${attachments.length} attachments`);
+          
+          // Save each attachment
+          for (const attachment of attachments) {
+            try {
+              console.log(`[QUOTE REQUEST] Saving attachment: ${attachment.fileName} (${(attachment.fileSize / 1024).toFixed(2)} KB)`);
+              
+              if (!attachment.fileUrl || !attachment.fileKey) {
+                console.error(`[QUOTE REQUEST] Invalid attachment data for ${attachment.fileName}: missing fileUrl or fileKey`);
+                continue; // Skip this attachment but continue with others
+              }
+              
+              // Validate attachment data with the schema
+              const validatedAttachment = fileAttachmentSchema.parse(attachment);
+              
+              await storage.createQuoteRequestAttachment({
+                quoteRequestId: quote.id,
+                fileName: validatedAttachment.fileName,
+                fileUrl: validatedAttachment.fileUrl,
+                fileKey: validatedAttachment.fileKey,
+                fileSize: validatedAttachment.fileSize,
+                fileType: validatedAttachment.fileType
+              });
+              
+              console.log(`[QUOTE REQUEST] Successfully saved attachment: ${attachment.fileName}`);
+            } catch (attachmentError) {
+              console.error(`[QUOTE REQUEST] Error saving attachment ${attachment.fileName}:`, attachmentError);
+              console.error(`[QUOTE REQUEST] Error details:`, attachmentError instanceof Error ? attachmentError.message : String(attachmentError));
+              // Continue with the next attachment instead of failing the whole request
+            }
+          }
+        } else {
+          console.log("[QUOTE REQUEST] No attachments to process");
+        }
+        
+        console.log("[QUOTE REQUEST] Successfully completed quote request submission");
+        res.status(201).json({ 
+          message: "Your quote request has been submitted successfully!",
+          quote 
+        });
+      } catch (validationError) {
+        if (validationError instanceof z.ZodError) {
+          console.error("[QUOTE REQUEST] Validation error:", validationError.errors);
+          return res.status(400).json({ 
+            message: "Invalid quote request data", 
+            errors: validationError.errors 
           });
         }
+        throw validationError; // Re-throw if it's not a validation error
       }
-      
-      res.status(201).json({ 
-        message: "Your quote request has been submitted successfully!",
-        quote 
-      });
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ 
-          message: "Invalid quote request data", 
-          errors: error.errors 
+      console.error("[QUOTE REQUEST] Error processing quote request:", error);
+      
+      if (error instanceof Error) {
+        console.error("[QUOTE REQUEST] Error details:", {
+          name: error.name,
+          message: error.message,
+          stack: error.stack?.split('\n').slice(0, 3).join('\n') // First 3 lines of stack trace
         });
       }
-      console.error("Quote request error:", error);
+      
       res.status(500).json({ message: "Failed to process quote request" });
     }
   });

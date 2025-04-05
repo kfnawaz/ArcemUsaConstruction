@@ -333,6 +333,20 @@ export const insertQuoteRequestSchema = createInsertSchema(quoteRequests).omit({
   createdAt: true
 });
 
+// Schema for file attachments in quote requests
+export const fileAttachmentSchema = z.object({
+  fileName: z.string(),
+  fileUrl: z.string().url(),
+  fileKey: z.string(),
+  fileSize: z.number(),
+  fileType: z.string()
+});
+
+// Extended schema that includes attachments for the frontend
+export const quoteRequestWithAttachmentsSchema = insertQuoteRequestSchema.extend({
+  attachments: z.array(fileAttachmentSchema).optional()
+});
+
 export type QuoteRequest = typeof quoteRequests.$inferSelect;
 export type InsertQuoteRequest = z.infer<typeof insertQuoteRequestSchema>;
 
