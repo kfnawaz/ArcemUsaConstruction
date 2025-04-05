@@ -1,6 +1,7 @@
 import express, { type Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { db } from "./db";
 import { FileManager, extractUploadThingKeyFromUrl } from "./utils/fileManager";
 import { 
   insertProjectSchema,
@@ -19,8 +20,10 @@ import {
   insertServiceSchema,
   insertServiceGallerySchema,
   insertSubcontractorSchema,
-  insertVendorSchema
+  insertVendorSchema,
+  blogPosts
 } from "@shared/schema";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { setupAuth } from "./auth";
 import { upload, getFileUrl } from "./utils/fileUpload";
@@ -470,15 +473,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // Blog Posts Routes
+  // Public blog route for all published blogs
   app.get(`${apiRouter}/blog`, async (req: Request, res: Response) => {
     try {
-      const blogPosts = await storage.getPublishedBlogPosts();
-      res.json(blogPosts);
+      console.log("[DEBUG] Fetching published blog posts");
+      try {
+        // Query raw blog posts data directly from the database
+        const posts = await db.execute(
+          'SELECT * FROM blog_posts ORDER BY created_at DESC'
+        );
+        
+        console.log(`[DEBUG] Found total ${posts.length} blog posts`);
+        
+        // Filter for published posts - handle string 't' or boolean true
+        // In PostgreSQL, boolean true can be stored as 't' (string) or true (boolean)
+        const publishedPosts = posts.filter(post => {
+          const isPublished = String(post.published).toLowerCase() === 't' || 
+                             String(post.published).toLowerCase() === 'true' || 
+                             post.published === true;
+          return isPublished;
+        });
+        console.log(`[DEBUG] Found ${publishedPosts.length} published blog posts`);
+        
+        if (posts.length > 0) {
+          console.log("[DEBUG] Sample post data:", posts[0]);
+          console.log("[DEBUG] Sample post 'published' value:", posts[0].published, "Type:", typeof posts[0].published);
+        }
+        
+        res.json(publishedPosts);
+      } catch (dbError) {
+        console.error("[ERROR] Database error fetching published blog posts:", dbError);
+        // Check if this is a database error with details
+        if (dbError instanceof Error) {
+          console.error("[ERROR] Error details:", dbError.message);
+          console.error("[ERROR] Error stack:", dbError.stack);
+        }
+        throw dbError;
+      }
     } catch (error) {
+      console.error("[ERROR] Failed to fetch published blog posts:", error);
       res.status(500).json({ message: "Failed to fetch blog posts" });
     }
   });
-  
+
   app.get(`${apiRouter}/blog/all`, isAuthenticated, async (req: Request, res: Response) => {
     try {
       const blogPosts = await storage.getBlogPosts();
