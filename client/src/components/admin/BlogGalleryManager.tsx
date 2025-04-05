@@ -18,7 +18,7 @@ import {
   Card,
   CardContent,
 } from '@/components/ui/card';
-import FileUpload from '@/components/common/FileUpload';
+import UploadThingFileUpload from '@/components/common/UploadThingFileUpload';
 
 interface BlogGalleryManagerProps {
   postId: number;
@@ -200,19 +200,18 @@ const BlogGalleryManager: React.FC<BlogGalleryManagerProps> = ({ postId }) => {
                 value={captionInput}
                 onChange={(e) => setCaptionInput(e.target.value)}
               />
-              <FileUpload 
-                onUploadComplete={handleFileUploadComplete}
-                accept="image/*"
-                multiple={false}
-                maxSizeMB={16}
-                buttonText="Upload Blog Image"
-                helpText="Select or drag an image (Max: 16MB)"
-                sessionId={uploadSession || undefined}
-                onSessionIdCreated={(newSessionId: string) => {
-                  console.log(`[BlogGalleryManager] onSessionIdCreated callback received new session ID: ${newSessionId}`);
-                  console.log(`[BlogGalleryManager] Previous upload session: ${uploadSession}`);
-                  setUploadSession(newSessionId);
+              <UploadThingFileUpload 
+                onUploadComplete={(files) => {
+                  console.log("[BlogGalleryManager] Files from UploadThingFileUpload:", files);
+                  if (files && files.length > 0) {
+                    const fileUrls = files.map(file => file.fileUrl);
+                    handleFileUploadComplete(fileUrls);
+                  }
                 }}
+                uploadType="imageUploader"
+                maxFiles={1}
+                maxFileSize={16}
+                allowedFileTypes={['image/jpeg', 'image/png', 'image/webp']}
               />
             </div>
             <DialogFooter className="sm:justify-end">
