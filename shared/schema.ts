@@ -114,7 +114,6 @@ export const blogPosts = pgTable("blog_posts", {
   author: text("author").notNull(),
   published: boolean("published").default(false),
   createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
   category: text("category"),
   tags: text("tags").array(),
 });
@@ -192,8 +191,7 @@ export const blogPostTagsRelations = relations(blogPostTags, ({ one }) => ({
 
 export const insertBlogPostSchema = createInsertSchema(blogPosts).omit({
   id: true,
-  createdAt: true,
-  updatedAt: true
+  createdAt: true
 });
 
 export const extendedInsertBlogPostSchema = insertBlogPostSchema.extend({
@@ -218,7 +216,6 @@ export const testimonials = pgTable("testimonials", {
   rating: integer("rating").default(5),
   image: text("image"),
   approved: boolean("approved").default(true),
-  featured: boolean("featured").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -228,18 +225,14 @@ export const insertTestimonialSchema = createInsertSchema(testimonials).omit({
 });
 
 export const publicTestimonialSchema = insertTestimonialSchema
-  .omit({ approved: true, featured: true });
+  .omit({ approved: true });
 
 export const services = pgTable("services", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
   description: text("description").notNull(),
   icon: text("icon"),
-  image: text("image"),
-  content: text("content"),
-  featured: boolean("featured").default(false),
-  order: integer("order").default(0),
-  createdAt: timestamp("created_at").defaultNow(),
+  features: text("features").array(),
 });
 
 export const serviceGallery = pgTable("service_gallery", {
@@ -253,8 +246,7 @@ export const serviceGallery = pgTable("service_gallery", {
 });
 
 export const insertServiceSchema = createInsertSchema(services).omit({
-  id: true,
-  createdAt: true
+  id: true
 });
 
 export const insertServiceGallerySchema = createInsertSchema(serviceGallery).omit({
