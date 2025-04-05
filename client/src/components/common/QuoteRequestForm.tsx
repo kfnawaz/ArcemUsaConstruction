@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -40,7 +40,7 @@ interface FileAttachment {
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Please enter a valid email address"),
-  phone: z.string().optional(),
+  phone: z.string().min(1, "Phone number is required"),
   company: z.string().optional(),
   projectType: z.string().min(1, "Please select a project type"),
   projectSize: z.string().optional(),
@@ -78,21 +78,31 @@ const QuoteRequestForm = ({ className = "", onSuccess }: QuoteRequestFormProps) 
 
   // Submit handler
   const onSubmit = (data: FormValues) => {
-    // Include the file attachments with the form data
+    // Include the file attachments with the form data and map form fields to match backend schema
     const requestData = {
-      ...data,
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      companyName: data.company,
+      projectType: data.projectType,
+      projectSize: data.projectSize,
+      budget: data.budget,
+      timeframe: data.timeframe,
+      description: data.description,
       attachments: fileAttachments
     };
     
     submitQuoteRequest(requestData);
-    
-    // If successful, reset the form and call onSuccess if provided
-    if (!quoteRequestMutation.isPending && !quoteRequestMutation.isError) {
+  };
+  
+  // Reset form on successful submission
+  useEffect(() => {
+    if (quoteRequestMutation.isSuccess) {
       form.reset();
       setFileAttachments([]); // Clear the attachments
       if (onSuccess) onSuccess();
     }
-  };
+  }, [quoteRequestMutation.isSuccess, form, onSuccess]);
   
   // Handle file upload completion
   const handleFileUploadComplete = (files: FileAttachment[]) => {
@@ -149,7 +159,7 @@ const QuoteRequestForm = ({ className = "", onSuccess }: QuoteRequestFormProps) 
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-gray-700 font-medium">Phone Number</FormLabel>
+                  <FormLabel className="text-gray-700 font-medium">Phone Number *</FormLabel>
                   <FormControl>
                     <Input 
                       placeholder="(123) 456-7890"
