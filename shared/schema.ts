@@ -49,13 +49,13 @@ export const projectGallery = pgTable("project_gallery", {
   isFeature: boolean("is_feature").default(false),
 });
 
+export const insertProjectGallerySchema = createInsertSchema(projectGallery).omit({
+  id: true
+});
+
 export const insertProjectSchema = createInsertSchema(projects).omit({
   id: true,
   createdAt: true
-});
-
-export const insertProjectGallerySchema = createInsertSchema(projectGallery).omit({
-  id: true
 });
 
 export const extendedInsertProjectSchema = insertProjectSchema.extend({
@@ -64,6 +64,7 @@ export const extendedInsertProjectSchema = insertProjectSchema.extend({
       imageUrl: z.string().url(),
       caption: z.string().optional(),
       displayOrder: z.number().optional(),
+      isFeature: z.boolean().optional(),
     })
   ).optional(),
 });

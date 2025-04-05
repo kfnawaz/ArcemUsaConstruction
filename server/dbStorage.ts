@@ -450,7 +450,8 @@ export class DBStorage implements IStorage {
         id: blogCategories.id,
         name: blogCategories.name,
         slug: blogCategories.slug,
-        description: blogCategories.description
+        description: blogCategories.description,
+        createdAt: blogCategories.createdAt
       })
       .from(blogCategories)
       .innerJoin(blogPostCategories, 
@@ -488,7 +489,8 @@ export class DBStorage implements IStorage {
       .select({
         id: blogTags.id,
         name: blogTags.name,
-        slug: blogTags.slug
+        slug: blogTags.slug,
+        createdAt: blogTags.createdAt
       })
       .from(blogTags)
       .innerJoin(blogPostTags, 
@@ -769,6 +771,14 @@ export class DBStorage implements IStorage {
   async updateNewsletterSubscriber(id: number, updates: Partial<InsertNewsletterSubscriber>): Promise<NewsletterSubscriber | undefined> {
     const [result] = await db.update(newsletterSubscribers)
       .set(updates)
+      .where(eq(newsletterSubscribers.id, id))
+      .returning();
+    return result;
+  }
+  
+  async updateNewsletterSubscriberStatus(id: number, subscribed: boolean): Promise<NewsletterSubscriber | undefined> {
+    const [result] = await db.update(newsletterSubscribers)
+      .set({ subscribed })
       .where(eq(newsletterSubscribers.id, id))
       .returning();
     return result;

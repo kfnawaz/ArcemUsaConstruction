@@ -18,6 +18,7 @@ import {
   insertNewsletterSubscriberSchema,
   insertQuoteRequestSchema,
   insertServiceSchema,
+  newsletterSubscribers,
   insertServiceGallerySchema,
   insertSubcontractorSchema,
   insertVendorSchema,
@@ -761,9 +762,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log(`[DEBUG] Found blog post by slug:`, { id: post.id, title: post.title });
       
       // Get post categories, tags, and gallery images
-      const categories = await storage.getBlogPostCategories(post.id);
-      const tags = await storage.getBlogPostTags(post.id);
-      const galleryImages = await storage.getBlogGallery(post.id);
+      const categories = await storage.getBlogPostCategories(Number(post.id));
+      const tags = await storage.getBlogPostTags(Number(post.id));
+      const galleryImages = await storage.getBlogGallery(Number(post.id));
       
       console.log(`[DEBUG] Post relations: ${categories.length} categories, ${tags.length} tags, ${galleryImages.length} gallery images`);
       
@@ -1992,6 +1993,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+  
+  // Get file categorization data from database to help organize files by projects
+  app.get(`${apiRouter}/uploadthing/file-categories`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      // Get all projects with their titles for mapping
+      const projects = await storage.getProjects();
+      
+      // Get all project gallery images with their URLs and project IDs
+      const projectGalleryMap: Record<string, any> = {};
+      
+      for (const project of projects) {
+        const galleryImages = await storage.getProjectGallery(project.id);
+        
+        // For each gallery image, map its URL to the project
+        for (const image of galleryImages) {
+          // Extract key from URL
+          // URLs are typically in format: https://utfs.io/f/PFuaKVnX18hb...
+          // or https://8amedrxbjr.ufs.sh/f/PFuaKVnX18hb...
+          const urlParts = image.imageUrl.split('/');
+          const key = urlParts[urlParts.length - 1];
+          
+          if (key) {
+            projectGalleryMap[key] = {
+              projectId: project.id,
+              projectTitle: project.title,
+              projectCategory: project.category,
+              imageId: image.id,
+              isFeature: image.isFeature
+            };
+          }
+        }
+      }
+      
+      // Get service gallery information as well
+      const services = await storage.getServices();
+      const serviceGalleryMap: Record<string, any> = {};
+      
+      for (const service of services) {
+        const galleryImages = await storage.getServiceGallery(service.id);
+        
+        for (const image of galleryImages) {
+          const urlParts = image.imageUrl.split('/');
+          const key = urlParts[urlParts.length - 1];
+          
+          if (key) {
+            serviceGalleryMap[key] = {
+              serviceId: service.id,
+              serviceTitle: service.title,
+              imageId: image.id
+            };
+          }
+        }
+      }
+      
+      // Format and send the categorization data
+      res.json({
+        projects: projects.map(project => ({
+          id: project.id,
+          title: project.title,
+          category: project.category
+        })),
+        projectGalleryMap,
+        serviceGalleryMap
+      });
+    } catch (error) {
+      console.error('Error getting file categorization data:', error);
+      res.status(500).json({ 
+        message: "Failed to get file categorization data",
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
 
   // Serve static files from public directory
   app.use('/uploads', (req, res, next) => {
@@ -2022,10 +2095,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
         
         // If previously unsubscribed, resubscribe them
-        const updatedSubscriber = await storage.updateNewsletterSubscriber(
-          existingSubscriber.id, 
-          { subscribed: true }
-        );
+        const updatedSubscriber = await storage.updateNewsletterSubscriberStatus(existingSubscriber.id, true);
         
         return res.json({ 
           message: "Welcome back! You have been resubscribed to our newsletter",
@@ -2066,10 +2136,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Update the subscriber to unsubscribed
-      const updatedSubscriber = await storage.updateNewsletterSubscriber(
-        subscriber.id, 
-        { subscribed: false }
-      );
+      const updatedSubscriber = await storage.updateNewsletterSubscriberStatus(subscriber.id, false);
       
       res.json({ 
         message: "You have been unsubscribed from our newsletter",

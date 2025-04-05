@@ -28,11 +28,14 @@ import {
   Trash2, 
   ChevronDown, 
   ChevronRight,
-  FolderIcon
+  FolderIcon,
+  Info
 } from 'lucide-react';
 import { formatBytes, formatDate } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import axios from 'axios';
 
 // Interface for files returned from the API
@@ -56,12 +59,42 @@ interface DeleteFileResponse {
   message: string;
 }
 
+// Project gallery mapping data from API
+interface ProjectGalleryData {
+  projectId: number;
+  projectTitle: string;
+  projectCategory: string;
+  imageId: number;
+  isFeature: boolean;
+}
+
+// Service gallery mapping data from API
+interface ServiceGalleryData {
+  serviceId: number;
+  serviceTitle: string;
+  imageId: number;
+}
+
+// File categorization data from API
+interface FileCategoriesData {
+  projects: {
+    id: number;
+    title: string;
+    category: string;
+  }[];
+  projectGalleryMap: Record<string, ProjectGalleryData>;
+  serviceGalleryMap: Record<string, ServiceGalleryData>;
+}
+
 export default function UploadThingFileManager() {
   const [selectedFiles, setSelectedFiles] = useState<Set<string>>(new Set());
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [fileToDelete, setFileToDelete] = useState<FileListItem | null>(null);
   const [isBatchDeleteDialogOpen, setIsBatchDeleteDialogOpen] = useState(false);
-  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({
+    // Default expand the Projects folder
+    'Projects': true
+  });
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -69,9 +102,9 @@ export default function UploadThingFileManager() {
   // Query for fetching files
   const { 
     data: filesData = [], 
-    isLoading, 
-    isError, 
-    error 
+    isLoading: isLoadingFiles, 
+    isError: isErrorFiles, 
+    error: filesError 
   } = useQuery<FileListItem[]>({
     queryKey: ['/api/uploadthing/files'],
     queryFn: async () => {
@@ -79,6 +112,27 @@ export default function UploadThingFileManager() {
       return response.data;
     },
     staleTime: 1000 * 60, // 1 minute
+  });
+  
+  // Query for fetching categorization data from database
+  const {
+    data: categoriesData,
+    isLoading: isLoadingCategories,
+    isError: isErrorCategories,
+    error: categoriesError
+  } = useQuery<FileCategoriesData>({
+    queryKey: ['/api/uploadthing/file-categories'],
+    queryFn: async () => {
+      const response = await axios.get('/api/uploadthing/file-categories');
+      return response.data;
+    },
+    staleTime: 1000 * 60, // 1 minute
+    // Set default empty objects to prevent errors
+    placeholderData: {
+      projects: [],
+      projectGalleryMap: {},
+      serviceGalleryMap: {}
+    }
   });
 
   // Safe access to files data
@@ -237,16 +291,110 @@ export default function UploadThingFileManager() {
     };
   };
 
+  // Determine file association with database entities
+  const getFileAssociations = () => {
+    const projectGalleryMap = categoriesData?.projectGalleryMap || {};
+    const serviceGalleryMap = categoriesData?.serviceGalleryMap || {};
+    const projects = categoriesData?.projects || [];
+    
+    // Create a map of filename to project/service data
+    const fileAssociations: Record<string, {
+      type: 'project' | 'service' | 'other';
+      projectId?: number;
+      projectTitle?: string;
+      projectCategory?: string;
+      serviceId?: number;
+      serviceTitle?: string;
+      isFeature?: boolean;
+    }> = {};
+    
+    // Extract the key from file URLs
+    const keyFromUrl = (url: string) => {
+      // UploadThing URLs typically end with the file key
+      const urlParts = url.split('/');
+      return urlParts[urlParts.length - 1];
+    };
+    
+    // Map project gallery files
+    Object.entries(projectGalleryMap).forEach(([key, data]) => {
+      fileAssociations[key] = {
+        type: 'project',
+        projectId: data.projectId,
+        projectTitle: data.projectTitle,
+        projectCategory: data.projectCategory,
+        isFeature: data.isFeature
+      };
+    });
+    
+    // Map service gallery files
+    Object.entries(serviceGalleryMap).forEach(([key, data]) => {
+      fileAssociations[key] = {
+        type: 'service',
+        serviceId: data.serviceId,
+        serviceTitle: data.serviceTitle
+      };
+    });
+    
+    return fileAssociations;
+  };
+
   // Group files by category
   const groupFilesByCategory = () => {
     const categorized: Record<string, FileListItem[]> = {};
+    const fileAssociations = getFileAssociations();
+    const projects = categoriesData?.projects || [];
     
-    files.forEach(file => {
-      const category = file.category || 'Other';
-      if (!categorized[category]) {
-        categorized[category] = [];
+    // Create project category map for fast lookup
+    const projectCategoryMap = new Map<number, string>();
+    projects.forEach(project => {
+      projectCategoryMap.set(project.id, project.category);
+    });
+    
+    // Helper function to get appropriate category path
+    const getFileCategoryPath = (file: FileListItem): string => {
+      const key = file.key;
+      const fileAssociation = fileAssociations[key];
+      
+      if (fileAssociation) {
+        if (fileAssociation.type === 'project' && fileAssociation.projectId && fileAssociation.projectTitle) {
+          return `Projects/${fileAssociation.projectCategory}/${fileAssociation.projectTitle}`;
+        } else if (fileAssociation.type === 'service' && fileAssociation.serviceTitle) {
+          return `Services/${fileAssociation.serviceTitle}`;
+        }
       }
-      categorized[category].push(file);
+      
+      // Fallback to file.category or try to determine from filename
+      if (file.category) return file.category;
+      
+      // Try to infer category from filename/path
+      const filename = file.name.toLowerCase();
+      
+      if (filename.includes('quote') || filename.includes('request')) {
+        return 'Quote Requests';
+      } else if (filename.includes('team') || filename.includes('member') || filename.includes('staff')) {
+        return 'Team Members';
+      } else if (filename.includes('blog') || filename.includes('post')) {
+        return 'Blog';
+      } else if (filename.includes('logo') || filename.includes('brand') || filename.includes('icon')) {
+        return 'Brand Assets';
+      } else if (filename.includes('legal') || filename.includes('terms') || filename.includes('policy')) {
+        return 'Legal Documents';
+      } else if (filename.endsWith('.pdf') || filename.endsWith('.doc') || filename.endsWith('.docx')) {
+        return 'Documents';
+      }
+      
+      return 'Other';
+    };
+    
+    // Sort files into categories
+    files.forEach(file => {
+      const categoryPath = getFileCategoryPath(file);
+      
+      if (!categorized[categoryPath]) {
+        categorized[categoryPath] = [];
+      }
+      
+      categorized[categoryPath].push(file);
     });
     
     return categorized;
@@ -264,6 +412,14 @@ export default function UploadThingFileManager() {
     // Initialize for Projects since we want it to appear first even if empty
     mainCategories['Projects'] = [];
     mainCategoryFiles['Projects'] = [];
+    
+    // Initialize other common categories
+    ['Services', 'Quote Requests', 'Blog', 'Team Members', 'Documents', 'Other'].forEach(cat => {
+      if (!mainCategories[cat]) {
+        mainCategories[cat] = [];
+        mainCategoryFiles[cat] = [];
+      }
+    });
     
     categories.forEach(category => {
       const { main, sub } = parseCategoryPath(category);
@@ -296,6 +452,26 @@ export default function UploadThingFileManager() {
         const aName = a.replace(`${main}/`, '');
         const bName = b.replace(`${main}/`, '');
         
+        // For Projects, sort by category first
+        if (main === 'Projects') {
+          // Extract the category and title parts
+          const aParts = aName.split('/');
+          const bParts = bName.split('/');
+          
+          // If both have categories (should be the case), compare categories first
+          if (aParts.length > 1 && bParts.length > 1) {
+            const aCat = aParts[0];
+            const bCat = bParts[0];
+            
+            if (aCat !== bCat) {
+              return aCat.localeCompare(bCat);
+            }
+            
+            // If categories are the same, compare titles
+            return aParts[1].localeCompare(bParts[1]);
+          }
+        }
+        
         // 'Other Projects' should come last
         if (aName.includes('Other')) return 1;
         if (bName.includes('Other')) return -1;
@@ -312,7 +488,7 @@ export default function UploadThingFileManager() {
   };
 
   // Render placeholder loading state
-  if (isLoading) {
+  if (isLoadingFiles || isLoadingCategories) {
     return (
       <Card>
         <CardContent className="pt-6">
@@ -339,7 +515,7 @@ export default function UploadThingFileManager() {
   }
 
   // Render error state
-  if (isError) {
+  if (isErrorFiles || isErrorCategories) {
     return (
       <Card>
         <CardContent className="pt-6">
@@ -347,7 +523,9 @@ export default function UploadThingFileManager() {
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Error loading files</AlertTitle>
             <AlertDescription>
-              {error instanceof Error ? error.message : 'An unknown error occurred while fetching files.'}
+              {isErrorFiles 
+                ? (filesError instanceof Error ? filesError.message : 'Failed to load file list.')
+                : (categoriesError instanceof Error ? categoriesError.message : 'Failed to load file categorization data.')}
             </AlertDescription>
           </Alert>
         </CardContent>
@@ -386,7 +564,7 @@ export default function UploadThingFileManager() {
     if (b === 'Other') return -1;
     
     // Custom category order for known categories
-    const categoryOrder = {
+    const categoryOrder: Record<string, number> = {
       'Quote Requests': 2,
       'Services': 3,
       'Blog': 4,
@@ -397,8 +575,8 @@ export default function UploadThingFileManager() {
     };
     
     // Get the order for each category (or a high number if not in the list)
-    const orderA = categoryOrder[a] || 100;
-    const orderB = categoryOrder[b] || 100;
+    const orderA = a in categoryOrder ? categoryOrder[a] : 100;
+    const orderB = b in categoryOrder ? categoryOrder[b] : 100;
     
     // Sort by the predefined order
     if (orderA !== orderB) {
@@ -487,14 +665,35 @@ export default function UploadThingFileManager() {
                               <TableCell className="font-medium">
                                 <div className="flex items-center gap-2">
                                   {getFileIcon(file.name)}
-                                  <a 
-                                    href={file.url} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="text-blue-600 hover:underline"
-                                  >
-                                    {file.name}
-                                  </a>
+                                  <div className="flex flex-col">
+                                    <a 
+                                      href={file.url} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer"
+                                      className="text-blue-600 hover:underline"
+                                    >
+                                      {file.name}
+                                    </a>
+                                    {getFileAssociations()[file.key] && (
+                                      <div className="flex items-center gap-1 mt-1">
+                                        {getFileAssociations()[file.key].type === 'project' && (
+                                          <Badge variant="outline" className="text-xs">
+                                            Project: {getFileAssociations()[file.key].projectTitle}
+                                          </Badge>
+                                        )}
+                                        {getFileAssociations()[file.key].isFeature && (
+                                          <Badge variant="secondary" className="text-xs">
+                                            Featured
+                                          </Badge>
+                                        )}
+                                        {getFileAssociations()[file.key].type === 'service' && (
+                                          <Badge variant="outline" className="text-xs bg-blue-50">
+                                            Service: {getFileAssociations()[file.key].serviceTitle}
+                                          </Badge>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
                               </TableCell>
                               <TableCell>{file.name.split('.').pop()?.toUpperCase() || 'Unknown'}</TableCell>
@@ -581,14 +780,35 @@ export default function UploadThingFileManager() {
                                         <TableCell className="font-medium">
                                           <div className="flex items-center gap-2">
                                             {getFileIcon(file.name)}
-                                            <a 
-                                              href={file.url} 
-                                              target="_blank" 
-                                              rel="noopener noreferrer"
-                                              className="text-blue-600 hover:underline"
-                                            >
-                                              {file.name}
-                                            </a>
+                                            <div className="flex flex-col">
+                                              <a 
+                                                href={file.url} 
+                                                target="_blank" 
+                                                rel="noopener noreferrer"
+                                                className="text-blue-600 hover:underline"
+                                              >
+                                                {file.name}
+                                              </a>
+                                              {getFileAssociations()[file.key] && (
+                                                <div className="flex items-center gap-1 mt-1">
+                                                  {getFileAssociations()[file.key].type === 'project' && (
+                                                    <Badge variant="outline" className="text-xs">
+                                                      Project: {getFileAssociations()[file.key].projectTitle}
+                                                    </Badge>
+                                                  )}
+                                                  {getFileAssociations()[file.key].isFeature && (
+                                                    <Badge variant="secondary" className="text-xs">
+                                                      Featured
+                                                    </Badge>
+                                                  )}
+                                                  {getFileAssociations()[file.key].type === 'service' && (
+                                                    <Badge variant="outline" className="text-xs bg-blue-50">
+                                                      Service: {getFileAssociations()[file.key].serviceTitle}
+                                                    </Badge>
+                                                  )}
+                                                </div>
+                                              )}
+                                            </div>
                                           </div>
                                         </TableCell>
                                         <TableCell>{file.name.split('.').pop()?.toUpperCase() || 'Unknown'}</TableCell>
