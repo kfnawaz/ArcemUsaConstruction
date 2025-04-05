@@ -414,33 +414,69 @@ export class DBStorage implements IStorage {
   }
   
   // Blog Categories
-  async getBlogCategories(): Promise<BlogCategory[]> {
-    return db.select().from(blogCategories);
+  async getBlogCategories(): Promise<SimpleBlogCategory[]> {
+    // Use raw SQL to avoid schema mismatch
+    const results = await db.execute(
+      'SELECT id, name, slug, description FROM blog_categories'
+    );
+    return results;
   }
   
-  async getBlogCategory(id: number): Promise<BlogCategory | undefined> {
-    const results = await db.select().from(blogCategories).where(eq(blogCategories.id, id));
+  async getBlogCategory(id: number): Promise<SimpleBlogCategory | undefined> {
+    // Use raw SQL to avoid schema mismatch
+    const results = await db.execute(
+      'SELECT id, name, slug, description FROM blog_categories WHERE id = $1',
+      [id]
+    );
     return results[0];
   }
   
-  async createBlogCategory(category: InsertBlogCategory): Promise<BlogCategory> {
-    const result = await db.insert(blogCategories).values(category).returning();
-    return result[0];
+  async createBlogCategory(category: InsertBlogCategory): Promise<SimpleBlogCategory> {
+    // Use raw SQL to avoid schema mismatch
+    await db.execute(
+      'INSERT INTO blog_categories (name, slug, description) VALUES ($1, $2, $3)',
+      [category.name, category.slug, category.description || null]
+    );
+    
+    // Fetch the newly created category
+    const results = await db.execute(
+      'SELECT id, name, slug, description FROM blog_categories WHERE slug = $1',
+      [category.slug]
+    );
+    return results[0];
   }
   
   // Blog Tags
-  async getBlogTags(): Promise<BlogTag[]> {
-    return db.select().from(blogTags);
+  async getBlogTags(): Promise<SimpleBlogTag[]> {
+    // Use raw SQL to avoid schema mismatch
+    const results = await db.execute(
+      'SELECT id, name, slug FROM blog_tags'
+    );
+    return results;
   }
   
-  async getBlogTag(id: number): Promise<BlogTag | undefined> {
-    const results = await db.select().from(blogTags).where(eq(blogTags.id, id));
+  async getBlogTag(id: number): Promise<SimpleBlogTag | undefined> {
+    // Use raw SQL to avoid schema mismatch
+    const results = await db.execute(
+      'SELECT id, name, slug FROM blog_tags WHERE id = $1',
+      [id]
+    );
     return results[0];
   }
   
-  async createBlogTag(tag: InsertBlogTag): Promise<BlogTag> {
-    const result = await db.insert(blogTags).values(tag).returning();
-    return result[0];
+  async createBlogTag(tag: InsertBlogTag): Promise<SimpleBlogTag> {
+    // Use raw SQL to avoid schema mismatch
+    await db.execute(
+      'INSERT INTO blog_tags (name, slug) VALUES ($1, $2)',
+      [tag.name, tag.slug]
+    );
+    
+    // Fetch the newly created tag
+    const results = await db.execute(
+      'SELECT id, name, slug FROM blog_tags WHERE slug = $1',
+      [tag.slug]
+    );
+    return results[0];
   }
   
   // Blog Post Categories

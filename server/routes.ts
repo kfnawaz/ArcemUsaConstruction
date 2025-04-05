@@ -71,6 +71,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // API routes prefix
   const apiRouter = "/api";
   
+  // Blog categories
+  app.get(`${apiRouter}/blog/categories`, async (_req: Request, res: Response) => {
+    try {
+      const categories = await storage.getBlogCategories();
+      res.json(categories);
+    } catch (error) {
+      console.error("Error fetching blog categories:", error);
+      res.status(500).json({ message: "Failed to fetch blog categories" });
+    }
+  });
+  
+  app.post(`${apiRouter}/blog/categories`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const categoryData = insertBlogCategorySchema.parse(req.body);
+      const category = await storage.createBlogCategory(categoryData);
+      res.status(201).json(category);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid category data", errors: error.errors });
+      }
+      console.error("Error creating blog category:", error);
+      res.status(500).json({ message: "Failed to create blog category" });
+    }
+  });
+  
+  // Blog tags
+  app.get(`${apiRouter}/blog/tags`, async (_req: Request, res: Response) => {
+    try {
+      const tags = await storage.getBlogTags();
+      res.json(tags);
+    } catch (error) {
+      console.error("Error fetching blog tags:", error);
+      res.status(500).json({ message: "Failed to fetch blog tags" });
+    }
+  });
+  
+  app.post(`${apiRouter}/blog/tags`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const tagData = insertBlogTagSchema.parse(req.body);
+      const tag = await storage.createBlogTag(tagData);
+      res.status(201).json(tag);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid tag data", errors: error.errors });
+      }
+      console.error("Error creating blog tag:", error);
+      res.status(500).json({ message: "Failed to create blog tag" });
+    }
+  });
+  
   // Projects Routes
   app.get(`${apiRouter}/projects`, async (req: Request, res: Response) => {
     try {

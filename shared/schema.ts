@@ -512,8 +512,23 @@ export type InsertProjectGallery = z.infer<typeof insertProjectGallerySchema>;
 export type BlogCategory = typeof blogCategories.$inferSelect;
 export type InsertBlogCategory = z.infer<typeof insertBlogCategorySchema>;
 
+// Simplified interfaces to match actual database schema
+export interface SimpleBlogCategory {
+  id: number;
+  name: string;
+  slug: string;
+  description: string | null;
+}
+
 export type BlogTag = typeof blogTags.$inferSelect;
 export type InsertBlogTag = z.infer<typeof insertBlogTagSchema>;
+
+// Simplified interface to match actual database schema
+export interface SimpleBlogTag {
+  id: number;
+  name: string;
+  slug: string;
+}
 
 export type BlogPost = typeof blogPosts.$inferSelect;
 export type InsertBlogPost = z.infer<typeof insertBlogPostSchema>;
