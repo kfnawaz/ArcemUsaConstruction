@@ -22,6 +22,20 @@ import {
 // modify the interface with any CRUD methods
 // you might need
 
+// Define simplified interfaces for blog categories and tags that don't require createdAt
+export interface SimpleBlogCategory {
+  id: number;
+  name: string;
+  slug: string;
+  description: string | null;
+}
+
+export interface SimpleBlogTag {
+  id: number;
+  name: string;
+  slug: string;
+}
+
 export interface IStorage {
   // Users
   getUser(id: number): Promise<User | undefined>;
@@ -71,12 +85,12 @@ export interface IStorage {
   deleteAllBlogGalleryImages(postId: number): Promise<boolean>;
   
   // Blog Post Categories
-  getBlogPostCategories(postId: number): Promise<BlogCategory[]>;
+  getBlogPostCategories(postId: number): Promise<SimpleBlogCategory[]>;
   linkBlogPostCategories(postId: number, categoryIds: number[]): Promise<void>;
   updateBlogPostCategories(postId: number, categoryIds: number[]): Promise<void>;
   
   // Blog Post Tags
-  getBlogPostTags(postId: number): Promise<BlogTag[]>;
+  getBlogPostTags(postId: number): Promise<SimpleBlogTag[]>;
   linkBlogPostTags(postId: number, tagIds: number[]): Promise<void>;
   updateBlogPostTags(postId: number, tagIds: number[]): Promise<void>;
   

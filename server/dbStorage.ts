@@ -444,14 +444,14 @@ export class DBStorage implements IStorage {
   }
   
   // Blog Post Categories
-  async getBlogPostCategories(postId: number): Promise<BlogCategory[]> {
+  async getBlogPostCategories(postId: number): Promise<SimpleBlogCategory[]> {
     const results = await db
       .select({
         id: blogCategories.id,
         name: blogCategories.name,
         slug: blogCategories.slug,
-        description: blogCategories.description,
-        createdAt: blogCategories.createdAt
+        description: blogCategories.description
+        // Removed createdAt field as it seems to be missing in the database
       })
       .from(blogCategories)
       .innerJoin(blogPostCategories, 
@@ -484,13 +484,13 @@ export class DBStorage implements IStorage {
   }
   
   // Blog Post Tags
-  async getBlogPostTags(postId: number): Promise<BlogTag[]> {
+  async getBlogPostTags(postId: number): Promise<SimpleBlogTag[]> {
     const results = await db
       .select({
         id: blogTags.id,
         name: blogTags.name,
-        slug: blogTags.slug,
-        createdAt: blogTags.createdAt
+        slug: blogTags.slug
+        // Removed createdAt field as it seems to be missing in the database
       })
       .from(blogTags)
       .innerJoin(blogPostTags, 
