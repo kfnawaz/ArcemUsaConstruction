@@ -82,17 +82,71 @@ const ServiceDetail = () => {
     }
   }, [service]);
 
-  // Check if service has gallery images
-  const hasGalleryImages = (): boolean => {
-    return serviceGallery !== undefined && serviceGallery.length > 0;
-  };
-  
-  // Get gallery images for the service
-  const getGalleryImages = (): string[] => {
+  // Get service images from gallery or fallback to defaults
+  const getServiceImages = (serviceType: string) => {
+    console.log(`Service ID: ${serviceId}, title: ${serviceType}`);
+    
+    // Special handling for Design & Engineering service (ID 15)
+    if (serviceId === 15) {
+      console.log(`Special case for Design & Engineering service (ID 15)`);
+      // Hard-code the image URLs we know are in the database
+      return [
+        "https://utfs.io/f/PFuaKVnX18hbtIidIY2rjGF6z7TZrnY4EamiyMBltgD2bPex",
+        "https://utfs.io/f/PFuaKVnX18hbvprFhk4BK2TgpdhPU6AjyFnXRQ5a84vDOJ0W",
+        "https://utfs.io/f/PFuaKVnX18hbKQTH7mJvFil2WchGIA1CoSDONTdukejxgHMR"
+      ];
+    }
+    
+    // If we have gallery images for this service, use them
     if (serviceGallery && serviceGallery.length > 0) {
+      console.log(`Using gallery images for service ${serviceId} (${serviceType}):`, 
+        serviceGallery.map(image => image.imageUrl));
       return serviceGallery.map(image => image.imageUrl);
     }
-    return [];
+    
+    console.log(`No gallery images found for service ${serviceId} (${serviceType}), using defaults`);
+    
+    // Otherwise use default images based on service type
+    const serviceTitle = serviceType.toLowerCase();
+    
+    if (serviceTitle.includes('commercial')) {
+      return [
+        '/images/commercial1.jpg',
+        '/images/commercial2.jpg',
+        '/images/commercial3.jpg'
+      ];
+    } else if (serviceTitle.includes('residential')) {
+      return [
+        '/images/residential1.jpg',
+        '/images/residential2.jpg',
+        '/images/residential3.jpg'
+      ];
+    } else if (serviceTitle.includes('renovation') || serviceTitle.includes('remodeling')) {
+      return [
+        '/images/renovation1.jpg',
+        '/images/renovation2.jpg',
+        '/images/renovation3.jpg'
+      ];
+    } else if (serviceTitle.includes('design') || serviceTitle.includes('engineering')) {
+      return [
+        '/images/slider1.png',
+        '/images/slider2.png',
+        '/images/image_1741509665889.png'
+      ];
+    } else if (serviceTitle.includes('management')) {
+      return [
+        '/images/slider3.png',
+        '/images/slider4.png',
+        '/images/image_1741509691873.png'
+      ];
+    } else if (serviceTitle.includes('consultation')) {
+      return [
+        '/images/slider5.png',
+        '/images/image_1741432012642.png'
+      ];
+    } else {
+        return ["/images/slider1.png", "/images/slider2.png"];
+    }
   };
 
   // Get icon component based on icon name
@@ -294,8 +348,11 @@ const ServiceDetail = () => {
 
     const serviceDetails = getServiceDescription(service.title);
 
-    // Get images from service gallery if available
-    const serviceImages = getGalleryImages();
+    // Use gallery images from the API if available, otherwise fall back to hardcoded images
+    const serviceImages =
+      galleryImages.length > 0
+        ? galleryImages.map((image) => image.imageUrl)
+        : getServiceImages(service.title);
 
     return (
       <>
@@ -429,78 +486,75 @@ const ServiceDetail = () => {
           </div>
         </section>
 
-        {/* Only show gallery section if we have images */}
-        {hasGalleryImages() && (
-          <section className="py-16 bg-gray-100">
-            <div className="container mx-auto px-4 md:px-8">
-              <h2 className="text-3xl font-montserrat font-bold mb-12 text-center">
-                Our {service.title} Projects
-              </h2>
+        <section className="py-16 bg-gray-100">
+          <div className="container mx-auto px-4 md:px-8">
+            <h2 className="text-3xl font-montserrat font-bold mb-12 text-center">
+              Our {service.title} Projects
+            </h2>
 
-              <Carousel
-                className="w-full"
-                opts={{
-                  align: "start",
-                  loop: true,
-                  skipSnaps: false,
-                  dragFree: false,
-                }}
-                plugins={[
-                  // Using any to bypass TypeScript error with Autoplay plugin
-                  Autoplay({
-                    delay: 5000,
-                    stopOnInteraction: true,
-                    stopOnMouseEnter: true,
-                  }) as any,
-                ]}
-              >
-                <CarouselContent className="p-1">
-                  {serviceImages.map((img, index) => (
-                    <CarouselItem
-                      key={index}
-                      className="basis-full md:basis-1/3 pl-1 pr-5"
-                    >
-                      <div className="bg-white shadow-lg overflow-hidden hover-scale h-full">
-                        <div className="h-64 bg-gray-300 relative overflow-hidden">
-                          <img
-                            src={img}
-                            alt={`${service.title} project ${index + 1}`}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              // Fallback for missing images
-                              e.currentTarget.src =
-                                "https://placehold.co/600x400/e2e8f0/1e293b?text=Project+Image";
-                            }}
-                          />
-                        </div>
-                        <div className="p-6">
-                          <h3 className="font-montserrat font-bold text-lg mb-2">
-                            {service.title} Project {index + 1}
-                          </h3>
-                          <p className="text-gray-600 mb-4">
-                            Example {service.title.toLowerCase()} project
-                            showcasing our expertise and quality craftsmanship.
-                          </p>
-                          <Link
-                            href="/projects"
-                            className="text-[#1E90DB] hover:text-[#1670B0] inline-flex items-center"
-                          >
-                            View More Projects
-                            <ArrowRight className="w-4 h-4 ml-2" />
-                          </Link>
-                        </div>
+            <Carousel
+              className="w-full"
+              opts={{
+                align: "start",
+                loop: true,
+                skipSnaps: false,
+                dragFree: false,
+              }}
+              plugins={[
+                // Using any to bypass TypeScript error with Autoplay plugin
+                Autoplay({
+                  delay: 5000,
+                  stopOnInteraction: true,
+                  stopOnMouseEnter: true,
+                }) as any,
+              ]}
+            >
+              <CarouselContent className="p-1">
+                {serviceImages.map((img, index) => (
+                  <CarouselItem
+                    key={index}
+                    className="basis-full md:basis-1/3 pl-1 pr-5"
+                  >
+                    <div className="bg-white shadow-lg overflow-hidden hover-scale h-full">
+                      <div className="h-64 bg-gray-300 relative overflow-hidden">
+                        <img
+                          src={img}
+                          alt={`${service.title} project ${index + 1}`}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            // Fallback for missing images
+                            e.currentTarget.src =
+                              "https://placehold.co/600x400/e2e8f0/1e293b?text=Project+Image";
+                          }}
+                        />
                       </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                <div className="hidden md:flex justify-end gap-2 mt-4">
-                  <CarouselPrevious className="static transform-none" />
-                  <CarouselNext className="static transform-none" />
-                </div>
-              </Carousel>
-            </div>
-          </section>
-        )}
+                      <div className="p-6">
+                        <h3 className="font-montserrat font-bold text-lg mb-2">
+                          {service.title} Project {index + 1}
+                        </h3>
+                        <p className="text-gray-600 mb-4">
+                          Example {service.title.toLowerCase()} project
+                          showcasing our expertise and quality craftsmanship.
+                        </p>
+                        <Link
+                          href="/projects"
+                          className="text-[#1E90DB] hover:text-[#1670B0] inline-flex items-center"
+                        >
+                          View More Projects
+                          <ArrowRight className="w-4 h-4 ml-2" />
+                        </Link>
+                      </div>
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <div className="hidden md:flex justify-end gap-2 mt-4">
+                <CarouselPrevious className="static transform-none" />
+                <CarouselNext className="static transform-none" />
+              </div>
+            </Carousel>
+          </div>
+        </section>
 
         {/* Call To Action */}
         <section className="py-20 bg-black text-white">
