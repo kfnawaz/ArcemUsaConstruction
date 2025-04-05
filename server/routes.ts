@@ -2049,6 +2049,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
+      // Get quote request attachments for organization
+      const quoteRequests = await storage.getQuoteRequests();
+      const quoteAttachmentsMap: Record<string, any> = {};
+      
+      // Create a map of quote requests for easy lookup by ID
+      const quoteRequestsById: Record<number, any> = {};
+      quoteRequests.forEach(quote => {
+        quoteRequestsById[quote.id] = quote;
+      });
+      
+      // Process all quote request attachments
+      for (const quote of quoteRequests) {
+        const attachments = await storage.getQuoteRequestAttachments(quote.id);
+        
+        for (const attachment of attachments) {
+          const urlParts = attachment.fileUrl.split('/');
+          const key = urlParts[urlParts.length - 1];
+          
+          if (key) {
+            quoteAttachmentsMap[key] = {
+              quoteId: quote.id,
+              quoteName: quote.name,
+              quoteEmail: quote.email,
+              quoteProject: quote.projectType,
+              attachmentId: attachment.id,
+              fileName: attachment.fileName
+            };
+          }
+        }
+      }
+      
       // Format and send the categorization data
       res.json({
         projects: projects.map(project => ({
@@ -2057,7 +2088,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           category: project.category
         })),
         projectGalleryMap,
-        serviceGalleryMap
+        serviceGalleryMap,
+        quoteAttachmentsMap,
+        quoteRequests: quoteRequests.map(quote => ({
+          id: quote.id,
+          name: quote.name,
+          email: quote.email,
+          project: quote.projectType
+        }))
       });
     } catch (error) {
       console.error('Error getting file categorization data:', error);

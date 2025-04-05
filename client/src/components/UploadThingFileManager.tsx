@@ -84,6 +84,23 @@ interface FileCategoriesData {
   }[];
   projectGalleryMap: Record<string, ProjectGalleryData>;
   serviceGalleryMap: Record<string, ServiceGalleryData>;
+  quoteAttachmentsMap: Record<string, QuoteAttachmentData>;
+  quoteRequests: {
+    id: number;
+    name: string;
+    email: string;
+    project: string;
+  }[];
+}
+
+// Quote request attachment data from API
+interface QuoteAttachmentData {
+  quoteId: number;
+  quoteName: string;
+  quoteEmail: string;
+  quoteProject: string;
+  attachmentId: number;
+  fileName: string;
 }
 
 export default function UploadThingFileManager() {
@@ -296,16 +313,22 @@ export default function UploadThingFileManager() {
     
     const projectGalleryMap = categoriesData.projectGalleryMap || {};
     const serviceGalleryMap = categoriesData.serviceGalleryMap || {};
+    const quoteAttachmentsMap = categoriesData.quoteAttachmentsMap || {};
     const projects = categoriesData.projects || [];
+    const quoteRequests = categoriesData.quoteRequests || [];
     
-    // Create a map of filename to project/service data
+    // Create a map of filename to project/service/quote data
     const fileAssociations: Record<string, {
-      type: 'project' | 'service' | 'other';
+      type: 'project' | 'service' | 'quote' | 'other';
       projectId?: number;
       projectTitle?: string;
       projectCategory?: string;
       serviceId?: number;
       serviceTitle?: string;
+      quoteId?: number;
+      quoteName?: string;
+      quoteProject?: string;
+      fileName?: string;
       isFeature?: boolean;
     }> = {};
     
@@ -333,6 +356,17 @@ export default function UploadThingFileManager() {
         type: 'service',
         serviceId: data.serviceId,
         serviceTitle: data.serviceTitle
+      };
+    });
+    
+    // Map quote request attachment files
+    Object.entries(quoteAttachmentsMap).forEach(([key, data]) => {
+      fileAssociations[key] = {
+        type: 'quote',
+        quoteId: data.quoteId,
+        quoteName: data.quoteName,
+        quoteProject: data.quoteProject,
+        fileName: data.fileName
       };
     });
     
@@ -391,6 +425,9 @@ export default function UploadThingFileManager() {
           return `Projects/${fileAssociation.projectCategory}/${fileAssociation.projectTitle}`;
         } else if (fileAssociation.type === 'service' && fileAssociation.serviceTitle) {
           return `Services/${fileAssociation.serviceTitle}`;
+        } else if (fileAssociation.type === 'quote' && fileAssociation.quoteId && fileAssociation.quoteName) {
+          // Format: Quote Requests/Quote from John Doe (Commercial Building)
+          return `Quote Requests/Quote from ${fileAssociation.quoteName} (${fileAssociation.quoteProject})`;
         }
       }
       
@@ -722,6 +759,11 @@ export default function UploadThingFileManager() {
                                             Service: {getFileAssociations()[file.key].serviceTitle}
                                           </Badge>
                                         )}
+                                        {getFileAssociations()[file.key].type === 'quote' && (
+                                          <Badge variant="outline" className="text-xs bg-amber-50">
+                                            Quote: {getFileAssociations()[file.key].quoteName}
+                                          </Badge>
+                                        )}
                                       </div>
                                     )}
                                   </div>
@@ -835,6 +877,11 @@ export default function UploadThingFileManager() {
                                                   {getFileAssociations()[file.key].type === 'service' && (
                                                     <Badge variant="outline" className="text-xs bg-blue-50">
                                                       Service: {getFileAssociations()[file.key].serviceTitle}
+                                                    </Badge>
+                                                  )}
+                                                  {getFileAssociations()[file.key].type === 'quote' && (
+                                                    <Badge variant="outline" className="text-xs bg-amber-50">
+                                                      Quote: {getFileAssociations()[file.key].quoteName}
                                                     </Badge>
                                                   )}
                                                 </div>

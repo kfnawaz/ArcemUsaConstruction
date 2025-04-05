@@ -114,12 +114,26 @@ export default function FileUploadTest() {
               </Alert>
             </div>
             
-            <Tabs defaultValue="fileupload" className="mb-6">
+            <Tabs defaultValue="uploadthing" className="mb-6">
               <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="uploadthing">UploadThing Manager</TabsTrigger>
                 <TabsTrigger value="fileupload">File Upload Component</TabsTrigger>
                 <TabsTrigger value="filemanager">File Manager Component</TabsTrigger>
-                <TabsTrigger value="uploadthing">UploadThing Manager</TabsTrigger>
               </TabsList>
+              
+              <TabsContent value="uploadthing">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>UploadThing File Manager</CardTitle>
+                    <CardDescription>
+                      Directly manage all files in your UploadThing account, including deletion capabilities.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <UploadThingFileManager />
+                  </CardContent>
+                </Card>
+              </TabsContent>
               
               <TabsContent value="fileupload">
                 <Card>
@@ -201,20 +215,6 @@ export default function FileUploadTest() {
                         )}
                       </ul>
                     </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-              
-              <TabsContent value="uploadthing">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>UploadThing File Manager</CardTitle>
-                    <CardDescription>
-                      Directly manage all files in your UploadThing account, including deletion capabilities.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <UploadThingFileManager />
                   </CardContent>
                 </Card>
               </TabsContent>
