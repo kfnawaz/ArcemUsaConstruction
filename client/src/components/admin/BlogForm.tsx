@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useBlog } from '@/hooks/useBlog';
@@ -34,6 +34,9 @@ interface BlogFormProps {
 }
 
 const BlogForm = ({ postId, onClose }: BlogFormProps) => {
+  const [categoryIds, setCategoryIds] = useState<number[]>([]);
+  const [tagIds, setTagIds] = useState<number[]>([]);
+  const [formInitialized, setFormInitialized] = useState(false);
 
   const { post, isLoading, saveBlogPost, isSubmitting, getPostCategoryIds, getPostTagIds } = useBlog(postId);
   const { 
@@ -58,35 +61,41 @@ const BlogForm = ({ postId, onClose }: BlogFormProps) => {
     },
   });
 
-  // Load categories and tags for the post when editing
-  useEffect(() => {
-    const loadCategoriesAndTags = async () => {
-      if (post && postId) {
-        try {
-          const categoryIds = await getPostCategoryIds(postId);
-          const tagIds = await getPostTagIds(postId);
-          
-          form.reset({
-            title: post.title,
-            slug: post.slug,
-            content: post.content,
-            excerpt: post.excerpt,
-            image: post.image,
-            author: post.author,
-            published: post.published,
-            categoryIds,
-            tagIds
-          });
-        } catch (error) {
-          console.error("Error loading post relationships:", error);
-        }
+  // Load post data once on initial render
+  const loadPostData = useCallback(async () => {
+    if (post && postId && !formInitialized) {
+      try {
+        const fetchedCategoryIds = await getPostCategoryIds(postId);
+        const fetchedTagIds = await getPostTagIds(postId);
+        
+        setCategoryIds(fetchedCategoryIds);
+        setTagIds(fetchedTagIds);
+        
+        form.reset({
+          title: post.title,
+          slug: post.slug,
+          content: post.content,
+          excerpt: post.excerpt,
+          image: post.image,
+          author: post.author,
+          published: post.published,
+          categoryIds: fetchedCategoryIds,
+          tagIds: fetchedTagIds
+        });
+        
+        setFormInitialized(true);
+      } catch (error) {
+        console.error("Error loading post relationships:", error);
       }
-    };
-    
-    if (post) {
-      loadCategoriesAndTags();
     }
-  }, [form, post, postId, getPostCategoryIds, getPostTagIds]);
+  }, [form, post, postId, getPostCategoryIds, getPostTagIds, formInitialized]);
+  
+  // Initialize form with post data
+  useEffect(() => {
+    if (post && !formInitialized) {
+      loadPostData();
+    }
+  }, [post, formInitialized, loadPostData]);
 
   // Generate slug from title when title changes
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -299,34 +308,39 @@ const BlogForm = ({ postId, onClose }: BlogFormProps) => {
                         <div className="text-sm text-muted-foreground">No categories available</div>
                       ) : (
                         <div className="grid grid-cols-2 gap-3">
-                          {categories.map((category) => (
-                            <div key={category.id} className="flex items-center space-x-2">
-                              <Checkbox
-                                id={`category-${category.id}`}
-                                checked={field.value?.includes(category.id)}
-                                onCheckedChange={(checked) => {
-                                  const currentValues = field.value || [];
-                                  const newValues = checked
-                                    ? [...currentValues, category.id]
-                                    : currentValues.filter((id) => id !== category.id);
-                                  field.onChange(newValues);
-                                }}
-                              />
-                              <label
-                                htmlFor={`category-${category.id}`}
-                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                              >
-                                {category.name}
-                              </label>
-                            </div>
-                          ))}
+                          {categories.map((category) => {
+                            // Check against local state instead of using form value directly
+                            const isChecked = field.value?.includes(category.id);
+                            return (
+                              <div key={category.id} className="flex items-center space-x-2">
+                                <Checkbox
+                                  id={`category-${category.id}`}
+                                  checked={isChecked}
+                                  onCheckedChange={(checked) => {
+                                    const newValues = checked
+                                      ? [...(field.value || []), category.id]
+                                      : (field.value || []).filter((id) => id !== category.id);
+                                    
+                                    // Update form value
+                                    field.onChange(newValues);
+                                  }}
+                                />
+                                <label
+                                  htmlFor={`category-${category.id}`}
+                                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                >
+                                  {category.name}
+                                </label>
+                              </div>
+                            );
+                          })}
                         </div>
                       )}
                       <CategoryCreator 
                         onCategoryCreated={(categoryId, categoryName) => {
                           // Add the newly created category to the selected categories
-                          const currentValues = field.value || [];
-                          field.onChange([...currentValues, categoryId]);
+                          const newValues = [...(field.value || []), categoryId];
+                          field.onChange(newValues);
                         }}
                       />
                       <FormDescription>
@@ -355,6 +369,7 @@ const BlogForm = ({ postId, onClose }: BlogFormProps) => {
                       ) : (
                         <div className="flex flex-wrap gap-2 p-2 border rounded-md">
                           {tags.map((tag) => {
+                            // Check against form value
                             const isSelected = field.value?.includes(tag.id);
                             return (
                               <Badge
@@ -362,10 +377,11 @@ const BlogForm = ({ postId, onClose }: BlogFormProps) => {
                                 variant={isSelected ? "default" : "outline"}
                                 className={`cursor-pointer ${isSelected ? 'bg-primary' : ''}`}
                                 onClick={() => {
-                                  const currentValues = field.value || [];
                                   const newValues = isSelected
-                                    ? currentValues.filter((id) => id !== tag.id)
-                                    : [...currentValues, tag.id];
+                                    ? (field.value || []).filter((id) => id !== tag.id)
+                                    : [...(field.value || []), tag.id];
+                                  
+                                  // Update form value
                                   field.onChange(newValues);
                                 }}
                               >
@@ -378,8 +394,8 @@ const BlogForm = ({ postId, onClose }: BlogFormProps) => {
                       <TagCreator 
                         onTagCreated={(tagId, tagName) => {
                           // Add the newly created tag to the selected tags
-                          const currentValues = field.value || [];
-                          field.onChange([...currentValues, tagId]);
+                          const newValues = [...(field.value || []), tagId];
+                          field.onChange(newValues);
                         }}
                       />
                       <FormDescription>
