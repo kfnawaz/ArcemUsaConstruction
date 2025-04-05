@@ -40,7 +40,6 @@ export default function FileUploadTest() {
               
               {/* Storage Usage Card */}
               <div className="bg-white rounded-lg border p-4 mb-6">
-                <h2 className="text-lg font-medium mb-2">Storage Usage</h2>
                 <StorageUsage />
               </div>
             </div>

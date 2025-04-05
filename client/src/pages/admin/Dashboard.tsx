@@ -16,17 +16,22 @@ import {
   Mail,
   ClipboardList,
   BriefcaseBusiness,
-  Upload
+  FolderOpen
 } from 'lucide-react';
 import AdminNav from '@/components/admin/AdminNav';
 import StorageUsage from '@/components/admin/StorageUsage';
 import { Project, BlogPost, Message } from '@shared/schema';
+import { useNotifications } from '@/hooks/useNotifications';
+import NotificationIndicator from '@/components/common/NotificationIndicator';
 
 const Dashboard = () => {
   useEffect(() => {
     scrollToTop();
     document.title = 'Admin Dashboard - ARCEM';
   }, []);
+
+  // Get notification counts
+  const { counts, isLoading: isLoadingNotifications } = useNotifications();
 
   // Fetch projects
   const { data: projects, isLoading: isLoadingProjects } = useQuery<Project[]>({
@@ -43,9 +48,6 @@ const Dashboard = () => {
     queryKey: ['/api/messages'],
   });
 
-  // Count unread messages
-  const unreadMessagesCount = messages?.filter(message => !message.read).length || 0;
-
   return (
     <div className="min-h-screen pt-32 pb-20 bg-gray-50">
       <div className="container mx-auto px-4 md:px-8">
@@ -60,12 +62,6 @@ const Dashboard = () => {
               <p className="text-gray-600">
                 Manage your projects, blog posts, and messages.
               </p>
-            </div>
-            
-            {/* Storage Usage */}
-            <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-              <h2 className="text-xl font-montserrat font-bold mb-4">Storage Usage</h2>
-              <StorageUsage />
             </div>
             
             {/* Dashboard Stats */}
@@ -108,15 +104,20 @@ const Dashboard = () => {
                 </div>
                 <div>
                   <h3 className="text-lg font-montserrat font-bold">
-                    {isLoadingMessages ? (
+                    {isLoadingNotifications ? (
                       <div className="h-6 w-20 bg-gray-200 animate-pulse rounded"></div>
                     ) : (
-                      <>{unreadMessagesCount} Unread</>
+                      <>{counts.unreadMessages} Unread</>
                     )}
                   </h3>
                   <p className="text-sm text-gray-500">New messages</p>
                 </div>
               </div>
+            </div>
+            
+            {/* Storage Usage */}
+            <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+              <StorageUsage />
             </div>
             
             {/* Quick Actions */}
@@ -146,9 +147,16 @@ const Dashboard = () => {
                       </Button>
                     </Link>
                     <Link href="/admin/testimonials">
-                      <Button variant="outline" className="w-full justify-start">
+                      <Button variant="outline" className="w-full justify-start relative">
                         <Star className="mr-2 h-4 w-4" /> 
                         Testimonials
+                        {counts.pendingTestimonials > 0 && (
+                          <NotificationIndicator 
+                            count={counts.pendingTestimonials} 
+                            size="sm" 
+                            className="absolute right-2 top-2"
+                          />
+                        )}
                       </Button>
                     </Link>
                   </div>
@@ -159,9 +167,16 @@ const Dashboard = () => {
                   <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Communication</h3>
                   <div className="space-y-2">
                     <Link href="/admin/messages">
-                      <Button variant="outline" className="w-full justify-start">
+                      <Button variant="outline" className="w-full justify-start relative">
                         <MessageSquare className="mr-2 h-4 w-4" /> 
                         Messages
+                        {counts.unreadMessages > 0 && (
+                          <NotificationIndicator 
+                            count={counts.unreadMessages} 
+                            size="sm" 
+                            className="absolute right-2 top-2"
+                          />
+                        )}
                       </Button>
                     </Link>
                     <Link href="/admin/newsletter">
@@ -171,9 +186,16 @@ const Dashboard = () => {
                       </Button>
                     </Link>
                     <Link href="/admin/quotes">
-                      <Button variant="outline" className="w-full justify-start">
+                      <Button variant="outline" className="w-full justify-start relative">
                         <ClipboardList className="mr-2 h-4 w-4" /> 
                         Quote Requests
+                        {counts.pendingQuoteRequests > 0 && (
+                          <NotificationIndicator 
+                            count={counts.pendingQuoteRequests} 
+                            size="sm" 
+                            className="absolute right-2 top-2"
+                          />
+                        )}
                       </Button>
                     </Link>
                   </div>
@@ -197,7 +219,7 @@ const Dashboard = () => {
                     </Link>
                     <Link href="/admin/file-upload-test">
                       <Button variant="outline" className="w-full justify-start">
-                        <Upload className="mr-2 h-4 w-4" /> 
+                        <FolderOpen className="mr-2 h-4 w-4" /> 
                         File Manager
                       </Button>
                     </Link>
