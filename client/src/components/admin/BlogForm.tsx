@@ -21,7 +21,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { ArrowLeft, Loader2, Images, Upload } from 'lucide-react';
-import UploadThingFileUpload from '@/components/common/UploadThingFileUpload';
 import { generateSlug } from '@/lib/utils';
 import {
   Select,
@@ -32,6 +31,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import BlogGalleryManager from './BlogGalleryManager';
+import BlogFeaturedImageUpload from './BlogFeaturedImageUpload';
 
 interface BlogFormProps {
   postId?: number;
@@ -119,9 +119,8 @@ const BlogForm = ({ postId, onClose }: BlogFormProps) => {
         const newPostId = savedPost.id;
         console.log(`Adding featured image to gallery for new post ID ${newPostId}`);
         
-        // Create a new hook instance with the new post ID
         try {
-          // We need to directly use the API since the hook is not accessible within this context
+          // Add the featured image to the gallery with order=0 to mark it as the main image
           const response = await fetch(`/api/blog/${newPostId}/gallery`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -277,53 +276,36 @@ const BlogForm = ({ postId, onClose }: BlogFormProps) => {
                     <FormItem>
                       <FormLabel>Featured Image</FormLabel>
                       <FormControl>
-                        <div className="flex flex-col space-y-2">
-                          {field.value && (
-                            <div className="relative w-full h-48 rounded-md overflow-hidden border mb-2">
-                              <img 
-                                src={field.value} 
-                                alt="Blog featured image" 
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          )}
-                          <UploadThingFileUpload
-                            onUploadComplete={(files) => {
-                              if (files && files.length > 0) {
-                                const fileUrl = files[0].fileUrl;
-                                
-                                // Store old image URL before updating field
-                                const oldImageUrl = field.value;
-                                
-                                // Update form field with new image URL
-                                field.onChange(fileUrl);
-                                
-                                // If we already have a post ID, handle gallery updates
-                                if (postId) {
-                                  const { addGalleryImage, galleryImages } = useBlog(postId);
-                                  
-                                  try {
-                                    // Check if there is already a featured image in the gallery (order 0)
-                                    const featuredImageInGallery = galleryImages && 
-                                      Array.isArray(galleryImages) && 
-                                      galleryImages.find(img => img.order === 0);
-                                    
-                                    // Either way, add the new image with order 0 to mark it as featured
-                                    addGalleryImage(fileUrl, "Featured image", 0);
-                                    
-                                    console.log("Updated featured image in gallery for post:", postId);
-                                  } catch (error) {
-                                    console.error("Error updating image in gallery:", error);
+                        <BlogFeaturedImageUpload
+                          currentImageUrl={field.value}
+                          onImageUpload={(imageUrl) => {
+                            // Update form field with new image URL
+                            field.onChange(imageUrl);
+                            
+                            // If we have a post ID and a valid image URL, update the gallery
+                            if (postId && imageUrl) {
+                              // Using direct API call for consistency since useBlog can't be called within render
+                              fetch(`/api/blog/${postId}/gallery`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                  imageUrl,
+                                  caption: "Featured image",
+                                  order: 0
+                                })
+                              })
+                                .then(response => {
+                                  if (!response.ok) {
+                                    throw new Error(`Failed to add image to gallery: ${response.statusText}`);
                                   }
-                                }
-                              }
-                            }}
-                            uploadType="imageUploader"
-                            maxFiles={1}
-                            maxFileSize={16}
-                            allowedFileTypes={['image/jpeg', 'image/png', 'image/webp']}
-                          />
-                        </div>
+                                  console.log("Updated featured image in gallery for post:", postId);
+                                })
+                                .catch(error => {
+                                  console.error("Error updating image in gallery:", error);
+                                });
+                            }
+                          }}
+                        />
                       </FormControl>
                       <FormDescription>
                         This image will be displayed on blog listings and at the top of the post
