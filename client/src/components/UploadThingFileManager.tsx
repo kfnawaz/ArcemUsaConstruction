@@ -35,6 +35,7 @@ import { formatBytes, formatDate } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import axios from 'axios';
 
@@ -535,6 +536,18 @@ export default function UploadThingFileManager() {
     const totalSize = calculateCategoryTotalSize(mainCategory, mainFiles, filesByCategory);
     return formatBytes(totalSize);
   };
+  
+  // Calculate total size of all files
+  const calculateTotalUsedStorage = (): number => {
+    return files.reduce((total, file) => total + file.size, 0);
+  };
+  
+  // Calculate storage usage percentage
+  const calculateStoragePercentage = (): number => {
+    const totalSize = calculateTotalUsedStorage();
+    const maxSize = 2 * 1024 * 1024 * 1024; // 2GB in bytes
+    return Math.min(Math.round((totalSize / maxSize) * 100), 100);
+  };
 
   // Get main categories and their subcategories
   const getOrganizedCategories = () => {
@@ -632,6 +645,19 @@ export default function UploadThingFileManager() {
             <Skeleton className="h-8 w-48" />
             <Skeleton className="h-9 w-28" />
           </div>
+          
+          {/* Storage usage progress bar skeleton */}
+          <div className="mb-6">
+            <div className="flex justify-between items-center mb-2">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-4 w-24" />
+            </div>
+            <Skeleton className="h-2 w-full" />
+            <div className="flex justify-end mt-1">
+              <Skeleton className="h-3 w-16" />
+            </div>
+          </div>
+          
           <div className="border rounded-md">
             <div className="p-4 space-y-4">
               {[1, 2, 3, 4].map((i) => (
@@ -655,6 +681,22 @@ export default function UploadThingFileManager() {
     return (
       <Card>
         <CardContent className="pt-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">UploadThing Files</h2>
+          </div>
+          
+          {/* Storage usage progress bar placeholder */}
+          <div className="mb-6">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-medium">Storage Usage</span>
+              <span className="text-sm text-gray-500">Unknown</span>
+            </div>
+            <Progress value={0} className="h-2" />
+            <div className="flex justify-end mt-1">
+              <span className="text-xs text-gray-500">Unable to calculate</span>
+            </div>
+          </div>
+          
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Error loading files</AlertTitle>
@@ -674,6 +716,26 @@ export default function UploadThingFileManager() {
     return (
       <Card>
         <CardContent className="pt-6">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">UploadThing Files</h2>
+          </div>
+          
+          {/* Storage usage progress bar with 0% */}
+          <div className="mb-6">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-medium">Storage Usage</span>
+              <span className="text-sm text-gray-500">
+                0 Bytes of 2GB
+              </span>
+            </div>
+            <Progress value={0} className="h-2" />
+            <div className="flex justify-end mt-1">
+              <span className="text-xs text-gray-500">
+                0% used
+              </span>
+            </div>
+          </div>
+          
           <Alert>
             <AlertTitle>No files found</AlertTitle>
             <AlertDescription>
@@ -735,6 +797,22 @@ export default function UploadThingFileManager() {
           >
             Delete Selected ({selectedFiles.size})
           </Button>
+        </div>
+        
+        {/* Storage usage progress bar */}
+        <div className="mb-6">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-sm font-medium">Storage Usage</span>
+            <span className="text-sm text-gray-500">
+              {formatBytes(calculateTotalUsedStorage())} of 2GB
+            </span>
+          </div>
+          <Progress value={calculateStoragePercentage()} className="h-2" />
+          <div className="flex justify-end mt-1">
+            <span className="text-xs text-gray-500">
+              {calculateStoragePercentage()}% used
+            </span>
+          </div>
         </div>
 
         <div className="border rounded-md p-4">
