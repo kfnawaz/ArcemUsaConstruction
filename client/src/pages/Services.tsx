@@ -61,8 +61,13 @@ const Services = () => {
         
         for (const service of services) {
           try {
+            console.log(`Fetching gallery for service ID ${service.id} (${service.title})`);
             const response = await apiRequest('GET', `/api/services/${service.id}/gallery`);
             const galleryData = await response.json();
+            console.log(`Found ${galleryData.length} gallery images for service ${service.id}`);
+            if (galleryData.length > 0) {
+              console.log(`Sample image URL: ${galleryData[0].imageUrl}`);
+            }
             galleries[service.id] = galleryData;
           } catch (error) {
             console.error(`Error fetching gallery for service ${service.id}:`, error);
@@ -70,6 +75,7 @@ const Services = () => {
           }
         }
         
+        console.log(`Setting service galleries for ${Object.keys(galleries).length} services`);
         setServiceGalleries(galleries);
       }
     };
@@ -81,49 +87,54 @@ const Services = () => {
   const getServiceImages = (service: Service) => {
     // If we have gallery images for this service, use them
     if (serviceGalleries[service.id] && serviceGalleries[service.id].length > 0) {
+      console.log(`Using gallery images for service ${service.id} (${service.title}):`, 
+        serviceGalleries[service.id].map(image => image.imageUrl));
       return serviceGalleries[service.id].map(image => image.imageUrl);
     }
     
+    console.log(`No gallery images found for service ${service.id} (${service.title}), using defaults`);
+    
     // Otherwise use default images based on service type
-    switch (service.title.toLowerCase()) {
-      case 'commercial construction':
-        return [
-          '/images/commercial1.jpg',
-          '/images/commercial2.jpg',
-          '/images/commercial3.jpg'
-        ];
-      case 'residential construction':
-        return [
-          '/images/residential1.jpg',
-          '/images/residential2.jpg',
-          '/images/residential3.jpg'
-        ];
-      case 'renovation & remodeling':
-        return [
-          '/images/renovation1.jpg',
-          '/images/renovation2.jpg',
-          '/images/renovation3.jpg'
-        ];
-      case 'architectural design':
-        return [
-          '/images/slider1.png',
-          '/images/slider2.png'
-        ];
-      case 'project management':
-        return [
-          '/images/slider3.png',
-          '/images/slider4.png'
-        ];
-      case 'construction consultation':
-        return [
-          '/images/slider5.png',
-          '/images/image_1741432012642.png'
-        ];
-      default:
-        return [
-          '/images/slider1.png',
-          '/images/slider2.png'
-        ];
+    const serviceTitle = service.title.toLowerCase();
+    
+    if (serviceTitle.includes('commercial')) {
+      return [
+        '/images/commercial1.jpg',
+        '/images/commercial2.jpg',
+        '/images/commercial3.jpg'
+      ];
+    } else if (serviceTitle.includes('residential')) {
+      return [
+        '/images/residential1.jpg',
+        '/images/residential2.jpg',
+        '/images/residential3.jpg'
+      ];
+    } else if (serviceTitle.includes('renovation') || serviceTitle.includes('remodeling')) {
+      return [
+        '/images/renovation1.jpg',
+        '/images/renovation2.jpg',
+        '/images/renovation3.jpg'
+      ];
+    } else if (serviceTitle.includes('design') || serviceTitle.includes('engineering')) {
+      return [
+        '/images/slider1.png',
+        '/images/slider2.png'
+      ];
+    } else if (serviceTitle.includes('management')) {
+      return [
+        '/images/slider3.png',
+        '/images/slider4.png'
+      ];
+    } else if (serviceTitle.includes('consultation')) {
+      return [
+        '/images/slider5.png',
+        '/images/image_1741432012642.png'
+      ];
+    } else {
+      return [
+        '/images/slider1.png',
+        '/images/slider2.png'
+      ];
     }
   };
 

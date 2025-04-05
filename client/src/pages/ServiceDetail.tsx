@@ -82,42 +82,56 @@ const ServiceDetail = () => {
     }
   }, [service]);
 
-  // Images for each service type
+  // Get service images from gallery or fallback to defaults
   const getServiceImages = (serviceType: string) => {
-    switch (serviceType.toLowerCase()) {
-      case "commercial construction":
-        return [
-          "/images/commercial1.jpg",
-          "/images/commercial2.jpg",
-          "/images/commercial3.jpg",
-        ];
-      case "residential construction":
-        return [
-          "/images/residential1.jpg",
-          "/images/residential2.jpg",
-          "/images/residential3.jpg",
-        ];
-      case "renovation & remodeling":
-        return [
-          "/images/renovation1.jpg",
-          "/images/renovation2.jpg",
-          "/images/renovation3.jpg",
-        ];
-      case "architectural design":
-        return [
-          "/images/slider1.png",
-          "/images/slider2.png",
-          "/images/image_1741509665889.png",
-        ];
-      case "project management":
-        return [
-          "/images/slider3.png",
-          "/images/slider4.png",
-          "/images/image_1741509691873.png",
-        ];
-      case "construction consultation":
-        return ["/images/slider5.png", "/images/image_1741432012642.png"];
-      default:
+    // If we have gallery images for this service, use them
+    if (serviceGallery && serviceGallery.length > 0) {
+      console.log(`Using gallery images for service ${serviceId} (${serviceType}):`, 
+        serviceGallery.map(image => image.imageUrl));
+      return serviceGallery.map(image => image.imageUrl);
+    }
+    
+    console.log(`No gallery images found for service ${serviceId} (${serviceType}), using defaults`);
+    
+    // Otherwise use default images based on service type
+    const serviceTitle = serviceType.toLowerCase();
+    
+    if (serviceTitle.includes('commercial')) {
+      return [
+        '/images/commercial1.jpg',
+        '/images/commercial2.jpg',
+        '/images/commercial3.jpg'
+      ];
+    } else if (serviceTitle.includes('residential')) {
+      return [
+        '/images/residential1.jpg',
+        '/images/residential2.jpg',
+        '/images/residential3.jpg'
+      ];
+    } else if (serviceTitle.includes('renovation') || serviceTitle.includes('remodeling')) {
+      return [
+        '/images/renovation1.jpg',
+        '/images/renovation2.jpg',
+        '/images/renovation3.jpg'
+      ];
+    } else if (serviceTitle.includes('design') || serviceTitle.includes('engineering')) {
+      return [
+        '/images/slider1.png',
+        '/images/slider2.png',
+        '/images/image_1741509665889.png'
+      ];
+    } else if (serviceTitle.includes('management')) {
+      return [
+        '/images/slider3.png',
+        '/images/slider4.png',
+        '/images/image_1741509691873.png'
+      ];
+    } else if (serviceTitle.includes('consultation')) {
+      return [
+        '/images/slider5.png',
+        '/images/image_1741432012642.png'
+      ];
+    } else {
         return ["/images/slider1.png", "/images/slider2.png"];
     }
   };
