@@ -11,7 +11,7 @@ import { scrollToTop } from '@/lib/utils';
 export default function FileUploadTest() {
   useEffect(() => {
     scrollToTop();
-    document.title = 'File Upload Test - ARCEM';
+    document.title = 'File Management - ARCEM';
   }, []);
 
   return (
