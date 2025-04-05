@@ -84,24 +84,14 @@ const ServiceDetail = () => {
 
   // Get service images from gallery or fallback to defaults
   const getServiceImages = (serviceType: string) => {
-    console.log(`Service ID: ${serviceId}, title: ${serviceType}`);
-    
-    // Special handling for Design & Engineering service (ID 15)
-    if (serviceId === 15) {
-      console.log(`Special case for Design & Engineering service (ID 15)`);
-      // Hard-code the image URLs we know are in the database
-      return [
-        "https://utfs.io/f/PFuaKVnX18hbtIidIY2rjGF6z7TZrnY4EamiyMBltgD2bPex",
-        "https://utfs.io/f/PFuaKVnX18hbvprFhk4BK2TgpdhPU6AjyFnXRQ5a84vDOJ0W",
-        "https://utfs.io/f/PFuaKVnX18hbKQTH7mJvFil2WchGIA1CoSDONTdukejxgHMR"
-      ];
-    }
+    console.log(`Getting images for service ID: ${serviceId}, title: ${serviceType}`);
     
     // If we have gallery images for this service, use them
     if (serviceGallery && serviceGallery.length > 0) {
-      console.log(`Using gallery images for service ${serviceId} (${serviceType}):`, 
-        serviceGallery.map(image => image.imageUrl));
-      return serviceGallery.map(image => image.imageUrl);
+      console.log(`Using ${serviceGallery.length} gallery images for service ${serviceId} (${serviceType})`);
+      return serviceGallery
+        .sort((a, b) => (a.order || 0) - (b.order || 0)) // Sort by order if available
+        .map(image => image.imageUrl);
     }
     
     console.log(`No gallery images found for service ${serviceId} (${serviceType}), using defaults`);
@@ -427,7 +417,7 @@ const ServiceDetail = () => {
               <div className="md:w-1/3">
                 <div className="sticky top-24 bg-gray-100 p-6 rounded-lg">
                   <div className="text-[#1E90DB] mb-4">
-                    {getIcon(service.icon)}
+                    {getIcon(service.icon || undefined)}
                   </div>
                   <h3 className="text-xl font-montserrat font-bold mb-4">
                     {service.title}

@@ -85,24 +85,14 @@ const Services = () => {
   
   // Get service images from gallery or fallback to defaults
   const getServiceImages = (service: Service) => {
-    console.log(`Service ID: ${service.id}, title: ${service.title}`);
-    
-    // Special handling for Design & Engineering service (ID 15)
-    if (service.id === 15) {
-      console.log(`Special case for Design & Engineering service (ID 15)`);
-      // Hard-code the image URLs we know are in the database
-      return [
-        "https://utfs.io/f/PFuaKVnX18hbtIidIY2rjGF6z7TZrnY4EamiyMBltgD2bPex",
-        "https://utfs.io/f/PFuaKVnX18hbvprFhk4BK2TgpdhPU6AjyFnXRQ5a84vDOJ0W",
-        "https://utfs.io/f/PFuaKVnX18hbKQTH7mJvFil2WchGIA1CoSDONTdukejxgHMR"
-      ];
-    }
+    console.log(`Getting images for service ID: ${service.id}, title: ${service.title}`);
     
     // If we have gallery images for this service, use them
     if (serviceGalleries[service.id] && serviceGalleries[service.id].length > 0) {
-      console.log(`Using gallery images for service ${service.id} (${service.title}):`, 
-        serviceGalleries[service.id].map(image => image.imageUrl));
-      return serviceGalleries[service.id].map(image => image.imageUrl);
+      console.log(`Using ${serviceGalleries[service.id].length} gallery images for service ${service.id} (${service.title})`);
+      return serviceGalleries[service.id]
+        .sort((a, b) => (a.order || 0) - (b.order || 0)) // Sort by order if available
+        .map(image => image.imageUrl);
     }
     
     console.log(`No gallery images found for service ${service.id} (${service.title}), using defaults`);
@@ -271,7 +261,7 @@ const Services = () => {
                   <div className="md:w-2/3">
                     <div className="flex items-center mb-4">
                       <div className="text-[#1E90DB]">
-                        {getIcon(service.icon, "small")}
+                        {getIcon(service.icon || "", "small")}
                       </div>
                       <h4 className="text-2xl font-montserrat font-bold">{service.title}</h4>
                     </div>
