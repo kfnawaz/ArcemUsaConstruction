@@ -261,6 +261,10 @@ export default function UploadThingFileManager() {
     const mainCategories: Record<string, string[]> = {};
     const mainCategoryFiles: Record<string, FileListItem[]> = {};
     
+    // Initialize for Projects since we want it to appear first even if empty
+    mainCategories['Projects'] = [];
+    mainCategoryFiles['Projects'] = [];
+    
     categories.forEach(category => {
       const { main, sub } = parseCategoryPath(category);
       
@@ -274,10 +278,30 @@ export default function UploadThingFileManager() {
         if (!mainCategories[main].includes(category)) {
           mainCategories[main].push(category);
         }
+        
+        // Make sure subcategory files are available
+        if (!filesByCategory[category]) {
+          filesByCategory[category] = [];
+        }
       } else {
         // Add files directly to main category
         mainCategoryFiles[main] = filesByCategory[category];
       }
+    });
+    
+    // Sort subcategories within each main category
+    Object.keys(mainCategories).forEach(main => {
+      mainCategories[main].sort((a, b) => {
+        // Extract just the subcategory name without the main category prefix
+        const aName = a.replace(`${main}/`, '');
+        const bName = b.replace(`${main}/`, '');
+        
+        // 'Other Projects' should come last
+        if (aName.includes('Other')) return 1;
+        if (bName.includes('Other')) return -1;
+        
+        return aName.localeCompare(bName);
+      });
     });
     
     return {
@@ -350,10 +374,38 @@ export default function UploadThingFileManager() {
   // Get organized categories and files
   const { mainCategories, mainCategoryFiles, filesByCategory } = getOrganizedCategories();
   
-  // Sort main categories alphabetically with "Other" at the end
+  // Custom sorting for main categories: 
+  // Projects first, Other last, everything else alphabetically
   const sortedMainCategories = Object.keys(mainCategories).sort((a, b) => {
+    // Projects category always first
+    if (a === 'Projects') return -1;
+    if (b === 'Projects') return 1;
+    
+    // Other category always last
     if (a === 'Other') return 1;
     if (b === 'Other') return -1;
+    
+    // Custom category order for known categories
+    const categoryOrder = {
+      'Quote Requests': 2,
+      'Services': 3,
+      'Blog': 4,
+      'Team Members': 5,
+      'Brand Assets': 6,
+      'Documents': 7,
+      'Legal Documents': 8
+    };
+    
+    // Get the order for each category (or a high number if not in the list)
+    const orderA = categoryOrder[a] || 100;
+    const orderB = categoryOrder[b] || 100;
+    
+    // Sort by the predefined order
+    if (orderA !== orderB) {
+      return orderA - orderB;
+    }
+    
+    // If same order (or both not in the list), sort alphabetically
     return a.localeCompare(b);
   });
 
