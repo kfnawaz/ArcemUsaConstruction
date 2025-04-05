@@ -4,7 +4,7 @@ import {
   users, projects, projectGallery, blogCategories, blogTags, blogPosts, 
   blogPostCategories, blogPostTags, blogGallery,
   testimonials, services, serviceGallery, messages, newsletterSubscribers, quoteRequests,
-  subcontractors, vendors, jobPostings, teamMembers,
+  quoteRequestAttachments, subcontractors, vendors, jobPostings, teamMembers,
   type User, type InsertUser, 
   type Project, type InsertProject,
   type ProjectGallery, type InsertProjectGallery,
@@ -18,6 +18,7 @@ import {
   type Message, type InsertMessage,
   type NewsletterSubscriber, type InsertNewsletterSubscriber,
   type QuoteRequest, type InsertQuoteRequest,
+  type QuoteRequestAttachment, type InsertQuoteRequestAttachment,
   type Subcontractor, type InsertSubcontractor,
   type Vendor, type InsertVendor,
   type JobPosting, type InsertJobPosting,
@@ -820,10 +821,39 @@ export class DBStorage implements IStorage {
   }
 
   async deleteQuoteRequest(id: number): Promise<boolean> {
+    // Delete all attachments first (cascade should handle this, but let's be explicit)
+    await this.deleteAllQuoteRequestAttachments(id);
+    
     const result = await db.delete(quoteRequests)
       .where(eq(quoteRequests.id, id))
       .returning();
     return result.length > 0;
+  }
+  
+  // Quote Request Attachments
+  async getQuoteRequestAttachments(quoteRequestId: number): Promise<QuoteRequestAttachment[]> {
+    return db.select()
+      .from(quoteRequestAttachments)
+      .where(eq(quoteRequestAttachments.quoteRequestId, quoteRequestId));
+  }
+  
+  async createQuoteRequestAttachment(attachment: InsertQuoteRequestAttachment): Promise<QuoteRequestAttachment> {
+    const [result] = await db.insert(quoteRequestAttachments).values(attachment).returning();
+    return result;
+  }
+  
+  async deleteQuoteRequestAttachment(id: number): Promise<boolean> {
+    const result = await db.delete(quoteRequestAttachments)
+      .where(eq(quoteRequestAttachments.id, id))
+      .returning();
+    return result.length > 0;
+  }
+  
+  async deleteAllQuoteRequestAttachments(quoteRequestId: number): Promise<boolean> {
+    const result = await db.delete(quoteRequestAttachments)
+      .where(eq(quoteRequestAttachments.quoteRequestId, quoteRequestId))
+      .returning();
+    return true;
   }
 
   // Subcontractors

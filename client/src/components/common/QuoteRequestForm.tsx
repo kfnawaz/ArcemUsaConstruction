@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -23,6 +23,18 @@ import {
 import { Button } from "@/components/ui/button";
 import { useQuoteRequest } from "@/hooks/useQuoteRequest";
 import { Loader2 } from "lucide-react";
+import UploadThingFileUpload from "./UploadThingFileUpload";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Separator } from "@/components/ui/separator";
+
+// Interface for file attachments
+interface FileAttachment {
+  fileName: string;
+  fileUrl: string;
+  fileKey: string;
+  fileSize: number;
+  fileType: string;
+}
 
 // Form validation schema
 const formSchema = z.object({
@@ -46,6 +58,7 @@ interface QuoteRequestFormProps {
 
 const QuoteRequestForm = ({ className = "", onSuccess }: QuoteRequestFormProps) => {
   const { submitQuoteRequest, quoteRequestMutation } = useQuoteRequest();
+  const [fileAttachments, setFileAttachments] = useState<FileAttachment[]>([]);
   
   // Initialize form
   const form = useForm<FormValues>({
@@ -65,12 +78,25 @@ const QuoteRequestForm = ({ className = "", onSuccess }: QuoteRequestFormProps) 
 
   // Submit handler
   const onSubmit = (data: FormValues) => {
-    submitQuoteRequest(data);
+    // Include the file attachments with the form data
+    const requestData = {
+      ...data,
+      attachments: fileAttachments
+    };
+    
+    submitQuoteRequest(requestData);
+    
     // If successful, reset the form and call onSuccess if provided
     if (!quoteRequestMutation.isPending && !quoteRequestMutation.isError) {
       form.reset();
+      setFileAttachments([]); // Clear the attachments
       if (onSuccess) onSuccess();
     }
+  };
+  
+  // Handle file upload completion
+  const handleFileUploadComplete = (files: FileAttachment[]) => {
+    setFileAttachments(files);
   };
 
   return (
@@ -295,6 +321,49 @@ const QuoteRequestForm = ({ className = "", onSuccess }: QuoteRequestFormProps) 
               </FormItem>
             )}
           />
+          
+          {/* File Attachments Section */}
+          <div className="space-y-2">
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="attachments">
+                <AccordionTrigger className="text-gray-700 font-medium py-2">
+                  Attach Supporting Documents
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="mt-2 space-y-2">
+                    <p className="text-sm text-gray-600">
+                      Upload up to 3 files (images or PDF documents) to help us better understand your project.
+                    </p>
+                    
+                    <UploadThingFileUpload 
+                      onUploadComplete={handleFileUploadComplete}
+                      uploadType="quoteDocumentUploader"
+                      maxFiles={3}
+                      maxFileSize={8} // 8MB max file size
+                      allowedFileTypes={['image/jpeg', 'image/png', 'image/webp', 'application/pdf']}
+                    />
+                    
+                    {fileAttachments.length > 0 && (
+                      <div className="mt-4">
+                        <p className="text-sm font-medium text-gray-700 mb-2">
+                          Attached Files ({fileAttachments.length})
+                        </p>
+                        <div className="bg-gray-50 p-2 rounded">
+                          {fileAttachments.map((file, index) => (
+                            <div key={index} className="text-sm text-gray-600 py-1">
+                              ✓ {file.fileName} ({(file.fileSize / (1024 * 1024)).toFixed(2)} MB)
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </div>
+          
+          <Separator className="my-2" />
           
           <Button 
             type="submit" 

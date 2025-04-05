@@ -17,4 +17,20 @@ export type OurFileRouter = FileRouter & {
       size: number;
     }[];
   };
+  quoteDocumentUploader: {
+    config: {
+      maxFileSize: string;
+      maxFileCount: number;
+    };
+    metadata?: {
+      userId?: number;
+    };
+    output: {
+      url: string;
+      ufsUrl?: string;
+      key: string;
+      name: string;
+      size: number;
+    }[];
+  };
 };

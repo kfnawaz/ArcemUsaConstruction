@@ -2035,6 +2035,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create the quote request
       const quote = await storage.createQuoteRequest(quoteData);
       
+      // Check if there are file attachments to save
+      if (req.body.attachments && Array.isArray(req.body.attachments)) {
+        const attachments = req.body.attachments;
+        
+        // Save each attachment
+        for (const attachment of attachments) {
+          await storage.createQuoteRequestAttachment({
+            quoteRequestId: quote.id,
+            fileName: attachment.fileName,
+            fileUrl: attachment.fileUrl,
+            fileKey: attachment.fileKey,
+            fileSize: attachment.fileSize,
+            fileType: attachment.fileType
+          });
+        }
+      }
+      
       res.status(201).json({ 
         message: "Your quote request has been submitted successfully!",
         quote 
@@ -2073,7 +2090,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Quote request not found" });
       }
       
-      res.json(quote);
+      // Get any attachments for this quote request
+      const attachments = await storage.getQuoteRequestAttachments(id);
+      
+      res.json({
+        ...quote,
+        attachments: attachments
+      });
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch quote request" });
     }
@@ -2136,6 +2159,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid quote request ID" });
       }
       
+      // First delete any attachments for this quote request
+      await storage.deleteAllQuoteRequestAttachments(id);
+      
+      // Then delete the quote request itself
       const success = await storage.deleteQuoteRequest(id);
       if (!success) {
         return res.status(404).json({ message: "Quote request not found" });
@@ -2144,6 +2171,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ message: "Failed to delete quote request" });
+    }
+  });
+  
+  // Route to delete a single quote request attachment
+  app.delete(`${apiRouter}/admin/quote/requests/attachments/:id`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid attachment ID" });
+      }
+      
+      const success = await storage.deleteQuoteRequestAttachment(id);
+      if (!success) {
+        return res.status(404).json({ message: "Attachment not found" });
+      }
+      
+      res.status(204).send();
+    } catch (error) {
+      res.status(500).json({ message: "Failed to delete attachment" });
     }
   });
 
