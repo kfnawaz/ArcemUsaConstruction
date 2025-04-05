@@ -508,9 +508,31 @@ export default function UploadThingFileManager() {
     return files.reduce((total, file) => total + file.size, 0);
   };
 
+  // Calculate total size including subcategory files
+  const calculateCategoryTotalSize = (mainCategory: string, mainFiles: FileListItem[], filesByCategory: Record<string, FileListItem[]>): number => {
+    // Start with main category files
+    let totalSize = calculateTotalSize(mainFiles);
+    
+    // Add all subcategory files
+    Object.keys(filesByCategory).forEach(category => {
+      const { main } = parseCategoryPath(category);
+      if (main === mainCategory && main !== category) { // Only count subcategories
+        totalSize += calculateTotalSize(filesByCategory[category]);
+      }
+    });
+    
+    return totalSize;
+  };
+
   // Format total size with appropriate units
   const formatTotalSize = (files: FileListItem[]): string => {
     const totalSize = calculateTotalSize(files);
+    return formatBytes(totalSize);
+  };
+  
+  // Format category total size
+  const formatCategoryTotalSize = (mainCategory: string, mainFiles: FileListItem[], filesByCategory: Record<string, FileListItem[]>): string => {
+    const totalSize = calculateCategoryTotalSize(mainCategory, mainFiles, filesByCategory);
     return formatBytes(totalSize);
   };
 
@@ -739,19 +761,22 @@ export default function UploadThingFileManager() {
                   <FolderIcon className="h-5 w-5 text-blue-500" />
                   <div className="font-semibold flex-1">{mainCategory}</div>
                   <span className="text-sm text-gray-500 flex items-center gap-2">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span>
+                            {`${formatCategoryTotalSize(mainCategory, mainFiles, filesByCategory)}`}
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Total size: {formatCategoryTotalSize(mainCategory, mainFiles, filesByCategory)}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                     {hasFiles ? (
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span>
-                              {`${mainFiles.length} files (${formatTotalSize(mainFiles)})`}
-                            </span>
-                          </TooltipTrigger>
-                          <TooltipContent>
-                            <p>Total size: {formatTotalSize(mainFiles)}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                      <span>
+                        {`${mainFiles.length} files`}
+                      </span>
                     ) : ''}
                     {hasFiles && hasSubcategories ? ' + ' : ''}
                     {hasSubcategories ? `${subCategories.length} subfolder${subCategories.length !== 1 ? 's' : ''}` : ''}
