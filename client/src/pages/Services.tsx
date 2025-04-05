@@ -83,72 +83,17 @@ const Services = () => {
     fetchGalleryImages();
   }, [services]);
   
-  // Get service images from gallery or fallback to defaults
-  const getServiceImages = (service: Service) => {
-    console.log(`Service ID: ${service.id}, title: ${service.title}`);
-    
-    // Special handling for Design & Engineering service (ID 15)
-    if (service.id === 15) {
-      console.log(`Special case for Design & Engineering service (ID 15)`);
-      // Hard-code the image URLs we know are in the database
-      return [
-        "https://utfs.io/f/PFuaKVnX18hbtIidIY2rjGF6z7TZrnY4EamiyMBltgD2bPex",
-        "https://utfs.io/f/PFuaKVnX18hbvprFhk4BK2TgpdhPU6AjyFnXRQ5a84vDOJ0W",
-        "https://utfs.io/f/PFuaKVnX18hbKQTH7mJvFil2WchGIA1CoSDONTdukejxgHMR"
-      ];
-    }
-    
-    // If we have gallery images for this service, use them
+  // Check if a service has gallery images
+  const hasGalleryImages = (service: Service): boolean => {
+    return serviceGalleries[service.id] && serviceGalleries[service.id].length > 0;
+  };
+  
+  // Get gallery images for a service
+  const getGalleryImages = (service: Service): string[] => {
     if (serviceGalleries[service.id] && serviceGalleries[service.id].length > 0) {
-      console.log(`Using gallery images for service ${service.id} (${service.title}):`, 
-        serviceGalleries[service.id].map(image => image.imageUrl));
       return serviceGalleries[service.id].map(image => image.imageUrl);
     }
-    
-    console.log(`No gallery images found for service ${service.id} (${service.title}), using defaults`);
-    
-    // Otherwise use default images based on service type
-    const serviceTitle = service.title.toLowerCase();
-    
-    if (serviceTitle.includes('commercial')) {
-      return [
-        '/images/commercial1.jpg',
-        '/images/commercial2.jpg',
-        '/images/commercial3.jpg'
-      ];
-    } else if (serviceTitle.includes('residential')) {
-      return [
-        '/images/residential1.jpg',
-        '/images/residential2.jpg',
-        '/images/residential3.jpg'
-      ];
-    } else if (serviceTitle.includes('renovation') || serviceTitle.includes('remodeling')) {
-      return [
-        '/images/renovation1.jpg',
-        '/images/renovation2.jpg',
-        '/images/renovation3.jpg'
-      ];
-    } else if (serviceTitle.includes('design') || serviceTitle.includes('engineering')) {
-      return [
-        '/images/slider1.png',
-        '/images/slider2.png'
-      ];
-    } else if (serviceTitle.includes('management')) {
-      return [
-        '/images/slider3.png',
-        '/images/slider4.png'
-      ];
-    } else if (serviceTitle.includes('consultation')) {
-      return [
-        '/images/slider5.png',
-        '/images/image_1741432012642.png'
-      ];
-    } else {
-      return [
-        '/images/slider1.png',
-        '/images/slider2.png'
-      ];
-    }
+    return [];
   };
 
   return (
@@ -229,44 +174,55 @@ const Services = () => {
                   className={`flex flex-col ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'} gap-12 items-center reveal active`}
                 >
                   <div className="md:w-1/3">
-                    <Carousel 
-                      className="w-full overflow-hidden rounded-lg shadow-xl"
-                      opts={{
-                        align: "start",
-                        loop: true,
-                        skipSnaps: false,
-                        dragFree: false,
-                      }}
-                      plugins={[
-                        // Using any to bypass TypeScript error with Autoplay plugin
-                        Autoplay({
-                          delay: 4000,
-                          stopOnInteraction: true,
-                          stopOnMouseEnter: true,
-                        }) as any,
-                      ]}
-                    >
-                      <CarouselContent>
-                        {getServiceImages(service).map((image, i) => (
-                          <CarouselItem key={i}>
-                            <div className="h-64 w-full overflow-hidden">
-                              <img 
-                                src={image}
-                                alt={`${service.title} showcase ${i+1}`}
-                                className="w-full h-full object-cover transition-transform hover:scale-105 duration-500"
-                                onLoad={() => console.log(`Successfully loaded image: ${image}`)}
-                                onError={(e) => {
-                                  console.error(`Failed to load image: ${image}`);
-                                  e.currentTarget.src = "https://placehold.co/600x400/e2e8f0/1e293b?text=Service+Image";
-                                }}
-                              />
-                            </div>
-                          </CarouselItem>
-                        ))}
-                      </CarouselContent>
-                      <CarouselPrevious className="left-2" />
-                      <CarouselNext className="right-2" />
-                    </Carousel>
+                    {hasGalleryImages(service) ? (
+                      <Carousel 
+                        className="w-full overflow-hidden rounded-lg shadow-xl"
+                        opts={{
+                          align: "start",
+                          loop: true,
+                          skipSnaps: false,
+                          dragFree: false,
+                        }}
+                        plugins={[
+                          // Using any to bypass TypeScript error with Autoplay plugin
+                          Autoplay({
+                            delay: 4000,
+                            stopOnInteraction: true,
+                            stopOnMouseEnter: true,
+                          }) as any,
+                        ]}
+                      >
+                        <CarouselContent>
+                          {getGalleryImages(service).map((image, i) => (
+                            <CarouselItem key={i}>
+                              <div className="h-64 w-full overflow-hidden">
+                                <img 
+                                  src={image}
+                                  alt={`${service.title} showcase ${i+1}`}
+                                  className="w-full h-full object-cover transition-transform hover:scale-105 duration-500"
+                                  onLoad={() => console.log(`Successfully loaded image: ${image}`)}
+                                  onError={(e) => {
+                                    console.error(`Failed to load image: ${image}`);
+                                    e.currentTarget.src = "https://placehold.co/600x400/e2e8f0/1e293b?text=Service+Image";
+                                  }}
+                                />
+                              </div>
+                            </CarouselItem>
+                          ))}
+                        </CarouselContent>
+                        <CarouselPrevious className="left-2" />
+                        <CarouselNext className="right-2" />
+                      </Carousel>
+                    ) : (
+                      <div className="h-64 w-full rounded-lg bg-gray-100 flex items-center justify-center">
+                        <div className="text-center p-6">
+                          <div className="text-gray-400 mb-2">
+                            {getIcon(service.icon, "medium")}
+                          </div>
+                          <p className="text-gray-500">No gallery images available</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                   <div className="md:w-2/3">
                     <div className="flex items-center mb-4">
