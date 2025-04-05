@@ -21,8 +21,7 @@ export const useQuoteRequest = () => {
   // Mutation for submitting a quote request
   const quoteRequestMutation = useMutation({
     mutationFn: async (data: QuoteRequestWithAttachments) => {
-      const res = await apiRequest("POST", "/api/quote/request", data);
-      return await res.json();
+      return await apiRequest("POST", "/api/quote/request", data);
     },
     onSuccess: (data) => {
       toast({
