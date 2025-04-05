@@ -127,12 +127,8 @@ export default function UploadThingFileManager() {
       return response.data;
     },
     staleTime: 1000 * 60, // 1 minute
-    // Set default empty objects to prevent errors
-    placeholderData: {
-      projects: [],
-      projectGalleryMap: {},
-      serviceGalleryMap: {}
-    }
+    // Don't use placeholder data as it causes incorrect initial rendering
+    enabled: !isLoadingFiles // Only fetch categories after files are loaded
   });
 
   // Safe access to files data
@@ -293,9 +289,14 @@ export default function UploadThingFileManager() {
 
   // Determine file association with database entities
   const getFileAssociations = () => {
-    const projectGalleryMap = categoriesData?.projectGalleryMap || {};
-    const serviceGalleryMap = categoriesData?.serviceGalleryMap || {};
-    const projects = categoriesData?.projects || [];
+    // If categories data isn't loaded yet, return an empty object
+    if (!categoriesData) {
+      return {};
+    }
+    
+    const projectGalleryMap = categoriesData.projectGalleryMap || {};
+    const serviceGalleryMap = categoriesData.serviceGalleryMap || {};
+    const projects = categoriesData.projects || [];
     
     // Create a map of filename to project/service data
     const fileAssociations: Record<string, {
@@ -342,7 +343,37 @@ export default function UploadThingFileManager() {
   const groupFilesByCategory = () => {
     const categorized: Record<string, FileListItem[]> = {};
     const fileAssociations = getFileAssociations();
-    const projects = categoriesData?.projects || [];
+    
+    // If categories data isn't loaded yet, only sort by basic categories
+    if (!categoriesData) {
+      // Simple categorization without project associations
+      files.forEach(file => {
+        // Simple category detection based on filename
+        let category = 'Other';
+        const filename = file.name.toLowerCase();
+        
+        if (filename.includes('quote') || filename.includes('request')) {
+          category = 'Quote Requests';
+        } else if (filename.includes('team') || filename.includes('member') || filename.includes('staff')) {
+          category = 'Team Members';
+        } else if (filename.includes('blog') || filename.includes('post')) {
+          category = 'Blog';
+        } else if (filename.includes('project') || filename.includes('construction')) {
+          category = 'Projects';
+        } else if (filename.includes('service')) {
+          category = 'Services';
+        }
+        
+        if (!categorized[category]) {
+          categorized[category] = [];
+        }
+        categorized[category].push(file);
+      });
+      
+      return categorized;
+    }
+    
+    const projects = categoriesData.projects || [];
     
     // Create project category map for fast lookup
     const projectCategoryMap = new Map<number, string>();
