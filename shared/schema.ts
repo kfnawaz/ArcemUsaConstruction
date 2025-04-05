@@ -115,7 +115,6 @@ export const blogPosts = pgTable("blog_posts", {
   published: boolean("published").default(false),
   createdAt: timestamp("created_at").defaultNow(),
   category: text("category"),
-  tags: text("tags").array(),
 });
 
 export const blogPostCategories = pgTable("blog_post_categories", {
