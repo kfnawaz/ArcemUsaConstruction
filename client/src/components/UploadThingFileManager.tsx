@@ -765,7 +765,12 @@ export default function UploadThingFileManager() {
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <span>
-                            {`${formatCategoryTotalSize(mainCategory, mainFiles, filesByCategory)}`}
+                            {hasFiles ? (
+                              `${mainFiles.length} files`
+                            ) : ''}
+                            {hasFiles && hasSubcategories ? ' + ' : ''}
+                            {hasSubcategories ? `${subCategories.length} subfolder${subCategories.length !== 1 ? 's' : ''}` : ''}
+                            {` (${formatCategoryTotalSize(mainCategory, mainFiles, filesByCategory)})`}
                           </span>
                         </TooltipTrigger>
                         <TooltipContent>
@@ -773,13 +778,6 @@ export default function UploadThingFileManager() {
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
-                    {hasFiles ? (
-                      <span>
-                        {`${mainFiles.length} files`}
-                      </span>
-                    ) : ''}
-                    {hasFiles && hasSubcategories ? ' + ' : ''}
-                    {hasSubcategories ? `${subCategories.length} subfolder${subCategories.length !== 1 ? 's' : ''}` : ''}
                   </span>
                 </div>
                 
