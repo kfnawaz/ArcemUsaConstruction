@@ -1,16 +1,31 @@
 import { Link } from 'wouter';
 import { ArrowRight } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { Badge } from '@/components/ui/badge';
 
-interface BlogCardProps {
+interface Category {
+  id: number;
+  name: string;
   slug: string;
-  title: string;
-  excerpt: string;
-  imageUrl: string;
-  date: string;
-  category: string;
+  description?: string;
 }
 
-const BlogCard = ({ slug, title, excerpt, imageUrl, date, category }: BlogCardProps) => {
+interface BlogCardProps {
+  id: number;
+  slug: string;
+  title: string;
+  excerpt: string | null;
+  imageUrl: string | null;
+  date: string;
+  category?: string;
+}
+
+const BlogCard = ({ id, slug, title, excerpt, imageUrl, date, category }: BlogCardProps) => {
+  const { data: categories } = useQuery<Category[]>({
+    queryKey: [`/api/blog/${id}/categories`],
+    enabled: !!id,
+  });
+
   return (
     <div className="bg-white shadow-lg hover-scale reveal active rounded-lg overflow-hidden blog-card">
       <div className="overflow-hidden">
@@ -23,8 +38,22 @@ const BlogCard = ({ slug, title, excerpt, imageUrl, date, category }: BlogCardPr
       <div className="p-6">
         <div className="flex items-center text-sm text-gray-500 mb-4">
           <span>{date}</span>
-          <span className="mx-2">•</span>
-          <span>{category}</span>
+          {(categories && categories.length > 0) && (
+            <>
+              <span className="mx-2">•</span>
+              <div className="flex flex-wrap gap-1">
+                {categories.map(cat => (
+                  <Badge key={cat.id} variant="outline" className="text-xs">{cat.name}</Badge>
+                ))}
+              </div>
+            </>
+          )}
+          {(!categories || categories.length === 0) && category && (
+            <>
+              <span className="mx-2">•</span>
+              <span>{category}</span>
+            </>
+          )}
         </div>
         <h4 className="text-xl font-montserrat font-bold mb-4">{title}</h4>
         <p className="text-gray-600 mb-6 leading-relaxed">

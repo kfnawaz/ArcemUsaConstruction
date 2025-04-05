@@ -142,6 +142,7 @@ const Blog = () => {
               {filteredPosts?.map(post => (
                 <BlogCard 
                   key={post.id}
+                  id={post.id}
                   slug={post.slug}
                   title={post.title}
                   excerpt={post.excerpt}

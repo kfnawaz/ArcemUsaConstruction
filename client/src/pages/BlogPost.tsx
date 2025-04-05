@@ -6,6 +6,7 @@ import { initializeRevealEffects, scrollToTop, formatDate } from '@/lib/utils';
 import { ArrowLeft, Calendar, Tag, User, ChevronLeft, ChevronRight, Image as ImageIcon, X } from 'lucide-react';
 import BlogPostSeo from '@/components/seo/BlogPostSeo';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { 
   Dialog, 
   DialogContent, 
@@ -58,13 +59,13 @@ const BlogPost = () => {
   });
   
   // Fetch blog post gallery images
-  const { data: galleryImages, isLoading: isLoadingGallery } = useQuery<BlogGallery[]>({
+  const { data: galleryImages = [], isLoading: isLoadingGallery } = useQuery<BlogGallery[]>({
     queryKey: [`/api/blog/${post?.id}/gallery`],
     enabled: !!post?.id,
   });
   
   // Fetch related blog posts
-  const { data: relatedPosts, isLoading: isLoadingRelated } = useQuery<BlogPostType[]>({
+  const { data: relatedPosts = [], isLoading: isLoadingRelated } = useQuery<BlogPostType[]>({
     queryKey: [`/api/blog/${post?.id}/related`],
     enabled: !!post?.id,
   });
@@ -116,7 +117,7 @@ const BlogPost = () => {
           <BlogPostSeo
             title={post.title}
             description={post.excerpt || post.content.substring(0, 160)}
-            imageUrl={post.image || ''}
+            imageUrl={post.image || '/images/placeholder-blog.jpg'}
             author={post.author}
             publishedDate={post.createdAt ? new Date(post.createdAt).toISOString() : new Date().toISOString()}
             modifiedDate={undefined}
@@ -147,7 +148,33 @@ const BlogPost = () => {
                   </div>
                   <div className="flex items-center">
                     <Tag className="w-4 h-4 mr-2" />
-                    <span>{post.category}</span>
+                    {/* Fetch and display categories */}
+                    {(() => {
+                      interface Category {
+                        id: number;
+                        name: string;
+                        slug: string;
+                      }
+                      
+                      const { data: categories = [] } = useQuery<Category[]>({
+                        queryKey: [`/api/blog/${post.id}/categories`],
+                        enabled: !!post.id,
+                      });
+                      
+                      return (
+                        <div className="flex flex-wrap gap-1">
+                          {categories && categories.length > 0 ? (
+                            categories.map((cat) => (
+                              <Badge key={cat.id} variant="outline" className="text-xs font-medium">
+                                {cat.name}
+                              </Badge>
+                            ))
+                          ) : (
+                            <span>{post.category || 'Uncategorized'}</span>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
                 </div>
 
@@ -161,7 +188,7 @@ const BlogPost = () => {
                           {/* Add main blog image as first slide */}
                           <div className="flex-grow-0 flex-shrink-0 relative w-full min-w-0">
                             <img 
-                              src={post.image} 
+                              src={post.image || '/images/placeholder-blog.jpg'} 
                               alt={post.title} 
                               className="w-full h-96 object-cover"
                             />
@@ -215,7 +242,7 @@ const BlogPost = () => {
                   ) : (
                     // Fallback to static image if no gallery images
                     <img 
-                      src={post.image} 
+                      src={post.image || '/images/placeholder-blog.jpg'} 
                       alt={post.title} 
                       className="w-full h-96 object-cover"
                     />
@@ -258,7 +285,7 @@ const BlogPost = () => {
                     >
                       <div className="relative h-48 overflow-hidden">
                         <img 
-                          src={relatedPost.image} 
+                          src={relatedPost.image || '/images/placeholder-blog.jpg'} 
                           alt={relatedPost.title} 
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                         />
