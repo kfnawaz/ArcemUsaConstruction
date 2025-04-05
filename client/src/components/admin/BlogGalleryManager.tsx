@@ -187,12 +187,12 @@ const BlogGalleryManager: React.FC<BlogGalleryManagerProps> = ({ postId }) => {
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button variant="outline" size="sm">
-              <Plus className="mr-2 h-4 w-4" /> Add Image
+              <Plus className="mr-2 h-4 w-4" /> Add Blog Image
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Add Gallery Image</DialogTitle>
+              <DialogTitle>Add Blog Image</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <Input
@@ -203,8 +203,10 @@ const BlogGalleryManager: React.FC<BlogGalleryManagerProps> = ({ postId }) => {
               <FileUpload 
                 onUploadComplete={handleFileUploadComplete}
                 accept="image/*"
-                multiple={true}
-                maxSizeMB={5}
+                multiple={false}
+                maxSizeMB={16}
+                buttonText="Upload Blog Image"
+                helpText="Select or drag an image (Max: 16MB)"
                 sessionId={uploadSession || undefined}
                 onSessionIdCreated={(newSessionId: string) => {
                   console.log(`[BlogGalleryManager] onSessionIdCreated callback received new session ID: ${newSessionId}`);
@@ -229,13 +231,13 @@ const BlogGalleryManager: React.FC<BlogGalleryManagerProps> = ({ postId }) => {
       ) : !galleryImages || !Array.isArray(galleryImages) || galleryImages.length === 0 ? (
         <div className="text-center py-4 border border-dashed rounded-md">
           <Image className="h-10 w-10 mx-auto text-muted-foreground" />
-          <p className="mt-2 text-sm text-muted-foreground">No gallery images yet</p>
+          <p className="mt-2 text-sm text-muted-foreground">No blog images yet</p>
           <Button 
             variant="link" 
             className="mt-1 text-sm"
             onClick={() => setIsAddDialogOpen(true)}
           >
-            Add images
+            Add blog image
           </Button>
         </div>
       ) : (
@@ -246,7 +248,7 @@ const BlogGalleryManager: React.FC<BlogGalleryManagerProps> = ({ postId }) => {
                 <div className="aspect-square relative">
                   <img 
                     src={image.imageUrl} 
-                    alt={image.caption || `Gallery image ${image.id}`}
+                    alt={image.caption || `Blog image ${image.id}`}
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -273,10 +275,10 @@ const BlogGalleryManager: React.FC<BlogGalleryManagerProps> = ({ postId }) => {
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Delete Gallery Image</DialogTitle>
+            <DialogTitle>Delete Blog Image</DialogTitle>
           </DialogHeader>
           <div className="py-4">
-            <p>Are you sure you want to delete this gallery image? This action cannot be undone.</p>
+            <p>Are you sure you want to delete this blog image? This action cannot be undone.</p>
           </div>
           <DialogFooter className="sm:justify-end">
             <Button

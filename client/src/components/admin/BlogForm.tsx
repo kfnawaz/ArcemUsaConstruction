@@ -107,9 +107,31 @@ const BlogForm = ({ postId, onClose }: BlogFormProps) => {
   };
 
   const onSubmit = async (data: ExtendedInsertBlogPost) => {
-    await saveBlogPost(data);
-    if (!isSubmitting) {
-      onClose();
+    try {
+      // If creating a new post and we have an image, prepare to add it to gallery after post creation
+      const imageUrl = data.image || '';
+      const shouldAddToGallery = !postId && imageUrl;
+      
+      // Save the blog post first
+      const savedPost = await saveBlogPost(data);
+      
+      // If this is a new post and we have an image, add it to the gallery
+      if (shouldAddToGallery && savedPost && typeof savedPost === 'object' && 'id' in savedPost) {
+        // Make a new useBlog instance with the new post ID
+        const newBlogHook = useBlog(savedPost.id);
+        try {
+          await newBlogHook.addGalleryImage(imageUrl, "Featured image", 0);
+          console.log("Added featured image to gallery for new post:", savedPost.id);
+        } catch (error) {
+          console.error("Error adding image to gallery for new post:", error);
+        }
+      }
+      
+      if (!isSubmitting) {
+        onClose();
+      }
+    } catch (error) {
+      console.error("Error saving blog post:", error);
     }
   };
 
@@ -218,7 +240,11 @@ const BlogForm = ({ postId, onClose }: BlogFormProps) => {
                       <FormControl>
                         <Input 
                           placeholder="E.g., Construction, Architecture" 
-                          {...field} 
+                          value={field.value || ''}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                          name={field.name}
+                          ref={field.ref}
                         />
                       </FormControl>
                       <FormDescription>
@@ -236,20 +262,44 @@ const BlogForm = ({ postId, onClose }: BlogFormProps) => {
                     <FormItem>
                       <FormLabel>Featured Image</FormLabel>
                       <FormControl>
-                        <FileUpload
-                          onUploadComplete={(fileUrls, sessionId) => {
-                            const urls = Array.isArray(fileUrls) ? fileUrls : [fileUrls];
-                            if (urls.length > 0) {
-                              field.onChange(urls[0]);
-                            }
-                          }}
-                          multiple={false}
-                          accept="image/*"
-                          maxSizeMB={5}
-                          buttonText="Upload Featured Image"
-                          helpText="Select or drag an image file"
-                        />
+                        <div className="flex flex-col space-y-2">
+                          {field.value && (
+                            <div className="relative w-full h-48 rounded-md overflow-hidden border mb-2">
+                              <img 
+                                src={field.value} 
+                                alt="Blog featured image" 
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          )}
+                          <FileUpload
+                            onUploadComplete={(fileUrls, sessionId) => {
+                              const urls = Array.isArray(fileUrls) ? fileUrls : [fileUrls];
+                              if (urls.length > 0) {
+                                field.onChange(urls[0]);
+                                
+                                // If we already have a post ID, also add this to the gallery
+                                if (postId) {
+                                  const { addGalleryImage } = useBlog(postId);
+                                  try {
+                                    addGalleryImage(urls[0], "Featured image", 0);
+                                  } catch (error) {
+                                    console.error("Error adding image to gallery:", error);
+                                  }
+                                }
+                              }
+                            }}
+                            multiple={false}
+                            accept="image/*"
+                            maxSizeMB={16}
+                            buttonText="Upload Featured Image"
+                            helpText="Select or drag an image file (Max: 16MB)"
+                          />
+                        </div>
                       </FormControl>
+                      <FormDescription>
+                        This image will be displayed on blog listings and at the top of the post
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -360,7 +410,11 @@ const BlogForm = ({ postId, onClose }: BlogFormProps) => {
                       <Textarea 
                         placeholder="A brief summary of the post" 
                         rows={2}
-                        {...field} 
+                        value={field.value || ''}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                        name={field.name}
+                        ref={field.ref}
                       />
                     </FormControl>
                     <FormDescription>
@@ -381,7 +435,11 @@ const BlogForm = ({ postId, onClose }: BlogFormProps) => {
                       <Textarea 
                         placeholder="Enter the full content of your blog post" 
                         rows={10}
-                        {...field} 
+                        value={field.value || ''}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                        name={field.name}
+                        ref={field.ref}
                       />
                     </FormControl>
                     <FormMessage />
@@ -441,10 +499,10 @@ const BlogForm = ({ postId, onClose }: BlogFormProps) => {
           <div className="mb-4">
             <h3 className="text-lg font-semibold flex items-center">
               <Images className="h-5 w-5 mr-2" />
-              Gallery Images
+              Blog Images
             </h3>
             <p className="text-sm text-muted-foreground">
-              Add additional images for this blog post
+              Add images for this blog post
             </p>
           </div>
 
@@ -453,7 +511,7 @@ const BlogForm = ({ postId, onClose }: BlogFormProps) => {
           ) : (
             <div className="text-center py-16 border border-dashed rounded-lg">
               <Images className="h-12 w-12 mx-auto text-muted-foreground" />
-              <p className="mt-4 text-muted-foreground">Save the blog post first to add gallery images</p>
+              <p className="mt-4 text-muted-foreground">Save the blog post first to add blog images</p>
             </div>
           )}
         </div>

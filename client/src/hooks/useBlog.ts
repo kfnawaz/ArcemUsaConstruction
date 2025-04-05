@@ -138,10 +138,16 @@ export const useBlog = (postId?: number) => {
 
   const saveBlogPost = async (data: ExtendedInsertBlogPost) => {
     setIsSubmitting(true);
-    if (postId) {
-      await updateMutation.mutateAsync({ id: postId, data });
-    } else {
-      await createMutation.mutateAsync(data);
+    try {
+      if (postId) {
+        const updated = await updateMutation.mutateAsync({ id: postId, data });
+        return { ...updated, id: postId };
+      } else {
+        return await createMutation.mutateAsync(data);
+      }
+    } catch (error) {
+      console.error("Error in saveBlogPost:", error);
+      throw error;
     }
   };
   
