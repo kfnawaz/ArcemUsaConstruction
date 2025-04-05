@@ -20,18 +20,13 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Loader2 } from 'lucide-react';
+import { ArrowLeft, Loader2, PlusCircle } from 'lucide-react';
 import { generateSlug } from '@/lib/utils';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 
 import BlogFeaturedImageUpload from './BlogFeaturedImageUpload';
+import CategoryCreator from './CategoryCreator';
+import TagCreator from './TagCreator';
 
 interface BlogFormProps {
   postId?: number;
@@ -56,7 +51,6 @@ const BlogForm = ({ postId, onClose }: BlogFormProps) => {
       content: '',
       excerpt: '',
       image: '',
-      category: '',
       author: '',
       published: true,
       categoryIds: [],
@@ -78,7 +72,6 @@ const BlogForm = ({ postId, onClose }: BlogFormProps) => {
             content: post.content,
             excerpt: post.excerpt,
             image: post.image,
-            category: post.category,
             author: post.author,
             published: post.published,
             categoryIds,
@@ -244,77 +237,51 @@ const BlogForm = ({ postId, onClose }: BlogFormProps) => {
                 )}
               />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <FormField
-                  control={form.control}
-                  name="category"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Legacy Category (Text)</FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="E.g., Construction, Architecture" 
-                          value={field.value || ''}
-                          onChange={field.onChange}
-                          onBlur={field.onBlur}
-                          name={field.name}
-                          ref={field.ref}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        For backwards compatibility
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="image"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Featured Image</FormLabel>
-                      <FormControl>
-                        <BlogFeaturedImageUpload
-                          currentImageUrl={field.value}
-                          onImageUpload={(imageUrl) => {
-                            // Update form field with new image URL
-                            field.onChange(imageUrl);
-                            
-                            // If we have a post ID and a valid image URL, update the gallery
-                            if (postId && imageUrl) {
-                              // Using direct API call for consistency since useBlog can't be called within render
-                              fetch(`/api/blog/${postId}/gallery`, {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                  imageUrl,
-                                  caption: "Featured image",
-                                  order: 0
-                                })
+              <FormField
+                control={form.control}
+                name="image"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Featured Image</FormLabel>
+                    <FormControl>
+                      <BlogFeaturedImageUpload
+                        currentImageUrl={field.value}
+                        onImageUpload={(imageUrl) => {
+                          // Update form field with new image URL
+                          field.onChange(imageUrl);
+                          
+                          // If we have a post ID and a valid image URL, update the gallery
+                          if (postId && imageUrl) {
+                            // Using direct API call for consistency since useBlog can't be called within render
+                            fetch(`/api/blog/${postId}/gallery`, {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({
+                                imageUrl,
+                                caption: "Featured image",
+                                order: 0
                               })
-                                .then(response => {
-                                  if (!response.ok) {
-                                    throw new Error(`Failed to add image to gallery: ${response.statusText}`);
-                                  }
-                                  console.log("Updated featured image in gallery for post:", postId);
-                                })
-                                .catch(error => {
-                                  console.error("Error updating image in gallery:", error);
-                                });
-                            }
-                          }}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        This image will be displayed on blog listings and at the top of the post
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+                            })
+                              .then(response => {
+                                if (!response.ok) {
+                                  throw new Error(`Failed to add image to gallery: ${response.statusText}`);
+                                }
+                                console.log("Updated featured image in gallery for post:", postId);
+                              })
+                              .catch(error => {
+                                console.error("Error updating image in gallery:", error);
+                              });
+                          }
+                        }}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      This image will be displayed on blog listings and at the top of the post
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               
               <FormField
                 control={form.control}
@@ -355,6 +322,13 @@ const BlogForm = ({ postId, onClose }: BlogFormProps) => {
                           ))}
                         </div>
                       )}
+                      <CategoryCreator 
+                        onCategoryCreated={(categoryId, categoryName) => {
+                          // Add the newly created category to the selected categories
+                          const currentValues = field.value || [];
+                          field.onChange([...currentValues, categoryId]);
+                        }}
+                      />
                       <FormDescription>
                         Select one or more categories for this blog post
                       </FormDescription>
@@ -401,6 +375,13 @@ const BlogForm = ({ postId, onClose }: BlogFormProps) => {
                           })}
                         </div>
                       )}
+                      <TagCreator 
+                        onTagCreated={(tagId, tagName) => {
+                          // Add the newly created tag to the selected tags
+                          const currentValues = field.value || [];
+                          field.onChange([...currentValues, tagId]);
+                        }}
+                      />
                       <FormDescription>
                         Click tags to add or remove them from this blog post
                       </FormDescription>
