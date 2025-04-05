@@ -58,8 +58,30 @@ const ServiceDetail = () => {
     queryKey: ["/api/services", serviceId, "gallery"],
     queryFn: async () => {
       if (!serviceId) return [];
-      const res = await apiRequest("GET", `/api/services/${serviceId}/gallery`);
-      return await res.json();
+      
+      console.log(`ServiceDetail: Fetching gallery for service ID ${serviceId}`);
+      try {
+        const res = await fetch(`/api/services/${serviceId}/gallery`);
+        
+        if (!res.ok) {
+          console.error(`Failed to fetch gallery for service ${serviceId}: ${res.status} ${res.statusText}`);
+          return [];
+        }
+        
+        const data = await res.json();
+        console.log(`ServiceDetail: Found ${data.length} gallery images for service ${serviceId}`);
+        
+        if (data && Array.isArray(data) && data.length > 0) {
+          console.log(`ServiceDetail: First gallery image URL:`, data[0].imageUrl);
+          return data;
+        } else {
+          console.log(`ServiceDetail: No gallery images found for service ${serviceId}`);
+          return [];
+        }
+      } catch (error) {
+        console.error(`ServiceDetail: Error fetching gallery:`, error);
+        return [];
+      }
     },
     enabled: !!serviceId,
   });

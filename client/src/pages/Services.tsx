@@ -56,28 +56,51 @@ const Services = () => {
   // Fetch gallery images for each service
   useEffect(() => {
     const fetchGalleryImages = async () => {
-      if (services && services.length > 0) {
-        const galleries: { [key: number]: ServiceGallery[] } = {};
-        
-        for (const service of services) {
-          try {
-            console.log(`Fetching gallery for service ID ${service.id} (${service.title})`);
-            const response = await apiRequest('GET', `/api/services/${service.id}/gallery`);
-            const galleryData = await response.json();
-            console.log(`Found ${galleryData.length} gallery images for service ${service.id}`);
-            if (galleryData.length > 0) {
-              console.log(`Sample image URL: ${galleryData[0].imageUrl}`);
-            }
+      if (!services || services.length === 0) return;
+      
+      console.log(`Starting to fetch gallery images for ${services.length} services...`);
+      const galleries: { [key: number]: ServiceGallery[] } = {};
+      
+      // For debugging - create a direct fetch to service 15's gallery which we know has images
+      try {
+        const directResponse = await fetch(`/api/services/15/gallery`);
+        const directData = await directResponse.json();
+        console.log(`DIRECT FETCH TEST - Service 15: Found ${directData.length} images:`, directData);
+      } catch (error) {
+        console.error("Direct fetch test failed:", error);
+      }
+      
+      // Process all services
+      for (const service of services) {
+        try {
+          console.log(`Fetching gallery for service ID ${service.id} (${service.title})`);
+          // Use standard fetch instead of apiRequest for consistency
+          const response = await fetch(`/api/services/${service.id}/gallery`);
+          
+          if (!response.ok) {
+            console.error(`Failed to fetch gallery for service ${service.id}: ${response.status} ${response.statusText}`);
+            galleries[service.id] = [];
+            continue;
+          }
+          
+          const galleryData = await response.json();
+          console.log(`Service ${service.id} (${service.title}): Found ${galleryData.length} gallery images`);
+          
+          if (galleryData && Array.isArray(galleryData) && galleryData.length > 0) {
+            console.log(`Gallery data for service ${service.id}:`, galleryData);
             galleries[service.id] = galleryData;
-          } catch (error) {
-            console.error(`Error fetching gallery for service ${service.id}:`, error);
+          } else {
+            console.log(`No gallery images for service ${service.id}`);
             galleries[service.id] = [];
           }
+        } catch (error) {
+          console.error(`Error fetching gallery for service ${service.id}:`, error);
+          galleries[service.id] = [];
         }
-        
-        console.log(`Setting service galleries for ${Object.keys(galleries).length} services`);
-        setServiceGalleries(galleries);
       }
+      
+      console.log(`Finished fetching galleries. Setting state with data:`, galleries);
+      setServiceGalleries(galleries);
     };
     
     fetchGalleryImages();
