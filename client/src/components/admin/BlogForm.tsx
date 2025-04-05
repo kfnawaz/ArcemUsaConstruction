@@ -20,7 +20,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, Loader2, Images, Upload } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import { generateSlug } from '@/lib/utils';
 import {
   Select,
@@ -30,7 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import BlogGalleryManager from './BlogGalleryManager';
+
 import BlogFeaturedImageUpload from './BlogFeaturedImageUpload';
 
 interface BlogFormProps {
@@ -39,7 +39,7 @@ interface BlogFormProps {
 }
 
 const BlogForm = ({ postId, onClose }: BlogFormProps) => {
-  const [activeTab, setActiveTab] = useState("content");
+
   const { post, isLoading, saveBlogPost, isSubmitting, getPostCategoryIds, getPostTagIds } = useBlog(postId);
   const { 
     categories, 
@@ -185,8 +185,8 @@ const BlogForm = ({ postId, onClose }: BlogFormProps) => {
         </h1>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-6">
-        <div className="w-full md:w-2/3">
+      <div className="flex flex-col gap-6">
+        <div className="w-full">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
@@ -502,28 +502,6 @@ const BlogForm = ({ postId, onClose }: BlogFormProps) => {
               </div>
             </form>
           </Form>
-        </div>
-
-        {/* Gallery Section (Integrated in the content page) */}
-        <div className="w-full md:w-1/3 bg-gray-50 rounded-lg p-4">
-          <div className="mb-4">
-            <h3 className="text-lg font-semibold flex items-center">
-              <Images className="h-5 w-5 mr-2" />
-              Blog Images
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              Add images for this blog post
-            </p>
-          </div>
-
-          {postId ? (
-            <BlogGalleryManager postId={postId} />
-          ) : (
-            <div className="text-center py-16 border border-dashed rounded-lg">
-              <Images className="h-12 w-12 mx-auto text-muted-foreground" />
-              <p className="mt-4 text-muted-foreground">Save the blog post first to add blog images</p>
-            </div>
-          )}
         </div>
       </div>
     </div>
