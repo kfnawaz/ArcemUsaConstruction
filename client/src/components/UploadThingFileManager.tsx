@@ -503,6 +503,17 @@ export default function UploadThingFileManager() {
     return categorized;
   };
 
+  // Calculate total size of files in a category
+  const calculateTotalSize = (files: FileListItem[]): number => {
+    return files.reduce((total, file) => total + file.size, 0);
+  };
+
+  // Format total size with appropriate units
+  const formatTotalSize = (files: FileListItem[]): string => {
+    const totalSize = calculateTotalSize(files);
+    return formatBytes(totalSize);
+  };
+
   // Get main categories and their subcategories
   const getOrganizedCategories = () => {
     const filesByCategory = groupFilesByCategory();
@@ -727,8 +738,21 @@ export default function UploadThingFileManager() {
                   )}
                   <FolderIcon className="h-5 w-5 text-blue-500" />
                   <div className="font-semibold flex-1">{mainCategory}</div>
-                  <span className="text-sm text-gray-500">
-                    {hasFiles ? `${mainFiles.length} files` : ''}
+                  <span className="text-sm text-gray-500 flex items-center gap-2">
+                    {hasFiles ? (
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span>
+                              {`${mainFiles.length} files (${formatTotalSize(mainFiles)})`}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p>Total size: {formatTotalSize(mainFiles)}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    ) : ''}
                     {hasFiles && hasSubcategories ? ' + ' : ''}
                     {hasSubcategories ? `${subCategories.length} subfolder${subCategories.length !== 1 ? 's' : ''}` : ''}
                   </span>
@@ -854,8 +878,19 @@ export default function UploadThingFileManager() {
                             )}
                             <FolderIcon className="h-5 w-5 text-yellow-500" />
                             <div className="font-medium flex-1">{sub}</div>
-                            <span className="text-sm text-gray-500">
-                              {subFiles.length} file{subFiles.length !== 1 ? 's' : ''}
+                            <span className="text-sm text-gray-500 flex items-center gap-2">
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span>
+                                      {`${subFiles.length} file${subFiles.length !== 1 ? 's' : ''} (${formatTotalSize(subFiles)})`}
+                                    </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Total size: {formatTotalSize(subFiles)}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
                             </span>
                           </div>
                           
