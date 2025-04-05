@@ -85,11 +85,18 @@ interface FileCategoriesData {
   projectGalleryMap: Record<string, ProjectGalleryData>;
   serviceGalleryMap: Record<string, ServiceGalleryData>;
   quoteAttachmentsMap: Record<string, QuoteAttachmentData>;
+  teamMemberPhotosMap: Record<string, TeamMemberPhotoData>;
   quoteRequests: {
     id: number;
     name: string;
     email: string;
     project: string;
+  }[];
+  teamMembers: {
+    id: number;
+    name: string;
+    designation: string;
+    active: boolean;
   }[];
 }
 
@@ -101,6 +108,14 @@ interface QuoteAttachmentData {
   quoteProject: string;
   attachmentId: number;
   fileName: string;
+}
+
+// Team member photo data from API
+interface TeamMemberPhotoData {
+  memberId: number;
+  memberName: string;
+  memberDesignation: string;
+  active: boolean;
 }
 
 export default function UploadThingFileManager() {
@@ -314,12 +329,14 @@ export default function UploadThingFileManager() {
     const projectGalleryMap = categoriesData.projectGalleryMap || {};
     const serviceGalleryMap = categoriesData.serviceGalleryMap || {};
     const quoteAttachmentsMap = categoriesData.quoteAttachmentsMap || {};
+    const teamMemberPhotosMap = categoriesData.teamMemberPhotosMap || {};
     const projects = categoriesData.projects || [];
     const quoteRequests = categoriesData.quoteRequests || [];
+    const teamMembers = categoriesData.teamMembers || [];
     
-    // Create a map of filename to project/service/quote data
+    // Create a map of filename to project/service/quote/team member data
     const fileAssociations: Record<string, {
-      type: 'project' | 'service' | 'quote' | 'other';
+      type: 'project' | 'service' | 'quote' | 'team' | 'other';
       projectId?: number;
       projectTitle?: string;
       projectCategory?: string;
@@ -330,6 +347,10 @@ export default function UploadThingFileManager() {
       quoteProject?: string;
       fileName?: string;
       isFeature?: boolean;
+      memberId?: number;
+      memberName?: string;
+      memberDesignation?: string;
+      active?: boolean;
     }> = {};
     
     // Extract the key from file URLs
@@ -367,6 +388,17 @@ export default function UploadThingFileManager() {
         quoteName: data.quoteName,
         quoteProject: data.quoteProject,
         fileName: data.fileName
+      };
+    });
+    
+    // Map team member photo files
+    Object.entries(teamMemberPhotosMap).forEach(([key, data]) => {
+      fileAssociations[key] = {
+        type: 'team',
+        memberId: data.memberId,
+        memberName: data.memberName,
+        memberDesignation: data.memberDesignation,
+        active: data.active
       };
     });
     
@@ -428,6 +460,9 @@ export default function UploadThingFileManager() {
         } else if (fileAssociation.type === 'quote' && fileAssociation.quoteId && fileAssociation.quoteName) {
           // Format: Quote Requests/Quote from John Doe (Commercial Building)
           return `Quote Requests/Quote from ${fileAssociation.quoteName} (${fileAssociation.quoteProject})`;
+        } else if (fileAssociation.type === 'team' && fileAssociation.memberId && fileAssociation.memberName) {
+          // Format: Team Members/John Doe (Designation)
+          return `Team Members/${fileAssociation.memberName} (${fileAssociation.memberDesignation})`;
         }
       }
       
@@ -764,6 +799,11 @@ export default function UploadThingFileManager() {
                                             Quote: {getFileAssociations()[file.key].quoteName}
                                           </Badge>
                                         )}
+                                        {getFileAssociations()[file.key].type === 'team' && (
+                                          <Badge variant="outline" className="text-xs bg-green-50">
+                                            Team: {getFileAssociations()[file.key].memberName}
+                                          </Badge>
+                                        )}
                                       </div>
                                     )}
                                   </div>
@@ -882,6 +922,11 @@ export default function UploadThingFileManager() {
                                                   {getFileAssociations()[file.key].type === 'quote' && (
                                                     <Badge variant="outline" className="text-xs bg-amber-50">
                                                       Quote: {getFileAssociations()[file.key].quoteName}
+                                                    </Badge>
+                                                  )}
+                                                  {getFileAssociations()[file.key].type === 'team' && (
+                                                    <Badge variant="outline" className="text-xs bg-green-50">
+                                                      Team: {getFileAssociations()[file.key].memberName}
                                                     </Badge>
                                                   )}
                                                 </div>

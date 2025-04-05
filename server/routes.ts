@@ -2080,6 +2080,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
+      // Get team member photos for organization
+      const teamMembers = await storage.getTeamMembers();
+      const teamMemberPhotosMap: Record<string, any> = {};
+      
+      // Process all team member photos
+      for (const member of teamMembers) {
+        if (member.photo) {
+          const urlParts = member.photo.split('/');
+          const key = urlParts[urlParts.length - 1];
+          
+          if (key) {
+            teamMemberPhotosMap[key] = {
+              memberId: member.id,
+              memberName: member.name,
+              memberDesignation: member.designation,
+              active: member.active
+            };
+          }
+        }
+      }
+      
       // Format and send the categorization data
       res.json({
         projects: projects.map(project => ({
@@ -2090,11 +2111,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         projectGalleryMap,
         serviceGalleryMap,
         quoteAttachmentsMap,
+        teamMemberPhotosMap,
         quoteRequests: quoteRequests.map(quote => ({
           id: quote.id,
           name: quote.name,
           email: quote.email,
           project: quote.projectType
+        })),
+        teamMembers: teamMembers.map(member => ({
+          id: member.id,
+          name: member.name,
+          designation: member.designation,
+          active: member.active
         }))
       });
     } catch (error) {
