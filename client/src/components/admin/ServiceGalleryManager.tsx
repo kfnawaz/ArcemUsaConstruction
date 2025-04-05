@@ -400,8 +400,8 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
           {canAddMoreImages ? (
             <div className="mb-4">
               <UploadThingFileUpload 
-                endpoint="imageUploader"
-                onClientUploadComplete={(files) => {
+                uploadType="imageUploader"
+                onUploadComplete={(files) => {
                   // Create a session ID for this upload batch
                   const sessionId = `session_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
                   trackUploadSession(sessionId);
@@ -409,18 +409,16 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
                   
                   // Extract URLs from the response files
                   const urls = files.map(file => {
-                    // Access ufsUrl directly to avoid triggering deprecation warning with file.url
-                    const imageUrl = file.ufsUrl || '';
+                    // Access fileUrl property that comes from our UploadThingFileUpload component
+                    const imageUrl = file.fileUrl || '';
                     return imageUrl;
                   });
                   
                   // Track these files in the database and register them with the session
                   if (serviceId) {
                     files.forEach(file => {
-                      // Use the new URL format exclusively to avoid deprecation warnings
-                      if (file.ufsUrl) {
-                        console.log(`Adding image to service gallery: ${file.ufsUrl} (Session: ${sessionId})`);
-                      }
+                      // Log the file URL being added
+                      console.log(`Adding image to service gallery: ${file.fileUrl} (Session: ${sessionId})`);
                     });
                   }
                   
@@ -438,22 +436,9 @@ const ServiceGalleryManager = forwardRef<ServiceGalleryManagerHandle, ServiceGal
                     });
                   }
                 }}
-                onUploadError={(error) => {
-                  console.error("UploadThing error:", error);
-                  toast({
-                    title: "Upload failed",
-                    description: error.message || "There was an error uploading your images.",
-                    variant: "destructive"
-                  });
-                }}
-                onUploadBegin={() => {
-                  // You can add loading state here if needed
-                }}
-                multiple={true}
-                accept="image/jpeg, image/png, image/webp"
-                maxSizeMB={5}
-                buttonText="Add Images"
-                helpText={`Add up to ${MAX_GALLERY_IMAGES - currentImageCount} more image${MAX_GALLERY_IMAGES - currentImageCount !== 1 ? 's' : ''}`}
+                maxFiles={MAX_GALLERY_IMAGES - currentImageCount}
+                maxFileSize={16} // 16MB max file size
+                allowedFileTypes={['image/jpeg', 'image/png', 'image/webp']}
               />
             </div>
           ) : null}
