@@ -119,7 +119,6 @@ export const blogPosts = pgTable("blog_posts", {
 });
 
 export const blogPostCategories = pgTable("blog_post_categories", {
-  id: serial("id").primaryKey(),
   postId: integer("post_id").notNull().references(() => blogPosts.id, { onDelete: 'cascade' }),
   categoryId: integer("category_id").notNull().references(() => blogCategories.id, { onDelete: 'cascade' }),
 }, table => ({
@@ -127,7 +126,6 @@ export const blogPostCategories = pgTable("blog_post_categories", {
 }));
 
 export const blogPostTags = pgTable("blog_post_tags", {
-  id: serial("id").primaryKey(),
   postId: integer("post_id").notNull().references(() => blogPosts.id, { onDelete: 'cascade' }),
   tagId: integer("tag_id").notNull().references(() => blogTags.id, { onDelete: 'cascade' }),
 }, table => ({
