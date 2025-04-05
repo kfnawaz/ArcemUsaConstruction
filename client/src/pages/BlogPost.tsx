@@ -224,30 +224,11 @@ const BlogPost = () => {
               </header>
 
               <div className="prose max-w-none reveal active">
-                {/* This would render rich content in a real implementation */}
-                <p className="text-gray-700 leading-relaxed mb-6">
-                  {post.content}
-                </p>
-                
-                <h2 className="text-2xl font-montserrat font-bold mt-12 mb-4">Introduction</h2>
-                <p className="text-gray-700 leading-relaxed mb-6">
-                  The construction industry is constantly evolving, with new technologies, methods, and materials emerging to improve efficiency, sustainability, and quality. In this article, we explore some of the latest developments in the field and how they're shaping the future of construction.
-                </p>
-                
-                <h2 className="text-2xl font-montserrat font-bold mt-12 mb-4">Key Innovations</h2>
-                <p className="text-gray-700 leading-relaxed mb-6">
-                  From Building Information Modeling (BIM) to prefabricated construction elements, the industry is embracing innovations that streamline processes and enhance outcomes. These technologies not only improve efficiency but also contribute to more sustainable building practices.
-                </p>
-                
-                <h2 className="text-2xl font-montserrat font-bold mt-12 mb-4">Challenges and Opportunities</h2>
-                <p className="text-gray-700 leading-relaxed mb-6">
-                  While new technologies offer exciting possibilities, they also present challenges in terms of implementation, training, and cost. However, the long-term benefits often outweigh these initial obstacles, making innovation a worthwhile investment for construction companies.
-                </p>
-                
-                <h2 className="text-2xl font-montserrat font-bold mt-12 mb-4">Conclusion</h2>
-                <p className="text-gray-700 leading-relaxed mb-6">
-                  As the construction industry continues to evolve, staying informed about the latest trends and technologies is essential for companies looking to remain competitive. By embracing innovation while maintaining a focus on quality and client satisfaction, construction firms can position themselves for long-term success.
-                </p>
+                {/* Render the content from database */}
+                <div 
+                  className="text-gray-700 leading-relaxed"
+                  dangerouslySetInnerHTML={{ __html: post.content }}
+                />
               </div>
             </article>
 

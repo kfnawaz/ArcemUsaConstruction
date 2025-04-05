@@ -27,6 +27,7 @@ import { Badge } from "@/components/ui/badge";
 import BlogFeaturedImageUpload from './BlogFeaturedImageUpload';
 import CategoryCreator from './CategoryCreator';
 import TagCreator from './TagCreator';
+import RichTextEditor from './RichTextEditor';
 
 interface BlogFormProps {
   postId?: number;
@@ -439,16 +440,16 @@ const BlogForm = ({ postId, onClose }: BlogFormProps) => {
                   <FormItem>
                     <FormLabel>Content</FormLabel>
                     <FormControl>
-                      <Textarea 
-                        placeholder="Enter the full content of your blog post" 
-                        rows={10}
+                      <RichTextEditor 
                         value={field.value || ''}
                         onChange={field.onChange}
-                        onBlur={field.onBlur}
-                        name={field.name}
-                        ref={field.ref}
+                        placeholder="Enter the full content of your blog post"
+                        className="min-h-[400px]"
                       />
                     </FormControl>
+                    <FormDescription>
+                      Use the toolbar to format your content with headings, lists, links, and more
+                    </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
