@@ -20,7 +20,16 @@ import {
 } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { AlertCircle, FileIcon, FilePenIcon, Image, Trash2 } from 'lucide-react';
+import { 
+  AlertCircle, 
+  FileIcon, 
+  FilePenIcon, 
+  Image, 
+  Trash2, 
+  ChevronDown, 
+  ChevronRight,
+  FolderIcon
+} from 'lucide-react';
 import { formatBytes, formatDate } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -33,6 +42,7 @@ export interface FileListItem {
   url: string;
   size: number;
   uploadedAt: string;
+  category?: string; // Category for organizing files (projects, quotes, etc.)
 }
 
 // Response from delete batch endpoint
@@ -51,6 +61,8 @@ export default function UploadThingFileManager() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [fileToDelete, setFileToDelete] = useState<FileListItem | null>(null);
   const [isBatchDeleteDialogOpen, setIsBatchDeleteDialogOpen] = useState(false);
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
+  
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -152,6 +164,24 @@ export default function UploadThingFileManager() {
     }
   };
 
+  // Handle selecting/deselecting files in a category
+  const toggleSelectCategory = (categoryFiles: FileListItem[]) => {
+    const categoryKeys = categoryFiles.map(file => file.key);
+    const allSelected = categoryFiles.every(file => selectedFiles.has(file.key));
+    
+    const newSelectedFiles = new Set(Array.from(selectedFiles));
+    
+    if (allSelected) {
+      // Deselect all files in this category
+      categoryKeys.forEach(key => newSelectedFiles.delete(key));
+    } else {
+      // Select all files in this category
+      categoryKeys.forEach(key => newSelectedFiles.add(key));
+    }
+    
+    setSelectedFiles(newSelectedFiles);
+  };
+
   // Handle initiating delete for a single file
   const handleDeleteFile = (file: FileListItem) => {
     setFileToDelete(file);
@@ -178,6 +208,14 @@ export default function UploadThingFileManager() {
     }
   };
 
+  // Toggle category expansion
+  const toggleCategory = (category: string) => {
+    setExpandedCategories(prev => ({
+      ...prev,
+      [category]: !prev[category]
+    }));
+  };
+
   // Determine file icon based on filename
   const getFileIcon = (fileName: string) => {
     const extension = fileName.split('.').pop()?.toLowerCase();
@@ -187,6 +225,66 @@ export default function UploadThingFileManager() {
       return <FilePenIcon className="h-4 w-4" />;
     }
     return <FileIcon className="h-4 w-4" />;
+  };
+
+  // Parse category path for hierarchical display
+  const parseCategoryPath = (path: string): { main: string, sub: string | null } => {
+    if (!path) return { main: 'Other', sub: null };
+    const parts = path.split('/');
+    return {
+      main: parts[0],
+      sub: parts.length > 1 ? parts.slice(1).join('/') : null
+    };
+  };
+
+  // Group files by category
+  const groupFilesByCategory = () => {
+    const categorized: Record<string, FileListItem[]> = {};
+    
+    files.forEach(file => {
+      const category = file.category || 'Other';
+      if (!categorized[category]) {
+        categorized[category] = [];
+      }
+      categorized[category].push(file);
+    });
+    
+    return categorized;
+  };
+
+  // Get main categories and their subcategories
+  const getOrganizedCategories = () => {
+    const filesByCategory = groupFilesByCategory();
+    const categories = Object.keys(filesByCategory);
+    
+    // Group by main categories
+    const mainCategories: Record<string, string[]> = {};
+    const mainCategoryFiles: Record<string, FileListItem[]> = {};
+    
+    categories.forEach(category => {
+      const { main, sub } = parseCategoryPath(category);
+      
+      if (!mainCategories[main]) {
+        mainCategories[main] = [];
+        mainCategoryFiles[main] = [];
+      }
+      
+      if (sub) {
+        // Add as subcategory
+        if (!mainCategories[main].includes(category)) {
+          mainCategories[main].push(category);
+        }
+      } else {
+        // Add files directly to main category
+        mainCategoryFiles[main] = filesByCategory[category];
+      }
+    });
+    
+    return {
+      mainCategories,
+      mainCategoryFiles,
+      filesByCategory
+    };
   };
 
   // Render placeholder loading state
@@ -249,6 +347,16 @@ export default function UploadThingFileManager() {
     );
   }
 
+  // Get organized categories and files
+  const { mainCategories, mainCategoryFiles, filesByCategory } = getOrganizedCategories();
+  
+  // Sort main categories alphabetically with "Other" at the end
+  const sortedMainCategories = Object.keys(mainCategories).sort((a, b) => {
+    if (a === 'Other') return 1;
+    if (b === 'Other') return -1;
+    return a.localeCompare(b);
+  });
+
   return (
     <Card>
       <CardContent className="pt-6">
@@ -263,64 +371,202 @@ export default function UploadThingFileManager() {
           </Button>
         </div>
 
-        <div className="border rounded-md">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-12">
-                  <Checkbox 
-                    checked={selectedFiles.size === files.length && files.length > 0} 
-                    onCheckedChange={toggleSelectAll}
-                    aria-label="Select all files"
-                  />
-                </TableHead>
-                <TableHead>File Name</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Size</TableHead>
-                <TableHead>Uploaded</TableHead>
-                <TableHead className="w-14">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {files.map((file) => (
-                <TableRow key={file.key}>
-                  <TableCell>
-                    <Checkbox 
-                      checked={selectedFiles.has(file.key)} 
-                      onCheckedChange={() => toggleSelectFile(file.key)}
-                      aria-label={`Select file ${file.name}`}
-                    />
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center gap-2">
-                      {getFileIcon(file.name)}
-                      <a 
-                        href={file.url} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-blue-600 hover:underline"
-                      >
-                        {file.name}
-                      </a>
+        <div className="border rounded-md p-4">
+          {/* Folder-based organization */}
+          {sortedMainCategories.map(mainCategory => {
+            const isMainExpanded = expandedCategories[mainCategory] || false;
+            const subCategories = mainCategories[mainCategory];
+            const mainFiles = mainCategoryFiles[mainCategory] || [];
+            const hasFiles = mainFiles.length > 0;
+            const hasSubcategories = subCategories.length > 0;
+            
+            return (
+              <div key={mainCategory} className="mb-4">
+                {/* Main Category Folder */}
+                <div 
+                  className="flex items-center gap-2 p-2 bg-gray-100 rounded cursor-pointer hover:bg-gray-200 transition-colors" 
+                  onClick={() => toggleCategory(mainCategory)}
+                >
+                  {isMainExpanded ? (
+                    <ChevronDown className="h-4 w-4 text-gray-600" />
+                  ) : (
+                    <ChevronRight className="h-4 w-4 text-gray-600" />
+                  )}
+                  <FolderIcon className="h-5 w-5 text-blue-500" />
+                  <div className="font-semibold flex-1">{mainCategory}</div>
+                  <span className="text-sm text-gray-500">
+                    {hasFiles ? `${mainFiles.length} files` : ''}
+                    {hasFiles && hasSubcategories ? ' + ' : ''}
+                    {hasSubcategories ? `${subCategories.length} subfolder${subCategories.length !== 1 ? 's' : ''}` : ''}
+                  </span>
+                </div>
+                
+                {/* Main Category Files - show when expanded */}
+                {isMainExpanded && hasFiles && (
+                  <div className="ml-8 mt-2 mb-4">
+                    <div className="bg-white border rounded-md">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead className="w-12">
+                              <Checkbox 
+                                checked={mainFiles.length > 0 && mainFiles.every(file => selectedFiles.has(file.key))} 
+                                onCheckedChange={() => toggleSelectCategory(mainFiles)}
+                                aria-label={`Select all files in ${mainCategory}`}
+                              />
+                            </TableHead>
+                            <TableHead>File Name</TableHead>
+                            <TableHead>Type</TableHead>
+                            <TableHead>Size</TableHead>
+                            <TableHead>Uploaded</TableHead>
+                            <TableHead className="w-14">Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {mainFiles.map((file) => (
+                            <TableRow key={file.key}>
+                              <TableCell>
+                                <Checkbox 
+                                  checked={selectedFiles.has(file.key)} 
+                                  onCheckedChange={() => toggleSelectFile(file.key)}
+                                  aria-label={`Select file ${file.name}`}
+                                />
+                              </TableCell>
+                              <TableCell className="font-medium">
+                                <div className="flex items-center gap-2">
+                                  {getFileIcon(file.name)}
+                                  <a 
+                                    href={file.url} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:underline"
+                                  >
+                                    {file.name}
+                                  </a>
+                                </div>
+                              </TableCell>
+                              <TableCell>{file.name.split('.').pop()?.toUpperCase() || 'Unknown'}</TableCell>
+                              <TableCell>{formatBytes(file.size)}</TableCell>
+                              <TableCell>{formatDate(new Date(file.uploadedAt))}</TableCell>
+                              <TableCell>
+                                <Button 
+                                  size="icon" 
+                                  variant="ghost" 
+                                  onClick={() => handleDeleteFile(file)}
+                                  disabled={deleteMutation.isPending}
+                                >
+                                  <Trash2 className="h-4 w-4 text-red-500" />
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
                     </div>
-                  </TableCell>
-                  <TableCell>{file.name.split('.').pop()?.toUpperCase() || 'Unknown'}</TableCell>
-                  <TableCell>{formatBytes(file.size)}</TableCell>
-                  <TableCell>{formatDate(new Date(file.uploadedAt))}</TableCell>
-                  <TableCell>
-                    <Button 
-                      size="icon" 
-                      variant="ghost" 
-                      onClick={() => handleDeleteFile(file)}
-                      disabled={deleteMutation.isPending}
-                    >
-                      <Trash2 className="h-4 w-4 text-red-500" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                  </div>
+                )}
+                
+                {/* Subcategories */}
+                {isMainExpanded && hasSubcategories && (
+                  <div className="ml-8 space-y-3">
+                    {subCategories.map(subCategoryPath => {
+                      const { sub } = parseCategoryPath(subCategoryPath);
+                      if (!sub) return null;
+                      
+                      const isSubExpanded = expandedCategories[subCategoryPath] || false;
+                      const subFiles = filesByCategory[subCategoryPath] || [];
+                      
+                      return (
+                        <div key={subCategoryPath} className="mt-2">
+                          {/* Subcategory Folder */}
+                          <div 
+                            className="flex items-center gap-2 p-2 bg-gray-50 border rounded cursor-pointer hover:bg-gray-100 transition-colors" 
+                            onClick={() => toggleCategory(subCategoryPath)}
+                          >
+                            {isSubExpanded ? (
+                              <ChevronDown className="h-4 w-4 text-gray-600" />
+                            ) : (
+                              <ChevronRight className="h-4 w-4 text-gray-600" />
+                            )}
+                            <FolderIcon className="h-5 w-5 text-yellow-500" />
+                            <div className="font-medium flex-1">{sub}</div>
+                            <span className="text-sm text-gray-500">
+                              {subFiles.length} file{subFiles.length !== 1 ? 's' : ''}
+                            </span>
+                          </div>
+                          
+                          {/* Subcategory Files */}
+                          {isSubExpanded && (
+                            <div className="ml-8 mt-2">
+                              <div className="bg-white border rounded-md">
+                                <Table>
+                                  <TableHeader>
+                                    <TableRow>
+                                      <TableHead className="w-12">
+                                        <Checkbox 
+                                          checked={subFiles.length > 0 && subFiles.every(file => selectedFiles.has(file.key))} 
+                                          onCheckedChange={() => toggleSelectCategory(subFiles)}
+                                          aria-label={`Select all files in ${sub}`}
+                                        />
+                                      </TableHead>
+                                      <TableHead>File Name</TableHead>
+                                      <TableHead>Type</TableHead>
+                                      <TableHead>Size</TableHead>
+                                      <TableHead>Uploaded</TableHead>
+                                      <TableHead className="w-14">Actions</TableHead>
+                                    </TableRow>
+                                  </TableHeader>
+                                  <TableBody>
+                                    {subFiles.map((file) => (
+                                      <TableRow key={file.key}>
+                                        <TableCell>
+                                          <Checkbox 
+                                            checked={selectedFiles.has(file.key)} 
+                                            onCheckedChange={() => toggleSelectFile(file.key)}
+                                            aria-label={`Select file ${file.name}`}
+                                          />
+                                        </TableCell>
+                                        <TableCell className="font-medium">
+                                          <div className="flex items-center gap-2">
+                                            {getFileIcon(file.name)}
+                                            <a 
+                                              href={file.url} 
+                                              target="_blank" 
+                                              rel="noopener noreferrer"
+                                              className="text-blue-600 hover:underline"
+                                            >
+                                              {file.name}
+                                            </a>
+                                          </div>
+                                        </TableCell>
+                                        <TableCell>{file.name.split('.').pop()?.toUpperCase() || 'Unknown'}</TableCell>
+                                        <TableCell>{formatBytes(file.size)}</TableCell>
+                                        <TableCell>{formatDate(new Date(file.uploadedAt))}</TableCell>
+                                        <TableCell>
+                                          <Button 
+                                            size="icon" 
+                                            variant="ghost" 
+                                            onClick={() => handleDeleteFile(file)}
+                                            disabled={deleteMutation.isPending}
+                                          >
+                                            <Trash2 className="h-4 w-4 text-red-500" />
+                                          </Button>
+                                        </TableCell>
+                                      </TableRow>
+                                    ))}
+                                  </TableBody>
+                                </Table>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
 
         {/* Single File Delete Dialog */}

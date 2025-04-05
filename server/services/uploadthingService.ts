@@ -33,6 +33,7 @@ export interface FileListItem {
   url: string;
   size: number;
   uploadedAt: string;
+  category: string;
 }
 
 /**
@@ -81,6 +82,41 @@ export class UploadThingService {
           }
         }
         
+        // Determine file category based on file name or structure
+        let category = 'Other';
+        
+        // Project files typically have specific naming patterns
+        const fileName = file.name || '';
+        
+        if (fileName.match(/golden-tree|tenant-imp|mecca-cemetry|truckstop-gas|cstore/i)) {
+          category = 'Projects';
+          
+          // Extract specific project name if possible
+          if (fileName.includes('golden-tree')) {
+            category = 'Projects/Golden Tree';
+          } else if (fileName.includes('tenant-imp')) {
+            category = 'Projects/Tenant Improvements';
+          } else if (fileName.includes('mecca-cemetry')) {
+            category = 'Projects/Mecca Cemetery';
+          } else if (fileName.includes('truckstop-gas')) {
+            category = 'Projects/Truck Stop & Gas Station';
+          } else if (fileName.includes('cstore')) {
+            category = 'Projects/Convenience Store';
+          }
+        } else if (fileName.match(/quote|request|attachment|document/i)) {
+          category = 'Quote Requests';
+        } else if (fileName.match(/blog|post|article/i)) {
+          category = 'Blog';
+        } else if (fileName.match(/service|offering/i)) {
+          category = 'Services';
+        } else if (fileName.match(/team|member|employee/i)) {
+          category = 'Team Members';
+        } else if (fileName.match(/logo|brand|icon/i)) {
+          category = 'Brand Assets';
+        } else if (fileName.endsWith('.pdf')) {
+          category = 'Documents';
+        }
+        
         // Log URL formats for debugging
         console.log(`File ${file.name || file.key} URLs:`, {
           ufsUrl: file.ufsUrl?.substring(0, 30) + '...' || '[not provided]',
@@ -93,7 +129,8 @@ export class UploadThingService {
           name: file.name || file.key,
           url: fileUrl || '',
           size: file.size || 0,
-          uploadedAt: new Date(file.uploadedAt || Date.now()).toISOString()
+          uploadedAt: new Date(file.uploadedAt || Date.now()).toISOString(),
+          category: category
         };
       });
     } catch (error) {
