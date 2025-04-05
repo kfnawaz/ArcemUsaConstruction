@@ -115,7 +115,7 @@ export const blogPosts = pgTable("blog_posts", {
   author: text("author").notNull(),
   published: boolean("published").default(false),
   createdAt: timestamp("created_at").defaultNow(),
-  category: text("category"),
+  category: text("category").notNull().default(""), // Make it not null but with a default empty string
 });
 
 export const blogPostCategories = pgTable("blog_post_categories", {

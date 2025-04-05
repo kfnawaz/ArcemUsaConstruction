@@ -918,6 +918,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Extract category and tag IDs, and gallery images
       const { categoryIds, tagIds, galleryImages, ...blogPostData } = postData;
       
+      // Ensure category has a default value
+      if (!blogPostData.category) {
+        blogPostData.category = "";
+      }
+      
       // Create the blog post
       const post = await storage.createBlogPost(blogPostData);
       
@@ -966,6 +971,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Extract category and tag IDs, and gallery images
       const { categoryIds, tagIds, galleryImages, ...blogPostData } = postData;
+      
+      // Ensure category has a default value if it's being updated
+      if (blogPostData.category === null || blogPostData.category === undefined) {
+        blogPostData.category = "";
+      }
       
       // Update the blog post
       const post = await storage.updateBlogPost(id, blogPostData);
