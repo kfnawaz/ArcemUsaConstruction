@@ -53,7 +53,7 @@ const JoinUs = () => {
       {/* Hero Section */}
       <PageHeader
         title="Join Our Team"
-        subtitle="We're committed to building relationships as sturdy as our constructions."
+        subtitle="We're committed to building relationships.\nAs sturdy as our constructions."
         backgroundImage="/uploads/images/join-us/jesse-orrico-L94dWXNKwrY-unsplash.jpg"
       >
         <Link href="/subcontractors">
