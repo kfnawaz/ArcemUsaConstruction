@@ -83,7 +83,7 @@ const QuoteRequestForm = ({ className = "", onSuccess }: QuoteRequestFormProps) 
       name: data.name,
       email: data.email,
       phone: data.phone,
-      companyName: data.company,
+      company: data.company,
       projectType: data.projectType,
       projectSize: data.projectSize,
       budget: data.budget,

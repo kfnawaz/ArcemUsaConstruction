@@ -321,7 +321,7 @@ export const quoteRequests = pgTable("quote_requests", {
   name: text("name").notNull(),
   email: text("email").notNull(),
   phone: text("phone").notNull(),
-  companyName: text("company_name"),
+  company: text("company"),
   projectType: text("project_type").notNull(),
   projectSize: text("project_size"),
   budget: text("budget"),
