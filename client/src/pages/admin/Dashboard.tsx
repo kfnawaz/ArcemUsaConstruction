@@ -10,9 +10,16 @@ import {
   Plus,
   CheckCircle,
   Clock,
-  Users
+  Users,
+  Wrench,
+  Star,
+  Mail,
+  ClipboardList,
+  BriefcaseBusiness,
+  Upload
 } from 'lucide-react';
 import AdminNav from '@/components/admin/AdminNav';
+import StorageUsage from '@/components/admin/StorageUsage';
 import { Project, BlogPost, Message } from '@shared/schema';
 
 const Dashboard = () => {
@@ -53,6 +60,12 @@ const Dashboard = () => {
               <p className="text-gray-600">
                 Manage your projects, blog posts, and messages.
               </p>
+            </div>
+            
+            {/* Storage Usage */}
+            <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+              <h2 className="text-xl font-montserrat font-bold mb-4">Storage Usage</h2>
+              <StorageUsage />
             </div>
             
             {/* Dashboard Stats */}
@@ -109,31 +122,118 @@ const Dashboard = () => {
             {/* Quick Actions */}
             <div className="bg-white rounded-lg shadow-md p-6 mb-8">
               <h2 className="text-xl font-montserrat font-bold mb-4">Quick Actions</h2>
-              <div className="flex flex-wrap gap-4">
-                <Link href="/admin/projects">
-                  <Button variant="outline" className="flex items-center">
-                    <Building className="mr-2 h-4 w-4" /> 
-                    Manage Projects
-                  </Button>
-                </Link>
-                <Link href="/admin/projects?action=new">
-                  <Button variant="gold" className="flex items-center">
-                    <Plus className="mr-2 h-4 w-4" /> 
-                    Add New Project
-                  </Button>
-                </Link>
-                <Link href="/admin/blog">
-                  <Button variant="outline" className="flex items-center">
-                    <FileText className="mr-2 h-4 w-4" /> 
-                    Manage Blog
-                  </Button>
-                </Link>
-                <Link href="/admin/blog?action=new">
-                  <Button variant="gold" className="flex items-center">
-                    <Plus className="mr-2 h-4 w-4" /> 
-                    Add New Article
-                  </Button>
-                </Link>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {/* Content Management */}
+                <div className="space-y-3">
+                  <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Content</h3>
+                  <div className="space-y-2">
+                    <Link href="/admin/projects">
+                      <Button variant="outline" className="w-full justify-start">
+                        <Building className="mr-2 h-4 w-4" /> 
+                        Projects
+                      </Button>
+                    </Link>
+                    <Link href="/admin/services">
+                      <Button variant="outline" className="w-full justify-start">
+                        <Wrench className="mr-2 h-4 w-4" /> 
+                        Services
+                      </Button>
+                    </Link>
+                    <Link href="/admin/blog">
+                      <Button variant="outline" className="w-full justify-start">
+                        <FileText className="mr-2 h-4 w-4" /> 
+                        Blog
+                      </Button>
+                    </Link>
+                    <Link href="/admin/testimonials">
+                      <Button variant="outline" className="w-full justify-start">
+                        <Star className="mr-2 h-4 w-4" /> 
+                        Testimonials
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+                
+                {/* Communication */}
+                <div className="space-y-3">
+                  <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Communication</h3>
+                  <div className="space-y-2">
+                    <Link href="/admin/messages">
+                      <Button variant="outline" className="w-full justify-start">
+                        <MessageSquare className="mr-2 h-4 w-4" /> 
+                        Messages
+                      </Button>
+                    </Link>
+                    <Link href="/admin/newsletter">
+                      <Button variant="outline" className="w-full justify-start">
+                        <Mail className="mr-2 h-4 w-4" /> 
+                        Newsletter
+                      </Button>
+                    </Link>
+                    <Link href="/admin/quotes">
+                      <Button variant="outline" className="w-full justify-start">
+                        <ClipboardList className="mr-2 h-4 w-4" /> 
+                        Quote Requests
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+                
+                {/* Resources */}
+                <div className="space-y-3">
+                  <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Resources</h3>
+                  <div className="space-y-2">
+                    <Link href="/admin/careers">
+                      <Button variant="outline" className="w-full justify-start">
+                        <BriefcaseBusiness className="mr-2 h-4 w-4" /> 
+                        Careers
+                      </Button>
+                    </Link>
+                    <Link href="/admin/team-members">
+                      <Button variant="outline" className="w-full justify-start">
+                        <Users className="mr-2 h-4 w-4" /> 
+                        Team Members
+                      </Button>
+                    </Link>
+                    <Link href="/admin/file-upload-test">
+                      <Button variant="outline" className="w-full justify-start">
+                        <Upload className="mr-2 h-4 w-4" /> 
+                        File Manager
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+                
+                {/* Create New */}
+                <div className="space-y-3">
+                  <h3 className="text-sm font-semibold text-gray-600 uppercase tracking-wide">Create New</h3>
+                  <div className="space-y-2">
+                    <Link href="/admin/projects?action=new">
+                      <Button variant="gold" className="w-full justify-start">
+                        <Plus className="mr-2 h-4 w-4" /> 
+                        Project
+                      </Button>
+                    </Link>
+                    <Link href="/admin/blog?action=new">
+                      <Button variant="gold" className="w-full justify-start">
+                        <Plus className="mr-2 h-4 w-4" /> 
+                        Blog Article
+                      </Button>
+                    </Link>
+                    <Link href="/admin/services?action=new">
+                      <Button variant="gold" className="w-full justify-start">
+                        <Plus className="mr-2 h-4 w-4" /> 
+                        Service
+                      </Button>
+                    </Link>
+                    <Link href="/admin/careers?action=new">
+                      <Button variant="gold" className="w-full justify-start">
+                        <Plus className="mr-2 h-4 w-4" /> 
+                        Job Posting
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
               </div>
             </div>
             
