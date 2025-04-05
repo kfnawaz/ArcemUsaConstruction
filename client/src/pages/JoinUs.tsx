@@ -250,7 +250,7 @@ const JoinUs = () => {
             >
               <div className="h-56 bg-gray-200 relative overflow-hidden">
                 <img
-                  src="/uploads/images/greyson-joralemon-A1g0oeX29ec-unsplash.jpg"
+                  src="/uploads/images/join-us/greyson-joralemon-A1g0oeX29ec-unsplash.jpg"
                   alt="Subcontractor working with power tool"
                   className="w-full h-full object-cover transition-transform hover:scale-110 duration-700"
                 />
