@@ -4,21 +4,31 @@
  * Script to run the database export
  */
 
-const { spawn } = require('child_process');
-const path = require('path');
+import { execSync } from 'child_process';
+import fs from 'fs';
+import path from 'path';
 
-console.log('Starting database export...');
+const EXPORT_DIR = './database-export';
 
-const exportProcess = spawn('npx', ['tsx', './scripts/export-database.ts'], {
-  stdio: 'inherit',
-  shell: true
-});
+// Ensure export directory exists
+if (!fs.existsSync(EXPORT_DIR)) {
+  fs.mkdirSync(EXPORT_DIR, { recursive: true });
+}
 
-exportProcess.on('close', (code) => {
-  if (code === 0) {
-    console.log('\nDatabase export completed successfully!');
-    console.log('The exported files are in the ./database-export directory.');
-  } else {
-    console.error(`\nDatabase export failed with code ${code}`);
-  }
-});
+console.log('🚀 Starting database export...');
+
+try {
+  // Run the export script
+  execSync('npx tsx ./scripts/export-database.ts', { stdio: 'inherit' });
+  
+  // Generate schema SQL
+  execSync('npx tsx ./scripts/generate-schema-sql.ts', { stdio: 'inherit' });
+  
+  // Show summary
+  execSync('npx tsx ./scripts/export-summary.js', { stdio: 'inherit' });
+  
+  console.log('✅ Database export completed successfully!');
+} catch (error) {
+  console.error('❌ Database export failed:', error.message);
+  process.exit(1);
+}

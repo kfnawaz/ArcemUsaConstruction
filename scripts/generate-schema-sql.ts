@@ -13,12 +13,12 @@ async function generateSchemaSql(): Promise<void> {
     const schemaQuery = `
       SELECT 
         'CREATE TABLE ' || 
-        quote_ident(schemaname) || '.' || quote_ident(tablename) || 
+        quote_ident(col.table_schema) || '.' || quote_ident(col.table_name) || 
         E' (\n' || 
         string_agg(
-          '  ' || quote_ident(column_name) || ' ' || type || 
-          CASE WHEN is_nullable = 'NO' THEN ' NOT NULL' ELSE '' END ||
-          CASE WHEN column_default IS NOT NULL THEN ' DEFAULT ' || column_default ELSE '' END,
+          '  ' || quote_ident(col.column_name) || ' ' || col.data_type || 
+          CASE WHEN col.is_nullable = 'NO' THEN ' NOT NULL' ELSE '' END ||
+          CASE WHEN col.column_default IS NOT NULL THEN ' DEFAULT ' || col.column_default ELSE '' END,
           E',\n'
         ) || 
         CASE WHEN c.conname IS NOT NULL 
@@ -37,9 +37,9 @@ async function generateSchemaSql(): Promise<void> {
       WHERE 
         col.table_schema = 'public'
       GROUP BY 
-        schemaname, tablename, c.conname
+        col.table_schema, col.table_name, c.conname
       ORDER BY 
-        schemaname, tablename;
+        col.table_schema, col.table_name;
     `;
     
     const foreignKeyQuery = `

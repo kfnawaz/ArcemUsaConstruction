@@ -1,9 +1,13 @@
 import fs from 'fs';
 import path from 'path';
-import { db } from '../server/db';
+import { db, DATABASE_URL } from '../server/db';
 import * as schema from '../shared/schema';
+import postgres from 'postgres';
 
 const EXPORT_DIR = './database-export';
+
+// Create a raw SQL client for tables with schema mismatches
+const sql = postgres(DATABASE_URL, { idle_timeout: 10 });
 
 // Create an array of table names corresponding to the schema
 const tables = [
@@ -12,15 +16,15 @@ const tables = [
   { name: 'project_gallery', query: db.select().from(schema.projectGallery) },
   { name: 'blog_posts', query: db.select().from(schema.blogPosts) },
   { name: 'blog_gallery', query: db.select().from(schema.blogGallery) },
-  { name: 'blog_categories', query: db.select().from(schema.blogCategories) },
-  { name: 'blog_tags', query: db.select().from(schema.blogTags) },
+  { name: 'blog_categories', query: () => sql`SELECT id, name, slug, description FROM blog_categories` },
+  { name: 'blog_tags', query: () => sql`SELECT id, name, slug FROM blog_tags` },
   { name: 'blog_post_categories', query: db.select().from(schema.blogPostCategories) },
   { name: 'blog_post_tags', query: db.select().from(schema.blogPostTags) },
   { name: 'testimonials', query: db.select().from(schema.testimonials) },
   { name: 'services', query: db.select().from(schema.services) },
-  { name: 'service_gallery', query: db.select().from(schema.serviceGallery) },
+  { name: 'service_gallery', query: () => sql`SELECT id, service_id, image_url, alt, "order", created_at FROM service_gallery` },
   { name: 'messages', query: db.select().from(schema.messages) },
-  { name: 'newsletter_subscribers', query: db.select().from(schema.newsletterSubscribers) },
+  { name: 'newsletter_subscribers', query: () => sql`SELECT id, email, first_name, last_name, subscribed, created_at FROM newsletter_subscribers` },
   { name: 'quote_requests', query: db.select().from(schema.quoteRequests) },
   { name: 'quote_request_attachments', query: db.select().from(schema.quoteRequestAttachments) },
   { name: 'subcontractors', query: db.select().from(schema.subcontractors) },
@@ -29,10 +33,12 @@ const tables = [
   { name: 'team_members', query: db.select().from(schema.teamMembers) },
 ];
 
-async function exportTable(tableName: string, query: any): Promise<void> {
+async function exportTable(tableName: string, queryFn: any): Promise<void> {
   try {
     console.log(`Exporting table: ${tableName}`);
-    const records = await query;
+    
+    // Execute the query - could be a drizzle query or a raw SQL function
+    const records = typeof queryFn === 'function' ? await queryFn() : await queryFn;
     
     // Create the export directory if it doesn't exist
     if (!fs.existsSync(EXPORT_DIR)) {
@@ -52,12 +58,17 @@ async function exportTable(tableName: string, query: any): Promise<void> {
 async function exportAllData(): Promise<void> {
   console.log('Starting database export process...');
   
-  // Export each table
-  for (const table of tables) {
-    await exportTable(table.name, table.query);
+  try {
+    // Export each table
+    for (const table of tables) {
+      await exportTable(table.name, table.query);
+    }
+    
+    console.log(`\nExport completed! Files saved to ${EXPORT_DIR}`);
+  } finally {
+    // Close the SQL connection
+    await sql.end();
   }
-  
-  console.log(`\nExport completed! Files saved to ${EXPORT_DIR}`);
 }
 
 // Run the export

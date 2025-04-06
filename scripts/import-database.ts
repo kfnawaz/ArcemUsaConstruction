@@ -12,26 +12,26 @@ const directDb = postgres(process.env.DATABASE_URL || "", { max: 1 });
 
 // Define tables in the order they should be imported (respecting foreign key constraints)
 const tables = [
-  { name: 'users', table: schema.users },
-  { name: 'projects', table: schema.projects },
-  { name: 'project_gallery', table: schema.projectGallery },
-  { name: 'blog_categories', table: schema.blogCategories },
-  { name: 'blog_tags', table: schema.blogTags },
-  { name: 'blog_posts', table: schema.blogPosts },
-  { name: 'blog_gallery', table: schema.blogGallery },
-  { name: 'blog_post_categories', table: schema.blogPostCategories },
-  { name: 'blog_post_tags', table: schema.blogPostTags },
-  { name: 'testimonials', table: schema.testimonials },
-  { name: 'services', table: schema.services },
-  { name: 'service_gallery', table: schema.serviceGallery },
-  { name: 'messages', table: schema.messages },
-  { name: 'newsletter_subscribers', table: schema.newsletterSubscribers },
-  { name: 'quote_requests', table: schema.quoteRequests },
-  { name: 'quote_request_attachments', table: schema.quoteRequestAttachments },
-  { name: 'subcontractors', table: schema.subcontractors },
-  { name: 'vendors', table: schema.vendors },
-  { name: 'job_postings', table: schema.jobPostings },
-  { name: 'team_members', table: schema.teamMembers },
+  { name: 'users', table: schema.users, useRawImport: false },
+  { name: 'projects', table: schema.projects, useRawImport: false },
+  { name: 'project_gallery', table: schema.projectGallery, useRawImport: false },
+  { name: 'blog_categories', table: schema.blogCategories, useRawImport: true },
+  { name: 'blog_tags', table: schema.blogTags, useRawImport: true },
+  { name: 'blog_posts', table: schema.blogPosts, useRawImport: false },
+  { name: 'blog_gallery', table: schema.blogGallery, useRawImport: false },
+  { name: 'blog_post_categories', table: schema.blogPostCategories, useRawImport: false },
+  { name: 'blog_post_tags', table: schema.blogPostTags, useRawImport: false },
+  { name: 'testimonials', table: schema.testimonials, useRawImport: false },
+  { name: 'services', table: schema.services, useRawImport: false },
+  { name: 'service_gallery', table: schema.serviceGallery, useRawImport: true },
+  { name: 'messages', table: schema.messages, useRawImport: false },
+  { name: 'newsletter_subscribers', table: schema.newsletterSubscribers, useRawImport: true },
+  { name: 'quote_requests', table: schema.quoteRequests, useRawImport: false },
+  { name: 'quote_request_attachments', table: schema.quoteRequestAttachments, useRawImport: false },
+  { name: 'subcontractors', table: schema.subcontractors, useRawImport: false },
+  { name: 'vendors', table: schema.vendors, useRawImport: false },
+  { name: 'job_postings', table: schema.jobPostings, useRawImport: false },
+  { name: 'team_members', table: schema.teamMembers, useRawImport: false },
 ];
 
 async function clearTable(tableName: string): Promise<void> {
@@ -46,7 +46,7 @@ async function clearTable(tableName: string): Promise<void> {
   }
 }
 
-async function importTable(tableName: string, table: any): Promise<void> {
+async function importTable(tableName: string, table: any, useRawImport: boolean = false): Promise<void> {
   try {
     const filePath = path.join(IMPORT_DIR, `${tableName}.json`);
     
@@ -70,9 +70,61 @@ async function importTable(tableName: string, table: any): Promise<void> {
     // Insert the records into the table
     if (records.length > 0) {
       try {
-        // Use a transaction to ensure all records are inserted or none
-        await db.insert(table).values(records);
-        console.log(`✅ Imported ${records.length} records into ${tableName}`);
+        if (useRawImport) {
+          // Use raw SQL for tables with schema mismatches
+          console.log(`Using raw SQL import for ${tableName} due to schema mismatch`);
+          
+          // Handle different tables with specific column requirements
+          if (tableName === 'blog_categories') {
+            for (const record of records) {
+              await directDb`
+                INSERT INTO blog_categories (id, name, slug, description)
+                VALUES (${record.id}, ${record.name}, ${record.slug}, ${record.description})
+              `;
+            }
+          } else if (tableName === 'blog_tags') {
+            for (const record of records) {
+              await directDb`
+                INSERT INTO blog_tags (id, name, slug)
+                VALUES (${record.id}, ${record.name}, ${record.slug})
+              `;
+            }
+          } else if (tableName === 'service_gallery') {
+            for (const record of records) {
+              await directDb`
+                INSERT INTO service_gallery (id, service_id, image_url, alt, "order", created_at)
+                VALUES (
+                  ${record.id}, 
+                  ${record.service_id}, 
+                  ${record.image_url}, 
+                  ${record.alt}, 
+                  ${record.order}, 
+                  ${record.created_at}
+                )
+              `;
+            }
+          } else if (tableName === 'newsletter_subscribers') {
+            for (const record of records) {
+              await directDb`
+                INSERT INTO newsletter_subscribers (id, email, first_name, last_name, subscribed, created_at)
+                VALUES (
+                  ${record.id}, 
+                  ${record.email}, 
+                  ${record.first_name}, 
+                  ${record.last_name}, 
+                  ${record.subscribed}, 
+                  ${record.created_at}
+                )
+              `;
+            }
+          }
+          
+          console.log(`✅ Imported ${records.length} records into ${tableName} using raw SQL`);
+        } else {
+          // Use drizzle ORM for standard tables
+          await db.insert(table).values(records);
+          console.log(`✅ Imported ${records.length} records into ${tableName} using Drizzle ORM`);
+        }
       } catch (error) {
         console.error(`❌ Error inserting records into ${tableName}:`, error);
         throw error;
@@ -163,7 +215,7 @@ async function importAllData(): Promise<void> {
     
     // Import data into each table
     for (const tableInfo of tables) {
-      await importTable(tableInfo.name, tableInfo.table);
+      await importTable(tableInfo.name, tableInfo.table, tableInfo.useRawImport);
     }
     
     console.log('\nImport completed successfully!');
