@@ -162,10 +162,10 @@ const BlogPost = () => {
                       });
                       
                       return (
-                        <div className="flex flex-wrap gap-1">
+                        <div className="flex flex-wrap gap-1.5">
                           {categories && categories.length > 0 ? (
                             categories.map((cat) => (
-                              <Badge key={cat.id} variant="outline" className="text-xs font-medium">
+                              <Badge key={cat.id} variant="outline" className="text-xs font-medium px-3 py-1 border-gray-300">
                                 {cat.name}
                               </Badge>
                             ))
@@ -273,10 +273,10 @@ const BlogPost = () => {
                 
                 return tags && tags.length > 0 ? (
                   <div className="mt-8">
-                    <h4 className="text-sm font-semibold text-gray-600 mb-3">TAGS</h4>
-                    <div className="flex flex-wrap gap-2">
+                    <h4 className="text-sm font-semibold text-gray-600 mb-3 tracking-wide uppercase">TAGS</h4>
+                    <div className="flex flex-wrap gap-1.5">
                       {tags.map((tag) => (
-                        <span key={tag.id} className="text-sm text-gray-500 bg-gray-100 px-3 py-1.5 rounded-full">
+                        <span key={tag.id} className="text-xs text-gray-600 bg-gray-100 px-3 py-1 rounded-full font-medium">
                           #{tag.name}
                         </span>
                       ))}

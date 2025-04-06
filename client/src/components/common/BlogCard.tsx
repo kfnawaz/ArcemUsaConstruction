@@ -73,9 +73,9 @@ const BlogCard = ({ id, slug, title, excerpt, imageUrl, date, category }: BlogCa
         
         {/* Tags */}
         {tags && tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-4">
+          <div className="flex flex-wrap gap-1.5 mb-4">
             {tags.map((tag) => (
-              <span key={tag.id} className="text-xs text-gray-500 mr-2 bg-gray-100 px-2 py-1 rounded-full">
+              <span key={tag.id} className="text-xs text-gray-600 bg-gray-100 px-3 py-1 rounded-full font-medium">
                 #{tag.name}
               </span>
             ))}

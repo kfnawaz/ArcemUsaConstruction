@@ -30,10 +30,10 @@ export const TagList = ({ postId, createdAt }: TagListProps) => {
   });
   
   return (
-    <div className="flex flex-wrap gap-1">
+    <div className="flex flex-wrap gap-1.5">
       {tags && tags.length > 0 ? (
         tags.map((tag) => (
-          <span key={tag.id} className="text-xs text-gray-500 mr-2 bg-gray-100 px-2 py-1 rounded-full">
+          <span key={tag.id} className="text-xs text-gray-600 bg-gray-100 px-3 py-1 rounded-full font-medium">
             #{tag.name}
           </span>
         ))
@@ -149,13 +149,15 @@ const Blog = () => {
           <div className="mb-12 reveal active">
             <div className="flex flex-col md:flex-row gap-6 justify-between items-start md:items-center">
               {/* Category filter */}
-              <div className="space-y-3">
-                <div className="text-sm font-semibold text-gray-600">FILTER BY CATEGORY</div>
-                <div className="flex flex-wrap gap-3">
+              <div className="space-y-3 w-full">
+                <h3 className="text-sm font-semibold text-gray-600 tracking-wide uppercase">FILTER BY CATEGORY</h3>
+                <div className="flex flex-wrap gap-2">
                   <Badge
                     variant={selectedCategory === 'all' ? 'default' : 'outline'}
-                    className={`px-4 py-2 cursor-pointer hover:opacity-90 text-sm font-medium ${
-                      selectedCategory === 'all' ? 'bg-[#1E90DB]' : ''
+                    className={`px-4 py-2 cursor-pointer hover:bg-gray-100 text-sm font-medium transition-all ${
+                      selectedCategory === 'all' 
+                        ? 'bg-[#1E90DB] hover:bg-[#1670B0] text-white' 
+                        : 'border-gray-300 text-gray-700'
                     }`}
                     onClick={() => setSelectedCategory('all')}
                   >
@@ -166,8 +168,10 @@ const Blog = () => {
                     <Badge
                       key={category.id}
                       variant={selectedCategory === category.id ? 'default' : 'outline'}
-                      className={`px-4 py-2 cursor-pointer hover:opacity-90 text-sm font-medium ${
-                        selectedCategory === category.id ? 'bg-[#1E90DB]' : ''
+                      className={`px-4 py-2 cursor-pointer hover:bg-gray-100 text-sm font-medium transition-all ${
+                        selectedCategory === category.id 
+                          ? 'bg-[#1E90DB] hover:bg-[#1670B0] text-white' 
+                          : 'border-gray-300 text-gray-700'
                       }`}
                       onClick={() => setSelectedCategory(category.id)}
                     >

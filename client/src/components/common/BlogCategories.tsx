@@ -30,7 +30,7 @@ export const BlogCategories = ({ postId, className = "", variant = "outline" }: 
         <Badge
           key={cat.id}
           variant={variant}
-          className="text-xs font-medium"
+          className="text-xs font-medium px-3 py-1 border-gray-300"
         >
           {cat.name}
         </Badge>
