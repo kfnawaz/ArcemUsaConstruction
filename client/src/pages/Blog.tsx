@@ -10,6 +10,46 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 
+// Separated Tag List component to avoid hooks inside render
+interface TagListProps {
+  postId: number;
+  createdAt: string | Date | null;
+}
+
+interface Tag {
+  id: number;
+  name: string;
+  slug: string;
+}
+
+// Make the component exportable to fix the reference issue
+export const TagList = ({ postId, createdAt }: TagListProps) => {
+  const { data: tags = [] } = useQuery<Tag[]>({
+    queryKey: [`/api/blog/${postId}/tags`],
+    enabled: !!postId,
+  });
+  
+  return (
+    <div className="flex flex-wrap gap-1">
+      {tags && tags.length > 0 ? (
+        tags.map((tag) => (
+          <span key={tag.id} className="text-xs text-gray-500 mr-2 bg-gray-100 px-2 py-1 rounded-full">
+            #{tag.name}
+          </span>
+        ))
+      ) : (
+        <span className="text-xs text-gray-500">
+          {createdAt ? new Date(createdAt).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          }) : ''}
+        </span>
+      )}
+    </div>
+  );
+};
+
 const Blog = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<number | 'all'>('all');
@@ -218,39 +258,8 @@ const Blog = () => {
                     
                     <div className="flex justify-between items-center text-sm">
                       <div>
-                        {/* Show tags if available */}
-                        {(() => {
-                          interface Tag {
-                            id: number;
-                            name: string;
-                            slug: string;
-                          }
-                          
-                          const { data: tags = [] } = useQuery<Tag[]>({
-                            queryKey: [`/api/blog/${post.id}/tags`],
-                            enabled: !!post.id,
-                          });
-                          
-                          return (
-                            <div className="flex flex-wrap gap-1">
-                              {tags && tags.length > 0 ? (
-                                tags.map((tag) => (
-                                  <span key={tag.id} className="text-xs text-gray-500 mr-2 bg-gray-100 px-2 py-1 rounded-full">
-                                    #{tag.name}
-                                  </span>
-                                ))
-                              ) : (
-                                <span className="text-xs text-gray-500">
-                                  {post.createdAt ? new Date(post.createdAt).toLocaleDateString('en-US', {
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric'
-                                  }) : ''}
-                                </span>
-                              )}
-                            </div>
-                          );
-                        })()}
+                        {/* Tags and date section */}
+                        <TagList postId={post.id} createdAt={post.createdAt} />
                       </div>
                       <Link href={`/blog/${post.slug}`} className="text-blue-600 hover:underline text-sm">
                         Read More
