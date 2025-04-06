@@ -257,6 +257,33 @@ const BlogPost = () => {
                   dangerouslySetInnerHTML={{ __html: post.content }}
                 />
               </div>
+              
+              {/* Tags section */}
+              {(() => {
+                interface Tag {
+                  id: number;
+                  name: string;
+                  slug: string;
+                }
+                
+                const { data: tags = [] } = useQuery<Tag[]>({
+                  queryKey: [`/api/blog/${post.id}/tags`],
+                  enabled: !!post.id,
+                });
+                
+                return tags && tags.length > 0 ? (
+                  <div className="mt-8">
+                    <h4 className="text-sm font-semibold text-gray-600 mb-3">TAGS</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {tags.map((tag) => (
+                        <span key={tag.id} className="text-sm text-gray-500 bg-gray-100 px-3 py-1.5 rounded-full">
+                          #{tag.name}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ) : null;
+              })()}
             </article>
 
             <div className="border-t border-gray-200 mt-16 pt-12 reveal active">

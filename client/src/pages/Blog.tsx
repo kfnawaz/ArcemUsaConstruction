@@ -109,32 +109,32 @@ const Blog = () => {
           <div className="mb-12 reveal active">
             <div className="flex flex-col md:flex-row gap-6 justify-between items-start md:items-center">
               {/* Category filter */}
-              <div className="flex flex-wrap gap-3">
-                <button
-                  key="all"
-                  onClick={() => setSelectedCategory('all')}
-                  className={`px-4 py-2 font-montserrat text-sm transition-colors ${
-                    selectedCategory === 'all' 
-                      ? 'bg-[#1E90DB] text-white' 
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                >
-                  ALL
-                </button>
-                
-                {allCategories.map(category => (
-                  <button
-                    key={category.id}
-                    onClick={() => setSelectedCategory(category.id)}
-                    className={`px-4 py-2 font-montserrat text-sm transition-colors ${
-                      selectedCategory === category.id 
-                        ? 'bg-[#1E90DB] text-white' 
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              <div className="space-y-3">
+                <div className="text-sm font-semibold text-gray-600">FILTER BY CATEGORY</div>
+                <div className="flex flex-wrap gap-3">
+                  <Badge
+                    variant={selectedCategory === 'all' ? 'default' : 'outline'}
+                    className={`px-4 py-2 cursor-pointer hover:opacity-90 text-sm font-medium ${
+                      selectedCategory === 'all' ? 'bg-[#1E90DB]' : ''
                     }`}
+                    onClick={() => setSelectedCategory('all')}
                   >
-                    {category.name.toUpperCase()}
-                  </button>
-                ))}
+                    ALL CATEGORIES
+                  </Badge>
+                  
+                  {allCategories.map(category => (
+                    <Badge
+                      key={category.id}
+                      variant={selectedCategory === category.id ? 'default' : 'outline'}
+                      className={`px-4 py-2 cursor-pointer hover:opacity-90 text-sm font-medium ${
+                        selectedCategory === category.id ? 'bg-[#1E90DB]' : ''
+                      }`}
+                      onClick={() => setSelectedCategory(category.id)}
+                    >
+                      {category.name}
+                    </Badge>
+                  ))}
+                </div>
               </div>
               
               {/* Search */}
@@ -216,15 +216,43 @@ const Blog = () => {
                       {post.excerpt || ''}
                     </p>
                     
-                    <div className="flex justify-between items-center text-sm text-gray-500">
-                      <span>
-                        {post.createdAt ? new Date(post.createdAt).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        }) : 'N/A'}
-                      </span>
-                      <Link href={`/blog/${post.slug}`} className="text-blue-600 hover:underline">
+                    <div className="flex justify-between items-center text-sm">
+                      <div>
+                        {/* Show tags if available */}
+                        {(() => {
+                          interface Tag {
+                            id: number;
+                            name: string;
+                            slug: string;
+                          }
+                          
+                          const { data: tags = [] } = useQuery<Tag[]>({
+                            queryKey: [`/api/blog/${post.id}/tags`],
+                            enabled: !!post.id,
+                          });
+                          
+                          return (
+                            <div className="flex flex-wrap gap-1">
+                              {tags && tags.length > 0 ? (
+                                tags.map((tag) => (
+                                  <span key={tag.id} className="text-xs text-gray-500 mr-2 bg-gray-100 px-2 py-1 rounded-full">
+                                    #{tag.name}
+                                  </span>
+                                ))
+                              ) : (
+                                <span className="text-xs text-gray-500">
+                                  {post.createdAt ? new Date(post.createdAt).toLocaleDateString('en-US', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric'
+                                  }) : ''}
+                                </span>
+                              )}
+                            </div>
+                          );
+                        })()}
+                      </div>
+                      <Link href={`/blog/${post.slug}`} className="text-blue-600 hover:underline text-sm">
                         Read More
                       </Link>
                     </div>
