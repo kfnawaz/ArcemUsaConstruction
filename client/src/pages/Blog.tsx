@@ -7,11 +7,12 @@ import { BlogPost } from '@shared/schema';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 
 const Blog = () => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState<number | 'all'>('all');
 
   useEffect(() => {
     scrollToTop();
@@ -20,8 +21,21 @@ const Blog = () => {
     return cleanup;
   }, []);
 
-  const { data: blogPosts, isLoading, error } = useQuery<BlogPost[]>({
+  // Define category interface
+  interface Category {
+    id: number;
+    name: string;
+    slug: string;
+  }
+
+  // Fetch blog posts
+  const { data: blogPosts = [], isLoading, error } = useQuery<BlogPost[]>({
     queryKey: ['/api/blog'],
+  });
+
+  // Fetch all categories
+  const { data: allCategories = [] } = useQuery<Category[]>({
+    queryKey: ['/api/blog-categories'],
   });
 
   // Handle search input change
@@ -29,20 +43,38 @@ const Blog = () => {
     setSearchQuery(e.target.value);
   };
 
-  // Get unique categories from blog posts
-  const categories = blogPosts 
-    ? ['all', ...Array.from(new Set(blogPosts.map(post => post.category)))] 
-    : ['all'];
-
-  // Filter blog posts based on search query and selected category
-  const filteredPosts = blogPosts?.filter(post => {
-    const matchesSearch = searchQuery === '' || 
+  // Filter blog posts based on search query
+  const searchFilteredPosts = blogPosts?.filter(post => {
+    return searchQuery === '' || 
       post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.excerpt.toLowerCase().includes(searchQuery.toLowerCase());
+      (post.excerpt && post.excerpt.toLowerCase().includes(searchQuery.toLowerCase()));
+  });
+
+  // Helper function to fetch a post's categories
+  const usePostCategories = (postId: number) => {
+    return useQuery<Category[]>({
+      queryKey: [`/api/blog/${postId}/categories`],
+      enabled: !!postId,
+    });
+  };
+  
+  // Create a mapping of post IDs to their categories queries
+  const postCategoryQueries = searchFilteredPosts.reduce<Record<number, ReturnType<typeof usePostCategories>>>((acc, post) => {
+    acc[post.id] = usePostCategories(post.id);
+    return acc;
+  }, {});
+  
+  // Check if all post category queries are loaded
+  const isLoadingPostCategories = Object.values(postCategoryQueries).some(query => query.isLoading);
+
+  // Filter posts by selected category
+  const filteredPosts = searchFilteredPosts.filter(post => {
+    if (selectedCategory === 'all') return true;
     
-    const matchesCategory = selectedCategory === 'all' || post.category === selectedCategory;
+    const categoryQuery = postCategoryQueries[post.id];
+    if (!categoryQuery?.data) return false;
     
-    return matchesSearch && matchesCategory;
+    return categoryQuery.data.some(cat => cat.id === selectedCategory);
   });
 
   return (
@@ -78,17 +110,29 @@ const Blog = () => {
             <div className="flex flex-col md:flex-row gap-6 justify-between items-start md:items-center">
               {/* Category filter */}
               <div className="flex flex-wrap gap-3">
-                {categories.map(category => (
+                <button
+                  key="all"
+                  onClick={() => setSelectedCategory('all')}
+                  className={`px-4 py-2 font-montserrat text-sm transition-colors ${
+                    selectedCategory === 'all' 
+                      ? 'bg-[#1E90DB] text-white' 
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  ALL
+                </button>
+                
+                {allCategories.map(category => (
                   <button
-                    key={category}
-                    onClick={() => setSelectedCategory(category)}
+                    key={category.id}
+                    onClick={() => setSelectedCategory(category.id)}
                     className={`px-4 py-2 font-montserrat text-sm transition-colors ${
-                      selectedCategory === category 
+                      selectedCategory === category.id 
                         ? 'bg-[#1E90DB] text-white' 
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                     }`}
                   >
-                    {category.toUpperCase()}
+                    {category.name.toUpperCase()}
                   </button>
                 ))}
               </div>
@@ -107,7 +151,7 @@ const Blog = () => {
             </div>
           </div>
           
-          {isLoading ? (
+          {isLoading || isLoadingPostCategories ? (
             // Loading state
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {[1, 2, 3, 4, 5, 6].map(i => (
@@ -140,20 +184,52 @@ const Blog = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredPosts?.map(post => (
-                <BlogCard 
-                  key={post.id}
-                  id={post.id}
-                  slug={post.slug}
-                  title={post.title}
-                  excerpt={post.excerpt}
-                  imageUrl={post.image}
-                  date={post.createdAt ? new Date(post.createdAt).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  }) : 'N/A'}
-                  category={post.category}
-                />
+                <div key={post.id} className="bg-white shadow-md hover:shadow-lg transition-shadow duration-300 reveal active">
+                  <Link href={`/blog/${post.slug}`} className="block overflow-hidden relative h-56">
+                    <img 
+                      src={post.image || '/images/placeholder-blog.jpg'} 
+                      alt={post.title} 
+                      className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
+                    />
+                  </Link>
+                  <div className="p-6">
+                    <div className="flex gap-2 mb-3 flex-wrap">
+                      {postCategoryQueries[post.id]?.data?.map(cat => (
+                        <Badge key={cat.id} variant="outline" className="font-medium text-xs">
+                          {cat.name}
+                        </Badge>
+                      ))}
+                      {(!postCategoryQueries[post.id]?.data || postCategoryQueries[post.id]?.data?.length === 0) && post.category && (
+                        <Badge variant="outline" className="font-medium text-xs">
+                          {post.category}
+                        </Badge>
+                      )}
+                    </div>
+                    
+                    <Link href={`/blog/${post.slug}`}>
+                      <h3 className="text-xl font-montserrat font-bold mb-2 hover:text-blue-600 transition-colors">
+                        {post.title}
+                      </h3>
+                    </Link>
+                    
+                    <p className="text-gray-600 mb-4 line-clamp-3">
+                      {post.excerpt || ''}
+                    </p>
+                    
+                    <div className="flex justify-between items-center text-sm text-gray-500">
+                      <span>
+                        {post.createdAt ? new Date(post.createdAt).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        }) : 'N/A'}
+                      </span>
+                      <Link href={`/blog/${post.slug}`} className="text-blue-600 hover:underline">
+                        Read More
+                      </Link>
+                    </div>
+                  </div>
+                </div>
               ))}
             </div>
           )}
