@@ -14,6 +14,71 @@ import {
   DialogHeader,
   DialogFooter
 } from '@/components/ui/dialog';
+
+// Category interface
+interface Category {
+  id: number;
+  name: string;
+  slug: string;
+}
+
+// Separate component for categories to avoid React hooks rule violations
+interface CategoryListProps {
+  postId: number;
+}
+
+const CategoryList = ({ postId }: CategoryListProps) => {
+  const { data: categories = [] } = useQuery<Category[]>({
+    queryKey: [`/api/blog/${postId}/categories`],
+    enabled: !!postId,
+  });
+  
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {categories && categories.length > 0 ? (
+        categories.map((cat) => (
+          <Badge key={cat.id} variant="outline" className="text-xs font-medium px-3 py-1 border-gray-300">
+            {cat.name}
+          </Badge>
+        ))
+      ) : (
+        <span className="text-xs text-gray-500">Uncategorized</span>
+      )}
+    </div>
+  );
+};
+
+// Tag interface
+interface Tag {
+  id: number;
+  name: string;
+  slug: string;
+}
+
+// Separate component for tags to avoid React hooks rule violations
+interface TagListProps {
+  postId: number;
+}
+
+const TagList = ({ postId }: TagListProps) => {
+  const { data: tags = [] } = useQuery<Tag[]>({
+    queryKey: [`/api/blog/${postId}/tags`],
+    enabled: !!postId,
+  });
+  
+  return tags && tags.length > 0 ? (
+    <div className="mt-8">
+      <h4 className="text-sm font-semibold text-gray-600 mb-3 tracking-wide uppercase">TAGS</h4>
+      <div className="flex flex-wrap gap-1.5">
+        {tags.map((tag) => (
+          <span key={tag.id} className="text-xs text-gray-600 bg-gray-100 px-3 py-1 rounded-full font-medium">
+            #{tag.name}
+          </span>
+        ))}
+      </div>
+    </div>
+  ) : null;
+};
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 
@@ -148,33 +213,8 @@ const BlogPost = () => {
                   </div>
                   <div className="flex items-center">
                     <Tag className="w-4 h-4 mr-2" />
-                    {/* Fetch and display categories */}
-                    {(() => {
-                      interface Category {
-                        id: number;
-                        name: string;
-                        slug: string;
-                      }
-                      
-                      const { data: categories = [] } = useQuery<Category[]>({
-                        queryKey: [`/api/blog/${post.id}/categories`],
-                        enabled: !!post.id,
-                      });
-                      
-                      return (
-                        <div className="flex flex-wrap gap-1.5">
-                          {categories && categories.length > 0 ? (
-                            categories.map((cat) => (
-                              <Badge key={cat.id} variant="outline" className="text-xs font-medium px-3 py-1 border-gray-300">
-                                {cat.name}
-                              </Badge>
-                            ))
-                          ) : (
-                            <span>{post.category || 'Uncategorized'}</span>
-                          )}
-                        </div>
-                      );
-                    })()}
+                    {/* Use the CategoryList component */}
+                    <CategoryList postId={post.id} />
                   </div>
                 </div>
 
@@ -259,31 +299,7 @@ const BlogPost = () => {
               </div>
               
               {/* Tags section */}
-              {(() => {
-                interface Tag {
-                  id: number;
-                  name: string;
-                  slug: string;
-                }
-                
-                const { data: tags = [] } = useQuery<Tag[]>({
-                  queryKey: [`/api/blog/${post.id}/tags`],
-                  enabled: !!post.id,
-                });
-                
-                return tags && tags.length > 0 ? (
-                  <div className="mt-8">
-                    <h4 className="text-sm font-semibold text-gray-600 mb-3 tracking-wide uppercase">TAGS</h4>
-                    <div className="flex flex-wrap gap-1.5">
-                      {tags.map((tag) => (
-                        <span key={tag.id} className="text-xs text-gray-600 bg-gray-100 px-3 py-1 rounded-full font-medium">
-                          #{tag.name}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                ) : null;
-              })()}
+              <TagList postId={post.id} />
             </article>
 
             <div className="border-t border-gray-200 mt-16 pt-12 reveal active">
