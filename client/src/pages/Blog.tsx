@@ -3,17 +3,24 @@ import { useQuery } from '@tanstack/react-query';
 import { Link } from 'wouter';
 import { initializeRevealEffects, scrollToTop } from '@/lib/utils';
 import BlogCard from '@/components/common/BlogCard';
-import { BlogPost } from '@shared/schema';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 
+// Extend BlogPost type to include both createdAt and created_at since API might return either
+import { BlogPost as BaseBlogPost } from '@shared/schema';
+
+interface BlogPost extends BaseBlogPost {
+  created_at?: string | Date | null;
+}
+
 // Separated Tag List component to avoid hooks inside render
 interface TagListProps {
   postId: number;
-  createdAt: string | Date | null;
+  createdAt?: string | Date | null;
+  created_at?: string | Date | null;
 }
 
 interface Tag {
@@ -23,11 +30,14 @@ interface Tag {
 }
 
 // Make the component exportable to fix the reference issue
-export const TagList = ({ postId, createdAt }: TagListProps) => {
+export const TagList = ({ postId, createdAt, created_at }: TagListProps) => {
   const { data: tags = [] } = useQuery<Tag[]>({
     queryKey: [`/api/blog/${postId}/tags`],
     enabled: !!postId,
   });
+  
+  // Handle both createdAt and created_at fields for compatibility
+  const dateValue = createdAt || created_at;
   
   return (
     <div className="flex flex-wrap gap-1.5">
@@ -39,7 +49,7 @@ export const TagList = ({ postId, createdAt }: TagListProps) => {
         ))
       ) : (
         <span className="text-xs text-gray-500">
-          {createdAt ? new Date(createdAt).toLocaleDateString('en-US', {
+          {dateValue ? new Date(dateValue).toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'long',
             day: 'numeric'
@@ -75,7 +85,7 @@ const Blog = () => {
 
   // Fetch all categories
   const { data: allCategories = [] } = useQuery<Category[]>({
-    queryKey: ['/api/blog-categories'],
+    queryKey: ['/api/blog/categories'],
   });
 
   // Handle search input change
@@ -83,6 +93,39 @@ const Blog = () => {
     setSearchQuery(e.target.value);
   };
 
+  // Get all post categories
+  const { data: allPostCategories = {}, isLoading: isLoadingPostCategories } = useQuery<Record<number, Category[]>>({
+    queryKey: ['/api/blog/all-categories'],
+    queryFn: async () => {
+      // Only fetch if we have posts
+      if (!blogPosts?.length) return {};
+      
+      // Create a map to store categories for each post
+      const categoriesMap: Record<number, Category[]> = {};
+      
+      // Fetch categories for each post in parallel
+      await Promise.all(
+        blogPosts.map(async (post) => {
+          try {
+            const response = await fetch(`/api/blog/${post.id}/categories`);
+            if (response.ok) {
+              const categories = await response.json();
+              categoriesMap[post.id] = categories;
+            } else {
+              categoriesMap[post.id] = [];
+            }
+          } catch (error) {
+            console.error(`Error fetching categories for post ${post.id}:`, error);
+            categoriesMap[post.id] = [];
+          }
+        })
+      );
+      
+      return categoriesMap;
+    },
+    enabled: !!blogPosts?.length,
+  });
+  
   // Filter blog posts based on search query
   const searchFilteredPosts = blogPosts?.filter(post => {
     return searchQuery === '' || 
@@ -90,31 +133,12 @@ const Blog = () => {
       (post.excerpt && post.excerpt.toLowerCase().includes(searchQuery.toLowerCase()));
   });
 
-  // Helper function to fetch a post's categories
-  const usePostCategories = (postId: number) => {
-    return useQuery<Category[]>({
-      queryKey: [`/api/blog/${postId}/categories`],
-      enabled: !!postId,
-    });
-  };
-  
-  // Create a mapping of post IDs to their categories queries
-  const postCategoryQueries = searchFilteredPosts.reduce<Record<number, ReturnType<typeof usePostCategories>>>((acc, post) => {
-    acc[post.id] = usePostCategories(post.id);
-    return acc;
-  }, {});
-  
-  // Check if all post category queries are loaded
-  const isLoadingPostCategories = Object.values(postCategoryQueries).some(query => query.isLoading);
-
   // Filter posts by selected category
-  const filteredPosts = searchFilteredPosts.filter(post => {
+  const filteredPosts = searchFilteredPosts?.filter(post => {
     if (selectedCategory === 'all') return true;
     
-    const categoryQuery = postCategoryQueries[post.id];
-    if (!categoryQuery?.data) return false;
-    
-    return categoryQuery.data.some(cat => cat.id === selectedCategory);
+    const postCategories = allPostCategories[post.id] || [];
+    return postCategories.some(cat => cat.id === selectedCategory);
   });
 
   return (
@@ -238,13 +262,13 @@ const Blog = () => {
                   </Link>
                   <div className="p-6">
                     <div className="flex gap-2 mb-3 flex-wrap">
-                      {postCategoryQueries[post.id]?.data?.map(cat => (
-                        <Badge key={cat.id} variant="outline" className="font-medium text-xs">
+                      {allPostCategories[post.id]?.map(cat => (
+                        <Badge key={cat.id} variant="outline" className="font-medium text-xs px-3 py-1 border-gray-300">
                           {cat.name}
                         </Badge>
                       ))}
-                      {(!postCategoryQueries[post.id]?.data || postCategoryQueries[post.id]?.data?.length === 0) && post.category && (
-                        <Badge variant="outline" className="font-medium text-xs">
+                      {(!allPostCategories[post.id] || allPostCategories[post.id]?.length === 0) && post.category && (
+                        <Badge variant="outline" className="font-medium text-xs px-3 py-1 border-gray-300">
                           {post.category}
                         </Badge>
                       )}
@@ -263,7 +287,7 @@ const Blog = () => {
                     <div className="flex justify-between items-center text-sm">
                       <div>
                         {/* Tags and date section */}
-                        <TagList postId={post.id} createdAt={post.createdAt} />
+                        <TagList postId={post.id} created_at={post.created_at} createdAt={post.createdAt} />
                       </div>
                       <Link href={`/blog/${post.slug}`} className="text-blue-600 hover:underline text-sm">
                         Read More

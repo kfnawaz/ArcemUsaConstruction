@@ -645,6 +645,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Get all categories for all blog posts in a single request (used for filtering)
+  // NOTE: This route must come before dynamic parameter routes!
+  app.get(`${apiRouter}/blog/all-categories`, async (_req: Request, res: Response) => {
+    try {
+      // Get all published blog posts
+      const posts = await storage.getPublishedBlogPosts();
+      
+      // Create a mapping of post IDs to their categories
+      const categoriesMap: Record<number, any[]> = {};
+      
+      // Fetch categories for each post in parallel
+      await Promise.all(
+        posts.map(async (post) => {
+          try {
+            const categories = await storage.getBlogPostCategories(post.id);
+            categoriesMap[post.id] = categories;
+          } catch (error) {
+            console.error(`Error fetching categories for post ${post.id}:`, error);
+            categoriesMap[post.id] = [];
+          }
+        })
+      );
+      
+      res.json(categoriesMap);
+    } catch (error) {
+      console.error("Error fetching all blog post categories:", error);
+      res.status(500).json({ message: "Failed to fetch all blog post categories" });
+    }
+  });
+  
   // Get categories for a specific blog post - must come before the generic /:id route
   app.get(`${apiRouter}/blog/:postId/categories`, async (req: Request, res: Response) => {
     try {
