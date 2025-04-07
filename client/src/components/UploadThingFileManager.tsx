@@ -76,6 +76,15 @@ interface ServiceGalleryData {
   imageId: number;
 }
 
+// Blog gallery mapping data from API
+interface BlogGalleryData {
+  postId: number;
+  postTitle: string;
+  postSlug: string;
+  imageId: number;
+  caption: string;
+}
+
 // File categorization data from API
 interface FileCategoriesData {
   projects: {
@@ -85,6 +94,7 @@ interface FileCategoriesData {
   }[];
   projectGalleryMap: Record<string, ProjectGalleryData>;
   serviceGalleryMap: Record<string, ServiceGalleryData>;
+  blogGalleryMap: Record<string, BlogGalleryData>;
   quoteAttachmentsMap: Record<string, QuoteAttachmentData>;
   teamMemberPhotosMap: Record<string, TeamMemberPhotoData>;
   quoteRequests: {
@@ -92,6 +102,12 @@ interface FileCategoriesData {
     name: string;
     email: string;
     project: string;
+  }[];
+  blogPosts: {
+    id: number;
+    title: string;
+    slug: string;
+    published: boolean;
   }[];
   teamMembers: {
     id: number;
@@ -329,15 +345,17 @@ export default function UploadThingFileManager() {
     
     const projectGalleryMap = categoriesData.projectGalleryMap || {};
     const serviceGalleryMap = categoriesData.serviceGalleryMap || {};
+    const blogGalleryMap = categoriesData.blogGalleryMap || {};
     const quoteAttachmentsMap = categoriesData.quoteAttachmentsMap || {};
     const teamMemberPhotosMap = categoriesData.teamMemberPhotosMap || {};
     const projects = categoriesData.projects || [];
     const quoteRequests = categoriesData.quoteRequests || [];
+    const blogPosts = categoriesData.blogPosts || [];
     const teamMembers = categoriesData.teamMembers || [];
     
-    // Create a map of filename to project/service/quote/team member data
+    // Create a map of filename to project/service/quote/team member/blog data
     const fileAssociations: Record<string, {
-      type: 'project' | 'service' | 'quote' | 'team' | 'other';
+      type: 'project' | 'service' | 'quote' | 'team' | 'blog' | 'other';
       projectId?: number;
       projectTitle?: string;
       projectCategory?: string;
@@ -352,6 +370,10 @@ export default function UploadThingFileManager() {
       memberName?: string;
       memberDesignation?: string;
       active?: boolean;
+      postId?: number;
+      postTitle?: string;
+      postSlug?: string;
+      caption?: string;
     }> = {};
     
     // Extract the key from file URLs
@@ -400,6 +422,17 @@ export default function UploadThingFileManager() {
         memberName: data.memberName,
         memberDesignation: data.memberDesignation,
         active: data.active
+      };
+    });
+    
+    // Map blog gallery files
+    Object.entries(blogGalleryMap).forEach(([key, data]) => {
+      fileAssociations[key] = {
+        type: 'blog',
+        postId: data.postId,
+        postTitle: data.postTitle,
+        postSlug: data.postSlug,
+        caption: data.caption
       };
     });
     
@@ -464,6 +497,9 @@ export default function UploadThingFileManager() {
         } else if (fileAssociation.type === 'team' && fileAssociation.memberId && fileAssociation.memberName) {
           // Format: Team Members/John Doe (Designation)
           return `Team Members/${fileAssociation.memberName} (${fileAssociation.memberDesignation})`;
+        } else if (fileAssociation.type === 'blog' && fileAssociation.postId && fileAssociation.postTitle) {
+          // Format: Blog/Post Title (slug)
+          return `Blog/${fileAssociation.postTitle}${fileAssociation.postSlug ? ` (${fileAssociation.postSlug})` : ''}`;
         }
       }
       
@@ -929,6 +965,16 @@ export default function UploadThingFileManager() {
                                             Team: {getFileAssociations()[file.key].memberName}
                                           </Badge>
                                         )}
+                                        {getFileAssociations()[file.key].type === 'blog' && (
+                                          <Badge variant="outline" className="text-xs bg-purple-50">
+                                            Blog: {getFileAssociations()[file.key].postTitle}
+                                          </Badge>
+                                        )}
+                                        {getFileAssociations()[file.key].type === 'blog' && getFileAssociations()[file.key].caption && (
+                                          <Badge variant="secondary" className="text-xs">
+                                            Caption: {getFileAssociations()[file.key].caption}
+                                          </Badge>
+                                        )}
                                       </div>
                                     )}
                                   </div>
@@ -1063,6 +1109,16 @@ export default function UploadThingFileManager() {
                                                   {getFileAssociations()[file.key].type === 'team' && (
                                                     <Badge variant="outline" className="text-xs bg-green-50">
                                                       Team: {getFileAssociations()[file.key].memberName}
+                                                    </Badge>
+                                                  )}
+                                                  {getFileAssociations()[file.key].type === 'blog' && (
+                                                    <Badge variant="outline" className="text-xs bg-purple-50">
+                                                      Blog: {getFileAssociations()[file.key].postTitle}
+                                                    </Badge>
+                                                  )}
+                                                  {getFileAssociations()[file.key].type === 'blog' && getFileAssociations()[file.key].caption && (
+                                                    <Badge variant="secondary" className="text-xs">
+                                                      Caption: {getFileAssociations()[file.key].caption}
                                                     </Badge>
                                                   )}
                                                 </div>

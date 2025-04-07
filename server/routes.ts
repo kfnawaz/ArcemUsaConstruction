@@ -2139,6 +2139,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
+      // Get blog posts and their gallery images
+      const blogPosts = await storage.getBlogPosts();
+      const blogGalleryMap: Record<string, any> = {};
+      
+      // Process all blog gallery images
+      for (const post of blogPosts) {
+        const galleryImages = await storage.getBlogGallery(post.id);
+        
+        for (const image of galleryImages) {
+          const urlParts = image.imageUrl.split('/');
+          const key = urlParts[urlParts.length - 1];
+          
+          if (key) {
+            blogGalleryMap[key] = {
+              postId: post.id,
+              postTitle: post.title,
+              postSlug: post.slug,
+              imageId: image.id,
+              caption: image.caption || 'Featured image'
+            };
+          }
+        }
+      }
+      
       // Get quote request attachments for organization
       const quoteRequests = await storage.getQuoteRequests();
       const quoteAttachmentsMap: Record<string, any> = {};
@@ -2200,6 +2224,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })),
         projectGalleryMap,
         serviceGalleryMap,
+        blogGalleryMap,
         quoteAttachmentsMap,
         teamMemberPhotosMap,
         quoteRequests: quoteRequests.map(quote => ({
@@ -2207,6 +2232,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
           name: quote.name,
           email: quote.email,
           project: quote.projectType
+        })),
+        blogPosts: blogPosts.map(post => ({
+          id: post.id,
+          title: post.title,
+          slug: post.slug,
+          published: post.published
         })),
         teamMembers: teamMembers.map(member => ({
           id: member.id,
