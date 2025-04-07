@@ -531,14 +531,6 @@ export default function UploadThingFileManager() {
     // Helper function to get appropriate category path
     const getFileCategoryPath = (file: FileListItem): string => {
       const key = file.key;
-      
-      // Special case for the problematic Evolution blog post image
-      // Direct hardcoded handling for the missing blog post
-      if (key === 'PFuaKVnX18hbueH7eiuEMxftyqm0wAQVaTXNU2HCulP3L6FD') {
-        console.log("Found Evolution blog post image by direct key match!");
-        return 'Blog/The Evolution of Architectural Design in Commercial Buildings (evolution-architectural-design)';
-      }
-      
       const fileAssociation = fileAssociations[key];
       
       if (fileAssociation) {
@@ -593,46 +585,6 @@ export default function UploadThingFileManager() {
     });
     
     return categorized;
-  };
-
-  // Debug function to check if a blog image appears correctly
-  const checkBlogImage = (file: FileListItem, blogGalleryMap: Record<string, any>) => {
-    console.log(`Checking file ${file.name} with key ${file.key}`);
-    
-    // Check if the file key exists directly in the blog gallery map
-    if (blogGalleryMap[file.key]) {
-      console.log(`✅ Found file ${file.name} in blog gallery map directly by key`);
-      return true;
-    }
-    
-    // Check for partial key matches (some keys might be truncated)
-    const partialMatches = Object.keys(blogGalleryMap).filter(mapKey => 
-      file.key.includes(mapKey) || mapKey.includes(file.key)
-    );
-    
-    if (partialMatches.length > 0) {
-      console.log(`✅ Found file ${file.name} in blog gallery map by partial key match: ${partialMatches}`);
-      return true;
-    }
-    
-    // Check URL matching
-    if (file.url) {
-      const urlMatches = Object.entries(blogGalleryMap).filter(([mapKey, data]: [string, any]) => {
-        if (data.postTitle && file.name.toLowerCase().includes(data.postTitle.toLowerCase())) {
-          console.log(`Found name match for ${file.name} with blog post: ${data.postTitle}`);
-          return true;
-        }
-        return false;
-      });
-      
-      if (urlMatches.length > 0) {
-        console.log(`✅ Found file ${file.name} in blog gallery map by URL/title match: ${urlMatches}`);
-        return true;
-      }
-    }
-    
-    console.log(`❌ File ${file.name} not matched to any blog post`);
-    return false;
   };
 
   // Calculate total size of files in a category
