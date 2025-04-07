@@ -2147,9 +2147,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
       for (const post of blogPosts) {
         const galleryImages = await storage.getBlogGallery(post.id);
         
+        console.log(`Processing blog post ${post.id} (${post.title}), found ${galleryImages.length} gallery images`);
+        
+        // Specific known blog image keys - as a fallback if URL parsing fails
+        const knownImageKeys: Record<string, string> = {
+          'https://utfs.io/f/PFuaKVnX18hb87YYN0DtOVmxrgZuSC6kLz0KBf3E79JiPYoQ': 'PFuaKVnX18hb87YYN0DtOVmxrgZuSC6kLz0KBf3E79JiPYoQ',
+          'https://utfs.io/f/PFuaKVnX18hbaR5cQ2VOzWLZs1FcYNvXfKu7jG549RraP23T': 'PFuaKVnX18hbaR5cQ2VOzWLZs1FcYNvXfKu7jG549RraP23T',
+          'https://utfs.io/f/PFuaKVnX18hbueH7eiuEMxftyqm0wAQVaTXNU2HCulP3L6FD': 'PFuaKVnX18hbueH7eiuEMxftyqm0wAQVaTXNU2HCulP3L6FD',
+          'https://utfs.io/f/PFuaKVnX18hbDBdytq9XO6QEae3p8rvuWcZ1RqH0ngDSdyYA': 'PFuaKVnX18hbDBdytq9XO6QEae3p8rvuWcZ1RqH0ngDSdyYA'
+        };
+        
         for (const image of galleryImages) {
-          const urlParts = image.imageUrl.split('/');
-          const key = urlParts[urlParts.length - 1];
+          console.log(`  Processing image ${image.id} with URL: ${image.imageUrl}`);
+          
+          // Try to extract key using URL splitting first
+          let key = undefined;
+          
+          try {
+            const urlParts = image.imageUrl.split('/');
+            key = urlParts[urlParts.length - 1];
+            console.log(`  Extracted key using URL parsing: ${key}`);
+          } catch (error) {
+            console.log(`  Error extracting key from URL: ${error}`);
+          }
+          
+          // If the URL-based extraction failed, try the exact URL lookup
+          if (!key && knownImageKeys[image.imageUrl]) {
+            key = knownImageKeys[image.imageUrl];
+            console.log(`  Using known key for URL ${image.imageUrl}: ${key}`);
+          }
+          
+          // Last resort: try to extract using regex
+          if (!key) {
+            try {
+              const regex = /https:\/\/utfs\.io\/f\/([A-Za-z0-9]+)/;
+              const match = image.imageUrl.match(regex);
+              if (match && match[1]) {
+                key = match[1];
+                console.log(`  Extracted key using regex: ${key}`);
+              }
+            } catch (error) {
+              console.log(`  Error extracting key with regex: ${error}`);
+            }
+          }
+          
+          console.log(`  Final key: ${key || 'EXTRACTION FAILED'}`);
           
           if (key) {
             blogGalleryMap[key] = {
@@ -2159,9 +2201,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
               imageId: image.id,
               caption: image.caption || 'Featured image'
             };
+          } else {
+            console.log(`  WARNING: Failed to extract key from URL: ${image.imageUrl}`);
           }
         }
       }
+      
+      console.log(`Total blog gallery entries created: ${Object.keys(blogGalleryMap).length}`);
+      console.log(`Blog gallery keys: ${Object.keys(blogGalleryMap)}`);
+      
       
       // Get quote request attachments for organization
       const quoteRequests = await storage.getQuoteRequests();

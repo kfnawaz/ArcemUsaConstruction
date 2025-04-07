@@ -158,17 +158,32 @@ export default function UploadThingFileManager() {
     queryKey: ['/api/uploadthing/files'],
     queryFn: async () => {
       const response = await axios.get('/api/uploadthing/files');
-      console.log("Files from API:", response.data);
-      // Log file URLs to check for proper formatting
+      
+      // Log file details
       if (response.data && Array.isArray(response.data)) {
-        response.data.forEach(file => {
-          console.log(`File ${file.name} URLs:`, {
-            ufsUrl: file.url?.substring(0, 10) + '...',
-            url: file.url?.substring(0, 10) + '...',
-            calculated: 'https://utfs.io/f/' + file.key?.substring(0, 10) + '...'
-          });
-        });
+        console.log("Total files count:", response.data.length);
+        
+        // Extract all file keys for easier comparison
+        const fileKeys = response.data.map(file => file.key);
+        console.log("All file keys:", fileKeys);
+        
+        // Look for any keys that start with the blog image prefix pattern
+        const blogKeys = fileKeys.filter(key => key && key.startsWith('PFuaKVnX18hb'));
+        console.log("File keys matching blog pattern:", blogKeys);
+        
+        // Compare with known blog image keys from database
+        const knownBlogKeys = [
+          'PFuaKVnX18hb87YYN0DtOVmxrgZuSC6kLz0KBf3E79JiPYoQ',
+          'PFuaKVnX18hbaR5cQ2VOzWLZs1FcYNvXfKu7jG549RraP23T',
+          'PFuaKVnX18hbueH7eiuEMxftyqm0wAQVaTXNU2HCulP3L6FD',
+          'PFuaKVnX18hbDBdytq9XO6QEae3p8rvuWcZ1RqH0ngDSdyYA'
+        ];
+        
+        // Check which blog keys are missing in the files array
+        const missingKeys = knownBlogKeys.filter(key => !fileKeys.includes(key));
+        console.log("Known blog keys missing from files:", missingKeys);
       }
+      
       return response.data;
     },
     staleTime: 1000 * 60, // 1 minute
@@ -185,6 +200,26 @@ export default function UploadThingFileManager() {
     queryFn: async () => {
       const response = await axios.get('/api/uploadthing/file-categories');
       console.log("Blog gallery map from API:", response.data.blogGalleryMap);
+      
+      // Detailed debugging for blog gallery map
+      if (response.data.blogGalleryMap) {
+        console.log("Blog gallery map keys:", Object.keys(response.data.blogGalleryMap));
+        console.log("Blog gallery map values:", Object.values(response.data.blogGalleryMap));
+        
+        // Check which blog post URLs are in the database vs. the API response
+        console.log("Blog gallery map complete:", JSON.stringify(response.data.blogGalleryMap, null, 2));
+      }
+      
+      // Look at all blog posts from the API response
+      if (response.data.blogPosts) {
+        console.log("Blog posts from API:", response.data.blogPosts);
+        
+        // Print each post's details to check if they match with the gallery data
+        response.data.blogPosts.forEach((post: any) => {
+          console.log(`Blog post ${post.id} (${post.title}): slug=${post.slug}`);
+        });
+      }
+      
       return response.data;
     },
     staleTime: 1000 * 60, // 1 minute
