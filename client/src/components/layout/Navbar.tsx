@@ -141,10 +141,7 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
                   ADMIN
                 </Link>
                 <button
-                  onClick={async () => {
-                    await logout();
-                    navigate('/');
-                  }}
+                  onClick={() => logout()} 
                   className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-sm flex items-center space-x-1 font-montserrat text-sm transition-colors"
                 >
                   <LogOut className="w-4 h-4 mr-1" />
@@ -238,10 +235,9 @@ const Navbar = ({ isScrolled }: NavbarProps) => {
                   ADMIN
                 </Link>
                 <button
-                  onClick={async () => {
+                  onClick={() => {
                     closeMobileMenu();
-                    await logout();
-                    navigate('/');
+                    logout();
                   }}
                   className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-sm flex items-center justify-center space-x-1 font-montserrat text-sm transition-colors"
                 >

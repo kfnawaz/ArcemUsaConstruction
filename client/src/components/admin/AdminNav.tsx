@@ -169,10 +169,7 @@ const AdminNav = ({ activePage }: AdminNavProps) => {
         
         {/* Logout button */}
         <div 
-          onClick={async () => {
-            await logout();
-            navigate('/auth/login');
-          }}
+          onClick={() => logout()}
           className="flex items-center text-sm text-red-600 hover:text-red-800 transition-colors cursor-pointer"
         >
           <LogOut className="w-4 h-4 mr-2" />

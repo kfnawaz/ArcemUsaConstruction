@@ -130,8 +130,23 @@ export function setupAuth(app: Express) {
           return next(sessionErr);
         }
         
-        // Clear the cookie from client
-        res.clearCookie('connect.sid');
+        // Clear all cookies to ensure clean logout
+        if (req.cookies) {
+          const cookies = req.cookies;
+          for (const cookieName in cookies) {
+            res.clearCookie(cookieName);
+          }
+        }
+        
+        // Clear the session cookie specifically
+        res.clearCookie('connect.sid', {
+          path: '/',
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax'
+        });
+        
+        console.log("User logged out successfully");
         res.sendStatus(200);
       });
     });
