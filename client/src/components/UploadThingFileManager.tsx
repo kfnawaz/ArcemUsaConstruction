@@ -158,6 +158,17 @@ export default function UploadThingFileManager() {
     queryKey: ['/api/uploadthing/files'],
     queryFn: async () => {
       const response = await axios.get('/api/uploadthing/files');
+      console.log("Files from API:", response.data);
+      // Log file URLs to check for proper formatting
+      if (response.data && Array.isArray(response.data)) {
+        response.data.forEach(file => {
+          console.log(`File ${file.name} URLs:`, {
+            ufsUrl: file.url?.substring(0, 10) + '...',
+            url: file.url?.substring(0, 10) + '...',
+            calculated: 'https://utfs.io/f/' + file.key?.substring(0, 10) + '...'
+          });
+        });
+      }
       return response.data;
     },
     staleTime: 1000 * 60, // 1 minute
@@ -173,6 +184,7 @@ export default function UploadThingFileManager() {
     queryKey: ['/api/uploadthing/file-categories'],
     queryFn: async () => {
       const response = await axios.get('/api/uploadthing/file-categories');
+      console.log("Blog gallery map from API:", response.data.blogGalleryMap);
       return response.data;
     },
     staleTime: 1000 * 60, // 1 minute
