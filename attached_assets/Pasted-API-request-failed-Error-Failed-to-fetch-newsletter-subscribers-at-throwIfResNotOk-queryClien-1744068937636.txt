@@ -1,0 +1,93 @@
+API request failed: Error: Failed to fetch newsletter subscribers
+    at throwIfResNotOk (queryClient.ts:11:11)
+    at async apiRequest (queryClient.ts:73:5)
+overrideMethod @ hook.js:608
+apiRequest @ queryClient.ts:82
+await in apiRequest
+(anonymous) @ queryClient.ts:99
+fetchFn @ @tanstack_react-query.js?v=3eb8926e:840
+run @ @tanstack_react-query.js?v=3eb8926e:494
+start @ @tanstack_react-query.js?v=3eb8926e:536
+fetch @ @tanstack_react-query.js?v=3eb8926e:926
+executeFetch_fn @ @tanstack_react-query.js?v=3eb8926e:2211
+onSubscribe @ @tanstack_react-query.js?v=3eb8926e:1898
+subscribe @ @tanstack_react-query.js?v=3eb8926e:24
+(anonymous) @ @tanstack_react-query.js?v=3eb8926e:3022
+subscribeToStore @ chunk-RPCDYKBN.js?v=3eb8926e:11984
+commitHookEffectListMount @ chunk-RPCDYKBN.js?v=3eb8926e:16915
+commitPassiveMountOnFiber @ chunk-RPCDYKBN.js?v=3eb8926e:18156
+commitPassiveMountEffects_complete @ chunk-RPCDYKBN.js?v=3eb8926e:18129
+commitPassiveMountEffects_begin @ chunk-RPCDYKBN.js?v=3eb8926e:18119
+commitPassiveMountEffects @ chunk-RPCDYKBN.js?v=3eb8926e:18109
+flushPassiveEffectsImpl @ chunk-RPCDYKBN.js?v=3eb8926e:19490
+flushPassiveEffects @ chunk-RPCDYKBN.js?v=3eb8926e:19447
+commitRootImpl @ chunk-RPCDYKBN.js?v=3eb8926e:19416
+commitRoot @ chunk-RPCDYKBN.js?v=3eb8926e:19277
+performSyncWorkOnRoot @ chunk-RPCDYKBN.js?v=3eb8926e:18895
+flushSyncCallbacks @ chunk-RPCDYKBN.js?v=3eb8926e:9119
+(anonymous) @ chunk-RPCDYKBN.js?v=3eb8926e:18627Understand this errorAI
+queryClient.ts:62 
+            
+            
+           GET https://fbe7ba2a-346f-4143-a55b-0647355c9548-00-3sorubf261gs8.kirk.replit.dev/api/admin/newsletter/subscribers 500 (Internal Server Error)
+apiRequest @ queryClient.ts:62
+(anonymous) @ queryClient.ts:99
+fetchFn @ @tanstack_react-query.js?v=3eb8926e:840
+run @ @tanstack_react-query.js?v=3eb8926e:494
+(anonymous) @ @tanstack_react-query.js?v=3eb8926e:519
+Promise.then
+(anonymous) @ @tanstack_react-query.js?v=3eb8926e:515
+Promise.catch
+run @ @tanstack_react-query.js?v=3eb8926e:498
+start @ @tanstack_react-query.js?v=3eb8926e:536
+fetch @ @tanstack_react-query.js?v=3eb8926e:926
+executeFetch_fn @ @tanstack_react-query.js?v=3eb8926e:2211
+onSubscribe @ @tanstack_react-query.js?v=3eb8926e:1898
+subscribe @ @tanstack_react-query.js?v=3eb8926e:24
+(anonymous) @ @tanstack_react-query.js?v=3eb8926e:3022
+subscribeToStore @ chunk-RPCDYKBN.js?v=3eb8926e:11984
+commitHookEffectListMount @ chunk-RPCDYKBN.js?v=3eb8926e:16915
+commitPassiveMountOnFiber @ chunk-RPCDYKBN.js?v=3eb8926e:18156
+commitPassiveMountEffects_complete @ chunk-RPCDYKBN.js?v=3eb8926e:18129
+commitPassiveMountEffects_begin @ chunk-RPCDYKBN.js?v=3eb8926e:18119
+commitPassiveMountEffects @ chunk-RPCDYKBN.js?v=3eb8926e:18109
+flushPassiveEffectsImpl @ chunk-RPCDYKBN.js?v=3eb8926e:19490
+flushPassiveEffects @ chunk-RPCDYKBN.js?v=3eb8926e:19447
+commitRootImpl @ chunk-RPCDYKBN.js?v=3eb8926e:19416
+commitRoot @ chunk-RPCDYKBN.js?v=3eb8926e:19277
+performSyncWorkOnRoot @ chunk-RPCDYKBN.js?v=3eb8926e:18895
+flushSyncCallbacks @ chunk-RPCDYKBN.js?v=3eb8926e:9119
+(anonymous) @ chunk-RPCDYKBN.js?v=3eb8926e:18627Understand this errorAI
+queryClient.ts:82 API request failed: Error: Failed to fetch newsletter subscribers
+    at throwIfResNotOk (queryClient.ts:11:11)
+    at async apiRequest (queryClient.ts:73:5)
+overrideMethod @ hook.js:608
+apiRequest @ queryClient.ts:82
+await in apiRequest
+(anonymous) @ queryClient.ts:99
+fetchFn @ @tanstack_react-query.js?v=3eb8926e:840
+run @ @tanstack_react-query.js?v=3eb8926e:494
+(anonymous) @ @tanstack_react-query.js?v=3eb8926e:519
+Promise.then
+(anonymous) @ @tanstack_react-query.js?v=3eb8926e:515
+Promise.catch
+run @ @tanstack_react-query.js?v=3eb8926e:498
+start @ @tanstack_react-query.js?v=3eb8926e:536
+fetch @ @tanstack_react-query.js?v=3eb8926e:926
+executeFetch_fn @ @tanstack_react-query.js?v=3eb8926e:2211
+onSubscribe @ @tanstack_react-query.js?v=3eb8926e:1898
+subscribe @ @tanstack_react-query.js?v=3eb8926e:24
+(anonymous) @ @tanstack_react-query.js?v=3eb8926e:3022
+subscribeToStore @ chunk-RPCDYKBN.js?v=3eb8926e:11984
+commitHookEffectListMount @ chunk-RPCDYKBN.js?v=3eb8926e:16915
+commitPassiveMountOnFiber @ chunk-RPCDYKBN.js?v=3eb8926e:18156
+commitPassiveMountEffects_complete @ chunk-RPCDYKBN.js?v=3eb8926e:18129
+commitPassiveMountEffects_begin @ chunk-RPCDYKBN.js?v=3eb8926e:18119
+commitPassiveMountEffects @ chunk-RPCDYKBN.js?v=3eb8926e:18109
+flushPassiveEffectsImpl @ chunk-RPCDYKBN.js?v=3eb8926e:19490
+flushPassiveEffects @ chunk-RPCDYKBN.js?v=3eb8926e:19447
+commitRootImpl @ chunk-RPCDYKBN.js?v=3eb8926e:19416
+commitRoot @ chunk-RPCDYKBN.js?v=3eb8926e:19277
+performSyncWorkOnRoot @ chunk-RPCDYKBN.js?v=3eb8926e:18895
+flushSyncCallbacks @ chunk-RPCDYKBN.js?v=3eb8926e:9119
+(anonymous) @ chunk-RPCDYKBN.js?v=3eb8926e:18627
