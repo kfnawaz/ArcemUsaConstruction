@@ -39,9 +39,9 @@ export const BlogCategories = ({ postId, className = "", variant = "outline" }: 
 
   return (
     <div className={`flex flex-wrap gap-1.5 ${className}`}>
-      {Array.from(uniqueCategories.values()).map((cat: Category) => (
+      {Array.from(uniqueCategories.values()).map((cat: Category, index) => (
         <Badge
-          key={cat.id}
+          key={`${postId}-${cat.id}-${index}`}
           variant={variant}
           className="text-xs font-medium px-3 py-1 border-gray-300"
         >
