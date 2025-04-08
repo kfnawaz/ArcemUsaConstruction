@@ -1,0 +1,63 @@
+Warning: React has detected a change in the order of Hooks called by About. This will lead to bugs and errors if not fixed. For more information, read the Rules of Hooks: https://reactjs.org/link/rules-of-hooks
+
+   Previous render            Next render
+   ------------------------------------------------------
+1. useContext                 useContext
+2. useState                   useState
+3. useEffect                  useEffect
+4. useContext                 useContext
+5. useContext                 useContext
+6. useContext                 useContext
+7. useEffect                  useContext
+   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+    at About (https://fbe7ba2a-346f-4143-a55b-0647355c9548-00-3sorubf261gs8.kirk.replit.dev/src/pages/About.tsx?t=1744085527866:27:85)
+    at Route (https://fbe7ba2a-346f-4143-a55b-0647355c9548-00-3sorubf261gs8.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=3eb8926e:323:16)
+    at Switch (https://fbe7ba2a-346f-4143-a55b-0647355c9548-00-3sorubf261gs8.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=3eb8926e:379:17)
+    at main
+    at div
+    at Router (https://fbe7ba2a-346f-4143-a55b-0647355c9548-00-3sorubf261gs8.kirk.replit.dev/src/App.tsx?t=1744084922090&v=HyCBM-n6ECUePeivLudBZ:87:39)
+    at SeoProvider (https://fbe7ba2a-346f-4143-a55b-0647355c9548-00-3sorubf261gs8.kirk.replit.dev/src/contexts/SeoContext.tsx:40:31)
+    at AuthProvider (https://fbe7ba2a-346f-4143-a55b-0647355c9548-00-3sorubf261gs8.kirk.replit.dev/src/contexts/AuthContext.tsx?t=1744084922090:31:32)
+    at QueryClientProvider (https://fbe7ba2a-346f-4143-a55b-0647355c9548-00-3sorubf261gs8.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=3eb8926e:2805:3)
+    at App
+printWarning @ chunk-RPCDYKBN.js?v=3eb8926e:521
+error @ chunk-RPCDYKBN.js?v=3eb8926e:505
+warnOnHookMismatchInDev @ chunk-RPCDYKBN.js?v=3eb8926e:11495
+updateHookTypesDev @ chunk-RPCDYKBN.js?v=3eb8926e:11465
+useContext @ chunk-RPCDYKBN.js?v=3eb8926e:12697
+useContext @ chunk-QCHXOAYK.js?v=3eb8926e:1062
+useQueryErrorResetBoundary @ @tanstack_react-query.js?v=3eb8926e:2841
+useBaseQuery @ @tanstack_react-query.js?v=3eb8926e:3001
+useQuery @ @tanstack_react-query.js?v=3eb8926e:3068
+useTeamMembers @ useTeamMembers.ts?t=1744085527866:9
+About @ About.tsx:11
+renderWithHooks @ chunk-RPCDYKBN.js?v=3eb8926e:11548
+updateFunctionComponent @ chunk-RPCDYKBN.js?v=3eb8926e:14582
+beginWork @ chunk-RPCDYKBN.js?v=3eb8926e:15924
+beginWork$1 @ chunk-RPCDYKBN.js?v=3eb8926e:19753
+performUnitOfWork @ chunk-RPCDYKBN.js?v=3eb8926e:19198
+workLoopSync @ chunk-RPCDYKBN.js?v=3eb8926e:19137
+renderRootSync @ chunk-RPCDYKBN.js?v=3eb8926e:19116
+performSyncWorkOnRoot @ chunk-RPCDYKBN.js?v=3eb8926e:18874
+flushSyncCallbacks @ chunk-RPCDYKBN.js?v=3eb8926e:9119
+flushSync @ chunk-RPCDYKBN.js?v=3eb8926e:18959
+scheduleRefresh @ chunk-RPCDYKBN.js?v=3eb8926e:20004
+(anonymous) @ @react-refresh:267
+performReactRefresh @ @react-refresh:256
+(anonymous) @ @react-refresh:677
+Show 20 more frames
+Show less
+/api/admin/team-members:1 
+        
+        
+       Failed to load resource: the server responded with a status of 403 (Forbidden)
+queryClient.ts:116 API request failed: Error: Forbidden: Admin access required
+    at throwIfResNotOk (queryClient.ts:11:11)
+    at async apiRequest (queryClient.ts:87:5)
+apiRequest @ queryClient.ts:116
+/api/admin/team-members:1 
+        
+        
+       Failed to load resource: the server responded with a status of 403 (Forbidden)
+GlobalCleanupHandler.tsx:17 
