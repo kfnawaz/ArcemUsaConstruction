@@ -58,48 +58,31 @@ const Services = () => {
     const fetchGalleryImages = async () => {
       if (!services || services.length === 0) return;
       
-      console.log(`Starting to fetch gallery images for ${services.length} services...`);
       const galleries: { [key: number]: ServiceGallery[] } = {};
-      
-      // For debugging - create a direct fetch to service 15's gallery which we know has images
-      try {
-        const directResponse = await fetch(`/api/services/15/gallery`);
-        const directData = await directResponse.json();
-        console.log(`DIRECT FETCH TEST - Service 15: Found ${directData.length} images:`, directData);
-      } catch (error) {
-        console.error("Direct fetch test failed:", error);
-      }
       
       // Process all services
       for (const service of services) {
         try {
-          console.log(`Fetching gallery for service ID ${service.id} (${service.title})`);
           // Use standard fetch instead of apiRequest for consistency
           const response = await fetch(`/api/services/${service.id}/gallery`);
           
           if (!response.ok) {
-            console.error(`Failed to fetch gallery for service ${service.id}: ${response.status} ${response.statusText}`);
             galleries[service.id] = [];
             continue;
           }
           
           const galleryData = await response.json();
-          console.log(`Service ${service.id} (${service.title}): Found ${galleryData.length} gallery images`);
           
           if (galleryData && Array.isArray(galleryData) && galleryData.length > 0) {
-            console.log(`Gallery data for service ${service.id}:`, galleryData);
             galleries[service.id] = galleryData;
           } else {
-            console.log(`No gallery images for service ${service.id}`);
             galleries[service.id] = [];
           }
         } catch (error) {
-          console.error(`Error fetching gallery for service ${service.id}:`, error);
           galleries[service.id] = [];
         }
       }
       
-      console.log(`Finished fetching galleries. Setting state with data:`, galleries);
       setServiceGalleries(galleries);
     };
     
@@ -108,17 +91,12 @@ const Services = () => {
   
   // Get service images from gallery or fallback to placeholder
   const getServiceImages = (service: Service) => {
-    console.log(`Getting images for service ID: ${service.id}, title: ${service.title}`);
-    
     // If we have gallery images for this service, use them
     if (serviceGalleries[service.id] && serviceGalleries[service.id].length > 0) {
-      console.log(`Using ${serviceGalleries[service.id].length} gallery images for service ${service.id} (${service.title})`);
       return serviceGalleries[service.id]
         .sort((a, b) => (a.order || 0) - (b.order || 0)) // Sort by order if available
         .map(image => image.imageUrl);
     }
-    
-    console.log(`No gallery images found for service ${service.id} (${service.title}), using placeholder`);
     
     // Return placeholder images with service-appropriate text
     const placeholderUrl = "https://placehold.co/600x400/e2e8f0/1e293b?text=";
@@ -268,9 +246,7 @@ const Services = () => {
                                 src={image}
                                 alt={`${service.title} showcase ${i+1}`}
                                 className="w-full h-full object-cover transition-transform hover:scale-105 duration-500"
-                                onLoad={() => console.log(`Successfully loaded image: ${image}`)}
                                 onError={(e) => {
-                                  console.error(`Failed to load image: ${image}`);
                                   e.currentTarget.src = "https://placehold.co/600x400/e2e8f0/1e293b?text=Service+Image";
                                 }}
                               />
