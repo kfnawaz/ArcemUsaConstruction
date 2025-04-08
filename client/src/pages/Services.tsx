@@ -106,7 +106,7 @@ const Services = () => {
     fetchGalleryImages();
   }, [services]);
   
-  // Get service images from gallery or fallback to defaults
+  // Get service images from gallery or fallback to placeholder
   const getServiceImages = (service: Service) => {
     console.log(`Getting images for service ID: ${service.id}, title: ${service.title}`);
     
@@ -118,48 +118,49 @@ const Services = () => {
         .map(image => image.imageUrl);
     }
     
-    console.log(`No gallery images found for service ${service.id} (${service.title}), using defaults`);
+    console.log(`No gallery images found for service ${service.id} (${service.title}), using placeholder`);
     
-    // Otherwise use default images based on service type
+    // Return placeholder images with service-appropriate text
+    const placeholderUrl = "https://placehold.co/600x400/e2e8f0/1e293b?text=";
     const serviceTitle = service.title.toLowerCase();
     
     if (serviceTitle.includes('commercial')) {
       return [
-        '/images/commercial1.jpg',
-        '/images/commercial2.jpg',
-        '/images/commercial3.jpg'
+        `${placeholderUrl}Commercial+Service`,
+        `${placeholderUrl}Commercial+Project`,
+        `${placeholderUrl}Commercial+Building`
       ];
     } else if (serviceTitle.includes('residential')) {
       return [
-        '/images/residential1.jpg',
-        '/images/residential2.jpg',
-        '/images/residential3.jpg'
+        `${placeholderUrl}Residential+Service`,
+        `${placeholderUrl}Residential+Building`,
+        `${placeholderUrl}Home+Construction`
       ];
     } else if (serviceTitle.includes('renovation') || serviceTitle.includes('remodeling')) {
       return [
-        '/images/renovation1.jpg',
-        '/images/renovation2.jpg',
-        '/images/renovation3.jpg'
+        `${placeholderUrl}Renovation+Service`,
+        `${placeholderUrl}Remodeling+Project`,
+        `${placeholderUrl}Property+Improvement`
       ];
     } else if (serviceTitle.includes('design') || serviceTitle.includes('engineering')) {
       return [
-        '/images/slider1.png',
-        '/images/slider2.png'
+        `${placeholderUrl}Design+Service`,
+        `${placeholderUrl}Engineering+Plans`
       ];
     } else if (serviceTitle.includes('management')) {
       return [
-        '/images/slider3.png',
-        '/images/slider4.png'
+        `${placeholderUrl}Project+Management`,
+        `${placeholderUrl}Construction+Management`
       ];
     } else if (serviceTitle.includes('consultation')) {
       return [
-        '/images/slider5.png',
-        '/images/image_1741432012642.png'
+        `${placeholderUrl}Consultation+Service`,
+        `${placeholderUrl}Professional+Advice`
       ];
     } else {
       return [
-        '/images/slider1.png',
-        '/images/slider2.png'
+        `${placeholderUrl}Construction+Service`,
+        `${placeholderUrl}ARCEM+Quality`
       ];
     }
   };
