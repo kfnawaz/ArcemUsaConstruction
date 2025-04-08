@@ -37,7 +37,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const userData = await apiRequest<AuthUser>({
         url: '/api/user',
         method: 'GET',
-        on401: 'returnNull'
+        on401: 'returnNull',
+        // Suppress console logs for authentication check
+        suppressLogs: true
       });
       
       if (userData) {
@@ -48,7 +50,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return false;
       }
     } catch (error) {
-      console.error('Auth check error:', error);
+      // Don't log auth check errors to console when the user is not logged in
+      // as this is an expected state and not an actual error
       setUser(null);
       return false;
     } finally {

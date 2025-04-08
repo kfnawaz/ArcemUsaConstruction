@@ -18,6 +18,7 @@ export async function apiRequest<T = any>(
     method?: string;
     body?: any;
     on401?: 'returnNull' | 'throw';
+    suppressLogs?: boolean;
   } | string,
   urlOrMethod?: string,
   data?: any
@@ -26,6 +27,7 @@ export async function apiRequest<T = any>(
   let method: string = 'GET';
   let body: any = undefined;
   let on401: 'returnNull' | 'throw' = 'throw';
+  let suppressLogs: boolean = false;
 
   // Handle multiple calling patterns
   if (typeof options === 'string' && typeof urlOrMethod === 'string') {
@@ -37,11 +39,12 @@ export async function apiRequest<T = any>(
     // Simple pattern: apiRequest("URL")
     url = options;
   } else {
-    // Object pattern: apiRequest({ url, method, body, on401 })
+    // Object pattern: apiRequest({ url, method, body, on401, suppressLogs })
     url = options.url;
     method = options.method || 'GET';
     body = options.body;
     on401 = options.on401 || 'throw';
+    suppressLogs = options.suppressLogs || false;
   }
 
   const headers: HeadersInit = {
@@ -79,7 +82,10 @@ export async function apiRequest<T = any>(
     
     return await res.json();
   } catch (error) {
-    console.error('API request failed:', error);
+    // Only log errors if suppressLogs is false
+    if (!suppressLogs) {
+      console.error('API request failed:', error);
+    }
     throw error;
   }
 }
