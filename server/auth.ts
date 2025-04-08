@@ -157,4 +157,35 @@ export function setupAuth(app: Express) {
     const { password, ...userWithoutPassword } = req.user as SelectUser;
     res.json(userWithoutPassword);
   });
+  
+  app.put("/api/user", async (req, res, next) => {
+    try {
+      if (!req.isAuthenticated()) return res.sendStatus(401);
+      
+      const userId = req.user.id;
+      const userData = req.body;
+      
+      // Only allow email updates for now (add other fields as needed)
+      const updateData = {
+        email: userData.email
+      };
+      
+      const updatedUser = await storage.updateUser(userId, updateData);
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Update the session with the latest user data
+      req.login(updatedUser, (err) => {
+        if (err) return next(err);
+        
+        // Return the updated user without the password
+        const { password, ...userWithoutPassword } = updatedUser;
+        res.json(userWithoutPassword);
+      });
+    } catch (err) {
+      next(err);
+    }
+  });
 }

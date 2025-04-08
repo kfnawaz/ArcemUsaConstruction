@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import AdminNav from '@/components/admin/AdminNav';
 import { Button } from '@/components/ui/button';
@@ -14,20 +14,60 @@ const SettingsPage = () => {
   const { toast } = useToast();
   const [isUpdating, setIsUpdating] = useState(false);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [email, setEmail] = useState<string>('');
+  
+  // Initialize email value when user data is loaded
+  useEffect(() => {
+    if (user && user.email) {
+      setEmail(user.email);
+    }
+  }, [user]);
 
-  const handleUpdateProfile = (e: React.FormEvent) => {
+  const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsUpdating(true);
     
-    // Simulate profile update
-    setTimeout(() => {
-      setIsUpdating(false);
-      toast({
-        title: "Profile Updated",
-        description: "Your profile information has been updated successfully.",
-        variant: "default",
+    try {
+      const emailInput = document.getElementById('email') as HTMLInputElement;
+      const emailValue = emailInput?.value || '';
+      
+      const response = await fetch('/api/user', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: emailValue
+        }),
       });
-    }, 1000);
+      
+      if (response.ok) {
+        toast({
+          title: "Profile Updated",
+          description: "Your profile information has been updated successfully.",
+          variant: "default",
+        });
+        
+        // Force a refresh of the page to update the user information
+        window.location.reload();
+      } else {
+        const error = await response.json();
+        toast({
+          title: "Error",
+          description: error.message || "Failed to update profile. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   const handleChangePassword = (e: React.FormEvent) => {
@@ -85,7 +125,14 @@ const SettingsPage = () => {
                           
                           <div className="grid gap-2">
                             <Label htmlFor="email">Email</Label>
-                            <Input id="email" type="email" placeholder="Email not available" />
+                            <Input 
+                              id="email" 
+                              type="email" 
+                              defaultValue={user?.email || ''} 
+                              value={email}
+                              onChange={(e) => setEmail(e.target.value)}
+                              placeholder="Email not available" 
+                            />
                           </div>
                           
                           <div className="grid gap-2">
