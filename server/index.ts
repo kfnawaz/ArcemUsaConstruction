@@ -5,6 +5,7 @@ import { createUploadthing } from "uploadthing/server";
 import { uploadRouter, createUploadthingExpressHandler } from "./uploadthing";
 import { setupAuth } from "./auth";
 import cookieParser from "cookie-parser";
+import { initializeEmailService } from "./utils/emailService";
 
 // Set UploadThing environment variables
 if (!process.env.UPLOADTHING_SECRET || !process.env.UPLOADTHING_APP_ID) {
@@ -64,6 +65,13 @@ app.use((req, res, next) => {
 
 (async () => {
   const server = await registerRoutes(app);
+
+  // Initialize email service for notifications
+  try {
+    await initializeEmailService();
+  } catch (error) {
+    console.error("Failed to initialize email service:", error);
+  }
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
