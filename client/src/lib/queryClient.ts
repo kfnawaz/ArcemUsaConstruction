@@ -19,6 +19,7 @@ export async function apiRequest<T = any>(
     body?: any;
     on401?: 'returnNull' | 'throw';
     suppressLogs?: boolean;
+    parseResponse?: boolean;
   } | string,
   urlOrMethod?: string,
   data?: any
@@ -28,6 +29,7 @@ export async function apiRequest<T = any>(
   let body: any = undefined;
   let on401: 'returnNull' | 'throw' = 'throw';
   let suppressLogs: boolean = false;
+  let parseResponse: boolean = true; // Default to parsing JSON response
 
   // Handle multiple calling patterns
   if (typeof options === 'string' && typeof urlOrMethod === 'string') {
@@ -39,12 +41,13 @@ export async function apiRequest<T = any>(
     // Simple pattern: apiRequest("URL")
     url = options;
   } else {
-    // Object pattern: apiRequest({ url, method, body, on401, suppressLogs })
+    // Object pattern: apiRequest({ url, method, body, on401, suppressLogs, parseResponse })
     url = options.url;
     method = options.method || 'GET';
     body = options.body;
     on401 = options.on401 || 'throw';
     suppressLogs = options.suppressLogs || false;
+    parseResponse = options.parseResponse !== undefined ? options.parseResponse : true;
   }
 
   const headers: HeadersInit = {
@@ -80,7 +83,25 @@ export async function apiRequest<T = any>(
       return null;
     }
     
-    return await res.json();
+    // Skip JSON parsing for specific endpoints or when parseResponse is false
+    if (!parseResponse || res.headers.get('content-type')?.includes('text/plain')) {
+      return null;
+    }
+    
+    // Check if there's content to parse
+    const text = await res.text();
+    if (!text) {
+      return null;
+    }
+    
+    try {
+      return JSON.parse(text);
+    } catch (error) {
+      if (!suppressLogs) {
+        console.warn('Response is not valid JSON:', text);
+      }
+      return null;
+    }
   } catch (error) {
     // Only log errors if suppressLogs is false
     if (!suppressLogs) {
