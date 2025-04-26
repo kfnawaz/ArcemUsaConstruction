@@ -15,6 +15,17 @@ import NewsletterSubscription from "@/components/common/NewsletterSubscription";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 const Footer = () => {
+  const { isLoading, getSettingByKey, getSettingValueByKey, getSocialMediaSettings } = useSiteSettings();
+  
+  const socialLinks = getSocialMediaSettings();
+  
+  // Get social media URLs with empty string fallback
+  const facebookUrl = getSettingValueByKey('social_facebook', '');
+  const twitterUrl = getSettingValueByKey('social_twitter', '');
+  const instagramUrl = getSettingValueByKey('social_instagram', '');
+  const linkedinUrl = getSettingValueByKey('social_linkedin', '');
+  const youtubeUrl = getSettingValueByKey('social_youtube', '');
+  
   return (
     <footer className="bg-black text-white pt-20 pb-8">
       <div className="container mx-auto px-4 md:px-8">
@@ -31,34 +42,61 @@ const Footer = () => {
               innovative solutions for over a decade.
             </p>
             <div className="flex space-x-4 mb-6">
-              <a
-                href="#"
-                className="text-gray-400 hover:text-[#1E90DB] transition-colors"
-                aria-label="Facebook"
-              >
-                <Facebook className="w-5 h-5" />
-              </a>
-              <a
-                href="#"
-                className="text-gray-400 hover:text-[#1E90DB] transition-colors"
-                aria-label="GitHub"
-              >
-                <Github className="w-5 h-5" />
-              </a>
-              <a
-                href="#"
-                className="text-gray-400 hover:text-[#1E90DB] transition-colors"
-                aria-label="Instagram"
-              >
-                <Instagram className="w-5 h-5" />
-              </a>
-              <a
-                href="#"
-                className="text-gray-400 hover:text-[#1E90DB] transition-colors"
-                aria-label="LinkedIn"
-              >
-                <Linkedin className="w-5 h-5" />
-              </a>
+              {facebookUrl && (
+                <a
+                  href={facebookUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-[#1E90DB] transition-colors"
+                  aria-label="Facebook"
+                >
+                  <Facebook className="w-5 h-5" />
+                </a>
+              )}
+              {twitterUrl && (
+                <a
+                  href={twitterUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-[#1E90DB] transition-colors"
+                  aria-label="Twitter"
+                >
+                  <Twitter className="w-5 h-5" />
+                </a>
+              )}
+              {instagramUrl && (
+                <a
+                  href={instagramUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-[#1E90DB] transition-colors"
+                  aria-label="Instagram"
+                >
+                  <Instagram className="w-5 h-5" />
+                </a>
+              )}
+              {linkedinUrl && (
+                <a
+                  href={linkedinUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-[#1E90DB] transition-colors"
+                  aria-label="LinkedIn"
+                >
+                  <Linkedin className="w-5 h-5" />
+                </a>
+              )}
+              {youtubeUrl && (
+                <a
+                  href={youtubeUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-400 hover:text-[#1E90DB] transition-colors"
+                  aria-label="YouTube"
+                >
+                  <Youtube className="w-5 h-5" />
+                </a>
+              )}
             </div>
 
             {/* Contact Info with Icons */}
