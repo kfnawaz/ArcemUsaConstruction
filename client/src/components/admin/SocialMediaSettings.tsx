@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { useSiteSettings, SiteSetting } from '@/hooks/useSiteSettings';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Facebook, Twitter, Instagram, Linkedin, Youtube } from 'lucide-react';
 
