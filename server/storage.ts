@@ -373,6 +373,54 @@ export class MemStorage implements IStorage {
       this.createService(service as InsertService);
     });
     
+    // Add default site settings for social media
+    const defaultSocialMediaSettings = [
+      {
+        key: "social_facebook",
+        value: "https://facebook.com/arcemusa",
+        category: "social_media",
+        label: "Facebook URL",
+        description: "Facebook page URL for the footer",
+        type: "url"
+      },
+      {
+        key: "social_twitter",
+        value: "https://twitter.com/arcemusa",
+        category: "social_media",
+        label: "Twitter URL",
+        description: "Twitter profile URL for the footer",
+        type: "url"
+      },
+      {
+        key: "social_instagram",
+        value: "https://instagram.com/arcemusa",
+        category: "social_media",
+        label: "Instagram URL",
+        description: "Instagram profile URL for the footer",
+        type: "url"
+      },
+      {
+        key: "social_linkedin",
+        value: "https://linkedin.com/company/arcemusa",
+        category: "social_media",
+        label: "LinkedIn URL",
+        description: "LinkedIn company page URL for the footer",
+        type: "url"
+      },
+      {
+        key: "social_youtube",
+        value: "",
+        category: "social_media",
+        label: "YouTube URL",
+        description: "YouTube channel URL for the footer",
+        type: "url"
+      }
+    ];
+    
+    defaultSocialMediaSettings.forEach(setting => {
+      this.createSiteSetting(setting as InsertSiteSetting);
+    });
+    
     // Add sample projects
     const defaultProjects = [
       {

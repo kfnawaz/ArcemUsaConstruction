@@ -3136,6 +3136,133 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Site Settings API Routes
+  app.get(`${apiRouter}/site-settings`, async (req: Request, res: Response) => {
+    try {
+      const settings = await storage.getSiteSettings();
+      res.json(settings);
+    } catch (error) {
+      console.error("Error fetching site settings:", error);
+      res.status(500).json({ message: "Failed to fetch site settings" });
+    }
+  });
+  
+  app.get(`${apiRouter}/site-settings/category/:category`, async (req: Request, res: Response) => {
+    try {
+      const { category } = req.params;
+      const settings = await storage.getSiteSettingsByCategory(category);
+      res.json(settings);
+    } catch (error) {
+      console.error(`Error fetching site settings for category ${req.params.category}:`, error);
+      res.status(500).json({ message: "Failed to fetch category site settings" });
+    }
+  });
+  
+  app.get(`${apiRouter}/site-settings/:key`, async (req: Request, res: Response) => {
+    try {
+      const { key } = req.params;
+      const setting = await storage.getSiteSettingByKey(key);
+      
+      if (!setting) {
+        return res.status(404).json({ message: `Setting with key ${key} not found` });
+      }
+      
+      res.json(setting);
+    } catch (error) {
+      console.error(`Error fetching site setting with key ${req.params.key}:`, error);
+      res.status(500).json({ message: "Failed to fetch site setting" });
+    }
+  });
+  
+  app.post(`${apiRouter}/admin/site-settings`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const settingData = insertSiteSettingsSchema.parse(req.body);
+      
+      // Check if a setting with this key already exists
+      const existingSetting = await storage.getSiteSettingByKey(settingData.key);
+      if (existingSetting) {
+        return res.status(400).json({ 
+          message: `Setting with key "${settingData.key}" already exists. Use PUT to update it.` 
+        });
+      }
+      
+      const setting = await storage.createSiteSetting(settingData);
+      res.status(201).json(setting);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid setting data", errors: error.errors });
+      }
+      console.error("Error creating site setting:", error);
+      res.status(500).json({ message: "Failed to create site setting" });
+    }
+  });
+  
+  app.put(`${apiRouter}/admin/site-settings/:id`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid setting ID" });
+      }
+      
+      const settingData = insertSiteSettingsSchema.partial().parse(req.body);
+      const updatedSetting = await storage.updateSiteSetting(id, settingData);
+      
+      if (!updatedSetting) {
+        return res.status(404).json({ message: "Setting not found" });
+      }
+      
+      res.json(updatedSetting);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid setting data", errors: error.errors });
+      }
+      console.error("Error updating site setting:", error);
+      res.status(500).json({ message: "Failed to update site setting" });
+    }
+  });
+  
+  app.put(`${apiRouter}/admin/site-settings/key/:key`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const { key } = req.params;
+      const { value } = req.body;
+      
+      if (!value && value !== "" && value !== null) {
+        return res.status(400).json({ message: "Value is required" });
+      }
+      
+      const updatedSetting = await storage.updateSiteSettingByKey(key, value);
+      
+      if (!updatedSetting) {
+        return res.status(404).json({ message: `Setting with key ${key} not found` });
+      }
+      
+      res.json(updatedSetting);
+    } catch (error) {
+      console.error(`Error updating site setting with key ${req.params.key}:`, error);
+      res.status(500).json({ message: "Failed to update site setting" });
+    }
+  });
+  
+  app.delete(`${apiRouter}/admin/site-settings/:id`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid setting ID" });
+      }
+      
+      const success = await storage.deleteSiteSetting(id);
+      
+      if (!success) {
+        return res.status(404).json({ message: "Setting not found" });
+      }
+      
+      res.json({ message: "Setting deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting site setting:", error);
+      res.status(500).json({ message: "Failed to delete site setting" });
+    }
+  });
+
   // File management API endpoints are consolidated near line 1065
 
   // Run scheduled cleanup of old pending files every hour
