@@ -106,14 +106,14 @@ const Footer = () => {
                 </span>
               </div>
               <div className="flex items-start space-x-3">
-                <Phone className="w-4 h-4 text-[#1E90DB] mt-1" />
+                <PhoneIcon className="w-4 h-4 text-[#1E90DB] mt-1" />
                 <div>
                   <div className="text-sm">Cell: (713) 624-0083</div>
                   <div className="text-sm">Office: (713) 624-0313</div>
                 </div>
               </div>
               <div className="flex items-start space-x-3">
-                <Mail className="w-4 h-4 text-[#1E90DB] mt-1" />
+                <MailIcon className="w-4 h-4 text-[#1E90DB] mt-1" />
                 <div>
                   <div className="text-sm">aj@arcemusa.com</div>
                   <div className="text-sm">admin@arcemusa.com</div>
