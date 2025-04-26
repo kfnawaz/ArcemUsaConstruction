@@ -32,13 +32,6 @@ import { setupAuth } from "./auth";
 import { upload, getFileUrl } from "./utils/fileUpload";
 import path from "path";
 import { uploadThingService } from "./services/uploadthingService";
-import { 
-  sendNewMessageNotifications,
-  sendQuoteRequestNotifications,
-  sendTestimonialNotifications,
-  sendSubcontractorApplicationNotifications,
-  sendVendorApplicationNotifications
-} from "./utils/emailService";
 
 // Authentication middleware
 const isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
@@ -1480,17 +1473,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const testimonialData = publicTestimonialSchema.parse(req.body);
       const testimonial = await storage.createTestimonial(testimonialData);
-      
-      // Send notification emails
-      try {
-        console.log("Sending testimonial notification emails");
-        const emailResult = await sendTestimonialNotifications(testimonial);
-        console.log("Email notification results:", emailResult);
-      } catch (emailError) {
-        console.error("Failed to send notification emails:", emailError);
-        // We don't fail the request if email sending fails
-      }
-      
       res.status(201).json({ 
         message: "Thank you for your testimonial! It will be reviewed by our team before being published." 
       });
@@ -1630,17 +1612,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const messageData = insertMessageSchema.parse(req.body);
       const message = await storage.createMessage(messageData);
-      
-      // Send notification emails
-      try {
-        console.log("Sending message notification emails");
-        const emailResult = await sendNewMessageNotifications(message);
-        console.log("Email notification results:", emailResult);
-      } catch (emailError) {
-        console.error("Failed to send notification emails:", emailError);
-        // We don't fail the request if email sending fails
-      }
-      
       res.status(201).json({ success: true, message: "Message sent successfully" });
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -2496,16 +2467,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           console.log("[QUOTE REQUEST] No attachments to process");
         }
         
-        // Send notification emails
-        try {
-          console.log("[QUOTE REQUEST] Sending notification emails");
-          const emailResult = await sendQuoteRequestNotifications(quote);
-          console.log("[QUOTE REQUEST] Email notification results:", emailResult);
-        } catch (emailError) {
-          console.error("[QUOTE REQUEST] Failed to send notification emails:", emailError);
-          // We don't fail the request if email sending fails
-        }
-        
         console.log("[QUOTE REQUEST] Successfully completed quote request submission");
         res.status(201).json({ 
           message: "Your quote request has been submitted successfully!",
@@ -2669,17 +2630,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const subcontractorData = insertSubcontractorSchema.parse(req.body);
       console.log("Parsed subcontractor data:", JSON.stringify(subcontractorData, null, 2));
       const subcontractor = await storage.createSubcontractor(subcontractorData);
-      
-      // Send notification emails
-      try {
-        console.log("Sending subcontractor application notification emails");
-        const emailResult = await sendSubcontractorApplicationNotifications(subcontractor);
-        console.log("Email notification results:", emailResult);
-      } catch (emailError) {
-        console.error("Failed to send notification emails:", emailError);
-        // We don't fail the request if email sending fails
-      }
-      
       res.status(201).json({ 
         message: "Your application has been submitted successfully", 
         id: subcontractor.id 
@@ -2797,17 +2747,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const vendorData = insertVendorSchema.parse(req.body);
       console.log("Parsed vendor data:", JSON.stringify(vendorData, null, 2));
       const vendor = await storage.createVendor(vendorData);
-      
-      // Send notification emails
-      try {
-        console.log("Sending vendor application notification emails");
-        const emailResult = await sendVendorApplicationNotifications(vendor);
-        console.log("Email notification results:", emailResult);
-      } catch (emailError) {
-        console.error("Failed to send notification emails:", emailError);
-        // We don't fail the request if email sending fails
-      }
-      
       res.status(201).json({ 
         message: "Your application has been submitted successfully", 
         id: vendor.id 
