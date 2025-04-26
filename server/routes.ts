@@ -2403,6 +2403,119 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Site Settings Routes
+  app.get(`${apiRouter}/site-settings`, async (_req: Request, res: Response) => {
+    try {
+      const settings = await storage.getSiteSettings();
+      res.status(200).json(settings);
+    } catch (error) {
+      console.error("Error fetching site settings:", error);
+      res.status(500).json({ message: "Failed to fetch site settings" });
+    }
+  });
+
+  app.get(`${apiRouter}/site-settings/category/:category`, async (req: Request, res: Response) => {
+    try {
+      const { category } = req.params;
+      const settings = await storage.getSiteSettingsByCategory(category);
+      res.status(200).json(settings);
+    } catch (error) {
+      console.error(`Error fetching site settings for category ${req.params.category}:`, error);
+      res.status(500).json({ message: "Failed to fetch site settings" });
+    }
+  });
+
+  app.get(`${apiRouter}/site-settings/:key`, async (req: Request, res: Response) => {
+    try {
+      const { key } = req.params;
+      const setting = await storage.getSiteSettingByKey(key);
+      if (!setting) {
+        return res.status(404).json({ message: "Setting not found" });
+      }
+      res.status(200).json(setting);
+    } catch (error) {
+      console.error(`Error fetching site setting with key ${req.params.key}:`, error);
+      res.status(500).json({ message: "Failed to fetch site setting" });
+    }
+  });
+
+  app.post(`${apiRouter}/admin/site-settings`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const settingData = insertSiteSettingsSchema.parse(req.body);
+      const newSetting = await storage.createSiteSetting(settingData);
+      res.status(201).json(newSetting);
+    } catch (error) {
+      console.error("Error creating site setting:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid site setting data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create site setting" });
+    }
+  });
+
+  app.put(`${apiRouter}/admin/site-settings/:id`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid ID" });
+      }
+
+      const settingData = req.body;
+      const updatedSetting = await storage.updateSiteSetting(id, settingData);
+      
+      if (!updatedSetting) {
+        return res.status(404).json({ message: "Setting not found" });
+      }
+      
+      res.status(200).json(updatedSetting);
+    } catch (error) {
+      console.error(`Error updating site setting ${req.params.id}:`, error);
+      res.status(500).json({ message: "Failed to update site setting" });
+    }
+  });
+
+  app.put(`${apiRouter}/admin/site-settings/key/:key`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const { key } = req.params;
+      const { value } = req.body;
+      
+      if (value === undefined) {
+        return res.status(400).json({ message: "Value is required" });
+      }
+
+      const updatedSetting = await storage.updateSiteSettingByKey(key, { value });
+      
+      if (!updatedSetting) {
+        return res.status(404).json({ message: "Setting not found" });
+      }
+      
+      res.status(200).json(updatedSetting);
+    } catch (error) {
+      console.error(`Error updating site setting with key ${req.params.key}:`, error);
+      res.status(500).json({ message: "Failed to update site setting" });
+    }
+  });
+
+  app.delete(`${apiRouter}/admin/site-settings/:id`, isAdmin, async (req: Request, res: Response) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid ID" });
+      }
+
+      const deleted = await storage.deleteSiteSetting(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "Setting not found" });
+      }
+      
+      res.status(200).json({ message: "Setting deleted successfully" });
+    } catch (error) {
+      console.error(`Error deleting site setting ${req.params.id}:`, error);
+      res.status(500).json({ message: "Failed to delete site setting" });
+    }
+  });
+  
   // Quote Request Routes
   app.post(`${apiRouter}/quote/request`, async (req: Request, res: Response) => {
     try {
