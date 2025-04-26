@@ -2483,7 +2483,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Value is required" });
       }
 
-      const updatedSetting = await storage.updateSiteSettingByKey(key, { value });
+      const updatedSetting = await storage.updateSiteSettingByKey(key, value);
       
       if (!updatedSetting) {
         return res.status(404).json({ message: "Setting not found" });

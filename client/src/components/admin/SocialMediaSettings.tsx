@@ -1,141 +1,112 @@
-import { useState } from 'react';
-import { useSiteSettings } from '@/hooks/useSiteSettings';
-import { Button } from '@/components/ui/button';
+import React from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { useToast } from '@/hooks/use-toast';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Icons } from '@/components/icons';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { useSiteSettings } from '@/hooks/useSiteSettings';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Facebook, Twitter, Instagram, Linkedin, Youtube } from 'lucide-react';
 
 export function SocialMediaSettings() {
-  const { settings, getSocialMediaSettings, updateSettingByKey, isLoading } = useSiteSettings();
-  const { toast } = useToast();
-  const [formData, setFormData] = useState<Record<string, string>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { 
+    socialMediaSettings, 
+    isLoadingSocialMedia, 
+    updateSetting, 
+    isPending 
+  } = useSiteSettings();
 
-  // Initialize form data when settings are loaded
-  useState(() => {
-    if (settings.length > 0 && Object.keys(formData).length === 0) {
-      const initialData: Record<string, string> = {};
-      getSocialMediaSettings().forEach((setting: any) => {
-        initialData[setting.key] = setting.value;
-      });
-      setFormData(initialData);
+  const [formValues, setFormValues] = React.useState<Record<string, string>>({});
+
+  React.useEffect(() => {
+    if (socialMediaSettings && socialMediaSettings.length > 0) {
+      const initialValues = socialMediaSettings.reduce((acc: Record<string, string>, setting) => {
+        acc[setting.key] = setting.value;
+        return acc;
+      }, {} as Record<string, string>);
+      setFormValues(initialValues);
     }
-  });
+  }, [socialMediaSettings]);
 
   const handleInputChange = (key: string, value: string) => {
-    setFormData(prev => ({
+    setFormValues(prev => ({
       ...prev,
       [key]: value
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    
-    try {
-      const socialMediaSettings = getSocialMediaSettings();
-      const updatePromises = socialMediaSettings.map((setting: any) => {
-        // Only update if the value has changed
-        if (formData[setting.key] !== setting.value) {
-          return updateSettingByKey.mutateAsync({
-            key: setting.key,
-            value: formData[setting.key] || ''
-          });
-        }
-        return Promise.resolve();
-      });
-      
-      await Promise.all(updatePromises);
-      
-      toast({
-        title: "Settings saved",
-        description: "Social media links have been updated successfully.",
-      });
-    } catch (error) {
-      console.error("Error saving social media settings:", error);
-      toast({
-        title: "Error saving settings",
-        description: "There was a problem saving your social media links.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+  const handleSave = (key: string) => {
+    updateSetting(key, formValues[key] || '');
   };
 
-  const getSocialIcon = (key: string) => {
-    if (key.includes('facebook')) return <Icons.facebook className="mr-2 h-4 w-4" />;
-    if (key.includes('twitter')) return <Icons.twitter className="mr-2 h-4 w-4" />;
-    if (key.includes('instagram')) return <Icons.instagram className="mr-2 h-4 w-4" />;
-    if (key.includes('linkedin')) return <Icons.linkedin className="mr-2 h-4 w-4" />;
-    if (key.includes('youtube')) return <Icons.youtube className="mr-2 h-4 w-4" />;
-    return <Icons.link className="mr-2 h-4 w-4" />;
-  };
-
-  const socialMediaSettings = getSocialMediaSettings();
-
-  if (isLoading) {
+  if (isLoadingSocialMedia) {
     return (
       <Card>
         <CardHeader>
           <CardTitle>Social Media Links</CardTitle>
-          <CardDescription>Loading settings...</CardDescription>
+          <CardDescription>Manage your social media links that appear in the footer</CardDescription>
         </CardHeader>
+        <CardContent className="space-y-4">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="space-y-2">
+              <Skeleton className="h-4 w-[100px]" />
+              <Skeleton className="h-9 w-full" />
+            </div>
+          ))}
+        </CardContent>
       </Card>
     );
   }
+
+  const getSocialIcon = (key: string) => {
+    switch (key) {
+      case 'social_facebook':
+        return <Facebook className="h-4 w-4" />;
+      case 'social_twitter':
+        return <Twitter className="h-4 w-4" />;
+      case 'social_instagram':
+        return <Instagram className="h-4 w-4" />;
+      case 'social_linkedin':
+        return <Linkedin className="h-4 w-4" />;
+      case 'social_youtube':
+        return <Youtube className="h-4 w-4" />;
+      default:
+        return null;
+    }
+  };
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Social Media Links</CardTitle>
-        <CardDescription>
-          Manage the social media links that appear in the website footer.
-        </CardDescription>
+        <CardDescription>Manage your social media links that appear in the footer</CardDescription>
       </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {socialMediaSettings.map((setting: any) => (
-            <div key={setting.id} className="grid gap-2">
-              <Label htmlFor={setting.key} className="flex items-center">
-                {getSocialIcon(setting.key)}
-                {setting.label}
-              </Label>
+      <CardContent className="space-y-4">
+        {socialMediaSettings && socialMediaSettings.map((setting: SiteSetting) => (
+          <div key={setting.key} className="space-y-2">
+            <Label htmlFor={setting.key} className="flex items-center gap-2">
+              {getSocialIcon(setting.key)}
+              {setting.label}
+            </Label>
+            <div className="flex gap-2">
               <Input
                 id={setting.key}
-                type="url"
                 placeholder={`Enter ${setting.label}`}
-                value={formData[setting.key] || setting.value}
+                value={formValues[setting.key] || ''}
                 onChange={(e) => handleInputChange(setting.key, e.target.value)}
+                className="flex-1"
               />
-              {setting.description && (
-                <p className="text-sm text-muted-foreground">{setting.description}</p>
-              )}
+              <Button 
+                onClick={() => handleSave(setting.key)} 
+                disabled={isPending || formValues[setting.key] === setting.value}
+              >
+                Save
+              </Button>
             </div>
-          ))}
-          <CardFooter className="px-0 pt-4">
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                'Save Changes'
-              )}
-            </Button>
-          </CardFooter>
-        </form>
+            {setting.description && (
+              <p className="text-xs text-muted-foreground">{setting.description}</p>
+            )}
+          </div>
+        ))}
       </CardContent>
     </Card>
   );

@@ -15,16 +15,14 @@ import NewsletterSubscription from "@/components/common/NewsletterSubscription";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 const Footer = () => {
-  const { isLoading, getSettingByKey, getSettingValueByKey, getSocialMediaSettings } = useSiteSettings();
-  
-  const socialLinks = getSocialMediaSettings();
+  const { isLoading, getSettingValue } = useSiteSettings();
   
   // Get social media URLs with empty string fallback
-  const facebookUrl = getSettingValueByKey('social_facebook', '');
-  const twitterUrl = getSettingValueByKey('social_twitter', '');
-  const instagramUrl = getSettingValueByKey('social_instagram', '');
-  const linkedinUrl = getSettingValueByKey('social_linkedin', '');
-  const youtubeUrl = getSettingValueByKey('social_youtube', '');
+  const facebookUrl = getSettingValue('social_facebook');
+  const twitterUrl = getSettingValue('social_twitter');
+  const instagramUrl = getSettingValue('social_instagram');
+  const linkedinUrl = getSettingValue('social_linkedin');
+  const youtubeUrl = getSettingValue('social_youtube');
   
   return (
     <footer className="bg-black text-white pt-20 pb-8">
