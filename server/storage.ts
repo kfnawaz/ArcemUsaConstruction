@@ -16,7 +16,8 @@ import {
   subcontractors, type Subcontractor, type InsertSubcontractor,
   vendors, type Vendor, type InsertVendor,
   jobPostings, type JobPosting, type InsertJobPosting,
-  teamMembers, type TeamMember, type InsertTeamMember
+  teamMembers, type TeamMember, type InsertTeamMember,
+  siteSettings, type SiteSetting, type InsertSiteSetting
 } from "@shared/schema";
 
 // modify the interface with any CRUD methods
@@ -188,6 +189,15 @@ export interface IStorage {
   toggleTeamMemberActive(id: number): Promise<TeamMember | undefined>;
   updateTeamMemberOrder(id: number, order: number): Promise<TeamMember | undefined>;
   deleteTeamMember(id: number): Promise<boolean>;
+  
+  // Site Settings
+  getSiteSettings(): Promise<SiteSetting[]>;
+  getSiteSettingsByCategory(category: string): Promise<SiteSetting[]>; 
+  getSiteSettingByKey(key: string): Promise<SiteSetting | undefined>;
+  createSiteSetting(setting: InsertSiteSetting): Promise<SiteSetting>;
+  updateSiteSetting(id: number, setting: Partial<InsertSiteSetting>): Promise<SiteSetting | undefined>;
+  updateSiteSettingByKey(key: string, value: string): Promise<SiteSetting | undefined>;
+  deleteSiteSetting(id: number): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -211,6 +221,7 @@ export class MemStorage implements IStorage {
   private vendors: Map<number, Vendor>;
   private jobPostings: Map<number, JobPosting>;
   private teamMembers: Map<number, TeamMember>;
+  private siteSettings: Map<number, SiteSetting>;
   
   userCurrentId: number;
   projectCurrentId: number;
@@ -229,6 +240,7 @@ export class MemStorage implements IStorage {
   vendorCurrentId: number;
   jobPostingCurrentId: number;
   teamMemberCurrentId: number;
+  siteSettingCurrentId: number;
 
   serviceGalleryCurrentId: number;
   
@@ -253,6 +265,7 @@ export class MemStorage implements IStorage {
     this.vendors = new Map();
     this.jobPostings = new Map();
     this.teamMembers = new Map();
+    this.siteSettings = new Map();
     
     this.userCurrentId = 1;
     this.projectCurrentId = 1;
@@ -272,6 +285,7 @@ export class MemStorage implements IStorage {
     this.vendorCurrentId = 1;
     this.jobPostingCurrentId = 1;
     this.teamMemberCurrentId = 1;
+    this.siteSettingCurrentId = 1;
     
     // Add initial data
     this.initializeData();

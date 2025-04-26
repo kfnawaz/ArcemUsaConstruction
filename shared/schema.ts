@@ -499,6 +499,26 @@ export const insertTeamMemberSchema = createInsertSchema(teamMembers).omit({
 export type TeamMember = typeof teamMembers.$inferSelect;
 export type InsertTeamMember = z.infer<typeof insertTeamMemberSchema>;
 
+// Site Settings Schema
+export const siteSettings = pgTable("site_settings", {
+  id: serial("id").primaryKey(),
+  key: text("key").notNull().unique(),
+  value: text("value").notNull(),
+  category: text("category").notNull().default("general"),
+  label: text("label").notNull(),
+  description: text("description"),
+  type: text("type").notNull().default("text"), // text, number, boolean, json, etc.
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertSiteSettingsSchema = createInsertSchema(siteSettings).omit({
+  id: true,
+  updatedAt: true,
+});
+
+export type SiteSetting = typeof siteSettings.$inferSelect;
+export type InsertSiteSetting = z.infer<typeof insertSiteSettingsSchema>;
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 
