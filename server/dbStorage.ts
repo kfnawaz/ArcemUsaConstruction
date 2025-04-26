@@ -4,7 +4,7 @@ import {
   users, projects, projectGallery, blogCategories, blogTags, blogPosts, 
   blogPostCategories, blogPostTags, blogGallery,
   testimonials, services, serviceGallery, messages, newsletterSubscribers, quoteRequests,
-  quoteRequestAttachments, subcontractors, vendors, jobPostings, teamMembers,
+  quoteRequestAttachments, subcontractors, vendors, jobPostings, teamMembers, siteSettings,
   type User, type InsertUser, 
   type Project, type InsertProject,
   type ProjectGallery, type InsertProjectGallery,
@@ -22,7 +22,8 @@ import {
   type Subcontractor, type InsertSubcontractor,
   type Vendor, type InsertVendor,
   type JobPosting, type InsertJobPosting,
-  type TeamMember, type InsertTeamMember
+  type TeamMember, type InsertTeamMember,
+  type SiteSetting, type InsertSiteSetting
 } from "../shared/schema";
 import { IStorage } from "./storage";
 import { FileManager, extractUploadThingKeyFromUrl } from './utils/fileManager';
@@ -1160,6 +1161,49 @@ export class DBStorage implements IStorage {
 
   async deleteTeamMember(id: number): Promise<boolean> {
     const result = await db.delete(teamMembers).where(eq(teamMembers.id, id)).returning();
+    return result.length > 0;
+  }
+
+  // Site Settings
+  async getSiteSettings(): Promise<SiteSetting[]> {
+    return db.select().from(siteSettings).orderBy(siteSettings.key);
+  }
+
+  async getSiteSettingsByCategory(category: string): Promise<SiteSetting[]> {
+    return db.select()
+      .from(siteSettings)
+      .where(eq(siteSettings.category, category))
+      .orderBy(siteSettings.key);
+  }
+
+  async getSiteSettingByKey(key: string): Promise<SiteSetting | undefined> {
+    const results = await db.select().from(siteSettings).where(eq(siteSettings.key, key));
+    return results[0];
+  }
+
+  async createSiteSetting(setting: InsertSiteSetting): Promise<SiteSetting> {
+    const result = await db.insert(siteSettings).values(setting).returning();
+    return result[0];
+  }
+
+  async updateSiteSetting(id: number, settingUpdate: Partial<InsertSiteSetting>): Promise<SiteSetting | undefined> {
+    const result = await db.update(siteSettings)
+      .set({ ...settingUpdate, updatedAt: new Date() })
+      .where(eq(siteSettings.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async updateSiteSettingByKey(key: string, value: string): Promise<SiteSetting | undefined> {
+    const result = await db.update(siteSettings)
+      .set({ value, updatedAt: new Date() })
+      .where(eq(siteSettings.key, key))
+      .returning();
+    return result[0];
+  }
+
+  async deleteSiteSetting(id: number): Promise<boolean> {
+    const result = await db.delete(siteSettings).where(eq(siteSettings.id, id)).returning();
     return result.length > 0;
   }
 }

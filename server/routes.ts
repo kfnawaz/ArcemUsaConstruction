@@ -24,7 +24,8 @@ import {
   insertVendorSchema,
   blogPosts,
   fileAttachmentSchema,
-  quoteRequestWithAttachmentsSchema
+  quoteRequestWithAttachmentsSchema,
+  insertSiteSettingsSchema
 } from "@shared/schema";
 import { eq, sql } from "drizzle-orm";
 import { z } from "zod";

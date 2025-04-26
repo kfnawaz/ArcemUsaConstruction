@@ -1651,6 +1651,74 @@ export class MemStorage implements IStorage {
   async deleteTeamMember(id: number): Promise<boolean> {
     return this.teamMembers.delete(id);
   }
+
+  // Site Settings
+  async getSiteSettings(): Promise<SiteSetting[]> {
+    return Array.from(this.siteSettings.values());
+  }
+
+  async getSiteSettingsByCategory(category: string): Promise<SiteSetting[]> {
+    return Array.from(this.siteSettings.values()).filter(
+      (setting) => setting.category === category
+    );
+  }
+
+  async getSiteSettingByKey(key: string): Promise<SiteSetting | undefined> {
+    return Array.from(this.siteSettings.values()).find(
+      (setting) => setting.key === key
+    );
+  }
+
+  async createSiteSetting(insertSetting: InsertSiteSetting): Promise<SiteSetting> {
+    const id = this.siteSettingCurrentId++;
+    const now = new Date();
+    
+    const setting: SiteSetting = {
+      id,
+      key: insertSetting.key,
+      value: insertSetting.value,
+      category: insertSetting.category || "general",
+      label: insertSetting.label,
+      description: insertSetting.description || null,
+      type: insertSetting.type || "text",
+      updatedAt: now
+    };
+    
+    this.siteSettings.set(id, setting);
+    return setting;
+  }
+
+  async updateSiteSetting(id: number, settingUpdate: Partial<InsertSiteSetting>): Promise<SiteSetting | undefined> {
+    const existingSetting = this.siteSettings.get(id);
+    if (!existingSetting) return undefined;
+    
+    const updatedSetting: SiteSetting = {
+      ...existingSetting,
+      ...settingUpdate,
+      updatedAt: new Date()
+    };
+    
+    this.siteSettings.set(id, updatedSetting);
+    return updatedSetting;
+  }
+
+  async updateSiteSettingByKey(key: string, value: string): Promise<SiteSetting | undefined> {
+    const existingSetting = await this.getSiteSettingByKey(key);
+    if (!existingSetting) return undefined;
+    
+    const updatedSetting: SiteSetting = {
+      ...existingSetting,
+      value,
+      updatedAt: new Date()
+    };
+    
+    this.siteSettings.set(existingSetting.id, updatedSetting);
+    return updatedSetting;
+  }
+
+  async deleteSiteSetting(id: number): Promise<boolean> {
+    return this.siteSettings.delete(id);
+  }
 }
 
 // Import DBStorage
