@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { SocialMediaSettings } from '@/components/admin/SocialMediaSettings';
 
 const SettingsPage = () => {
   const { user, logout } = useAuth();
@@ -66,6 +67,7 @@ const SettingsPage = () => {
                 <TabsList className="mb-6">
                   <TabsTrigger value="profile">Profile</TabsTrigger>
                   <TabsTrigger value="security">Security</TabsTrigger>
+                  <TabsTrigger value="social">Social Media</TabsTrigger>
                   <TabsTrigger value="preferences">Preferences</TabsTrigger>
                 </TabsList>
                 
@@ -164,6 +166,10 @@ const SettingsPage = () => {
                       </Button>
                     </CardFooter>
                   </Card>
+                </TabsContent>
+                
+                <TabsContent value="social">
+                  <SocialMediaSettings />
                 </TabsContent>
                 
                 <TabsContent value="preferences">

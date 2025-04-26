@@ -5,7 +5,7 @@ import type { SiteSetting } from '@shared/schema';
 export function useSiteSettings() {
   const queryClient = useQueryClient();
   
-  const { data: settings = [], isLoading, error } = useQuery({
+  const { data: settings = [] as SiteSetting[], isLoading, error } = useQuery<SiteSetting[]>({
     queryKey: ['/api/site-settings'],
     refetchOnWindowFocus: false,
   });
@@ -13,8 +13,8 @@ export function useSiteSettings() {
   const createSetting = useMutation({
     mutationFn: async (setting: Omit<SiteSetting, 'id' | 'updatedAt'>) => {
       const response = await apiRequest({
+        url: '/api/admin/site-settings',
         method: 'POST',
-        path: '/api/admin/site-settings',
         body: setting,
       });
       return response;
@@ -27,8 +27,8 @@ export function useSiteSettings() {
   const updateSetting = useMutation({
     mutationFn: async ({ id, ...setting }: Partial<SiteSetting> & { id: number }) => {
       const response = await apiRequest({
+        url: `/api/admin/site-settings/${id}`,
         method: 'PUT',
-        path: `/api/admin/site-settings/${id}`,
         body: setting,
       });
       return response;
@@ -41,8 +41,8 @@ export function useSiteSettings() {
   const updateSettingByKey = useMutation({
     mutationFn: async ({ key, value }: { key: string; value: string }) => {
       const response = await apiRequest({
+        url: `/api/admin/site-settings/key/${key}`,
         method: 'PUT',
-        path: `/api/admin/site-settings/key/${key}`,
         body: { value },
       });
       return response;
@@ -55,8 +55,8 @@ export function useSiteSettings() {
   const deleteSetting = useMutation({
     mutationFn: async (id: number) => {
       const response = await apiRequest({
+        url: `/api/admin/site-settings/${id}`,
         method: 'DELETE',
-        path: `/api/admin/site-settings/${id}`,
       });
       return response;
     },

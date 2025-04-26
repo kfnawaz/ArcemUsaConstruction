@@ -7,9 +7,12 @@ import {
   MapPin,
   Phone,
   Mail,
+  Twitter,
+  Youtube,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import NewsletterSubscription from "@/components/common/NewsletterSubscription";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 const Footer = () => {
   return (
