@@ -1,14 +1,14 @@
 import { Link } from "wouter";
 import {
-  Facebook,
-  Github,
-  Instagram,
-  Linkedin,
-  MapPin,
-  Phone,
-  Mail,
-  Twitter,
-  Youtube,
+  FacebookIcon,
+  GithubIcon,
+  InstagramIcon,
+  LinkedinIcon,
+  MapPinIcon,
+  PhoneIcon,
+  MailIcon,
+  TwitterIcon,
+  YoutubeIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import NewsletterSubscription from "@/components/common/NewsletterSubscription";
@@ -48,7 +48,7 @@ const Footer = () => {
                   className="text-gray-400 hover:text-[#1E90DB] transition-colors"
                   aria-label="Facebook"
                 >
-                  <Facebook className="w-5 h-5" />
+                  <FacebookIcon className="w-5 h-5" />
                 </a>
               )}
               {twitterUrl && (
@@ -59,7 +59,7 @@ const Footer = () => {
                   className="text-gray-400 hover:text-[#1E90DB] transition-colors"
                   aria-label="Twitter"
                 >
-                  <Twitter className="w-5 h-5" />
+                  <TwitterIcon className="w-5 h-5" />
                 </a>
               )}
               {instagramUrl && (
@@ -70,7 +70,7 @@ const Footer = () => {
                   className="text-gray-400 hover:text-[#1E90DB] transition-colors"
                   aria-label="Instagram"
                 >
-                  <Instagram className="w-5 h-5" />
+                  <InstagramIcon className="w-5 h-5" />
                 </a>
               )}
               {linkedinUrl && (
@@ -81,7 +81,7 @@ const Footer = () => {
                   className="text-gray-400 hover:text-[#1E90DB] transition-colors"
                   aria-label="LinkedIn"
                 >
-                  <Linkedin className="w-5 h-5" />
+                  <LinkedinIcon className="w-5 h-5" />
                 </a>
               )}
               {youtubeUrl && (
@@ -92,7 +92,7 @@ const Footer = () => {
                   className="text-gray-400 hover:text-[#1E90DB] transition-colors"
                   aria-label="YouTube"
                 >
-                  <Youtube className="w-5 h-5" />
+                  <YoutubeIcon className="w-5 h-5" />
                 </a>
               )}
             </div>
@@ -100,7 +100,7 @@ const Footer = () => {
             {/* Contact Info with Icons */}
             <div className="space-y-3 text-gray-400">
               <div className="flex items-center space-x-3">
-                <MapPin className="w-4 h-4 text-[#1E90DB]" />
+                <MapPinIcon className="w-4 h-4 text-[#1E90DB]" />
                 <span className="text-sm">
                   215 Birch Hill Dr, Sugar Land, TX 77479
                 </span>

@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { useSiteSettings, SiteSetting } from '@/hooks/useSiteSettings';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Facebook, Twitter, Instagram, Linkedin, Youtube } from 'lucide-react';
+import { FacebookIcon, TwitterIcon, InstagramIcon, LinkedinIcon, YoutubeIcon } from 'lucide-react';
 
 export function SocialMediaSettings() {
   const { 
@@ -60,15 +60,15 @@ export function SocialMediaSettings() {
   const getSocialIcon = (key: string) => {
     switch (key) {
       case 'social_facebook':
-        return <Facebook className="h-4 w-4" />;
+        return <FacebookIcon className="h-4 w-4" />;
       case 'social_twitter':
-        return <Twitter className="h-4 w-4" />;
+        return <TwitterIcon className="h-4 w-4" />;
       case 'social_instagram':
-        return <Instagram className="h-4 w-4" />;
+        return <InstagramIcon className="h-4 w-4" />;
       case 'social_linkedin':
-        return <Linkedin className="h-4 w-4" />;
+        return <LinkedinIcon className="h-4 w-4" />;
       case 'social_youtube':
-        return <Youtube className="h-4 w-4" />;
+        return <YoutubeIcon className="h-4 w-4" />;
       default:
         return null;
     }
