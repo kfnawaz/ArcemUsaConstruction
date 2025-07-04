@@ -97,72 +97,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // API routes prefix
   const apiRouter = "/api";
   
-  // System Metrics API Endpoint - Real-time monitoring data
+  // System Metrics API Endpoint - Real-time monitoring data (Real Data Only)
   app.get(`${apiRouter}/system/metrics`, metricsRateLimit, apiKeyAuth, async (_req: Request, res: Response) => {
     try {
       const startTime = Date.now();
-      
-      // Get current date for time-based queries
       const now = new Date();
-      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       
-      // 1. Application Metadata
+      // 1. Application Metadata - Real system information
       const productInfo = {
         name: "ARCEM Construction Platform",
         version: "2.1.0",
         license_type: "Enterprise",
         customer_id: "arcem_construction_2025",
-        instance_id: crypto.randomUUID().slice(0, 12),
+        instance_id: process.env.REPLIT_SLUG || "local-dev",
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         region: process.env.REPLIT_DOMAIN ? "replit-cloud" : "local-dev"
       };
 
-      // 2. System Health - Simulated but realistic values
+      // 2. System Health - Real system values only
+      const memoryUsage = process.memoryUsage();
       const systemHealth = {
         status: "healthy",
         uptime_seconds: Math.floor(process.uptime()),
-        cpu_usage_percent: Math.round((Math.random() * 30 + 20) * 100) / 100, // 20-50%
-        memory_usage_percent: Math.round((process.memoryUsage().heapUsed / process.memoryUsage().heapTotal * 100) * 100) / 100,
-        disk_usage_percent: Math.round((Math.random() * 40 + 30) * 100) / 100 // 30-70%
+        cpu_usage_percent: null, // Not available in Node.js without external libraries
+        memory_usage_percent: Math.round((memoryUsage.heapUsed / memoryUsage.heapTotal * 100) * 100) / 100,
+        disk_usage_percent: null // Not available in Node.js without external libraries
       };
 
-      // 3. User Analytics - Get real data from database
+      // 3. User Analytics - Real database data only
       const [totalUsersResult] = await db.select({ count: count() }).from(users);
       const totalUsers = totalUsersResult.count;
 
-      // Simulate user activity data (in production, you'd track this in a separate table)
       const userAnalytics = {
         total: totalUsers,
-        active_last_7_days: Math.floor(totalUsers * 0.6),
-        active_last_30_days: Math.floor(totalUsers * 0.8),
-        new_users_last_30_days: Math.floor(totalUsers * 0.1),
-        user_login_summary: [
-          {
-            user_id: "admin_001",
-            email: "admin@arcemusa.com",
-            monthly_login_count: 45,
-            last_login: new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
-            inactive: false
-          },
-          {
-            user_id: "user_002", 
-            email: "manager@arcemusa.com",
-            monthly_login_count: 12,
-            last_login: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString(), // 3 days ago
-            inactive: false
-          }
-        ]
+        active_last_7_days: null, // Would require activity tracking table
+        active_last_30_days: null, // Would require activity tracking table
+        new_users_last_30_days: null, // Would require proper date filtering
+        user_login_summary: [] // Would require login tracking table
       };
 
-      // 4. Feature Usage Tracking - Based on real system features
+      // 4. Feature Usage Tracking - Static integrations only
       const featureUsage = {
-        create_project: Math.floor(Math.random() * 50 + 20),
-        generate_report: Math.floor(Math.random() * 30 + 15),
-        export_csv: Math.floor(Math.random() * 25 + 10),
-        blog_management: Math.floor(Math.random() * 40 + 25),
-        quote_requests: Math.floor(Math.random() * 60 + 30),
-        file_uploads: Math.floor(Math.random() * 100 + 50),
+        create_project: null, // Would require usage tracking
+        generate_report: null, // Would require usage tracking
+        export_csv: null, // Would require usage tracking
+        blog_management: null, // Would require usage tracking
+        quote_requests: null, // Would require usage tracking
+        file_uploads: null, // Would require usage tracking
         integrations_connected: ["UploadThing", "PostgreSQL", "SMTP"]
       };
 
@@ -186,54 +167,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
         custom_entities: {
           blog_categories: categoriesCount.count,
           blog_tags: tagsCount.count,
-          newsletter_subscribers: Math.floor(Math.random() * 200 + 50)
+          newsletter_subscribers: null // Would require newsletter table
         }
       };
 
-      // 6. Storage and Data Transfer Metrics
+      // 6. Storage and Data Transfer Metrics - Real values only
       const storage = {
-        total_allocated_mb: 2048, // 2GB limit on Replit
-        used_mb: Math.floor(Math.random() * 800 + 400), // 400-1200 MB used
-        free_mb: 0, // calculated below
-        monthly_data_ingested_mb: Math.floor(Math.random() * 500 + 200),
-        monthly_data_egressed_mb: Math.floor(Math.random() * 150 + 50)
+        total_allocated_mb: null, // Not available without system access
+        used_mb: Math.round(memoryUsage.heapUsed / 1024 / 1024),
+        free_mb: null, // Not available without system access
+        monthly_data_ingested_mb: null, // Would require tracking
+        monthly_data_egressed_mb: null // Would require tracking
       };
-      storage.free_mb = storage.total_allocated_mb - storage.used_mb;
 
-      // 7. Performance Metrics
+      // 7. Performance Metrics - Real values only
       const performance = {
-        average_response_time_ms: Math.floor(Math.random() * 200 + 100), // 100-300ms
-        error_rate_percent: Math.round((Math.random() * 1) * 100) / 100, // 0-1%
-        api_5xx_count: Math.floor(Math.random() * 5),
-        api_4xx_count: Math.floor(Math.random() * 20 + 10),
-        peak_rps: Math.floor(Math.random() * 50 + 25)
+        average_response_time_ms: null, // Would require request tracking
+        error_rate_percent: null, // Would require error tracking
+        api_5xx_count: null, // Would require error tracking
+        api_4xx_count: null, // Would require error tracking
+        peak_rps: null // Would require request tracking
       };
 
-      // 8. Security & Audit Events
+      // 8. Security & Audit Events - Real values only
       const security = {
-        failed_login_attempts: Math.floor(Math.random() * 10 + 2),
-        password_reset_requests: Math.floor(Math.random() * 5),
-        account_lockouts: Math.floor(Math.random() * 2),
-        last_admin_action: new Date(now.getTime() - Math.random() * 24 * 60 * 60 * 1000).toISOString()
+        failed_login_attempts: null, // Would require login attempt tracking
+        password_reset_requests: null, // Would require tracking
+        account_lockouts: null, // Would require tracking
+        last_admin_action: null // Would require admin action tracking
       };
 
-      // 9. License and Billing Information
+      // 9. License and Billing Information - Static configuration
       const license = {
         expiry_date: "2025-12-31",
         current_usage_tier: "enterprise-construction",
         overage_flag: false,
         trial_remaining_days: 0,
-        sla_uptime_percent: 99.9
+        sla_uptime_percent: null // Would require uptime tracking
       };
 
-      // 10. Alerts and Issues Tracking
+      // 10. Alerts and Issues Tracking - Real values only
       const alertsIssues = {
-        open_issues_count: Math.floor(Math.random() * 3),
-        critical_alerts_last_7_days: Math.floor(Math.random() * 2),
-        last_incident_datetime: new Date(now.getTime() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString()
+        open_issues_count: null, // Would require issue tracking system
+        critical_alerts_last_7_days: null, // Would require alert tracking
+        last_incident_datetime: null // Would require incident tracking
       };
 
-      // 11. Custom Metadata and Tags
+      // 11. Custom Metadata and Tags - Static configuration
       const customMetadata = {
         tenant_type: "enterprise",
         tags: ["construction", "cms", "project-management"],

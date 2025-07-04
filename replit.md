@@ -4,6 +4,7 @@
 A sophisticated construction management platform that leverages cutting-edge technologies to streamline project workflows and enhance professional collaboration through advanced content management capabilities. The platform includes comprehensive monitoring and analytics through secure API endpoints.
 
 ## Recent Changes
+- **July 4, 2025**: Updated system metrics API to return only real data from the system (no simulated values)
 - **July 4, 2025**: Added comprehensive system metrics API endpoint with real-time monitoring data
 - **July 4, 2025**: Implemented API key authentication and rate limiting for external monitoring applications
 - **July 4, 2025**: Fixed deprecated Lucide React icon imports in Footer and SocialMediaSettings components
@@ -142,4 +143,4 @@ curl -H "Authorization: Bearer sk-arcem-metrics-2025-secure-key-9f8e7d6c5b4a3210
 - Icons should use current Lucide React naming (e.g., FacebookIcon, not Facebook)
 - Social media settings managed through site_settings table
 - All file uploads should use UploadThing infrastructure
-- System metrics provide real database counts and simulated performance data
+- System metrics provide real database counts and actual system data only (no simulated values)
