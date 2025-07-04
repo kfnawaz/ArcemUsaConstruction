@@ -71,7 +71,7 @@ const apiKeyAuth = (req: Request, res: Response, next: NextFunction) => {
   // Valid API keys for system metrics
   const validApiKeys = [
     process.env.SYSTEM_METRICS_API_KEY || 'sk-arcem-metrics-2025-secure-key-9f8e7d6c5b4a3210', // Default key
-    'sk-plaidware-arcem-2025-monitoring-key-8f7e6d5c4b3a2190' // Plaidware external monitoring
+    'plaidware-metrics-access-2025-secure' // Plaidware external monitoring
   ];
   
   if (!apiKey || typeof apiKey !== 'string' || !validApiKeys.includes(apiKey)) {

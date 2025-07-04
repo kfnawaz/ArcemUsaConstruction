@@ -37,7 +37,7 @@ A sophisticated construction management platform that leverages cutting-edge tec
 - **API Key**: Include in header as `X-API-Key: <your-api-key>`
 - **Bearer Token**: Include in header as `Authorization: Bearer <your-api-key>`
 - **Default API Key**: `sk-arcem-metrics-2025-secure-key-9f8e7d6c5b4a3210`
-- **Plaidware API Key**: `sk-plaidware-arcem-2025-monitoring-key-8f7e6d5c4b3a2190`
+- **Plaidware API Key**: `plaidware-metrics-access-2025-secure`
 
 ### Rate Limiting
 - **Limit**: 20 requests per 15 minutes per IP address
