@@ -298,6 +298,8 @@ export const newsletterSubscribers = pgTable("newsletter_subscribers", {
   lastName: text("last_name"),
   subscribed: boolean("subscribed").default(true),
   createdAt: timestamp("created_at").defaultNow(),
+  source: text("source").default("website"), // website, manual, import, etc.
+  preferences: jsonb("preferences"), // email preferences
 });
 
 export const insertNewsletterSubscriberSchema = createInsertSchema(newsletterSubscribers).omit({
@@ -567,3 +569,165 @@ export type InsertServiceGallery = z.infer<typeof insertServiceGallerySchema>;
 
 export type Message = typeof messages.$inferSelect;
 export type InsertMessage = z.infer<typeof insertMessageSchema>;
+
+// User Activity Tracking
+export const userSessions = pgTable("user_sessions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  sessionToken: text("session_token").notNull().unique(),
+  loginTime: timestamp("login_time").defaultNow().notNull(),
+  logoutTime: timestamp("logout_time"),
+  lastActiveTime: timestamp("last_active_time").defaultNow().notNull(),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  isActive: boolean("is_active").default(true).notNull(),
+});
+
+export const insertUserSessionSchema = createInsertSchema(userSessions).omit({
+  id: true,
+  loginTime: true,
+  lastActiveTime: true,
+  isActive: true,
+});
+
+// Feature Usage Tracking
+export const featureUsage = pgTable("feature_usage", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }),
+  featureName: text("feature_name").notNull(),
+  action: text("action").notNull(), // create, update, delete, view, export, etc.
+  entityType: text("entity_type"), // project, blog, service, etc.
+  entityId: integer("entity_id"),
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  duration: integer("duration"), // in milliseconds
+  metadata: jsonb("metadata"), // additional context
+});
+
+export const insertFeatureUsageSchema = createInsertSchema(featureUsage).omit({
+  id: true,
+  timestamp: true,
+});
+
+// API Request Tracking
+export const apiRequests = pgTable("api_requests", {
+  id: serial("id").primaryKey(),
+  method: text("method").notNull(),
+  endpoint: text("endpoint").notNull(),
+  statusCode: integer("status_code").notNull(),
+  responseTime: integer("response_time").notNull(), // in milliseconds
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  userId: integer("user_id").references(() => users.id, { onDelete: 'set null' }),
+  errorMessage: text("error_message"),
+  requestSize: integer("request_size"), // in bytes
+  responseSize: integer("response_size"), // in bytes
+});
+
+export const insertApiRequestSchema = createInsertSchema(apiRequests).omit({
+  id: true,
+  timestamp: true,
+});
+
+// Security Events Tracking
+export const securityEvents = pgTable("security_events", {
+  id: serial("id").primaryKey(),
+  eventType: text("event_type").notNull(), // login_failed, password_reset, account_locked, etc.
+  userId: integer("user_id").references(() => users.id, { onDelete: 'cascade' }),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+  severity: text("severity").notNull().default("low"), // low, medium, high, critical
+  description: text("description"),
+  metadata: jsonb("metadata"),
+  resolved: boolean("resolved").default(false),
+});
+
+export const insertSecurityEventSchema = createInsertSchema(securityEvents).omit({
+  id: true,
+  timestamp: true,
+});
+
+// System Alerts and Issues
+export const systemAlerts = pgTable("system_alerts", {
+  id: serial("id").primaryKey(),
+  alertType: text("alert_type").notNull(), // performance, security, error, maintenance, etc.
+  severity: text("severity").notNull().default("low"), // low, medium, high, critical
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+  resolved: boolean("resolved").default(false),
+  resolvedAt: timestamp("resolved_at"),
+  resolvedBy: integer("resolved_by").references(() => users.id, { onDelete: 'set null' }),
+  metadata: jsonb("metadata"),
+});
+
+export const insertSystemAlertSchema = createInsertSchema(systemAlerts).omit({
+  id: true,
+  timestamp: true,
+});
+
+// Remove duplicate - newsletterSubscribers is already defined earlier in the file
+
+// System Performance Metrics
+export const performanceMetrics = pgTable("performance_metrics", {
+  id: serial("id").primaryKey(),
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+  cpuUsage: integer("cpu_usage"), // percentage
+  memoryUsage: integer("memory_usage"), // percentage
+  diskUsage: integer("disk_usage"), // percentage
+  activeConnections: integer("active_connections"),
+  requestsPerSecond: integer("requests_per_second"),
+  errorRate: integer("error_rate"), // percentage * 100
+  averageResponseTime: integer("average_response_time"), // milliseconds
+  uptime: integer("uptime"), // seconds
+});
+
+export const insertPerformanceMetricsSchema = createInsertSchema(performanceMetrics).omit({
+  id: true,
+  timestamp: true,
+});
+
+// Admin Actions Log
+export const adminActions = pgTable("admin_actions", {
+  id: serial("id").primaryKey(),
+  adminId: integer("admin_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  action: text("action").notNull(),
+  entityType: text("entity_type"), // user, project, blog, service, etc.
+  entityId: integer("entity_id"),
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  description: text("description"),
+  beforeState: jsonb("before_state"),
+  afterState: jsonb("after_state"),
+});
+
+export const insertAdminActionSchema = createInsertSchema(adminActions).omit({
+  id: true,
+  timestamp: true,
+});
+
+// Type exports for tracking tables
+export type UserSession = typeof userSessions.$inferSelect;
+export type InsertUserSession = z.infer<typeof insertUserSessionSchema>;
+
+export type FeatureUsage = typeof featureUsage.$inferSelect;
+export type InsertFeatureUsage = z.infer<typeof insertFeatureUsageSchema>;
+
+export type ApiRequest = typeof apiRequests.$inferSelect;
+export type InsertApiRequest = z.infer<typeof insertApiRequestSchema>;
+
+export type SecurityEvent = typeof securityEvents.$inferSelect;
+export type InsertSecurityEvent = z.infer<typeof insertSecurityEventSchema>;
+
+export type SystemAlert = typeof systemAlerts.$inferSelect;
+export type InsertSystemAlert = z.infer<typeof insertSystemAlertSchema>;
+
+export type PerformanceMetric = typeof performanceMetrics.$inferSelect;
+export type InsertPerformanceMetric = z.infer<typeof insertPerformanceMetricsSchema>;
+
+export type AdminAction = typeof adminActions.$inferSelect;
+export type InsertAdminAction = z.infer<typeof insertAdminActionSchema>;
