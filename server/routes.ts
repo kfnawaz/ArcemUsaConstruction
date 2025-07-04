@@ -68,10 +68,13 @@ const isAdmin = (req: Request, res: Response, next: NextFunction) => {
 const apiKeyAuth = (req: Request, res: Response, next: NextFunction) => {
   const apiKey = req.headers['x-api-key'] || req.headers.authorization?.replace('Bearer ', '');
   
-  // Use environment variable for API key or generate a secure default
-  const validApiKey = process.env.SYSTEM_METRICS_API_KEY || 'sk-arcem-metrics-2025-secure-key-9f8e7d6c5b4a3210';
+  // Valid API keys for system metrics
+  const validApiKeys = [
+    process.env.SYSTEM_METRICS_API_KEY || 'sk-arcem-metrics-2025-secure-key-9f8e7d6c5b4a3210', // Default key
+    'sk-plaidware-arcem-2025-monitoring-key-8f7e6d5c4b3a2190' // Plaidware external monitoring
+  ];
   
-  if (!apiKey || apiKey !== validApiKey) {
+  if (!apiKey || typeof apiKey !== 'string' || !validApiKeys.includes(apiKey)) {
     return res.status(401).json({ 
       error: 'Unauthorized', 
       message: 'Valid API key required' 
